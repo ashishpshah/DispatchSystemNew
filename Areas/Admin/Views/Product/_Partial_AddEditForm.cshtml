@@ -1,0 +1,185 @@
+﻿@model ResponseModel<Product>
+@{
+	Layout = null;
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+	<div class="card card-primary card-outline">
+		<div class="card-header">
+			<h3 class="card-title">@(Model.Obj.Id > 0 ? "Edit " : "Create") Product</h3>
+
+			<div class="card-tools">
+				<button type="button" class="btn btn-primary btn-sm" title="Back To List" onclick="fnBackToList('@IndexPageUrl')">
+					<i class="fas fa-arrow-left"></i> Back To List
+				</button>
+			</div>
+		</div>
+
+		<div class="card-body">
+			<input type="text" class="form-control d-none" name="Id" value="@Model.Obj.Id">
+			@*<input type="text" class="form-control d-none" id="Plant_Role" name="Plant_Role" value="@Model.Obj.Plant_Role">*@
+			@if (Model.Obj.Id > 0) { }
+			<div class="panel-divider">
+				<span>Product Details</span>
+				<div class="form-group row">
+					@*<label for="Plant_cd" class="col-sm-2 col-form-label" style="align-content:start">Plant Code<span style="color:red">*</span></label>
+					<div class="col-sm-3">
+					<input type="text" class="form-control form-control-sm" name="Plant_cd" value="@Model.Obj.Plant_cd" data-required data-msg="The Plant Code field is required." autocomplete="off">
+					</div>*@
+					<label class="col-sm-2 col-form-label text-right">Product code<span style="color:red">*</span> </label>
+					<div class="col-sm-3">
+						<input type="text" id="Prd_cd" class="form-control form-control-sm" name="Prd_cd" value="@Model.Obj.Prd_cd" data-required data-msg="The Product code field is required." autocomplete="off">
+					</div>
+					<label class="col-sm-2 col-form-label text-right">Product Name <span style="color:red">*</span></label>
+					<div class="col-sm-3">
+						<input type="text" id="Prd_desc" class="form-control form-control-sm" name="Prd_desc" value="@Model.Obj.Prd_desc" data-required data-msg="The Product name field is required." autocomplete="off">
+					</div>
+				</div>
+				<div class="form-group row pb-2">
+					<label for="Sku_code" class="col-sm-2 col-form-label">SKU Code<span style="color:red">*</span></label>
+					<div class="col-sm-3">
+						<input type="text" id="Sku_code" class="form-control form-control-sm" name="Sku_code" value="@Model.Obj.Sku_code" data-required data-msg="The Sku code field is required." autocomplete="off">
+					</div>
+					<label for="Sku_name" class="col-sm-2 col-form-label">SKU Name<span style="color:red">*</span></label>
+					<div class="col-sm-3">
+						<input type="text" id="Sku_name" class="form-control form-control-sm" name="Sku_name" value="@Model.Obj.Sku_name" data-required data-msg="The Sku name field is required." autocomplete="off">
+					</div>
+				</div>
+			</div>
+
+			<div class="panel-divider">
+				@*<span>Personal Details</span>*@
+				<div class="row no-gutters p-0 m-0">
+					<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+
+						<div class="form-group row">
+							<label for="Prd_wt_fill" class="col-sm-2 col-form-label">Product Wt Fill <span style="color:red">*</span></label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Prd_wt_fill" value="@Model.Obj.Prd_wt_fill" data-required data-msg="The Product Wt Fill field is required." autocomplete="off">
+							</div>
+							<label for="Prod_per_shipper" class="col-sm-2 col-form-label">Prod Per Shipper. <span style="color:red">*</span></label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Prod_per_shipper" data-required data-msg="The Prod Per Shipper field is required." autocomplete="off" value="@Model.Obj.Prod_per_shipper">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label for="Tolerance_per" class="col-sm-2 col-form-label">Tolerance Per.</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Tolerance_per" autocomplete="off" value="@Model.Obj.Tolerance_per">
+							</div>
+							<label for="Pal_wt_fill" class="col-sm-2 col-form-label">Pal Wt Fill <span style="color:red">*</span></label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Pal_wt_fill" data-required data-msg="The Pal Wt Fill field is required." autocomplete="off" value="@Model.Obj.Pal_wt_fill">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label for="Ship_per_pallet" class="col-sm-2 col-form-label">Ship Per Pallet</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Ship_per_pallet" autocomplete="off" value="@Model.Obj.Ship_per_pallet">
+							</div>
+							<label class="col-sm-2 col-form-label">Print Order <span style="color:red">*</span></label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Print_order" autocomplete="off" value="@Model.Obj.Print_order">
+							</div>
+						</div>
+						@*<div class="form-group row">
+						<label for="Prd_desc" class="col-sm-2 col-form-label">Product Desc <span style="color:red">*</span></label>
+						<div class="col-sm-10">
+						<input type="text" class="form-control form-control-sm" name="Prd_desc" value="@Model.Obj.Prd_desc" data-required data-msg="The Product Desc field is required." autocomplete="off">
+						</div>
+						</div>*@
+						<div class="form-group row">
+							<label for="Prd_desc_short" class="col-sm-2 col-form-label">Product Desc Short<span style="color:red">*</span></label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control form-control-sm" name="Prd_desc_short" value="@Model.Obj.Prd_desc_short" data-required data-msg="The Product Desc short field is required." autocomplete="off">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label for="Note" class="col-sm-2 col-form-label">Note <span style="color:red">*</span></label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control form-control-sm" name="Note" data-required data-msg="The Note field is required." autocomplete="off" value="@Model.Obj.Note">
+							</div>
+						</div>
+						@*<div class="form-group row">
+						<label for="Extra1" class="col-sm-2 col-form-label">Extra1</label>
+						<div class="col-sm-2">
+						<input type="text" class="form-control form-control-sm" name="Extra1" autocomplete="off" value="@Model.Obj.Extra1">
+						</div>
+						<label for="Extra2" class="col-sm-2 col-form-label">Extra2</label>
+						<div class="col-sm-2">
+						<input type="text" class="form-control form-control-sm" name="Extra2" autocomplete="off" value="@Model.Obj.Extra2">
+						</div>
+						<label for="Extra3" class="col-sm-2 col-form-label">Extra3</label>
+						<div class="col-sm-2">
+						<input type="text" class="form-control form-control-sm" name="Extra3" autocomplete="off" value="@Model.Obj.Extra3">
+						</div>
+						</div>*@
+					</div>
+				</div>
+			</div>
+
+			<div class="panel-divider">
+				@*<span>Personal Details</span>*@
+				<div class="row no-gutters p-0 m-0">
+					<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+
+						<div class="form-group row">
+							<label for="Prd_type" class="col-sm-2 col-form-label">Product Type <span style="color:red">*</span></label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Prd_type" value="@Model.Obj.Prd_type" data-required data-msg="The Product Type field is required." autocomplete="off">
+							</div>
+							<label for="Prd_category" class="col-sm-2 col-form-label">Product Category <span style="color:red">*</span></label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Prd_category" value="@Model.Obj.Prd_category" data-required data-msg="The Product Category field is required." autocomplete="off">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label for="Hsn_code" class="col-sm-2 col-form-label">HSN Code. <span style="color:red">*</span></label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Hsn_code" data-required data-msg="The Hsn Code. field is required." autocomplete="off" value="@Model.Obj.Hsn_code">
+							</div>
+							<label for="Uom" class="col-sm-2 col-form-label">UOM <span style="color:red">*</span></label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Uom" data-required data-msg="The Uom field is required." autocomplete="off" value="@Model.Obj.Pal_wt_fill">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label for="Gtin" class="col-sm-2 col-form-label">GTIN</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Gtin" autocomplete="off" value="@Model.Obj.Gtin">
+							</div>
+							<label for="Qr Last Serial No" class="col-sm-2 col-form-label">Last Serial No <span style="color:red">*</span></label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control form-control-sm" name="Qr_last_serial_no" data-required data-msg="The Qr Last Serial No field is required." autocomplete="off" value="@Model.Obj.Qr_last_serial_no">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-sm-2 col-form-label text-right">Status </label>
+							<div class="col-sm-4">
+								<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+									<input type="checkbox" class="custom-control-input"
+										   id="switch_Status" name="Isactive" @(Model.Obj == null || Model.Obj.Isactive == true ? "checked" : "")
+										   onchange="fnChange_Switch(this, 'label_Switch_Status')">
+									<label class="custom-control-label" style="padding-top: 10px;" for="switch_Status" id="label_Switch_Status" data-true="Active" data-false="Isactive">@((Model.Obj != null && Model.Obj.Isactive == true) || Model.Obj == null ? "Active" : "Inactive")</label>
+								</div>
+							</div>
+						</div>
+						<div class="form-group row">
+							<label for="ValidMonth" class="col-sm-2 col-form-label">Valid Month</label>
+							<div class="col-sm-4">
+								<input type="number" class="form-control form-control-sm numbers" name="ValidMonth" autocomplete="off" value="@Model.Obj.ValidMonth">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="card-footer">
+			<button type="submit" class="btn btn-success btnSubmit">Save</button>
+			<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '#table_Common_SrNo');">Cancel</button>
+		</div>
+	</div>
+</div>

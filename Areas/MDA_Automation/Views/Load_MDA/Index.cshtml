@@ -1,0 +1,2154 @@
+﻿@model Dispatch_System.ResponseModel<MDA>
+
+@{
+    ViewData["Title"] = "MDA Load";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+
+@section Styles {
+    <style type="text/css">
+
+        @@media only screen and (min-device-width : 768px) {
+
+            .content-header {
+                display: none;
+            }
+
+            div#div_Scan_QR_Code div.card-body span, div#div_Scan_QR_Code div.card-body span {
+                font-size: 0.71rem !important;
+                line-height: 1.3em !important;
+            }
+
+            .col-form-label, th, td {
+                font-size: 80% !important;
+            }
+
+            .form-control, .form-control-sm {
+                height: calc(1.3125rem + 2px) !important;
+            }
+
+            button {
+                line-height: 1 !important;
+            }
+        }
+    </style>
+}
+
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12">
+                <h1 class="font-weight-bold">Load MDA</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content p-0">
+    <div class="container-fluid p-0">
+        <div class="row no-gutters">
+            <div class="col-12 card">
+                <form id="formSave" asp-controller="Load_MDA" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data" data_form_isvalidate>
+                    <div class="card-body pb-0">
+
+                        <div class="panel-divider">
+                            <span>Search Details</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+                                            <div class="form-group row">
+                                                <label for="inputSearch" class="col-sm-3 col-form-label">Vehicle Number / MDA Number <span class="text-danger">*</span></label>
+                                                <div class="col-sm-8">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="inputSearch" class="form-control form-control-sm">
+                                                        <span class="input-group-append ml-2">
+                                                            <button type="button" class="btn btn-info btn-flat mr-2" onclick="GetMDA(this, 'S')">Search</button>
+                                                            <button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetMDA(this, 'V')">View Vehicle</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-divider">
+                            <span>Vehicle Details</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+                                            <div class="form-group row">
+                                                <label for="Truck_No" class="col-sm-3 col-form-label">Vehicle Number <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" class="form-control form-control-sm" id="Truck_No" name="Truck_No" data-required data-msg="Vehicle Number is required." autocomplete="off" readonly>
+                                                    @*<input type="text" class="form-control form-control-sm d-none" id="MDA_No" name="MDA_No">*@
+                                                    <input type="text" class="form-control form-control-sm d-none" id="Id" name="Id">
+                                                    <input type="text" class="form-control form-control-sm d-none" id="GateInOut_Id" name="GateInOut_Id">
+                                                    <input type="text" class="form-control form-control-sm d-none" id="Is_End_Loading">
+                                                    <input type="text" class="form-control form-control-sm d-none" id="Loaded_Shipper">
+                                                </div>
+                                                @*<label for="MDA_No" class="col-sm-3 col-form-label">MDA Number <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                <input type="text" class="form-control form-control-sm" id="MDA_No" name="MDA_No" autocomplete="off" readonly>
+                                                </div>*@
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="Transporter_Name" class="col-sm-3 col-form-label">Transporter Name  <span class="text-danger">*</span></label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" class="form-control form-control-sm" id="Transporter_Name" name="Transporter_Name" autocomplete="off" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label for="Driver_Name" class="col-sm-6 col-form-label pl-0">Driver Name <span class="text-danger">*</span></label>
+                                                        <span class="input-group-append col-sm-6 ml-0">
+                                                            <input type="text" class="form-control form-control-sm" id="Driver_Name" name="Driver_Name" autocomplete="off" readonly>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label for="Driver_Contact" class="col-sm-6 col-form-label pl-0 text-right">Driver Contact <span class="text-danger">*</span></label>
+                                                        <span class="input-group-append col-sm-6 ml-0">
+                                                            <input type="text" class="form-control form-control-sm isNumberKey" id="Driver_Contact" name="Driver_Contact" autocomplete="off" readonly>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-divider">
+                            <span>MDA Details</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="card-body py-1 px-0" id="divMDA_Dtls">
+
+                                        <div class="row col-12 w-100 d-flex flex-row-reverse">
+                                            <span class="col-10">&nbsp;</span>
+                                            <button id="btnCheck_MDAUpdate" type="button" class="btn btn-info btn-flat col-4" onclick="fnClick_MDAUpdate()"> Check for MDA Update</button>
+                                        </div>
+
+                                        <div class="row col-12 w-100">
+                                            <table id="table_MDA_Dtls" class="table table-bordered table-striped w-100">
+                                                <thead>
+                                                    <tr>
+                                                        <th hidden width="0%"></th>
+                                                        <th hidden width="0%"></th>
+                                                        <th hidden width="0%"></th>
+                                                        <th width="10%">MDA Number</th>
+                                                        @*<th width="10%">Transporter Code</th>
+                                                        <th>Transporter Name</th>*@
+                                                        <th width="10%">Customer Code</th>
+                                                        <th>Customer Name</th>
+                                                        <th width="10%">Required Shipper</th>
+                                                        <th width="10%">Loaded Shipper</th>
+                                                        <th width="10%">Distance</th>
+                                                        <th width="10%">Sequence Number</th>
+                                                        <th hidden width="0%"></th>
+                                                        @*<th hidden width="0%"></th>*@
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-divider">
+                            <span>Scan QR Code</span>
+                            <div class="row no-gutters p-0 m-0" id="divMDADtls">
+                                <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+                                            <div class="form-group row">
+                                                <label class="col-sm-2 col-form-label text-right">MDA No. &nbsp;<span class="float-right">:</span> </label>
+                                                <label class="col-sm-2 col-form-label ml-0" id="span_MDA_No"> </label>
+                                                <label class="col-sm-2 col-form-label text-right">Customer &nbsp;<span class="float-right">:</span> </label>
+                                                <label class="col-sm-4 col-form-label ml-0" id="span_Customer"></label>
+                                                <input type="text" class="form-control form-control-sm d-none" id="input_Customer_Cd" autocomplete="off">
+                                                <input type="text" class="form-control form-control-sm d-none" id="input_GateInOut_Id" autocomplete="off">
+                                                <input type="text" class="form-control form-control-sm d-none" id="input_MDA_Id" autocomplete="off">
+                                                <input type="text" class="form-control form-control-sm d-none" id="input_MDA_DTLS_Id" autocomplete="off">
+                                                <label class="d-none" id="span_Desp_Place"></label>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label class="col-sm-2 col-form-label text-right">Product &nbsp;<span class="float-right">:</span> </label>
+                                                <label class="col-sm-4 col-form-label ml-0" id="span_Prod"> </label>
+                                                <input type="text" class="form-control form-control-sm d-none" id="input_Prod_Sys_Id" autocomplete="off">
+                                                <div class="row col-6 w-100 d-flex flex-row-reverse">
+                                                    <button id="btnManualEntry" type="button" class="btn btn-success btn-flat col-sm-5 float-right mr-2" disabled onclick="fnClick_ManualEntry()">Manual Entry</button>
+                                                    <button id="btnAddQty" type="button" class="btn btn-info btn-flat col-sm-5 float-right mr-2 d-none" disabled>Sync MDA Qty</button>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row d-none">
+                                                <label class="col-sm-2 col-form-label text-right">Required Shipper &nbsp;<span class="float-right">:</span> </label>
+                                                <label class="col-sm-2 col-form-label ml-0" id="span_Bottle_Qty"></label>
+                                                <label class="col-sm-2 col-form-label pl-0 text-right">Carton Qty &nbsp;<span class="float-right">:</span> </label>
+                                                <label class="col-sm-1 col-form-label ml-0" id="span_Carton_Qty"></label>
+                                                <label class="col-sm-2 col-form-label pl-0 pr-sm-0 text-right">Total Loaded Shipper &nbsp;<span class="float-right">:</span> </label>
+                                                <label class="col-sm-2 col-form-label ml-0" id="span_Loadded_Shipper"></label>
+                                            </div>
+                                            <div class="form-group row" id="divBypassWMS" style="display: none;">
+                                                <label class="col-sm-2 col-form-label text-right">Bypass WMS &nbsp;<span class="float-right">:</span> </label>
+                                                <label class="col-sm-4 col-form-label ml-0" id="span_BypassWMS"> </label>
+                                                <input type="text" class="form-control form-control-sm d-none" id="input_BypassWMS" autocomplete="off">
+                                            </div>
+                                            <div class="form-group row" id="divManualEntry" style="display: none;">
+                                                <label for="input_Scan_QR_Code" class="col-sm-2 col-form-label text-right">Enter QR Code &nbsp;<span class="text-danger">*</span> <span class="float-right">:</span> </label>
+                                                <div class="col-sm-6">
+                                                    <input type="text" id="input_Scan_QR_Code" class="form-control form-control-sm">
+                                                </div>
+                                                <div class="col-sm-4 d-none">
+                                                    <input type="text" id="input_temp_Scan_QR_Code" class="form-control form-control-sm">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row no-gutters p-0 m-0" id="div_Scan_QR_Code" style="display: none;">
+                                <div class="col-4">
+                                    <div class="card direct-chat direct-chat-warning">
+                                        <div class="card-header">
+                                            <h3 class="card-title text-bold">Total Scan QR Code</h3>
+                                            <div class="card-tools mt-2">
+                                                <button type="button" class="btn btn-tool text-primary btnViewQR" id="btnViewAll">
+                                                    <i class="fas fa-eye"></i> &nbsp; View All
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-body">
+                                            <div class="direct-chat-messages">
+                                                <ul class="nav flex-column" id="ul_Scan_QR_Code">
+                                                    @*<li class="nav-item py-1" style="line-height: 1em;">
+                                                    <span class="float-left text-success">
+                                                    India
+                                                    </span>
+                                                    <span class="float-right badge bg-success">
+                                                    <i class="fas fa-check-circle"></i>
+                                                    </span>
+                                                    </li>
+                                                    <li class="nav-item py-1" style="line-height: 1em;">
+                                                    <span class="float-left text-danger">
+                                                    United States of America
+                                                    </span>
+                                                    <span class="float-right badge bg-danger">
+                                                    <i class="fas fa-times-circle"></i>
+                                                    </span>
+                                                    </li>*@
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="d-flex flex-row justify-content-between">
+                                                <h5 class="card-title text-bold">Count : <span id="span_Total_Scan_QR_Code" data-cntReq="" data-cnt="" data-last=""></span></h5>
+                                                <button type="button" onclick="fnClick_Delete_QR_Code(this, 'A', 'ul_Scan_QR_Code')" class="btn btn-xs btn-outline-danger btn-flat float-right px-2"><i class="far fa-trash-alt"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="card direct-chat direct-chat-warning">
+                                        <div class="card-header">
+                                            <h3 class="card-title text-bold">Accepted</h3>
+                                        </div>
+
+                                        <div class="card-body">
+                                            <div class="direct-chat-messages">
+                                                <ul class="nav flex-column" id="ul_Accepted_QR_Code">
+                                                    @*<li class="nav-item py-1" style="line-height: 1em;">
+                                                    <span class="float-left text-success">
+                                                    India
+                                                    </span>
+                                                    <span class="float-right badge bg-success">
+                                                    <i class="fas fa-check-circle"></i>
+                                                    </span>
+                                                    </li>*@
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="d-flex flex-row justify-content-between">
+                                                <h5 class="card-title text-bold">Count : <span id="span_Total_Accepted_QR_Code" data-cnt="" style="font-size: 1.2rem !important;"></span></h5>
+                                                <button type="button" onclick="fnClick_Delete_QR_Code(this, 'S', 'ul_Accepted_QR_Code')" class="btn btn-xs btn-outline-danger btn-flat float-right px-2"><i class="far fa-trash-alt"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="card direct-chat direct-chat-warning">
+                                        <div class="card-header">
+                                            <h3 class="card-title text-bold">Rejected</h3>
+                                            <div class="card-tools mt-2">
+                                                <button type="button" class="btn btn-tool text-primary btnViewQR" id="btnViewReason">
+                                                    <i class="fas fa-eye"></i> &nbsp; View Reason
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-body">
+                                            <div class="direct-chat-messages">
+                                                <ul class="nav flex-column" id="ul_Rejected_QR_Code">
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="d-flex flex-row justify-content-between">
+                                                <h5 class="card-title text-bold">Count : <span id="span_Total_Rejected_QR_Code" data-cnt=""></span></h5>
+                                                <button type="button" onclick="fnClick_Delete_QR_Code(this, 'R', 'ul_Rejected_QR_Code')" class="btn btn-xs btn-outline-danger btn-flat float-right px-2"><i class="far fa-trash-alt"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="card-footer">
+                        <div class="row col-12 w-100 mt-2">
+                            <button type="button" id="btnRequisitionWMS" class="btn btn-primary btn-flat px-3 mr-3" disabled>Requisition to WMS</button>
+                            <button type="button" id="btnBypassWMS" class="btn btn-info btn-flat px-3 mr-3">Bypass WMS</button>
+                        </div>
+                        <div class="row col-12 w-100 mt-3">
+                            <button type="button" id="btnStartLoading" class="btn btn-success btn-flat px-3 mr-3" disabled>Start Loading</button>
+                            <button type="button" id="btnPauseConveyor" class="btn btn-warning btn-flat px-3 mx-3" disabled>Pause Conveyor</button>
+                            <button type="button" id="btnStopConveyor" class="btn btn-warning btn-flat px-3 mr-3" disabled>Stop Conveyor</button>
+                            <button type="button" id="btnEmergencyStopConveyor" class="btn btn-info btn-danger px-3 mr-3 d-none" disabled>Emergency Stop</button>
+                            <button type="button" id="btnFinish" class="btn btn-info btn-flat px-5 mr-5" disabled>Finish</button>
+                        </div>
+                        <div class="row col-12 w-100 mt-3">
+                            <button type="button" id="btnSendToPrinter" class="btn btn-info btn-flat px-3 mx-5">Send To Printer</button>
+                            <button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClearFormData('#formSave')">Clear</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script type="text/javascript">
+        var table = {};
+        var tableDtls = {};
+
+        var updateProgress_Interval = null;
+        var isUpdateProgress_Interval = false;
+
+        function fnLoad_MDA_Dtls() {
+            ShowLoader(true);
+
+            $('#input_Customer_Cd').val('');
+            $('#input_Customer_Cd').trigger('change');
+            $('#input_GateInOut_Id').val('');
+            $('#input_GateInOut_Id').trigger('change');
+            $('#input_MDA_Id').val('');
+            $('#input_MDA_Id').trigger('change');
+            $('#input_MDA_DTLS_Id').val('');
+            $('#input_MDA_DTLS_Id').trigger('change');
+            $('#span_MDA_No').html('');
+            $('#span_Customer').html('');
+            $('#span_Desp_Place').html('');
+            $('#span_Prod').html('');
+            $('#span_Bottle_Qty').html('');
+            $('#span_Carton_Qty').html('');
+            $('#span_Loadded_Shipper').html('');
+            $('#input_Prod_Sys_Id').val('');
+            $('#input_Prod_Sys_Id').trigger('change');
+
+            $('#span_BypassWMS').text('');
+            $('#input_BypassWMS').val('');
+            $('#input_BypassWMS').trigger('change');
+            $('#divBypassWMS').css('display', 'none');
+
+            $('#btnAddQty').removeAttr('onclick');
+            $('#btnAddQty').prop('disabled', true);
+
+            $('.btnViewQR').removeAttr('onclick');
+
+            $('#div_Scan_QR_Code').css('display', 'none');
+            $('#btnManualEntry').prop('disabled', true);
+            $('#divManualEntry').css('display', 'none');
+
+            $('#table_MDA_Dtls tbody').html('');
+
+            LoadTable_MDA_Dtls();
+
+            var Truck_No = $('#Truck_No').val();
+            var Gate_In_Out_Id = $('#GateInOut_Id').val();
+
+            if (typeof Truck_No != 'undefined' && Truck_No != null && Truck_No.length > 0) {
+
+                $.ajax({
+                    type: "GET",
+                    //url: '@Url_RootToController/GetMDA?type=S&searchTerm=' + Truck_No,
+                    url: '@Url_RootToController/Load_MDA_Dtls?searchTerm=' + Truck_No + '&Gate_In_Out_Id=' + Gate_In_Out_Id,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+
+                        LoadTable_MDA_Dtls(response);
+
+                        setTimeout(function () {
+
+                            if ($('#table_MDA_Dtls tbody tr').length <= 0)
+                                CommonAlert_Error("No any record(s) found");
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) {
+                        CommonAlert_Error(null)
+                    },
+                    error: function (response) {
+                        CommonAlert_Error(null)
+                    }
+                });
+
+            }
+            else {
+                LoadTable_MDA_Dtls(null);
+                ShowLoader(false);
+            }
+        }
+
+        function LoadTable_MDA_Dtls($data) {
+            try {
+
+                if ($.fn.DataTable.isDataTable('#table_MDA_Dtls')) {
+                    $('#table_MDA_Dtls').DataTable().destroy();
+                }
+
+                tableDtls = $('#table_MDA_Dtls').DataTable({
+                    paging: false,
+                    lengthChange: false,
+                    searching: false,
+                    ordering: false,
+                    info: false,
+                    autoWidth: false,
+                    responsive: true,
+                    order: [[0, 'asc']],
+                    columnDefs: [
+                        { "targets": 0, "width": "0%", "visible": false },
+                        { "targets": 1, "width": "0%", "visible": false },
+                        { "targets": 2, "width": "0%", "visible": false },
+                        { "targets": -5, "className": "text-center Required_Shipper" },
+                        { "targets": -4, "className": "text-center Loadded_Shipper" },
+                        { "targets": -3, "className": "text-center" },
+                        { "targets": -2, "className": "text-center" },
+                        { "targets": -1, "width": "0%", "visible": false }
+                    ],
+                    fixedColumns: true,
+                    dom: "<'row'<'col-sm-12'tr>>"
+                });
+
+
+                if (typeof $data != 'undefined' && $data != null && $data.length > 0) {
+
+                    for (var i = 0; i < $data.length; i++) {
+
+                        tableDtls.row.add([$data[i].mda_order, $data[i].mda_Id, $data[i].id, $data[i].mda_No, /*$data[i].tptr_cd, $data[i].tptr_name,*/ $data[i].wh_Cd, $data[i].party_Name, $data[i].required_Shipper, $data[i].loaded_Shipper, $data[i].dist, $data[i].mda_order, $data[i].gateInOut_Id]).draw(false);
+
+                        $(tableDtls.rows(i).nodes().to$()).attr('id', 'tr_' + $data[i].gateInOut_Id + '_' + $data[i].mda_Id);
+                        $(tableDtls.rows(i).nodes().to$()).attr('data-mdaid', $data[i].mda_Id);
+                        $(tableDtls.rows(i).nodes().to$()).attr('data-gateinoutid', $data[i].gateInOut_Id);
+
+                        if ($data[i].is_Posted == true) {
+                            tableDtls.rows(i).nodes().to$().addClass('row-disabled');
+                        }
+                    };
+
+                }
+                else {
+                    tableDtls.clear().draw();
+                }
+
+            } catch { }
+
+        }
+
+        $(document).on('click', '#table_MDA_Dtls tbody tr', function (e) {
+            e.preventDefault();
+
+            $('#input_Customer_Cd').val('');
+            $('#input_Customer_Cd').trigger('change');
+            $('#input_GateInOut_Id').val('');
+            $('#input_GateInOut_Id').trigger('change');
+            $('#input_MDA_Id').val('');
+            $('#input_MDA_Id').trigger('change');
+            $('#input_MDA_DTLS_Id').val('');
+            $('#input_MDA_DTLS_Id').trigger('change');
+            $('#span_MDA_No').html('');
+            $('#span_Customer').html('');
+            $('#span_Desp_Place').html('');
+            $('#span_Prod').html('');
+            $('#span_Bottle_Qty').html('');
+            $('#span_Carton_Qty').html('');
+            $('#span_Loadded_Shipper').html('');
+            $('#input_Prod_Sys_Id').val('');
+            $('#input_Prod_Sys_Id').trigger('change');
+
+            $('#span_BypassWMS').text('');
+            $('#input_BypassWMS').val('');
+            $('#input_BypassWMS').trigger('change');
+            $('#divBypassWMS').css('display', 'none');
+
+
+            $('#btnAddQty').removeAttr('onclick');
+            $('#btnAddQty').prop('disabled', true);
+
+            $('.btnViewQR').removeAttr('onclick');
+
+            $('#div_Scan_QR_Code').css('display', 'none');
+
+            $('#btnManualEntry').prop('disabled', true);
+            $('#divManualEntry').css('display', 'none');
+            $('#input_Scan_QR_Code').prop('disabled', true);
+            $('#input_temp_Scan_QR_Code').prop('disabled', true);
+            $('#input_Scan_QR_Code').val('');
+            $('#input_temp_Scan_QR_Code').val('');
+
+
+            $('#table_MDA_Dtls tbody tr.bg-info').removeClass('bg-info');
+            $('#btnRequisitionWMS').prop('disabled', true);
+            $('#btnBypassWMS').prop('disabled', true);
+            $('#btnStartLoading').prop('disabled', true);
+            $('#btnPauseConveyor').prop('disabled', true);
+            $('#btnStopConveyor').prop('disabled', true);
+            $('#btnEmergencyStopConveyor').prop('disabled', true);
+            $('#btnFinish').prop('disabled', true);
+
+            fnClear_QR_Code();
+
+            if (e.currentTarget.classList.contains('row-disabled') == false) {
+
+                $(e.currentTarget).find('tr').each(function (i, ez) { if (i != (e.currentTarget.rowIndex - 1)) $(ez).removeClass('bg-info'); });
+
+                try { if ($(e.currentTarget).find('td')[0].classList.contains('dataTables_empty') == true) { return false; } } catch { }
+
+                e.currentTarget.classList.toggle('bg-info');
+
+                if (e.currentTarget.classList.contains('bg-info') == true) {
+                    //$('#input_Scan_QR_Code').prop('disabled', false);
+                    //$('#input_temp_Scan_QR_Code').prop('disabled', false);
+
+                    var selectedData = tableDtls.row(this).data();
+
+                    var MDA_Id = $(this).attr('data-mdaid');
+                    var Gate_In_Out_Id = $(this).attr('data-gateinoutid');
+
+                    if (typeof Gate_In_Out_Id != 'undefined' && Gate_In_Out_Id != null && !isNaN(parseFloat(Gate_In_Out_Id)) && parseFloat(Gate_In_Out_Id) > 0
+                        && typeof MDA_Id != 'undefined' && MDA_Id != null && !isNaN(parseFloat(MDA_Id)) && parseFloat(MDA_Id) > 0) {
+
+                        ShowLoader(true);
+
+                        $.ajax({
+                            type: "GET",
+                            url: '@Url_RootToController/Load_MDA_Dtls?MDA_Id=' + MDA_Id + '&Gate_In_Out_Id=' + Gate_In_Out_Id,
+                            data: null,
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: function (response) {
+
+                                setTimeout(function () {
+
+
+                                    if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+                                        $('#btnRequisitionWMS').prop('disabled', false);
+                                        $('#btnBypassWMS').prop('disabled', false);
+
+
+
+                                        $('#input_GateInOut_Id').val(response[0]['gateInOut_Id']);
+                                        $('#input_MDA_Id').val(response[0]['mda_Id']);
+                                        $('#input_MDA_DTLS_Id').val(0);
+                                        $('#input_Customer_Cd').val(response[0]['wh_Cd']);
+                                        $('#span_MDA_No').html(response[0]['mda_No']);
+                                        $('#span_Customer').html(response[0]['wh_Cd'] + ' - ' + response[0]['party_Name']);
+                                        $('#span_Desp_Place').html(response[0]['desp_Place']);
+
+                                        $('#span_Prod').html(response[0]['prd_cd'] + ' - ' + response[0]['prd_desc']);
+                                        $('#span_Bottle_Qty').html(response[0]['bag_Nos']);
+                                        $('#span_Carton_Qty').html(response[0]['carton_Qty']);
+                                        $('#span_Loadded_Shipper').html(response[0]['loaded_Shipper']);
+                                        $('#input_Prod_Sys_Id').val(response[0]['prod_Sys_Id']);
+                                        $('#input_Prod_Sys_Id').trigger('change');
+
+                                        $('#input_Customer_Cd').trigger('change');
+                                        $('#input_GateInOut_Id').trigger('change');
+                                        $('#input_MDA_Id').trigger('change');
+                                        $('#input_MDA_DTLS_Id').trigger('change');
+
+                                        //gate_inout_id, mda_id, mda_dtls_id, mda_no, prod_id, prd_cd, prd_desc, customer, bag_Nos, carton_Qty, loaded_Qty
+                                        $('#btnAddQty').attr('onclick', 'fnClick_AddQty(\'' + response[0]['gateInOut_Id'] + '\', \'' + response[0]['mda_Id'] + '\', \'' + 0 + '\''
+                                            + ', \'' + response[0]['mda_No'] + '\', \'' + response[0]['prod_Sys_Id'] + '\', \'' + response[0]['prd_cd'] + '\', \'' + response[0]['prd_desc'] + '\', \'' + (response[0]['wh_Cd'] + ' - ' + response[0]['party_Name']) + '\''
+                                            + ', \'' + response[0]['bag_Nos'] + '\', \'' + response[0]['carton_Qty'] + '\', \'' + response[0]['loaded_Shipper'] + '\')');
+
+                                        $('#btnAddQty').prop('disabled', false);
+
+                                        $('#btnViewAll').attr('onclick', 'fnShow_Modal(\'@Url.Action("Partial_ViewQR", "Load_MDA", new { area = "MDA_Automation" })?type=&mda_id=' + response[0]['mda_Id'] + '&mda_dtls_id=' + 0 + '&prod_id=' + response[0]['prod_Sys_Id'] + '&gatein_id=' + response[0]['gateInOut_Id'] + '\', \'View All QR Codes\', true, \'html\', false)');
+                                        $('#btnViewReason').attr('onclick', 'fnShow_Modal(\'@Url.Action("Partial_ViewQR", "Load_MDA", new { area = "MDA_Automation" })?type=R&mda_id=' + response[0]['mda_Id'] + '&mda_dtls_id=' + 0 + '&prod_id=' + response[0]['prod_Sys_Id'] + '&gatein_id=' + response[0]['gateInOut_Id'] + '\', \'View Rejected QR Code Reason\', true, \'html\', false)');
+
+                                        $('#btnManualEntry').prop('disabled', true);
+                                        $('#divManualEntry').css('display', 'none');
+                                        $('#input_Scan_QR_Code').prop('disabled', true);
+                                        $('#input_temp_Scan_QR_Code').prop('disabled', true);
+                                        $('#input_Scan_QR_Code').val('');
+                                        $('#input_temp_Scan_QR_Code').val('');
+
+                                        $('#div_Scan_QR_Code').css('display', 'flex');
+
+                                        $('#divManualEntry').css('display', 'none');
+                                        $('#input_Scan_QR_Code').prop('disabled', true);
+                                        $('#input_temp_Scan_QR_Code').prop('disabled', true);
+                                        $('#input_Scan_QR_Code').val('');
+                                        $('#input_temp_Scan_QR_Code').val('');
+
+                                        $('html, body').animate({ scrollTop: $("div#divMDADtls").offset().top - 50 }, 1000);
+
+                                        fnGet_Scan_Code_History();
+
+                                    }
+
+                                    ShowLoader(false);
+
+                                }, 1000);
+
+                            },
+                            failure: function (response) {
+                                CommonAlert_Error(null)
+                            },
+                            error: function (response) {
+                                CommonAlert_Error(null)
+                            }
+                        });
+                    }
+                }
+            }
+
+            return false;
+        });
+
+
+        function fnClick_MDAUpdate(isConfirm) {
+
+            var selectedData = tableDtls.rows('.bg-info').data();
+
+            if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
+                && typeof $('#input_GateInOut_Id').val() != 'undefined' && $('#input_GateInOut_Id').val() != null && parseInt($('#input_GateInOut_Id').val()) > 0
+                && typeof $('#input_MDA_Id').val() != 'undefined' && $('#input_MDA_Id').val() != null && parseInt($('#input_MDA_Id').val()) > 0) {
+
+                ShowLoader(true);
+
+                $.ajax({
+                    type: "GET",
+                    url: '@Url_RootToController/Check_MDA_Update?MDA_Id=' + $('#input_MDA_Id').val() + '&GateInOut_Id=' + $('#input_GateInOut_Id').val() + '&isConfirm_Update=' + isConfirm,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+
+                        try {
+                            ShowLoader(false);
+
+                            if (response.statusCode === 1) {
+                                if (typeof response.isConfirm != 'undefined' && response.isConfirm != '' && response.isConfirm != null && response.isConfirm == true)
+                                    if (typeof response.isSuccess != 'undefined' && response.isSuccess != '' && response.isSuccess != null && response.isSuccess == true)
+                                        if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+                                            CommonConfirmed_Success(response.message, fnClick_MDAUpdate, [true]);
+                                        else
+                                            fnLoad_MDA_Dtls();
+                                    else
+                                        CommonAlert_Success(response.message);
+
+                            }
+                            else { ShowLoader(false); CommonAlert_Error(response.message, null); }
+                        } catch { window.location.reload(); }
+
+                    },
+                    failure: function (response) { ShowLoader(false); CommonAlert_Error(null) },
+                    error: function (response) { ShowLoader(false); CommonAlert_Error(null) }
+                });
+
+            }
+            else CommonAlert_Error("Please select MDA Details data");
+
+            return false;
+        }
+
+
+        $(document).on('click', '#btnSendToPrinter', function (e) {
+            e.preventDefault();
+
+
+            var selectedData = tableDtls.rows('.bg-info').data();
+
+            if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
+                && typeof $('#input_GateInOut_Id').val() != 'undefined' && $('#input_GateInOut_Id').val() != null && parseInt($('#input_GateInOut_Id').val()) > 0
+                && typeof $('#input_MDA_Id').val() != 'undefined' && $('#input_MDA_Id').val() != null && parseInt($('#input_MDA_Id').val()) > 0) {
+
+                let formData = new FormData();
+
+                //formData.append("Id", selectedData[0][2]);
+                //formData.append("Mda_Id", selectedData[0][1]);
+                //formData.append("GateInOut_Id", selectedData[0][8]);
+                formData.append("Id", 0);
+                formData.append("Mda_Id", $('#input_MDA_Id').val());
+                formData.append("GateInOut_Id", $('#input_GateInOut_Id').val());
+                formData.append("Vehicle_No", $('#Truck_No').val());
+                formData.append("Prod_Sys_Id", $('#input_Prod_Sys_Id').val());
+                formData.append("Wh_Cd", $('#input_Customer_Cd').val());
+
+                ajaxPost('@Url.Action("SendToPrinter", "Load_MDA", new { area = "MDA_Automation" })', formData);
+            }
+            else CommonAlert_Error("Please select MDA Details data");
+
+            return false;
+        });
+
+        $(document).on('click', '#btnRequisitionWMS', function (e) {
+            e.preventDefault();
+
+
+            var selectedData = tableDtls.rows('.bg-info').data();
+
+            if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
+                && typeof $('#input_GateInOut_Id').val() != 'undefined' && $('#input_GateInOut_Id').val() != null && parseInt($('#input_GateInOut_Id').val()) > 0
+                && typeof $('#input_MDA_Id').val() != 'undefined' && $('#input_MDA_Id').val() != null && parseInt($('#input_MDA_Id').val()) > 0) {
+
+                let formData = new FormData();
+
+                //formData.append("Id", selectedData[0][2]);
+                //formData.append("Mda_Id", selectedData[0][1]);
+                //formData.append("GateInOut_Id", selectedData[0][8]);
+                formData.append("Id", 0);
+                formData.append("Mda_Id", $('#input_MDA_Id').val());
+                formData.append("GateInOut_Id", $('#input_GateInOut_Id').val());
+                formData.append("Vehicle_No", $('#Truck_No').val());
+                formData.append("Prod_Sys_Id", $('#input_Prod_Sys_Id').val());
+                formData.append("Wh_Cd", $('#input_Customer_Cd').val());
+
+                ajaxPost('@Url.Action("RequisitionWMS", "Load_MDA", new { area = "MDA_Automation" })', formData);
+            }
+            else CommonAlert_Error("Please select MDA Details data");
+
+            return false;
+        });
+
+        $(document).on('click', '#btnBypassWMS', function (e) {
+            e.preventDefault();
+
+            var selectedData = tableDtls.rows('.bg-info').data();
+
+            if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
+                && typeof $('#input_GateInOut_Id').val() != 'undefined' && $('#input_GateInOut_Id').val() != null && parseInt($('#input_GateInOut_Id').val()) > 0
+                && typeof $('#input_MDA_Id').val() != 'undefined' && $('#input_MDA_Id').val() != null && parseInt($('#input_MDA_Id').val()) > 0) {
+
+                var v1 = $('#span_Customer').text().replace($('#input_Customer_Cd').val() + ' - ', '');
+                var v2 = $('#span_Desp_Place').text();
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: "Do you want to Bypass WMS?",
+                    showDenyButton: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Confirm !',
+                    //cancelButtonText: 'No',
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    input: "textarea",
+                    inputLabel: "Reason should be minimum 30 characters.",
+                    inputPlaceholder: "Enter your Reason here",
+                    //inputValidator: (value) => {
+                    //	if (!value) {
+                    //		return "You need to write something!";
+                    //	}
+                    //	else if (value && value.length < 30) {
+                    //		return "You need to write reason in minimum 30 characters.";
+                    //	}
+
+                    //}
+                }).then((result) => {
+
+                    if (result != null && result.isConfirmed == true) {
+
+                        let formData = new FormData();
+
+                        formData.append("Id", 0);
+                        formData.append("Mda_Id", $('#input_MDA_Id').val());
+                        formData.append("GateInOut_Id", $('#input_GateInOut_Id').val());
+                        formData.append("Vehicle_No", $('#Truck_No').val());
+                        formData.append("Prod_Sys_Id", $('#input_Prod_Sys_Id').val());
+                        formData.append("Reason", result.value);
+
+                        ajaxPost('@Url.Action("BypassWMS", "Load_MDA", new { area = "MDA_Automation" })', formData);
+
+                    }
+                });
+
+            }
+            else CommonAlert_Error("Please select MDA Details data");
+
+
+            return false;
+        });
+
+        $(document).on('click', '#btnStartLoading', function (e) {
+            e.preventDefault();
+
+            var selectedData = tableDtls.rows('.bg-info').data();
+
+            if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
+                && typeof $('#input_GateInOut_Id').val() != 'undefined' && $('#input_GateInOut_Id').val() != null && parseInt($('#input_GateInOut_Id').val()) > 0
+                && typeof $('#input_MDA_Id').val() != 'undefined' && $('#input_MDA_Id').val() != null && parseInt($('#input_MDA_Id').val()) > 0) {
+
+                let formData = new FormData();
+
+                formData.append("Id", $('#input_MDA_DTLS_Id').val());
+                formData.append("Mda_Id", $('#input_MDA_Id').val());
+                formData.append("GateInOut_Id", $('#input_GateInOut_Id').val());
+                formData.append("Vehicle_No", $('#Truck_No').val());
+                formData.append("Prod_Sys_Id", $('#input_Prod_Sys_Id').val());
+                formData.append("Wh_Cd", $('#input_Customer_Cd').val());
+                formData.append("Loadded_Shipper", $('#ul_Scan_QR_Code li').length);
+
+                ajaxPost('@Url.Action("StartLoading", "Load_MDA", new { area = "MDA_Automation" })', formData);
+            }
+            else CommonAlert_Error("Please select MDA Details data");
+
+            return false;
+        });
+
+        $(document).on('click', '#btnPauseConveyor,#btnStopConveyor', function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'warning',
+                title: "Do you want to" + ($(this).attr('id').indexOf('Pause') > 0 ? " Pause " : " Stop ") + "Loading?",
+                showDenyButton: false,
+                showCancelButton: true,
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                html: ($(this).attr('id').indexOf('Pause') > 0 ? '' : '<label class="col-form-label text-left" style="align-content:start">Reason <span style="color:red">*</span> </label>' +
+                    '<Select class="swal2-input select2" name="Reason" ><option value=""> -- Select -- </option><option value="CNL"> Somthing wrong </option></select> <br />' +
+                    '<label class="col-form-label" style="align-content:start">Comments </label>' +
+                    '<input type="text" class="swal2-input" name="Comments" value="" autocomplete="off">'),
+                preConfirm: () => {
+
+
+                    if ($(this).attr('id').indexOf('Stop') > 0) {
+
+                        var reason = $('select[name="Reason"]').val();
+
+                        if (typeof reason == 'undefined' || reason == null || reason == "") {
+                            Swal.showValidationMessage('Please select Reason');
+                            return false;
+                        }
+
+                    }
+                },
+            }).then((result) => {
+
+                if (result != null && result.isConfirmed == true) {
+
+                    if ($(this).attr('id').indexOf('Stop') > 0) {
+
+                        var reason = $('select[name="Reason"]').val();
+                        var comments = $('input[name="Comments"]').val();
+
+                        var selectedData = tableDtls.rows('.bg-info').data();
+
+                        if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
+                            && typeof $('#input_GateInOut_Id').val() != 'undefined' && $('#input_GateInOut_Id').val() != null && parseInt($('#input_GateInOut_Id').val()) > 0
+                            && typeof $('#input_MDA_Id').val() != 'undefined' && $('#input_MDA_Id').val() != null && parseInt($('#input_MDA_Id').val()) > 0) {
+
+                            let formData = new FormData();
+
+                            //formData.append("Id", selectedData[0][2]);
+                            //formData.append("Mda_Id", selectedData[0][1]);
+                            formData.append("Id", 0);
+                            formData.append("Mda_Id", $('#input_MDA_Id').val());
+                            formData.append("GateInOut_Id", $('#input_GateInOut_Id').val());
+                            formData.append("Vehicle_No", $('#Truck_No').val());
+                            formData.append("Prod_Sys_Id", $('#input_Prod_Sys_Id').val());
+                            formData.append("Reason", reason);
+                            formData.append("Comments", comments);
+
+                            ajaxPost('@Url.Action("StopLoading", "Load_MDA", new { area = "MDA_Automation" })', formData);
+                        }
+                    }
+                    else {
+
+
+                        $('#btnRequisitionWMS').prop('disabled', true);
+                        $('#btnBypassWMS').prop('disabled', true);
+                        $('#btnStartLoading').prop('disabled', false);
+                        $('#btnPauseConveyor').prop('disabled', true);
+                        $('#btnStopConveyor').prop('disabled', true);
+                        $('#btnEmergencyStopConveyor').prop('disabled', true);
+                        $('#btnFinish').prop('disabled', false);
+
+                        stopProgress(false, true);
+                    }
+
+                }
+            });
+
+            return false;
+        });
+
+        $(document).on('click', '#btnFinish', function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'warning',
+                title: "Is truck loading finished?",
+                showDenyButton: false,
+                showCancelButton: true,
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33'
+            }).then((result) => {
+
+                if (result != null && result.isConfirmed == true) {
+
+                    var selectedData = tableDtls.rows('.bg-info').data();
+
+                    if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
+                        && typeof $('#input_GateInOut_Id').val() != 'undefined' && $('#input_GateInOut_Id').val() != null && parseInt($('#input_GateInOut_Id').val()) > 0
+                        && typeof $('#input_MDA_Id').val() != 'undefined' && $('#input_MDA_Id').val() != null && parseInt($('#input_MDA_Id').val()) > 0) {
+
+                        let formData = new FormData();
+
+                        //formData.append("Id", selectedData[0][2]);
+                        //formData.append("Mda_Id", selectedData[0][1]);
+                        formData.append("Id", 0);
+                        formData.append("Mda_Id", $('#input_MDA_Id').val());
+                        formData.append("GateInOut_Id", $('#input_GateInOut_Id').val());
+                        formData.append("Vehicle_No", $('#Truck_No').val());
+                        formData.append("Prod_Sys_Id", $('#input_Prod_Sys_Id').val());
+
+                        ajaxPost('@Url.Action("FinishLoading", "Load_MDA", new { area = "MDA_Automation" })', formData);
+                    }
+
+                }
+            });
+
+
+            return false;
+        });
+
+        function fnSubmitForm_Success($response, $type) {
+
+            if ($response.statusCode === 1 && $type == 'AJAX' && ($response.data1 === 'RequisitionWMS' || $response.data1 === 'BypassWMS')) {
+                $('#btnRequisitionWMS').prop('disabled', true);
+                $('#btnBypassWMS').prop('disabled', true);
+                $('#btnStartLoading').prop('disabled', false);
+                $('#btnPauseConveyor').prop('disabled', true);
+                $('#btnStopConveyor').prop('disabled', true);
+                $('#btnEmergencyStopConveyor').prop('disabled', true);
+                $('#btnFinish').prop('disabled', true);
+
+                $('#span_BypassWMS').text('');
+                $('#input_BypassWMS').val('');
+                $('#input_BypassWMS').trigger('change');
+                $('#divBypassWMS').css('display', 'none');
+
+                if ($response.data1 === 'BypassWMS') {
+                    $('#span_BypassWMS').text('Yes');
+                    $('#input_BypassWMS').val('true');
+                    $('#input_BypassWMS').trigger('change');
+                    $('#divBypassWMS').css('display', 'block');
+                }
+
+                //CommonAlert_Success($response.message);
+            }
+            else if ($response.statusCode === 1 && $type == 'AJAX' && $response.data1 === 'StartLoading') {
+
+                $('#btnRequisitionWMS').prop('disabled', true);
+                $('#btnBypassWMS').prop('disabled', true);
+                $('#btnStartLoading').prop('disabled', true);
+                $('#btnPauseConveyor').prop('disabled', false);
+                $('#btnStopConveyor').prop('disabled', false);
+                $('#btnEmergencyStopConveyor').prop('disabled', false);
+                $('#btnFinish').prop('disabled', false);
+
+                // $('#div_Scan_QR_Code').css('display', 'flex');
+
+                // $('#divManualEntry').css('display', 'none');
+                // $('#input_Scan_QR_Code').prop('disabled', true);
+                // $('#input_temp_Scan_QR_Code').prop('disabled', true);
+                // $('#input_Scan_QR_Code').val('');
+                // $('#input_temp_Scan_QR_Code').val('');
+
+
+                updateProgress();
+
+            }
+            //else if ($response.statusCode === 1 && $type == 'AJAX' && $response.data1 === 'StopLoading') {
+            else if ($type == 'AJAX' && $response.data1 === 'StopLoading') {
+
+                $('#btnRequisitionWMS').prop('disabled', true);
+                $('#btnBypassWMS').prop('disabled', true);
+                $('#btnStartLoading').prop('disabled', false);
+                $('#btnPauseConveyor').prop('disabled', true);
+                $('#btnStopConveyor').prop('disabled', true);
+                $('#btnEmergencyStopConveyor').prop('disabled', true);
+                $('#btnFinish').prop('disabled', false);
+
+                $('#divManualEntry').css('display', 'none');
+                $('#input_Scan_QR_Code').prop('disabled', true);
+                $('#input_temp_Scan_QR_Code').prop('disabled', true);
+                $('#input_Scan_QR_Code').val('');
+                $('#input_temp_Scan_QR_Code').val('');
+
+            }
+            else if ($response.statusCode === 1 && $type == 'AJAX' && $response.data1 === 'FinishLoading') {
+
+                $('#btnRequisitionWMS').prop('disabled', false);
+                $('#btnBypassWMS').prop('disabled', false);
+                $('#btnStartLoading').prop('disabled', false);
+                $('#btnPauseConveyor').prop('disabled', true);
+                $('#btnStopConveyor').prop('disabled', true);
+                $('#btnEmergencyStopConveyor').prop('disabled', true);
+                $('#btnFinish').prop('disabled', true);
+
+                $('#divManualEntry').css('display', 'none');
+                $('#input_Scan_QR_Code').prop('disabled', true);
+                $('#input_temp_Scan_QR_Code').prop('disabled', true);
+                $('#input_Scan_QR_Code').val('');
+                $('#input_temp_Scan_QR_Code').val('');
+
+                fnLoad_MDA_Dtls();
+
+            }
+            else if ($response.statusCode === 1 && $type == 'AJAX' && $response.data1 === 'AddQty') fnClose_Modal();
+            else if ($type == 'AJAX' && $response.data1 === 'SendToPrinter') CommonAlert_Success($response.message);
+            else if ($response.statusCode === 0) CommonAlert_Success($response.message);
+            else CommonAlert_Success(null);
+        }
+
+        function updateProgress() {
+
+            $.post('@Url.Action("UpdateProgress", "Load_MDA", new { area = "MDA_Automation" })?seqNo=' + $('#span_Total_Scan_QR_Code').attr('data-last'), function ($response) {
+
+                if (typeof $response.data1 != 'undefined' && $response.data1 != null && $response.data1.length >= 1) {
+                    $.each($response.data1, function (i, ele) {
+
+                        //if ((ele['success'] === 'OK' || ele['success'] === 'NOK') && ele['text'].indexOf('(') > -1)
+                        if ((ele['success'] === 'OK' || ele['success'] === 'NOK'))
+                            if (ele['success'] === 'OK') {
+                                var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['no'] + '" data-type="S" class="float-left text-success text-bold">'
+                                    + ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'S\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                $('#ul_Scan_QR_Code').prepend(html);
+                                $('#ul_Accepted_QR_Code').prepend(html);
+
+                                $('#input_Scan_QR_Code').val('');
+                                $('#input_temp_Scan_QR_Code').val('');
+
+                                //fnCalculate_QR_Code();
+                            }
+                            else {
+                                var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['no'] + '" data-type="R" class="float-left text-danger text-bold">'
+                                    + ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'R\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                $('#ul_Scan_QR_Code').prepend(html);
+                                $('#ul_Rejected_QR_Code').prepend(html);
+
+                                $('#input_Scan_QR_Code').val('');
+                                $('#input_temp_Scan_QR_Code').val('');
+
+                                //fnCalculate_QR_Code();
+                            }
+                        else {
+
+                            $response.data5 == false;
+
+                            $('#btnRequisitionWMS').prop('disabled', true);
+                            $('#btnBypassWMS').prop('disabled', true);
+                            $('#btnStartLoading').prop('disabled', false);
+                            $('#btnPauseConveyor').prop('disabled', true);
+                            $('#btnStopConveyor').prop('disabled', true);
+                            $('#btnEmergencyStopConveyor').prop('disabled', true);
+                            $('#btnFinish').prop('disabled', false);
+
+                            $('#divManualEntry').css('display', 'none');
+                            $('#btnManualEntry').prop('disabled', true);
+
+                            $('#input_temp_Scan_QR_Code').css('display', 'none');
+                            $('#input_Scan_QR_Code').prop('disabled', true);
+                            $('#input_temp_Scan_QR_Code').prop('disabled', true);
+                            $('#input_Scan_QR_Code').val('');
+                            $('#input_temp_Scan_QR_Code').val('');
+
+
+                            if (ele['success'] === 'COMPLETED') {
+
+                                debugger;
+
+                                setTimeout(function () {
+
+                                    stopProgress(true, false);
+
+                                }, parseInt('@(Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "3"))') * 2 * 1000);
+
+                                CommonConfirmed_Success("MDA Loading Completed.", fnLoad_MDA_Dtls, []);
+
+                            }
+                            else {
+                                $('#divManualEntry').css('display', 'flex');
+                                $('#btnManualEntry').prop('disabled', false);
+                                $('#input_Scan_QR_Code').val('');
+                                $('#input_temp_Scan_QR_Code').val('');
+                            }
+                        }
+
+                        if (typeof ele['no'] != 'undefined' && parseInt(ele['no']) > 0) {
+                            $('#span_Total_Scan_QR_Code').attr('data-last', ele['no']);
+                        }
+
+                        $('#span_Total_Scan_QR_Code').attr('data-cntReq', ele['requiredShipper']);
+                        $('#span_Total_Scan_QR_Code').attr('data-cnt', ele['loaddedShipper']);
+                        $('#span_Total_Accepted_QR_Code').attr('data-cnt', ele['loaddedShipper']);
+                        $('#span_Total_Rejected_QR_Code').attr('data-cnt', ele['rejectShipper']);
+
+                        fnCalculate_QR_Code();
+                    })
+                }
+
+
+
+                // If task is not completed, continue polling
+                if ($response.data5 === true) {
+
+                    $('#btnRequisitionWMS').prop('disabled', true);
+                    $('#btnBypassWMS').prop('disabled', true);
+                    $('#btnStartLoading').prop('disabled', true);
+                    $('#btnPauseConveyor').prop('disabled', false);
+                    $('#btnStopConveyor').prop('disabled', false);
+                    $('#btnEmergencyStopConveyor').prop('disabled', true);
+                    $('#btnFinish').prop('disabled', false);
+
+                    setTimeout(updateProgress, 1000); // Poll every 1 second
+                }
+                else {
+
+                    $('#btnRequisitionWMS').prop('disabled', true);
+                    $('#btnBypassWMS').prop('disabled', true);
+                    $('#btnStartLoading').prop('disabled', false);
+                    $('#btnPauseConveyor').prop('disabled', true);
+                    $('#btnStopConveyor').prop('disabled', true);
+                    $('#btnEmergencyStopConveyor').prop('disabled', true);
+                    $('#btnFinish').prop('disabled', false);
+
+                }
+
+
+
+                // if ($response.data5 !== true) {
+                //     if (updateProgress_Interval) {
+                //         clearInterval(updateProgress_Interval);
+                //         updateProgress_Interval = null;
+                //     }
+                // }
+            });
+        }
+
+        function startProgress() {
+
+            if (isUpdateProgress_Interval && updateProgress_Interval) {
+                updateProgress_Interval = setInterval(function () { updateProgress(); }, 1000);
+            }
+        }
+
+        function stopProgress($isStop, $isAlert) {
+
+            $.post('@Url.Action("StopProgress", "Load_MDA", new { area = "MDA_Automation" })?IsStop=' + $isStop, function ($response) {
+
+                debugger;
+                if ($response.statusCode === 1) {
+
+                    $('#btnRequisitionWMS').prop('disabled', true);
+                    $('#btnBypassWMS').prop('disabled', true);
+                    $('#btnStartLoading').prop('disabled', false);
+                    $('#btnPauseConveyor').prop('disabled', true);
+                    $('#btnStopConveyor').prop('disabled', true);
+                    $('#btnEmergencyStopConveyor').prop('disabled', true);
+                    $('#btnFinish').prop('disabled', false);
+
+                    if ($isAlert == true || $response.isConfirm == true)
+                        CommonAlert_Success($response.message);
+
+                } else {
+
+                    $('#btnRequisitionWMS').prop('disabled', true);
+                    $('#btnBypassWMS').prop('disabled', true);
+                    $('#btnStartLoading').prop('disabled', true);
+                    $('#btnPauseConveyor').prop('disabled', false);
+                    $('#btnStopConveyor').prop('disabled', false);
+                    $('#btnEmergencyStopConveyor').prop('disabled', true);
+                    $('#btnFinish').prop('disabled', false);
+                }
+            });
+        }
+
+
+        function GetMDA($this, $type) {
+            ShowLoader(true);
+
+            if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
+
+            $.ajax({
+                type: "GET",
+                url: '@Url_RootToController/GetMDA?type=' + $type + '&searchTerm=' + $('#inputSearch').val(),
+                data: null,
+                contentType: "application/json; charset=utf-8",
+                dataType: "html",
+                success: function (response) {
+
+                    fnClear_MDA();
+                    ShowLoader(true);
+
+                    if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+                        ShowLoader(false);
+                        CommonAlert_Error("No any record(s) found");
+                        return false;
+                    }
+
+                    if (response.indexOf('{') == 0 || response.indexOf('[') == 0) {
+
+                        setTimeout(function () {
+
+                            try {
+                                ShowLoader(false);
+
+                                if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+                                    var selectedData = JSON.parse(response);
+
+                                    if (response.indexOf('[') == 0)
+                                        selectedData = JSON.parse(response)[0];
+
+                                    $('#Id').val(selectedData['id']);
+                                    $('#GateInOut_Id').val(selectedData['gateInOut_Id']);
+                                    $('#Truck_No').val(selectedData['vehicle_no']);
+                                    //$('#MDA_No').val(selectedData['mda_no']);
+                                    $('#Transporter_Name').val(selectedData['tptr_cd'] + " - " + selectedData['tptr_name']);
+                                    $('#Driver_Name').val(selectedData['driver']);
+                                    $('#Driver_Contact').val(selectedData['mobile_no']);
+                                    $('#Loaded_Shipper').val('');
+
+                                    $('#Id').trigger('change');
+                                    $('#GateInOut_Id').trigger('change');
+                                    $('#Truck_No').trigger('change');
+                                    //$('#MDA_No').trigger('change');
+                                    $('#Transporter_Name').trigger('change');
+                                    $('#Driver_Name').trigger('change');
+                                    $('#Driver_Contact').trigger('change');
+                                    $('#Loaded_Shipper').trigger('change');
+
+                                    fnLoad_MDA_Dtls();
+                                } else
+                                    CommonAlert_Error("No any record(s) found");
+
+                            } catch { ShowLoader(false); }
+
+
+                        }, 1000);
+
+                    }
+                    else {
+
+                        $('#modal-xl .modal-body').html('');
+                        $('#modal-xl .modal-body').append(response);
+
+                        if ($type == 'S')
+                            $('#modal-xl .modal-title').html('Search MDA');
+                        else
+                            $('#modal-xl .modal-title').html('View MDA');
+
+                        setTimeout(function () {
+
+                            try {
+
+                                if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
+                                    $('#modal-xl .modal-body #table_Common').DataTable().destroy();
+                                }
+
+                                table = $('#modal-xl .modal-body #table_Common').DataTable({
+                                    paging: true,
+                                    lengthChange: true,
+                                    searching: true,
+                                    ordering: true,
+                                    info: true,
+                                    autoWidth: true,
+                                    responsive: true,
+                                    pageLength: 10,
+                                    lengthMenu: [
+                                        [10, 25, 50, -1],
+                                        [10, 25, 50, 'All']
+                                    ],
+                                    fixedColumns: true,
+                                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                                        "<'row'<'col-sm-12'tr>>" +
+                                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+                                });
+
+                                $('#modal-xl .modal-body #table_Common').css('width', '100%');
+
+                                table.on('click', 'tbody tr', function (e) {
+
+                                    $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+                                        if (i != (e.currentTarget.rowIndex - 1))
+                                            $(ez).removeClass('bg-info');
+                                    });
+
+                                    if (e.currentTarget.classList.contains('bg-info')) {
+                                        $('#Id').val('');
+                                        $('#GateInOut_Id').val('');
+                                        $('#Truck_No').val('');
+                                        //$('#MDA_No').val('');
+                                        $('#Transporter_Name').val('');
+                                        $('#Driver_Name').val('');
+                                        $('#Driver_Contact').val('');
+                                        $('#Loaded_Shipper').val('');
+                                        $('#GateInOut_Id').val('');
+                                    }
+
+                                    e.currentTarget.classList.toggle('bg-info');
+
+                                    var selectedData = table.rows('.bg-info').data();
+
+                                    if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1) {
+                                        $('#Id').val(selectedData[0][9]);
+                                        $('#GateInOut_Id').val(selectedData[0][8]);
+                                        $('#Truck_No').val(selectedData[0][0]);
+                                        $('#Transporter_Name').val(selectedData[0][3]);
+                                        $('#Driver_Name').val(selectedData[0][5]);
+                                        $('#Driver_Contact').val(selectedData[0][6]);
+                                        $('#Loaded_Shipper').val('');
+                                    }
+
+                                    $('#Id').trigger('change');
+                                    $('#GateInOut_Id').trigger('change');
+                                    $('#Truck_No').trigger('change');
+                                    //$('#MDA_No').trigger('change');
+                                    $('#Transporter_Name').trigger('change');
+                                    $('#Driver_Name').trigger('change');
+                                    $('#Driver_Contact').trigger('change');
+                                    $('#Loaded_Shipper').trigger('change');
+
+                                });
+
+                            } catch { }
+
+                            if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
+                                $('#modal-xl').show();
+                            else
+                                CommonAlert_Error("No any record(s) found");
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    }
+                },
+                failure: function (response) { fnClear_MDA(); CommonAlert_Error(null); },
+                error: function (response) { fnClear_MDA(); CommonAlert_Error(null); }
+            });
+        }
+
+        function fnSelect_MDA() {
+
+            if ($('#table_Common tbody tr.bg-info').length <= 0) {
+                CommonAlert_Error("Please select one MDA Number");
+                return false;
+            }
+            else {
+                fnClose_Modal();
+
+                fnLoad_MDA_Dtls();
+            }
+        }
+
+        function fnClear_MDA() {
+
+            $('#table_Common tbody tr.bg-info').each(function (i, ez) {
+                $(ez).removeClass('bg-info');
+            });
+
+            $('#Id').val('');
+            $('#GateInOut_Id').val('');
+            $('#Truck_No').val('');
+            //$('#MDA_No').val('');
+            $('#Transporter_Name').val('');
+            $('#Driver_Name').val('');
+            $('#Driver_Contact').val('');
+            $('#Loaded_Shipper').val('');
+
+            $('#Id').trigger('change');
+            $('#GateInOut_Id').trigger('change');
+            $('#Truck_No').trigger('change');
+            //$('#MDA_No').trigger('change');
+            $('#Transporter_Name').trigger('change');
+            $('#Driver_Name').trigger('change');
+            $('#Driver_Contact').trigger('change');
+            $('#Loaded_Shipper').trigger('change');
+
+            fnLoad_MDA_Dtls();
+        }
+
+        function fnClearFormData_Success($selector) {
+
+            $('#Truck_No').val('');
+            $('#Truck_No').trigger('change');
+
+            fnLoad_MDA_Dtls();
+        }
+
+        function fnClick_ManualEntry() {
+
+            var selectedData = tableDtls.rows('.bg-info').data();
+
+            if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
+                && typeof $('#input_GateInOut_Id').val() != 'undefined' && $('#input_GateInOut_Id').val() != null && parseInt($('#input_GateInOut_Id').val()) > 0
+                && typeof $('#input_MDA_Id').val() != 'undefined' && $('#input_MDA_Id').val() != null && parseInt($('#input_MDA_Id').val()) > 0) {
+
+                $('#div_Scan_QR_Code').css('display', 'flex');
+                $('#divManualEntry').css('display', 'flex');
+
+                $('#input_Scan_QR_Code').prop('disabled', false);
+                $('#input_temp_Scan_QR_Code').prop('disabled', false);
+                $('#input_Scan_QR_Code').val('');
+                $('#input_temp_Scan_QR_Code').val('');
+
+
+                $('#btnRequisitionWMS').prop('disabled', true);
+                $('#btnBypassWMS').prop('disabled', true);
+                $('#btnStartLoading').prop('disabled', false);
+                $('#btnPauseConveyor').prop('disabled', true);
+                $('#btnStopConveyor').prop('disabled', true);
+                $('#btnEmergencyStopConveyor').prop('disabled', true);
+                $('#btnFinish').prop('disabled', false);
+
+                stopProgress(true, false);
+
+            }
+            else CommonAlert_Error("Please select MDA Details data");
+
+        }
+
+        function Scan_QR_Code() {
+            debugger;
+            $('#input_temp_Scan_QR_Code').val('');
+            $('#input_temp_Scan_QR_Code').trigger('change');
+            $('#input_temp_Scan_QR_Code').prop('disabled', false);
+            $('#input_temp_Scan_QR_Code').focus();
+
+        }
+
+        function fnGet_Scan_Code_History() {
+            ShowLoader(true);
+
+            //$('#divManualEntry').css('display', 'flex');
+            //$('#btnManualEntry').prop('disabled', false);
+
+            //$('#input_temp_Scan_QR_Code').css('display', 'none');
+            //$('#input_Scan_QR_Code').prop('disabled', true);
+            //$('#input_temp_Scan_QR_Code').prop('disabled', true);
+            //$('#input_Scan_QR_Code').val('');
+            //$('#input_temp_Scan_QR_Code').val('');
+
+            var truck_no = $('#Truck_No').val();
+            var mda_id = $('#input_MDA_Id').val();
+            var mda_dtls_id = $('#input_MDA_DTLS_Id').val();
+            var mda_no = $('#MDA_No').val();
+            var prod_id = $('#input_Prod_Sys_Id').val();
+            var gatein_id = $('#input_GateInOut_Id').val();
+
+            if (typeof mda_id != 'undefined' && mda_id != null) {
+
+                ShowLoader(true);
+
+                // $('#ul_Scan_QR_Code').html('');
+                // $('#ul_Accepted_QR_Code').html('');
+                // $('#ul_Rejected_QR_Code').html('');
+
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Get_Scan_Code_History", "Load_MDA", new { area = "MDA_Automation" })?mda_id=' + mda_id + '&mda_dtls_id=' + mda_dtls_id + '&prod_id=' + prod_id + '&gatein_id=' + gatein_id,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        setTimeout(function () {
+
+                            if (typeof response != 'undefined' && response != null && typeof response['dataList'] != 'undefined' && response['dataList'] != null && response['dataList'].length > 0) {
+
+                                $.each(response['dataList'].sort(function (x, y) { return x.srNo - y.srNo; }), function (i, obj) {
+
+                                    try {
+
+                                        if (obj.batch_no === "S") {
+
+                                            var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + obj.id + '" data-type="S" class="float-left text-success text-bold"> ' + obj.shipperQRCode + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'S\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                            $('#ul_Scan_QR_Code').prepend(html);
+                                            $('#ul_Accepted_QR_Code').prepend(html);
+
+                                            $('#input_Scan_QR_Code').val('');
+                                            $('#input_temp_Scan_QR_Code').val('');
+
+                                        }
+                                        else {
+
+                                            var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + obj.id + '" data-type="R" class="float-left text-danger text-bold"> ' + obj.shipperQRCode + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'R\' \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                            $('#ul_Scan_QR_Code').prepend(html);
+                                            $('#ul_Rejected_QR_Code').prepend(html);
+
+                                            $('#input_Scan_QR_Code').val('');
+                                            $('#input_temp_Scan_QR_Code').val('');
+
+                                        }
+                                    } catch { }
+
+                                });
+
+                            }
+
+
+                            $('#span_Total_Scan_QR_Code').attr('data-last', response['no']);
+                            $('#span_Total_Scan_QR_Code').attr('data-cntReq', response['requiredShipper']);
+                            $('#span_Total_Scan_QR_Code').attr('data-cnt', response['loaddedShipper']);
+                            $('#span_Total_Accepted_QR_Code').attr('data-cnt', response['loaddedShipper']);
+                            $('#span_Total_Rejected_QR_Code').attr('data-cnt', response['rejectShipper']);
+
+                            fnCalculate_QR_Code();
+
+                            var RequiredShipper = $('#span_Total_Scan_QR_Code').attr('data-cntReq');
+                            var LoaddedShipper = $('#span_Total_Accepted_QR_Code').attr('data-cnt');
+
+                            if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0) { }
+                            else { RequiredShipper = $('#table_MDA_Dtls tbody tr#tr_MDA_' + $('#input_MDA_Id').val() + ' td.Required_Shipper').text(); }
+
+                            if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0)
+                                RequiredShipper = parseInt(RequiredShipper.trim());
+                            else RequiredShipper = 0;
+
+                            if (typeof LoaddedShipper != 'undefined' && LoaddedShipper != null && LoaddedShipper.trim().length > 0 && parseInt(LoaddedShipper.trim()) > 0)
+                                LoaddedShipper = parseInt(LoaddedShipper.trim());
+                            else LoaddedShipper = 0;
+
+                            if (LoaddedShipper >= RequiredShipper) {
+                                CommonAlert_Success("MDA Loading Completed.");
+
+                                $('#divManualEntry').css('display', 'flex');
+                                $('#btnManualEntry').prop('disabled', true);
+
+                                $('#input_temp_Scan_QR_Code').css('display', 'none');
+                                $('#input_Scan_QR_Code').prop('disabled', true);
+                                $('#input_temp_Scan_QR_Code').prop('disabled', true);
+                                $('#input_Scan_QR_Code').val('');
+                                $('#input_temp_Scan_QR_Code').val('');
+
+                            }
+                            else {
+
+                                $('#divManualEntry').css('display', 'flex');
+                                $('#btnManualEntry').prop('disabled', false);
+
+                                $('#input_temp_Scan_QR_Code').css('display', 'none');
+                                $('#input_Scan_QR_Code').prop('disabled', false);
+                                $('#input_temp_Scan_QR_Code').prop('disabled', false);
+                                $('#input_Scan_QR_Code').val('');
+                                $('#input_temp_Scan_QR_Code').val('');
+
+                            }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+                    },
+                    failure: function (response) {
+                        ShowLoader(false);
+                        CommonAlert_Error(null)
+                    },
+                    error: function (response) {
+                        ShowLoader(false);
+                        CommonAlert_Error(null)
+                    }
+                });
+
+            }
+            else {
+                ShowLoader(false);
+            }
+        }
+
+        $(document).on('change', '#input_Scan_QR_Code', function (e) {
+            e.preventDefault();
+
+            ShowLoader(true);
+
+            debugger;
+            var selectedData = tableDtls.rows('.bg-info').data();
+
+            if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
+                && typeof $('#input_GateInOut_Id').val() != 'undefined' && $('#input_GateInOut_Id').val() != null && parseInt($('#input_GateInOut_Id').val()) > 0
+                && typeof $('#input_MDA_Id').val() != 'undefined' && $('#input_MDA_Id').val() != null && parseInt($('#input_MDA_Id').val()) > 0
+                && typeof $(this).val() != 'undefined' && $(this).val() != null && $(this).val().length > 0) {
+
+                var arrayStr = $(this).val().indexOf('/') > -1 ? $(this).val().split('/') : [];
+
+                var qr_code = "";
+
+                if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0)
+                    qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
+
+                var truck_no = $('#Truck_No').val();
+                var mda_id = $('#input_MDA_Id').val();
+                var mda_dtls_id = $('#input_MDA_DTLS_Id').val();
+                var mda_no = $('#MDA_No').val();
+                var prod_id = $('#input_Prod_Sys_Id').val();
+                var gatein_id = $('#input_GateInOut_Id').val();
+
+                debugger;
+
+                if (qr_code.length >= 30 && qr_code.length <= 50) {
+
+                    $.ajax({
+                        type: "GET",
+                        url: '@Url.Action("Check_QR_Code", "Load_MDA")?qr_code=' + qr_code + '&mda_id=' + mda_id + '&mda_dtls_id=' + mda_dtls_id + '&prod_id=' + prod_id + '&gatein_id=' + gatein_id, //+ '&loaded_shipper=' + loaded_shipper,
+                        data: null,
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function ($response) {
+
+                            setTimeout(function () {
+
+                                try {
+                                    debugger;
+
+                                    if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
+
+                                        //if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK') && $response.data1['text'].indexOf('(') > -1)
+                                        if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK'))
+                                            if ($response.data1['success'] === 'OK') {
+                                                var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['no'] + '" data-type="S" class="float-left text-success text-bold">'
+                                                    + $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                                $('#ul_Scan_QR_Code').prepend(html);
+                                                $('#ul_Accepted_QR_Code').prepend(html);
+
+                                                $('#input_Scan_QR_Code').val('');
+                                                $('#input_temp_Scan_QR_Code').val('');
+
+                                                //fnCalculate_QR_Code();
+                                            }
+                                            else {
+                                                var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['no'] + '" data-type="R" class="float-left text-danger text-bold">'
+                                                    + $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                                $('#ul_Scan_QR_Code').prepend(html);
+                                                $('#ul_Rejected_QR_Code').prepend(html);
+
+                                                $('#input_Scan_QR_Code').val('');
+                                                $('#input_temp_Scan_QR_Code').val('');
+
+                                                //fnCalculate_QR_Code();
+                                            }
+                                        else {
+
+                                            $response.data5 == false;
+
+                                            $('#btnRequisitionWMS').prop('disabled', true);
+                                            $('#btnBypassWMS').prop('disabled', true);
+                                            $('#btnStartLoading').prop('disabled', false);
+                                            $('#btnPauseConveyor').prop('disabled', true);
+                                            $('#btnStopConveyor').prop('disabled', true);
+                                            $('#btnEmergencyStopConveyor').prop('disabled', true);
+                                            $('#btnFinish').prop('disabled', false);
+
+                                            $('#divManualEntry').css('display', 'none');
+                                            $('#btnManualEntry').prop('disabled', true);
+
+                                            $('#input_temp_Scan_QR_Code').css('display', 'none');
+                                            $('#input_Scan_QR_Code').prop('disabled', true);
+                                            $('#input_temp_Scan_QR_Code').prop('disabled', true);
+                                            $('#input_Scan_QR_Code').val('');
+                                            $('#input_temp_Scan_QR_Code').val('');
+
+
+                                            if ($response.data1['success'] === 'COMPLETED') {
+
+                                                debugger;
+
+                                                stopProgress(true, false);
+
+                                                CommonConfirmed_Success("MDA Loading Completed.", fnLoad_MDA_Dtls, []);
+
+                                            }
+                                            else {
+                                                $('#divManualEntry').css('display', 'flex');
+                                                $('#btnManualEntry').prop('disabled', false);
+                                                $('#input_Scan_QR_Code').val('');
+                                                $('#input_temp_Scan_QR_Code').val('');
+                                            }
+                                        }
+
+                                        $('#span_Total_Scan_QR_Code').attr('data-last', $response.data1['no']);
+                                        $('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
+                                        $('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+                                        $('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+                                        $('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
+
+                                        fnGet_Scan_Code_History();
+
+                                        //fnCalculate_QR_Code();
+
+
+                                        setTimeout(function () {
+                                            $('#input_Scan_QR_Code').focus();
+                                        }, 1000);
+
+                                    }
+
+
+                                    //if ((ele['success'] === 'OK' || ele['success'] === 'NOK') && ele['text'].indexOf('(') > -1)
+                                    //	if (ele['success'] === 'OK') {
+
+                                    //		//if (response.statusCode === 1) {
+
+                                    //		var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + response.data1 + '" data-type="S" class="float-left text-success text-bold"> ' + qr_code + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+                                    //		//var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-type="S" class="float-left text-success text-bold"> ' + qr_code + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                    //		$('#ul_Scan_QR_Code').prepend(html);
+                                    //		$('#ul_Accepted_QR_Code').prepend(html);
+
+                                    //		$('#input_Scan_QR_Code').val('');
+                                    //		$('#input_temp_Scan_QR_Code').val('');
+
+                                    //		fnCalculate_QR_Code();
+                                    //	}
+                                    //	else {
+                                    //		CommonAlert_Error(response.message);
+
+                                    //		var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + response.data1 + '" data-type="R" class="float-left text-danger text-bold"> ' + qr_code + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+                                    //		//var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-type="R" class="float-left text-danger text-bold"> ' + qr_code + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                    //		$('#ul_Scan_QR_Code').prepend(html);
+                                    //		$('#ul_Rejected_QR_Code').prepend(html);
+
+                                    //		$('#input_Scan_QR_Code').val('');
+                                    //		$('#input_temp_Scan_QR_Code').val('');
+
+                                    //		fnCalculate_QR_Code();
+                                    //	}
+
+                                    //}
+                                    //else {
+
+                                    //	if(ele['success'] === 'COMPLETED') {
+
+                                    //		debugger;
+
+                                    //		stopProgress(true, false);
+
+                                    //		CommonConfirmed_Success("MDA Loading Completed.", fnLoad_MDA_Dtls, []);
+
+                                    //	}
+                                    //	else {
+                                    //		$('#divManualEntry').css('display', 'flex');
+                                    //		$('#btnManualEntry').prop('disabled', false);
+                                    //		$('#input_Scan_QR_Code').val('');
+                                    //		$('#input_temp_Scan_QR_Code').val('');
+                                    //	}
+                                    //}
+
+                                } catch { }
+
+                                ShowLoader(false);
+
+                            }, 1000);
+
+                        },
+                        failure: function (response) {
+                            ShowLoader(false);
+                            CommonAlert_Error(null)
+                        },
+                        error: function (response) {
+                            ShowLoader(false);
+                            CommonAlert_Error(null)
+                        }
+                    });
+
+                    return false;
+                }
+            }
+
+            ShowLoader(false);// CommonAlert_Error("Please select MDA Details data");
+
+            return false;
+        });
+
+        $(document).on('blur', '#input_temp_Scan_QR_Code', function (e) {
+            e.preventDefault();
+
+            if ($('#table_MDA_Dtls tbody tr.bg-info').length > 0) {
+
+                try {
+                    var input_Scanner = $(this).val();
+
+                    if (typeof input_Scanner != 'undefined' && input_Scanner != null && input_Scanner.length > 0) {
+                        //https://nfp.iffco.coop/01/18908021105003/21/10000000000040794436
+                        //var qr_code = input_Scanner.substring(input_Scanner.lastIndexOf('/') + 1);
+
+                        var arrayStr = input_Scanner.split('/');
+
+                        if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0 && input_Scanner.indexOf('/') > -1) {
+
+                            var qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
+
+                            if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length > 0) {
+
+                                $('#input_Scan_QR_Code').val(qr_code);
+                                $('#input_Scan_QR_Code').trigger('change');
+                                $('#input_Scan_QR_Code').trigger('input');
+
+                            }
+                        } else {
+                            $('#input_Scan_QR_Code').val(input_Scanner);
+                            $('#input_Scan_QR_Code').trigger('change');
+                            $('#input_Scan_QR_Code').trigger('input');
+                        }
+                    }
+                } catch { }
+            }
+            //else CommonAlert_Error("Please select MDA Details data");
+
+            return false;
+        });
+
+        function fnCalculate_QR_Code() {
+
+            var RequiredShipper = $('#span_Total_Scan_QR_Code').attr('data-cntReq');
+            var LoaddedShipper = $('#span_Total_Accepted_QR_Code').attr('data-cnt');
+            var RejectShipper = $('#span_Total_Rejected_QR_Code').attr('data-cnt');
+
+            if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0) { }
+            else { RequiredShipper = $('#table_MDA_Dtls tbody tr#tr_MDA_' + $('#input_MDA_Id').val() + ' td.Required_Shipper').text(); }
+
+            if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0)
+                RequiredShipper = parseInt(RequiredShipper.trim());
+            else RequiredShipper = 0;
+
+            if (typeof LoaddedShipper != 'undefined' && LoaddedShipper != null && LoaddedShipper.trim().length > 0 && parseInt(LoaddedShipper.trim()) > 0)
+                LoaddedShipper = parseInt(LoaddedShipper.trim());
+            else LoaddedShipper = 0;
+
+            if (typeof RejectShipper != 'undefined' && RejectShipper != null && RejectShipper.trim().length > 0 && parseInt(RejectShipper.trim()) > 0)
+                RejectShipper = parseInt(RejectShipper.trim());
+            else RejectShipper = 0;
+
+            $('#span_Total_Scan_QR_Code').html((LoaddedShipper + RejectShipper));
+
+            $('#span_Total_Accepted_QR_Code').html(LoaddedShipper + ' / ' + RequiredShipper);
+
+            $('#span_Total_Rejected_QR_Code').html(RejectShipper);
+
+            if ((LoaddedShipper + RejectShipper) <= 0) $('#btnViewAll').css('display', 'none');
+            else $('#btnViewAll').css('display', 'block');
+
+            if (RejectShipper <= 0) $('#btnViewReason').css('display', 'none');
+            else $('#btnViewReason').css('display', 'block');
+
+        }
+
+        function fnClear_QR_Code() {
+
+
+            $('#Loaded_Shipper').val('');
+            $('#Loaded_Shipper').trigger('change');
+
+            $('#input_Scan_QR_Code').val('');
+            $('#input_Scan_QR_Code').trigger('change');
+            $('#input_Scan_QR_Code').prop('disabled', true);
+
+            $('#input_temp_Scan_QR_Code').val('');
+            $('#input_temp_Scan_QR_Code').trigger('change');
+            $('#input_temp_Scan_QR_Code').prop('disabled', true);
+
+            $('#input_Product_Cd').val('');
+            $('#input_Product_Cd').trigger('change');
+
+            $('#span_MDA_No').html('');
+            $('#span_Product').html('');
+            $('#div_Scan_QR_Code ul').html('');
+
+            $('#span_Total_Scan_QR_Code').html('0');
+            $('#span_Total_Scan_QR_Code').attr('data-cntReq', 0);
+            $('#span_Total_Scan_QR_Code').attr('data-cnt', 0);
+            $('#span_Total_Scan_QR_Code').attr('data-last', 0);
+            $('#span_Total_Accepted_QR_Code').html('0');
+            $('#span_Total_Rejected_QR_Code').html('0');
+
+
+            $('#table_MDA_Dtls tbody tr.bg-info').removeClass('bg-info');
+
+
+        }
+
+
+        function fnClick_AddQty(gate_inout_id, mda_id, mda_dtls_id, mda_no, prod_id, prd_cd, prd_desc, customer, bag_Nos, carton_Qty, loaded_Qty) {
+            if ((typeof mda_dtls_id != 'undefined' && mda_dtls_id != null && mda_dtls_id.length > 0)
+                && (typeof mda_id != 'undefined' && mda_id != null && mda_id.length > 0)
+                && (typeof prod_id != 'undefined' && prod_id != null && prod_id.length > 0)) {
+
+
+                var html = '<div class="row no-gutters p-0 m-0" id="divMDADtls">' + $($('#divMDADtls')).html() + '</div>';
+
+                $('#modal-xl .modal-body').html('');
+                $('#modal-xl .modal-body').append(html);
+
+                $('#divManualEntry').css('display', 'none');
+                $('#input_Scan_QR_Code').prop('disabled', true);
+                $('#input_temp_Scan_QR_Code').prop('disabled', true);
+                $('#input_Scan_QR_Code').val('');
+                $('#input_temp_Scan_QR_Code').val('');
+
+                $('#modal-xl .modal-title').html("Add Quantity");
+
+                $('#modal-xl .modal-body button#btnAddQty').remove();
+                $('#modal-xl .modal-body button#btnManualEntry').remove();
+
+                var inputAddQty = '<div class="form-group row">'
+                    + '<label class="col-sm-1 col-form-label">Additional Qty <span class="text-danger">*</span><span class="float-right">:</span></label>'
+                    + '<div class="col-sm-3"><input type="text" id = "inputAdditionalQty" class="form-control form-control-sm isNumberKey_Decimal" >'
+                    + '<input type="text" id = "inputProdId" class="form-control form-control-sm d-none" value="' + prod_id + '">'
+                    + '<input type="text" id = "inputMDAId" class="form-control form-control-sm d-none" value="' + mda_dtls_id + '">'
+                    + '<input type="text" id = "inputMDADtlsId" class="form-control form-control-sm d-none" value="' + mda_id + '">'
+                    + '<input type="text" id = "inputGate_Id" class="form-control form-control-sm d-none" value="' + gate_inout_id + '">'
+                    + '<input type="text" id = "IsBypassWMS" class="form-control form-control-sm d-none" value="' + $('#input_BypassWMS').val() + '">'
+                    + '</div> </div>'
+                    + '<div class="form-group row">'
+                    + '<label class="col-sm-1 col-form-label">Reason <span class="text-danger">*</span><span class="float-right">:</span></label>'
+                    + '<div class="col-sm-6"><input type="text" id="inputReason" class="form-control form-control-sm" ></div>'
+                    + '</div>'
+                    + '<div class="form-group row">'
+                    + '<div class="col-sm-6"><button type="button" class="btn btn-success btn-flat mr-2" onclick="fnSubmit_AddQty()">Save</button>'
+                    + '<button type = "button" class="btn btn-danger btn-flat b-radius-0" onclick="fnClose_Modal()"> Close </button></div>'
+                    + '</div>';
+
+                $('#modal-xl .modal-body').append(inputAddQty);
+
+                $('#modal-xl').show();
+
+                var elem = document.createElement('div');
+                elem.className = "loader-overlay";
+                elem.style.cssText = 'position: fixed;top: 0; left: 0; z-index: 1045; width: 100vw; height: 100vh; background-color: rgb(0, 0, 0, .5);';
+                document.body.appendChild(elem);
+            }
+            else CommonAlert_Error("Please select MDA Details data");
+        }
+
+        function fnSubmit_AddQty() {
+
+            var addQty = $('#modal-xl .modal-body input#inputAdditionalQty').val();
+
+            if (typeof addQty != 'undefined' && addQty != null && addQty != "" && parseFloat(addQty) > 0) {
+
+                let formData = new FormData();
+
+                formData.append("GateInOut_Id", $('#modal-xl .modal-body input#inputGate_Id').val());
+                formData.append("Id", $('#modal-xl .modal-body input#inputMDADtlsId').val());
+                formData.append("Mda_Id", $('#modal-xl .modal-body input#inputMDAId').val());
+                formData.append("Prod_Sys_Id", $('#modal-xl .modal-body input#inputProdId').val());
+                formData.append("Carton_Qty", parseFloat(addQty));
+                formData.append("Reason", $('#modal-xl .modal-body input#inputReason').val());
+                formData.append("Is_BypassWMS", $('#modal-xl .modal-body input#IsBypassWMS').val());
+
+                ajaxPost('@Url.Action("AddQty", "Load_MDA", new { area = "MDA_Automation" })', formData);
+
+            }
+        }
+
+
+        function fnClick_Delete_QR_Code($this, $type, $id) {
+
+            if ((typeof $this != 'undefined' && $this != null && typeof $($this).parent().find('span') != 'undefined'
+                && $($this).parent().find('span') != null && $($this).parent().find('span').length > 0)
+                || (typeof $id != 'undefined' && $id != null && $id.length > 0)) {
+
+                //var qr_codes = [];
+                var message = "";
+
+                if (typeof $id != 'undefined' && $id != null && $id.length > 0 && $id == "ul_Scan_QR_Code") {
+                    message = "Are you sure to delete all Shipper QR Codes ?";
+                }
+                else if (typeof $id != 'undefined' && $id != null && $id.length > 0 && $id == "ul_Accepted_QR_Code") {
+                    message = "Are you sure to delete all Accepted Shipper QR Codes ?";
+                }
+                else if (typeof $id != 'undefined' && $id != null && $id.length > 0 && $id == "ul_Rejected_QR_Code") {
+                    message = "Are you sure to delete all Rejected Shipper QR Codes ?";
+                }
+                else {
+                    message = "Are you sure to delete Shipper QR Code   " + $($this).parent().find('span').text().trim() + "   ?";
+                }
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: message,
+                    showDenyButton: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+
+                    if (result != null && result.isConfirmed == true) {
+
+                        if ((typeof $id != 'undefined' && $id != null && $id.length > 0) && $('#' + $id + ' li span').length > 0) {
+
+                            //$('#' + $id + ' li span').each(function (i, ele) {
+
+                            //	var id = $(ele).attr('data-id');
+                            //	var type = $(ele).attr('data-type');
+
+                            //	if (qr_codes.indexOf(id + ',' + type) < 0)
+                            //		qr_codes.push(id + ',' + type);
+                            //});
+
+                            //qr_codes.push($type);
+
+                            ajaxDelete_QR_Codes(qr_codes, $type, $id, null);
+                        }
+                        else if ((typeof $this != 'undefined' && $this != null && typeof $($this).parent().find('span') != 'undefined'
+                            && $($this).parent().find('span') != null && $($this).parent().find('span').length > 0)) {
+                            var id = $($this).parent().find('span').attr('data-id');
+                            var type = $($this).parent().find('span').attr('data-type');
+                            var qr_code = $($this).parent().find('span').text().trim();
+
+                            //qr_codes.push(id + ',' + type);
+
+                            //qr_codes.push(qr_code);
+
+                            ajaxDelete_QR_Codes(qr_code, $type, $id, $this);
+                        }
+
+                    }
+                });
+            }
+
+            //$('#table_MDA_Dtls tr:eq(' + (table.row(table.rows('.bg-info')).index() - 1) + ')').trigger('click');
+        }
+
+        function ajaxDelete_QR_Codes(qr_code, $type, $id, $this) {
+
+
+            if (typeof $type != 'undefined' && $type != null && $type != '') {
+
+                var truck_no = $('#Truck_No').val();
+                var mda_id = $('#input_MDA_Id').val();
+                var mda_dtls_id = $('#input_MDA_DTLS_Id').val();
+                var mda_no = $('#MDA_No').val();
+                var prod_id = $('#input_Prod_Sys_Id').val();
+                var gatein_id = $('#input_GateInOut_Id').val();
+
+                ShowLoader(true);
+
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Delete_QR_Code", "Load_MDA")?qr_code=' + qr_code + '&qr_code_type=' + $type + '&mda_id=' + mda_id + '&mda_dtls_id=' + mda_dtls_id + '&prod_id=' + prod_id + '&gatein_id=' + gatein_id,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+
+                        setTimeout(function () {
+
+                            try {
+                                if (response.statusCode === 1) {
+
+                                    if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length > 0) {
+                                        $('#div_Scan_QR_Code ul li span:contains("' + qr_code + '")').closest('li').remove();
+                                        $('#ul_Accepted_QR_Code ul li span:contains("' + qr_code + '")').closest('li').remove();
+                                        $('#ul_Rejected_QR_Code ul li span:contains("' + qr_code + '")').closest('li').remove();
+                                    }
+                                    else if (typeof $type != 'undefined' && $type != null && $type.length > 0 && $type == 'A') {
+                                        $('#div_Scan_QR_Code ul li').remove();
+                                        $('#ul_Accepted_QR_Code ul li').remove();
+                                        $('#ul_Rejected_QR_Code ul li').remove();
+                                    }
+                                    else if (typeof $type != 'undefined' && $type != null && $type.length > 0) {
+                                        $('#div_Scan_QR_Code ul li span[data-type="' + $type + '"]').closest('li').remove();
+                                        if ($type == 'S')
+                                            $('#ul_Accepted_QR_Code ul li').remove();
+                                        else if ($type == 'R')
+                                            $('#ul_Rejected_QR_Code ul li').remove();
+                                    }
+
+                                    //if (typeof $id != 'undefined' && $id != null && $id.length > 0) {
+
+                                    //	$('#' + $id + ' li span').each(function (i, ele) {
+                                    //		$('#div_Scan_QR_Code ul li span[data-id="' + $(ele).attr('data-id') + '"]').parent().remove();
+                                    //	});
+                                    //}
+                                    //else
+                                    //	$('#div_Scan_QR_Code ul li span[data-id="' + $($this).parent().find('span').attr('data-id') + '"]').parent().remove();
+                                }
+                                else {
+                                    CommonAlert_Error(response.message);
+                                }
+
+                                $('#span_Total_Scan_QR_Code').attr('data-cntReq', response.data1['requiredShipper']);
+                                $('#span_Total_Scan_QR_Code').attr('data-cnt', response.data1['loaddedShipper']);
+                                $('#span_Total_Accepted_QR_Code').attr('data-cnt', response.data1['loaddedShipper']);
+                                $('#span_Total_Rejected_QR_Code').attr('data-cnt', response.data1['rejectShipper']);
+
+                                fnGet_Scan_Code_History();
+
+                                //fnCalculate_QR_Code();
+
+                            } catch { }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) {
+                        CommonAlert_Error(null)
+                    },
+                    error: function (response) {
+                        CommonAlert_Error(null)
+                    }
+                });
+
+            }
+        }
+
+    </script>
+}

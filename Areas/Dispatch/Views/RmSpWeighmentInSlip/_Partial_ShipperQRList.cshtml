@@ -1,0 +1,77 @@
+﻿@model WeighmentInSlip
+
+<input type="hidden" id="input_Mda_No" value="@(Model != null && !string.IsNullOrEmpty(Model.MDA_No) ? Model.MDA_No : "")" class="form-control form-control-sm d-none">
+<input type="hidden" id="input_Mda_Dt" value="@(Model != null && Model.MDA_dt != null ? Model.MDA_dt.ToString() : "")" class="form-control form-control-sm d-none">
+<input type="hidden" id="input_Vehicle_No" value="@(Model != null && !string.IsNullOrEmpty(Model.Truck_No) ? Model.Truck_No : "")" class="form-control form-control-sm d-none">
+<input type="hidden" id="input_Tare_Wt" value="@(Model != null && !string.IsNullOrEmpty(Model.Tare_Wt) ? Model.Tare_Wt : "")" class="form-control form-control-sm d-none">
+<input type="hidden" id="input_Transporter_Name" value="@(Model != null && Model.Transporter_Name != null ? Model.Transporter_Name.ToString() : "")" class="form-control form-control-sm d-none">
+<input type="hidden" id="input_Tare_Wt_Note" value="@(Model != null && Model.Tare_Wt_Note != null ? Model.Tare_Wt_Note.ToString() : "")" class="form-control form-control-sm d-none">
+
+<div class="form-group row">
+    <h3 class="col-sm-12 text-center">@(Model != null && !string.IsNullOrEmpty(Model.Report_Title) ? Model.Report_Title : "Weighment Slip - Weigh In")</h3>
+</div>
+
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">RFID No. <span class="float-right">:</span> </label>
+    <label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.RFID_No) ? Model.RFID_No : "") </label>
+    <label class="col-sm-2 col-form-label">Weigh In Date & Time<span class="float-right">:</span> </label>
+    <label class="col-sm-4 col-form-label ml-0"> @(Model != null && Model.Tare_Wt_Dt != null ? Model.Tare_Wt_Dt.ToString() : "") </label>
+</div>
+
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">Vehicle No <span class="float-right">:</span> </label>
+    <label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Truck_No) ? Model.Truck_No : "") </label>
+    <label class="col-sm-2 col-form-label">In Weight  <span class="float-right">:</span> </label>
+    <label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Tare_Wt) ? Model.Tare_Wt : "") &nbsp; @(Model != null && !string.IsNullOrEmpty(Model.UOM) ? Model.UOM : "")</label>
+</div>
+<br />
+
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">Transporter Name  <span class="float-right">:</span> </label>
+    <label class="col-sm-8 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Transporter_Name) ? Model.Transporter_Name : "") </label>
+
+</div>
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">PO No  <span class="float-right">:</span> </label>
+    <label class="col-sm-8 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.MDA_No) ? Model.MDA_No : "") </label>
+</div>
+
+<br />
+
+<div class="form-group row">
+    <button class="btn btn-info" onclick="fnPrint_Report('@Url.Action("Index","RmSpWeighmentInSlip")?Vehicle_No=@(Model != null && !string.IsNullOrEmpty(Model.Truck_No) ? Model.Truck_No : "")&Inward_Sys_Id=2')">Print</button>
+    <button class="btn btn-info ml-2" onclick="fnPrint_Report('@Url.Action("Export","RmSpWeighmentInSlip")?Vehicle_No=@(Model != null && !string.IsNullOrEmpty(Model.Truck_No) ? Model.Truck_No : "")')">Export</button>
+</div>
+<div class="row col-12 mt-5">
+    <table id="table_Common_dtls" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+
+                <th>Line No.</th>
+                <th>Product Description</th>
+                <th>Receive Qty</th>
+                <th>UoM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.listDtls != null && Model.listDtls.Count() > 0)
+            {
+                foreach (var item in Model.listDtls)
+                {
+                    <tr>
+
+                        <td>@item.SrNo</td>
+                        <td>@item.prd_desc</td>
+                        <td>@item.no_of_bottle</td>
+                        <td>@item.desp_place</td>
+                    </tr>
+                }
+
+                @*<tr>
+                    <td colspan="2" class="text-bold text-right"> Total </td>
+                    <td colspan="2" class="text-bold">@Model.listDtls.Sum(x=>x.no_of_bottle)</td>
+                </tr>*@
+            }
+        </tbody>
+    </table>
+</div>

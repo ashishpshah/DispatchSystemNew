@@ -1,0 +1,285 @@
+﻿@model ResponseModel<QRCodeGeneration>
+@{
+    if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "QR_PR")
+    {
+        ViewData["Title"] = "QR Code Print Receipt";
+    }
+    else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "QR_V")
+    {
+        ViewData["Title"] = "QR Codes View";
+    }
+    else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "QR_VOP")
+    {
+        ViewData["Title"] = "QR Codes View (OP)";
+    }
+}
+
+@section Styles {
+    <style type="text/css">
+        th, td {
+            white-space: nowrap;
+        }
+    </style>
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                @if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "QR_PR")
+                {
+                    <h1 class="m-0">QR Code Print Receipt</h1>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "QR_V")
+                {
+                    <h1 class="m-0">QR Codes View</h1>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "QR_VOP")
+                {
+                    <h1 class="m-0">QR Codes View (OP)</h1>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content p-0">
+    <div class="container-fluid p-0">
+        <div class="row no-gutters">
+            <div class="col-12 card">
+                <div class="card-body pb-0">
+                    <div class="panel-divider">
+                        <span>Search Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="form-horizontal">
+                                    <div class="card-body py-1 px-0">
+
+                                        @if (!string.IsNullOrEmpty(Model.Status) && (Convert.ToString(Model.Status) == "QR_PR" || Convert.ToString(Model.Status) == "QR_V" || Convert.ToString(Model.Status) == "QR_VOP"))
+                                        {
+                                            <div class="col-12 row no-gutters">
+                                                @if (Convert.ToString(Model.Status) == "QR_PR")
+                                                {
+                                                    <div class="form-group col-md-3 mx-3">
+                                                        <label class="col-form-label" style="align-content:start">Vendor</label>
+                                                        <select id="VendorId" name="VendorId" class="form-control form-control-sm select2" style="width: 100%;"
+                                                                onchange="Get_VendorSiteList()" data-required data-msg="The Vendor Site field is required.">
+                                                            @if (Model != null && Model.SelectListItems != null)
+                                                            {
+                                                                foreach (var item in Model.SelectListItems.Where(x => x.Group == "V"))
+                                                                {
+                                                                    if (item.Value == Convert.ToString(@Model.Obj.VendorId))
+                                                                    {
+                                                                        <option value="@item.Value" selected>@item.Text</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@item.Value">@item.Text</option>
+                                                                    }
+
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group col-md-3 mx-3">
+                                                        <label class="col-form-label" style="align-content:start">Vendor Site</label>
+                                                        <select id="SiteId" name="SiteId" class="form-control form-control-sm select2" style="width: 100%;" data-required data-msg="The Vendor field is required.">
+                                                            @if (Model != null && Model.SelectListItems != null)
+                                                            {
+                                                                foreach (var item in Model.SelectListItems.Where(x => x.Group == "S"))
+                                                                {
+                                                                    if (item.Value == Convert.ToString(@Model.Obj.SiteId))
+                                                                    {
+                                                                        <option value="@item.Value" selected>@item.Text</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@item.Value">@item.Text</option>
+                                                                    }
+
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                }
+                                                <div class="form-group col-md-3 mx-3">
+                                                    <label class="col-form-label text-right" style="align-content:start">SKU Description</label>
+                                                    <select class="form-control form-control-sm select2" id="SKU">
+                                                        @if (Model != null && Model.SelectListItems != null)
+                                                        {
+                                                            foreach (var item in Model.SelectListItems.Where(x => x.Group == "P"))
+                                                            {
+                                                                <option value="@item.Value">@item.Text</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 row no-gutters">
+                                                <div class="form-group col-md-2 mx-3">
+                                                    <label class="col-form-label" style="align-content:start">Request Date From</label>
+                                                    <input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                                                </div>
+                                                <div class="form-group col-md-2 mx-3">
+                                                    <label class="col-form-label" style="align-content:start">Request Date To</label>
+                                                    <input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                                                </div>
+                                            </div>
+                                            <div class="col-12 no-gutters">
+                                                <div class="form-group mx-3 text-center">
+                                                    <label class="col-form-label text-right" style="align-content:start">&nbsp;</label>
+
+                                                    <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnExecute_Report(false, '@Convert.ToString(Model.Status)')"> Search </button>
+                                                    <button type="button" class="btn btn-primary btn-md pull-right ml-3 mr-2" onclick="fnExecute_Report(true, '@Convert.ToString(Model.Status)')"> Print </button>
+                                                    <button type="button" class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Report('@Convert.ToString(Model.Status)')"> Export </button>
+                                                    <button type="button" class="btn btn-danger btn-flat px-3 mx-3" onclick="fnClear()">Clear</button>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-divider">
+                        <span>Report </span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="card-body py-1 px-0" id="div_DataTable"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        $(function () { });
+
+        function fnExport_Report($reportType) {
+
+            var fileName = "";
+
+            if ($reportType == 'QR_PR') fileName = "QRCodePrintReceipt";
+            else if ($reportType == 'QR_V') fileName = "QRCodesView";
+            else if ($reportType == 'QR_VOP') fileName = "QRCodesViewOP";
+
+            $("#div_DataTable table").table2excel({ filename: fileName + ".xls" });
+
+            return false;
+        }
+
+        function fnExecute_Report($isPrint, $reportType) {
+
+            $('#div_DataTable').html('');
+
+            var $url = '';
+
+            debugger;
+
+            if ($reportType == 'QR_PR') {
+
+                var VendorCode = $('#VendorId').val();
+                var SiteId = $('#SiteId').val();
+                var ProductId = $('#SKU option:selected').val();
+                var FromDate = $('#FromDate').val();
+                var ToDate = $('#ToDate').val();
+
+                $url = '@Url.Action("GetData_QRCodePrintReceipt", "Reports", new { area = "Admin" })' +
+                    '?VendorCode=' + VendorCode + '&SiteId=' + SiteId + '&ProductId=' + ProductId + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&isPrint=' + $isPrint;
+            }
+            else if ($reportType == 'QR_V' || $reportType == 'QR_VOP') {
+
+                var ProductId = $('#SKU option:selected').val();
+                var FromDate = $('#FromDate').val();
+                var ToDate = $('#ToDate').val();
+
+                $url = '@Url.Action("GetData_QRCodesView", "Reports", new { area = "Admin" })' +
+                    '?ProductId=' + ProductId + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&isPrint=' + $isPrint + '&Type=' + $reportType;
+            }
+
+            if ($isPrint == true && $url != null && $url != '') {
+                var printWindow = window.open($url, '_blank');
+
+                if (printWindow) {
+                    printWindow.onload = function () {
+                        printWindow.print();
+                    };
+                }
+            }
+            else if ($url != null && $url != '') {
+
+                ShowLoader(true);
+
+                $.ajax({
+                    type: "GET",
+                    url: $url,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "html",
+                    success: function (response) {
+
+                        setTimeout(function () {
+
+                            $('#div_DataTable').html(response);
+
+                            try { fnLoadCommonTable('#div_DataTable .table_Common'); } catch { }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) {
+                        ShowLoader(false);
+                        CommonAlert_Error(null);
+                    },
+                    error: function (response) {
+                        ShowLoader(false);
+                        CommonAlert_Error(null);
+                    }
+                });
+            }
+        }
+
+        function fnClear() {
+
+            $('.content .panel-divider input').val('').trigger('change');
+            $('.content .panel-divider select').val('').trigger('change');
+
+            $('#div_DataTable').html('');
+
+        }
+
+        function Get_VendorSiteList() {
+
+            $("#SiteId").empty();
+
+            var vendor_code = $('#VendorId').val();
+
+            if (typeof vendor_code != 'undefined' && vendor_code != null && vendor_code.length > 0) {
+
+                $.ajax({
+                    type: 'POST',
+                    url: "@Url.Action("GetVendorSitelist","QRCodePrintReceipt")",
+                    dataType: 'json',
+                    data: { Vendor_Id: $('#VendorId').val() }
+                }).done(function (state) {
+                    $.each(state, function (i, state) { $("#SiteId").append('<option value="' + state.value + '">' + state.text + '</option>'); });
+                }).fail(function (xhr) {
+                    console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+                });
+            }
+
+            return false;
+        }
+    </script>
+}

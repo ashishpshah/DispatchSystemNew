@@ -1,0 +1,315 @@
+﻿@model ResponseModel<User>
+
+@{
+	ViewData["Title"] = "User";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles{
+	<link rel="stylesheet" href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+	<link rel="stylesheet" href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+	<style>
+		.eye-pass {
+			position: absolute;
+			margin-top: 15px;
+			top: -4px;
+			right: 0;
+			margin-right: 35px;
+			cursor: pointer;
+		}
+
+		input[type=password]::-ms-reveal,
+		input[type=password]::-ms-clear {
+			display: none;
+		}
+
+		.col-form-label {
+			text-align: right !important;
+		}
+	</style>
+}
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">User</h1>
+			</div>
+			<div class="col-sm-6">
+				<div class="float-sm-right">
+					@* @if (Common.IsAdmin())
+					{ *@
+					<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","User", new {  area = "Admin" })');">
+						<i class="fas fa-plus"></i> &nbsp; Add User
+					</button>
+					@* } *@
+					<button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display d-none" onclick="fnBackToList();">
+						<i class="fas fa-arrow-left"></i> &nbsp; Back To List
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section class="content">
+	<div class="container-fluid">
+		<div class="row no-gutters divformSave_Display d-none" style="margin: 5px !important;">
+			<div class="col-12">
+				<form id="formSave" asp-area="Admin" asp-controller="User" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div class="row no-gutters" id="divformSave"></div>
+					<div class="clearfix"></div>
+					<hr />
+				</form>
+			</div>
+		</div>
+		<div class="row" id="divList">
+			<div class="col-12">
+				<div class="card card-primary card-outline">
+
+					<div class="card-body">
+						<div class="row no-gooters">
+							<div class="col-md-12 my-1">
+								<table id="table_Common_SrNo" class="table table-bordered table-striped">
+									<thead>
+										<tr>
+											<th>#</th>
+											<th>User Id</th>
+											<th>Name</th>
+											<th>Role</th>
+											<th>Mobile No</th>
+											<th>Email Id </th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in Model.ListObj.OrderBy(x => x.Username))
+										{
+											<tr>
+												<td></td>
+												<td>@item.Username</td>
+												<td>@item.Fullname</td>
+												<td>@item.Role_Name</td>
+												<td>@item.MobileNo</td>
+												<td>@item.Email_Id</td>
+												<td>
+													<div class="btn-group">
+														<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
+																onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","User", new {  area = "Admin" })?Id=@item.Id');">
+															<i class="far fa-edit"></i>
+														</button>
+
+														<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+																onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed","User", new {  area = "Admin" })?Id=@item.Id', '#table_Common_SrNo');">
+															<i class="far fa-trash-alt"></i>
+														</button>
+													</div>
+												</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+@section Scripts{
+
+	<script type="text/javascript">
+		$(function () {
+
+		});
+
+		function fnChangeIcon() {
+			const togglePassword = document.querySelector('#togglePassword');
+			const password = document.querySelector('#password');
+			const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+			password.setAttribute('type', type);
+			togglePassword.classList.toggle('fa-eye-slash');
+		}
+
+		function Get_StateList() {
+
+			$("#State_Id").empty();
+			$("#District_Id").empty();
+			$.ajax({
+				type: 'POST',
+				url: "@Url.Action("GetStateList","User")",
+				dataType: 'json',
+				data: { Country_Id: $('#Country_Id').val() }
+
+			})
+				.done(function (state) {
+					$.each(state, function (i, state) {
+						$("#State_Id").append('<option value="' + state.value + '">' +
+							state.text + '</option>');
+					});
+				}).fail(function (xhr) {
+					console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+				});
+			return false;
+		}
+		function Get_DistrictList() {
+
+			$("#District_Id").empty();
+			$.ajax({
+				type: 'POST',
+				url: "@Url.Action("GetDistrictList","User")",
+				dataType: 'json',
+				data: { State_Id: $('#State_Id').val() }
+
+			})
+				.done(function (district) {
+
+					$.each(district, function (i, district) {
+
+						$("#District_Id").append('<option value="' + district.value + '">' +
+							district.text + '</option>');
+					});
+				}).fail(function (xhr) {
+					console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+				});
+			return false;
+		}
+
+		function Get_RoleList() {
+
+			$("#Role_Id").empty();
+			$.ajax({
+				type: 'POST',
+				url: "@Url.Action("GetRoleByPlant","User")",
+				dataType: 'json',
+				data: { plant_Id: $('#Plant_Id').val() }
+
+			})
+				.done(function (role) {
+
+					$.each(role, function (i, role) {
+						$("#Role_Id").append('<option value="' + role.value + '">' +
+							role.text + '</option>');
+					});
+				}).fail(function (xhr) {
+					console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+				});
+			return false;
+		}
+
+		function fnChange_UserAccess($this) {
+
+
+			if ($this != null && $($this).attr("id") == "Plant_Id")
+				Get_RoleList();
+
+			var plan_role = [];
+			$('.User_Access .row').each(function (i, ele) {
+				var Plant_Id = $(ele).find('.Plant_Id option:selected').val();
+				var Role_Id = $(ele).find('.Role_Id option:selected').val();
+
+				plan_role.push(Plant_Id + '|' + Role_Id);
+			});
+
+
+			if (plan_role != null && plan_role.length > 0)
+				$('#Plant_Role').val(plan_role.join(","));
+			else
+				$('#Plant_Role').val('');
+
+			$('#Plant_Role').trigger('change');
+			$('#Default_Plant').val($('.User_Access input[name="PlantID"]:checked').closest('div.row').find('select.Plant_Id option:selected').val());
+			$('#Default_Plant').trigger('change');
+
+
+		}
+
+		function fnRemove_Row($this) {
+			$($this).parent('div').parent('div').remove();
+			fnChange_UserAccess(null);
+		}
+
+		function fnShow_Menu($this) {
+			var roleId = $($this).closest('div.row').find('select.Role_Id option:selected').val();
+
+			if (typeof roleId != 'undefined' && roleId != null && roleId != '' && roleId.trim() != '0' && roleId.trim().length > 0)
+				fnShow_Modal('@Url.Action("Show_Menu","User")?RoleId=' + roleId, 'Menu Access', true, 'json');
+
+			return false;
+		}
+
+		function fnAddNewRow(listPlant, listRole) {
+
+			var optionPlant = '';
+			var optionRole = '';
+
+			var selectedPlant = $('.User_Access select.Plant_Id option:selected').map((i, el) => el.value).get();
+
+			if (typeof listPlant != 'undefined' && listPlant != null && listPlant.length > 0) {
+				if (typeof listRole != 'undefined' && listRole != null && listRole.length > 0) {
+
+					var arr = listPlant.split('||');
+					$.each(arr, function (index, value) {
+						//if (selectedPlant == null || $.inArray('' + value.split('|')[0], selectedPlant) == -1)
+						optionPlant = optionPlant + '<option value="' + value.split('|')[0] + '" selected="">' + value.split('|')[1] + '</option> ';
+					});
+
+					if (typeof optionPlant != 'undefined' && optionPlant != null && optionPlant.length > 0) {
+						arr = listRole.split('||');
+						$.each(arr, function (index, value) {
+							optionRole = optionRole + '<option value="' + value.split('|')[0] + '" selected="">' + value.split('|')[1] + '</option> ';
+						});
+					}
+				}
+			}
+
+
+
+			if (typeof optionPlant != 'undefined' && optionPlant != null && optionPlant.length > 0) {
+
+				var strHtml = '<div class="row no-gutters p-0 m-0 User_Access"> ' +
+					'<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3"> ' +
+					'<div class="form-group row"> ' +
+					'<label class="col-sm-1 col-form-label text-right">Plant</label> ' +
+					'<div class="col-sm-4" data-select2-id="24"> ' +
+					'<select class="form-control select2 w-100 Plant_Id" onchange="fnChange_UserAccess(this)" tabindex="-1" aria-hidden="true"> ';
+
+				//'<option value="1" selected="" data-select2-id="6">IFFCO KALOL</option> ' +
+				if (typeof optionPlant != 'undefined' && optionPlant != null && optionPlant.length > 0)
+					strHtml = strHtml + optionPlant;
+
+				strHtml = strHtml + '</select> ' +
+					'</div> <div class="col-sm-1"> ' +
+					'<div class="icheck-primary d-inline mr-5"> ' +
+					'<input type="radio" id="radioPrimary_' + $('.User_Access select.Plant_Id').length + '" name="PlantID" onchange="fnChange_UserAccess(this)"> ' +
+					'<label for="radioPrimary_' + $('.User_Access select.Plant_Id').length + '"> Is Default?</label> ' +
+					'</div> </div>' +
+					'<label class="col-sm-1 col-form-label text-right">Role</label> ' +
+					'<div class="col-sm-3"> ' +
+					'<select class="form-control select2 w-100 Role_Id" onchange="fnChange_UserAccess(this)" tabindex="-1" aria-hidden="true"> ';
+				//'<option value="2" data-select2-id="9">Admin</option> ' +
+
+				if (typeof optionRole != 'undefined' && optionRole != null && optionRole.length > 0)
+					strHtml = strHtml + optionRole;
+
+				strHtml = strHtml + '</select> ' +
+					'</div> <div class="col-sm-1 text-center"> <button type="button" class="btn btn-outline-info btn-sm" onclick="fnShow_Menu(this)">View Menus</button> </div>' +
+					'<div class="col-sm-1 text-center"> <button type="button" class="btn btn-outline-danger btn-sm" onclick="fnRemove_Row(this)"><i class="far fa-trash-alt"></i></button> </div>' +
+					'</div> ' +
+					'</div> ' +
+					'</div>';
+
+				$('div.User_Access').parent('div').append(strHtml);
+
+				$('div.User_Access').parent('div').find('.select2').select2();
+
+				fnChange_UserAccess(null);
+			}
+		}
+	</script>
+}

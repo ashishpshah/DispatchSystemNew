@@ -1,0 +1,308 @@
+﻿@model ResponseModel<MDA_Status>
+
+@{
+    ViewData["Title"] = "Gate In Cancel View";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Gate In Cancel Report</h1>
+            </div>
+
+        </div>
+    </div>
+</div>
+<section class="content">
+    <div class="container-fluid">
+        <div class="card card-primary card-outline">
+
+            <div class="card-body">
+
+                <div class="panel-divider">
+                    <span>Search</span>
+                    <div class="row no-gutters p-0 m-0">
+                        <div class="col-12 row no-gutters">
+                            @* <div class="form-group col-md-3 mx-3">
+                                <label class="col-form-label" style="align-content:start">Plant</label>
+                                <input type="hidden" class="form-control form-control-sm" id="PlantId" value="@Model.Obj.PlantId">
+                                <input type="text" class="form-control form-control-sm" id="PlantName" value="@Model.Obj.PlantName" autocomplete="off" readonly>
+                            </div> *@
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Date From</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Date To</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-3 mx-3">
+                                <label class="col-form-label" style="align-content:start">Truck No</label>
+                                <input type="text" class="form-control form-control-sm" id="Truck_No" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="col-12 no-gutters my-3">
+                            <div class="form-group mx-3 text-center">
+                                <label class="col-form-label text-right" style="align-content:start">&nbsp;</label>
+                                
+                                <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnExecute_Report(false)"> Search </button>
+                                <button type="button" class="btn btn-danger btn-md pull-right mr-2" onclick="fnClear()"> Clear </button>
+                                <button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnExecute_Report(true)"> Print </button>
+                                <button type="button" class="btn btn-success btn-md pull-right mr-2" id="btnExport"> Export </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="panel-divider">
+                    <span>Details</span>
+                    <div class="row no-gooters">
+                        @* <div class="col-md-12 my-1">
+                        <table class="table table-bordered table-striped table-hover" id="dataTable_PoDetails" style="width:100%"></table>
+                        </div> *@
+                        <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                            <div class="card-body py-1 px-0" id="div_DataTable"></div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        function fnClear() {
+            $('#Truck_No').val("");
+            $('#FromDate').val("");
+            $('#ToDate').val("");
+            $('#div_DataTable').html('');
+        }
+
+        $(function () { });
+
+        $("#btnExport").click(function () {
+            $("#tblmain").table2excel({
+                filename: "GateInCancel.xls"
+            });
+            return false;
+        });
+
+        
+        function fnExecute_Report($isPrint) {
+
+            $('#div_DataTable').html('');
+
+            var Truck_No = $('#Truck_No').val();
+            var FromDate = $('#FromDate').val();
+            var ToDate = $('#ToDate').val();
+
+            // if ((typeof Truck_No != 'undefined' && Truck_No != null && Truck_No.length > 0)
+            //     || (typeof FromDate != 'undefined' && FromDate != null && FromDate.length > 0)
+            //     || (typeof ToDate != 'undefined' && ToDate != null && ToDate.length > 0)
+            // ) {
+                
+                var $url = '@Url.Action("GetData", "GateInCancel", new { area = "Admin" })?Truck_No=' + Truck_No + '&From_Date=' + FromDate + '&To_Date=' + ToDate + '&isPrint='+$isPrint;
+
+                if($isPrint == true)
+                {
+                    var printWindow = window.open($url, '_blank');
+
+                    if (printWindow) {
+                        printWindow.onload = function () {
+                            printWindow.print();
+                        };
+                    }
+                }
+                else{
+                
+                    ShowLoader(true);
+
+                    $.ajax({
+                        type: "GET",
+                        url: $url,
+                        data: null,
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "html",
+                        success: function (response) {
+
+                            setTimeout(function () {
+
+                                $('#div_DataTable').html(response);
+
+                                try { fnLoadCommonTable('#div_DataTable .table_Common'); } catch { }
+
+                                ShowLoader(false);
+
+                            }, 1000);
+
+                        },
+                        failure: function (response) {
+                            ShowLoader(false); 
+                            CommonAlert_Error(null);
+                        },
+                        error: function (response) {
+                            ShowLoader(false); 
+                            CommonAlert_Error(null);
+                        }
+                    });
+                }
+            // }
+            // else
+                //ShowLoader(false);
+        }
+
+        // function fnClear() {
+
+        //     $('.inputSearch').val('');
+        //     $('.inputSearch').trigger('change');
+        //     $('#div_DataTable').html('');
+
+        // }
+
+        // function fnPrint_Report() {
+            
+        //     var Truck_No = $('#Truck_No').val();
+        //     var FromDate = $('#FromDate').val();
+        //     var ToDate = $('#ToDate').val();
+
+        //     if ((typeof Truck_No != 'undefined' && Truck_No != null && Truck_No.length > 0)
+        //         || (typeof FromDate != 'undefined' && FromDate != null && FromDate.length > 0)
+        //         || (typeof ToDate != 'undefined' && ToDate != null && ToDate.length > 0)
+        //     ) {
+        //         var $url = '@Url.Action("GetData", "GateInCancel", new { area = "Admin" })?Truck_No=' + Truck_No + '&From_Date=' + FromDate + '&To_Date=' + ToDate + '&isPrint=true';
+
+        //         var printWindow = window.open($url, '_blank');
+
+        //         if (printWindow) {
+        //             printWindow.onload = function () {
+        //                 printWindow.print();
+        //             };
+        //         }
+        //     }
+        // }
+
+
+        // function fnLoadTableData() {
+        //     if ($.fn.DataTable.isDataTable('#dataTable_PoDetails')) {
+        //         $('#dataTable_PoDetails').DataTable().destroy();
+        //     }
+
+        //     var subHeading = "";
+
+        //     if ($('#MDA_No').val() != null && $('#MDA_No').val() != '') {
+        //         subHeading = 'MDA No: ' + $('#MDA_No').val();
+        //     }
+
+        //     if ($('#FromDate').val() != null && $('#FromDate').val() != '') {
+        //         subHeading = 'Form Date: ' + $('#FromDate').val() + ' To Date: ' + $('#ToDate').val();
+        //     }
+
+        //     dataTableMain = $("#dataTable_PoDetails")
+        //         .DataTable({
+        //             "destroy": true,
+        //             "pageLength": "All", "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        //             "sAjaxSource": "@Url_RootToController/GetData_GateInCancel",
+        //             "bServerSide": true,
+        //             "bProcessing": true,
+        //             "bSearchable": true,
+        //             "scrollX": true,
+        //             "order": [[0, 'asc']],
+        //             "language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+        //             "fnServerParams": function (aoData) {
+        //                 aoData.push({ "name": "TruckNo", "value": "" + $('#Truck_No').val() });
+        //                 aoData.push({ "name": "FromDate", "value": "" + $('#FromDate').val() });
+        //                 aoData.push({ "name": "ToDate", "value": "" + $('#ToDate').val() });
+        //                 aoData.push({ "name": "Type", "value": "" });
+        //             },
+        //             "columns": [
+        //                 { "title": "Truck No", "data": "truckNo", "autoWidth": true, "searchable": true },
+        //                 { "title": "MDA No.", "data": "mdaNo", "autoWidth": true, "searchable": true },
+        //                 { "title": "Transporter", "data": "transporter", "autoWidth": true, "searchable": true },
+        //                 { "title": "Driver Name", "data": "driverName", "autoWidth": true, "searchable": true },
+        //                 { "title": "Driver Contact", "data": "driverContact", "autoWidth": true, "searchable": true },
+        //                 { "title": "RFID", "data": "rfid", "autoWidth": true, "searchable": true },
+        //                 { "title": "Gate In DateTime", "data": "gateInDateTime", "autoWidth": true, "searchable": true },
+        //                 { "title": "Weight Out Date Time", "data": "weighOutDateTime", "autoWidth": true, "searchable": true },
+        //                 { "title": "Gate Out DateTime", "data": "gateOutDispatch", "autoWidth": true, "searchable": true },
+        //                 { "title": "Cancel Gate Reason", "data": "reason", "autoWidth": true, "searchable": true },
+        //             ],
+        //             "dom": "<'row'<'col-sm-6 mb-3'B>>" +
+        //                 "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+        //                 "<'row'<'col-sm-12'tr>>" +
+        //                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        //             "buttons": [
+        //                 {
+        //                     text: 'Print',
+        //                     className: "btn-flat btn-info mx-2 px-3",
+        //                     action: function (e, dt, node, config) {
+        //                         debugger;
+        //                         fnPrint_Contents("#dataTable_PoDetails")
+        //                     }
+        //                 }
+        //                 //     {
+        //                 //     extend: "csv",
+        //                 //     className: "btn-flat btn-info mx-2 px-3",
+        //                 //     titleAttr: 'Export in CSV',
+        //                 //     text: 'CSV',
+        //                 //     filename: 'Gate In Cancel List',
+        //                 //     init: function (api, node, config) { $(node).removeClass('btn-default') }
+        //                 // },
+        //                 // {
+        //                 //     extend: "excel",
+        //                 //     className: "btn-flat btn-success mx-2 px-3",
+        //                 //     titleAttr: 'Export in Excel',
+        //                 //     text: 'Excel',
+        //                 //     filename: 'Gate In Cancel List',
+        //                 //     init: function (api, node, config) { $(node).removeClass('btn-default') }
+        //                 // },
+        //                 // {
+        //                 //     extend: "pdfHtml5",
+        //                 //     className: "btn-flat btn-danger mx-2 px-3",
+        //                 //     titleAttr: 'Export in PDF',
+        //                 //     text: 'PDF',
+        //                 //     pageSize: 'LEGAL',
+        //                 //     filename: 'Gate In Cancel Report',
+        //                 //     exportOptions: {
+        //                 //         modifier: {
+        //                 //             page: 'all' // Export all pages
+        //                 //         }
+        //                 //     },
+        //                 //     init: function (api, node, config) { $(node).removeClass('btn-default') },
+        //                 //     customize: function (doc) {
+        //                 //         doc.defaultStyle.fontSize = 9;
+        //                 //         doc.pageMargins = [5, 10, 5, 10]; // Adjust margins
+        //                 //         doc.pageOrientation = 'Portrait'; // Set orientation
+        //                 //         doc.content.splice(1, 0, {
+        //                 //             text: subHeading,
+        //                 //             style: 'subheader'
+        //                 //         });
+        //                 //         doc.styles.subheader = {
+        //                 //             fontSize: 12,
+        //                 //             italics: true,
+        //                 //             margin: [10, 0, 0, 10]
+        //                 //         };
+        //                 //         //doc.content[0].table.widths = ['*', '*', '*', '*', '*' ];
+        //                 //         // Add more customization options as needed
+        //                 //     }
+        //                 // }
+        //                 ]
+        //         });
+
+        // }
+
+
+    </script>
+}
+

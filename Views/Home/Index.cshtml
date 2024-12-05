@@ -1,0 +1,305 @@
+﻿@model ResponseModel<LoginViewModel>
+@{
+	ViewData["Title"] = "Home Page";
+
+	var listPlant = Common.GetUserPlantAccesses();
+}
+
+<div class="row no-gutters pt-5">
+	<div class="Col-12 w-100">
+		@if (AppHttpContextAccessor.IsCloudDBActive == false)
+		{
+			<div class="row mb-2 text-center">
+				<div class="col-sm-12">
+					<h1 class="m-0">Welcome To IFFCO</h1>
+				</div>
+			</div>
+		}
+		else
+		{
+			<div class="panel-divider mx-5">
+				<span style="background-color: #f4f6f9;">Plant Access</span>
+				<div class="row no-gutters">
+					<div class="col-12 p-0 m-0 shadow-none mt-3">
+						<!-- radio -->
+						<div class="form-group clearfix">
+							@if (listPlant != null)
+							{
+								foreach (var item in listPlant)
+								{
+									if (Common.Get_Session_Int(SessionKey.PLANT_ID) == item.PlantID)
+									{
+										<div class="icheck-primary d-inline mr-5">
+											<input type="radio" id="radioPrimary_@item.PlantID" name="PlantID" data-plantid="@item.PlantID" checked>
+											<label for="radioPrimary_@item.PlantID"> @item.Plant_Name</label>
+										</div>
+									}
+									else
+									{
+										<div class="icheck-primary d-inline mr-5">
+											<input type="radio" id="radioPrimary_@item.PlantID" name="PlantID" data-plantid="@item.PlantID">
+											<label for="radioPrimary_@item.PlantID"> @item.Plant_Name</label>
+										</div>
+									}
+								}
+							}
+
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="row no-gutters">
+				<div class="col-6 p-0 m-0 shadow-none mt-3">
+					<div class="panel-divider mx-5">
+						<span style="background-color: #f4f6f9;">Gate In / Gate Out</span>
+						<!-- radio -->
+						<table id="table_Qr_SrNo" class="table table-striped mt-3">
+							<thead>
+								<tr>
+									<th>&nbsp;</th>
+									<th>Station 7 (Today)</th>
+									<th>Station 8 (Today)</th>
+									<th>Station 7 (Month)</th>
+									<th>Station 8 (Month)</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td> Finished Goods :</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).FG_GateInCount : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).FG_GateOutCount : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).FG_GateInCountMonth : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).FG_GateOutCountMonth : 0)</td>
+								</tr>
+								<tr>
+									<td> Finished Goods Cancel :</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).FG_CancelGateInCount : 0)</td>
+									<td class="text-center">&nbsp;</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).FG_CancelGateInCountMonth : 0)</td>
+									<td class="text-center">&nbsp;</td>
+								</tr>
+								<tr>
+									<td> Raw Material :</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).RM_GateInCount : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).RM_GateOutCount : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).RM_GateInCountMonth : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).RM_GateOutCountMonth : 0)</td>
+								</tr>
+								<tr>
+									<td> Raw Material Cancel :</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).RM_CancelGateInCount : 0)</td>
+									<td class="text-center">&nbsp;</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).RM_CancelGateInCountMonth : 0)</td>
+									<td class="text-center">&nbsp;</td>
+								</tr>
+								<tr>
+									<td> Scrap Goods :</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).SP_GateInCount : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).SP_GateOutCount : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).SP_GateInCountMonth : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).SP_GateOutCountMonth : 0)</td>
+								</tr>
+								<tr>
+									<td> Scrap Goods Cancel :</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).SP_CancelGateInCount : 0)</td>
+									<td class="text-center">&nbsp;</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).SP_CancelGateInCountMonth : 0)</td>
+									<td class="text-center">&nbsp;</td>
+								</tr>
+								<tr>
+									<td> Others :</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).OT_GateInCount : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).OT_GateOutCount : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).OT_GateInCountMonth : 0)</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).OT_GateOutCountMonth : 0)</td>
+								</tr>
+								<tr>
+									<td> Others Cancel :</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).OT_CancelGateInCount : 0)</td>
+									<td class="text-center">&nbsp;</td>
+									<td class="text-center">@((Model != null && Model.Data1 != null) ? ((DashboardData)Model.Data1).OT_CancelGateInCountMonth : 0)</td>
+									<td class="text-center">&nbsp;</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-6 p-0 m-0 shadow-none mt-3">
+					<div class="panel-divider mx-5">
+						<span style="background-color: #f4f6f9;">Dispatch Goods</span>
+						<!-- radio -->
+						<table id="table_Qr_SrNo" class="table table-striped mt-3">
+							<thead>
+								<tr>
+									<th>Period</th>
+									<th>Finished Goods</th>
+									<th>Scrap Goods</th>
+								</tr>
+							</thead>
+							<tbody>
+
+								<tr>
+									<td>Today No Of Shipper Box Disp</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.DsFgShipperBoxDispCount : 0)</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.DsSpShipperBoxDispCount : 0)</td>
+								</tr>
+								<tr>
+									<td>Today Qty Loading Pending</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.DsFgQtyLoadingPendingCount : 0)</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.DsSpQtyLoadingPendingCount : 0)</td>
+								</tr>
+								<tr><td colspan="3">&nbsp;</td></tr>
+								<tr>
+									<td>Monthly No Of Shipper Box Disp</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.DsFgShipperBoxDispCountMonth : 0)</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.DsSpShipperBoxDispCountMonth : 0)</td>
+								</tr>
+								<tr>
+									<td>Monthly Qty Loading Pending</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.DsFgQtyLoadingPendingCountMonth : 0)</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.DsSpQtyLoadingPendingCountMonth : 0)</td>
+								</tr>
+
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="row no-gutters">
+				<div class="col-6 p-0 m-0 shadow-none mt-3">
+					<div class="panel-divider mx-5">
+						<span style="background-color: #f4f6f9;">QR Codes</span>
+						<!-- radio -->
+						<table id="table_Qr_SrNo" class="table table-striped mt-3">
+							<thead>
+								<tr>
+									<th>Period</th>
+									<th>QR Generated</th>
+									<th>QR Received</th>
+								</tr>
+							</thead>
+							<tbody>
+
+								<tr>
+									<td>Today</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.QrGeneratedCount : 0)</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.QrReceivedCount : 0)</td>
+								</tr>
+								<tr>
+									<td>Month</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.QrGeneratedCountMonth : 0)</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.QrReceivedCountMonth : 0)</td>
+								</tr>
+
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-6 p-0 m-0 shadow-none mt-3">
+					<div class="panel-divider mx-5">
+						<span style="background-color: #f4f6f9;">PO & SO</span>
+						<!-- radio -->
+						<table id="table_Qr_SrNo" class="table table-striped mt-3">
+							<thead>
+								<tr>
+									<th>Period</th>
+									<th>Raw Material</th>
+									<th>Vendor Po</th>
+									<th>Scrap So</th>
+								</tr>
+							</thead>
+							<tbody>
+
+								<tr>
+									<td>Today</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.RgRmNoOfCount : 0)</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.PoSoSpCount : 0)</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.SpNoOfCount : 0)</td>
+								</tr>
+								<tr>
+									<td>Month</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.RgRmNoOfCountMonth : 0)</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.PoSoSpCountMonth : 0)</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.SpNoOfCountMonth : 0)</td>
+								</tr>
+
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="row no-gutters">
+				<div class="col-6 p-0 m-0 shadow-none mt-3">
+					<div class="panel-divider mx-5">
+						<span style="background-color: #f4f6f9;">Transfer Of Goods</span>
+						<!-- radio -->
+						<table id="table_Qr_SrNo" class="table table-striped mt-3">
+							<thead>
+								<tr>
+									<th>Period</th>
+									<th>No Of Counts</th>
+								</tr>
+							</thead>
+							<tbody>
+
+								<tr>
+									<td>Today Finished Goods</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.TgFgNoOfCount : 0)</td>
+								</tr>
+								<tr>
+									<td>Today Scrap Goods</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.TgSgNoOfCount : 0)</td>
+								</tr>
+								<tr><td colspan="2">&nbsp;</td></tr>
+								<tr>
+									<td>Month Finished Goods</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.TgFgNoOfCountMonth : 0)</td>
+								</tr>
+								<tr>
+									<td>Month Scrap Goods</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.TgSgNoOfCountMonth : 0)</td>
+								</tr>
+
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-6 p-0 m-0 shadow-none mt-3">
+					<div class="panel-divider mx-5">
+						<span style="background-color: #f4f6f9;">Received Goods</span>
+						<!-- radio -->
+						<table id="table_Qr_SrNo" class="table table-striped mt-3">
+							<thead>
+								<tr>
+									<th>Period</th>
+									<th>No Of Counts</th>
+								</tr>
+							</thead>
+							<tbody>
+
+								<tr>
+									<td>Today Raw Material</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.QrReceivedCount : 0)</td>
+								</tr>
+								<tr>
+									<td>Monthly Raw Material</td>
+									<td>@((Model.Data2 != null) ? Model.Data2.QrReceivedCountMonth : 0)</td>
+								</tr>
+
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+		}
+	</div>
+</div>
+@section scripts {
+	<script type="text/javascript">
+		$(document).on('change', 'input[type="radio"]', function (event) {
+			ajaxPost('@Url.Action("Change_Plant", "Home", new { area = "" })?id=' + $(this).attr('data-plantid'), window.location.href)
+		});
+	</script>
+}

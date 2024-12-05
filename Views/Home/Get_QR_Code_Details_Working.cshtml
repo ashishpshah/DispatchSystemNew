@@ -1,0 +1,417 @@
+﻿@using System.Text.RegularExpressions
+@model ResponseModel<LoginViewModel>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>IFFCO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+
+    <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css">
+
+    <link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
+    <link href="~/plugins/sweetalert2/sweetalert2.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/dist/css/adminlte.min.css">
+
+    <style>
+
+        .table-bordered-new td, .table-bordered-new th {
+            border: 1px solid #9fc7a8;
+        }
+
+        .filled-box {
+            width: 85px;
+            position: absolute;
+        }
+
+            .filled-box td {
+                word-break: break-all;
+                margin: 0;
+                padding: 0;
+            }
+
+            .filled-box p {
+                word-break: break-all;
+                margin: 0;
+                padding: 0;
+            }
+    </style>
+</head>
+<body class="m-0 p-0 vh-100" style="background-color:#dcf2db">
+    <div class="wrapper m-0 p-0">
+        <div class="content-wrapper m-0 p-0">
+
+            <div class="content m-0 p-0">
+                <div class="container-fluid m-0 p-0" style="background-color:#dcf2db">
+                    <div class="row m-0 p-0 d-flex justify-content-center">
+                        <div class="col-sm-12 col-md-8 m-0 p-0">
+                            <div class="card m-0 p-0" style="box-shadow: none;background-color:#dcf2db">
+                                <div class="card-header m-0 p-0 border-0" style="box-shadow: none;background-color:#dcf2db">
+                                    <img src="~/images/iffco-logo.png" class="img-fluid" alt="">
+                                </div>
+                                <div class="card-body m-0 p-0" style="background-color:#dcf2db">
+                                    <div class="card card-green card-outline justify-content-center m-0 p-0" style="background-color:#dcf2db">
+                                        <div class="card-header" style="background-color:#1d8134">
+                                            @if (Model.Data1 != null && Model.Data1.QrCode_Type == "B")
+                                            {
+                                                <span class="text-center text-white"><h3>Product Information / प्रोडक्ट जानकारी</h3></span>
+                                            }
+                                            else if (Model.Data1 != null && Model.Data1.QrCode_Type == "S")
+                                            {
+                                                <span class="text-center text-white"><h3>Shipper Information / शिपर जानकारी</h3></span>
+                                            }
+                                            else if (Model.Data3 != null)
+                                            {
+                                                <span class="text-center text-white"><h3>Invoice Information / चालान जानकारी</h3></span>
+                                            }
+                                        </div>
+                                        <div class="card-body" style="background-color:#dcf2db">
+                                            <div class="row no-gooters">
+                                                <div class="col-md-12 col-sm-12 my-1 table-responsive">
+                                                    @if (Model.Data1 != null && Model.Data1.QrCode_Type == "B")
+                                                    {
+                                                        <table class="table table-bordered-new">
+
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>Plant Name / इकाई</td>
+                                                                    <td>@Model.Data1.PlantName</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Bottle QR Code / बोतल क्यू आर संहिता</td>
+                                                                    <td>@Model.Data1.QrCode</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Batch No. / बैच क्रमांक</td>
+                                                                    <td>@Model.Data1.BatchDesc</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Regn. No. / पंजीकरण क्रमांक</td>
+                                                                    <td>@Model.Data1.RegnNo</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Mfg. Date / निर्माण तारीख</td>
+                                                                    <td>@Model.Data1.MfgDateTxt</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Exp. Date / समाप्ति तारीख</td>
+                                                                    <td>@Model.Data1.ExpDateTxt</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Manufactured By / द्वारा बनाया गया</td>
+                                                                    <td>@Model.Data1.MfgBy</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Marketed By / विपणन किया गया</td>
+                                                                    <td>@Model.Data1.MarketedBy</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Product Name / प्रोडक्ट का नाम</td>
+                                                                    <td>@Model.Data1.PrdDesc</td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td>Status / स्थिति</td>
+                                                                    <td>@Model.Data1.Status</td>
+                                                                </tr>
+
+                                                                @if (!string.IsNullOrEmpty(Model.Data1.MDA_No))
+                                                                {
+                                                                    <tr>
+                                                                        <td>MDA No. / एमडीए क्रमांक</td>
+                                                                        <td>@Model.Data1.MDA_No</td>
+                                                                    </tr>
+
+                                                                    <tr>
+                                                                        <td>Dispatch Date / प्रेषण की तारीख</td>
+                                                                        <td>@Model.Data1.DispatchDate</td>
+                                                                    </tr>
+
+                                                                    <tr>
+                                                                        <td>Party Name / पार्टी का नाम</td>
+                                                                        <td>@Model.Data1.PartyName</td>
+                                                                    </tr>
+
+                                                                    <tr>
+                                                                        <td>Destination / स्थान</td>
+                                                                        <td>@Model.Data1.Destination</td>
+                                                                    </tr>
+                                                                }
+
+                                                            </tbody>
+                                                        </table>
+                                                    }
+
+                                                    @if (Model.Data1 != null && Model.Data1.QrCode_Type == "S")
+                                                    {
+                                                        <div class="row no-gooters">
+                                                            <div class="col-md-7 col-sm-12 col-xs-12 table-responsive">
+                                                                <table class="table table-bordered-new">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td>Plant Name / इकाई</td>
+                                                                            <td>@Model.Data1.PlantName</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Shipper QR Code / शिपर क्यू आर संहिता</td>
+                                                                            @{
+                                                                                int count = 0;
+
+                                                                                string input = Model.Data1.QrCode.ToString();
+                                                                                string pattern = @"(\(\d+\))"; 
+
+                                                                                string result = Regex.Replace(input, pattern, m =>
+                                                                                {
+                                                                                    if (++count == 2)
+                                                                                    {
+                                                                                        return " " + m.Value;
+                                                                                    }
+                                                                                    return m.Value;
+                                                                                });
+
+                                                                            }
+                                                                            <td>@(result)</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Batch No. / बैच क्रमांक</td>
+                                                                            <td>@Model.Data1.BatchDesc</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>No of Bottle / बोतल की संख्या</td>
+                                                                            <td>@Model.Data1.No_Of_Bottle</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>Regn. No. / पंजीकरण क्रमांक</td>
+                                                                            <td>@Model.Data1.RegnNo</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Mfg. Date / निर्माण तारीख</td>
+                                                                            <td>@Model.Data1.MfgDateTxt</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Exp. Date / समाप्ति तारीख</td>
+                                                                            <td>@Model.Data1.ExpDateTxt</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Manufactured By / द्वारा बनाया गया</td>
+                                                                            <td>@Model.Data1.MfgBy</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Marketed By / विपणन किया गया</td>
+                                                                            <td>@Model.Data1.MarketedBy</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Product Name / प्रोडक्ट का नाम</td>
+                                                                            <td>@Model.Data1.PrdDesc</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>Status / स्थिति</td>
+                                                                            <td>@Model.Data1.Status</td>
+                                                                        </tr>
+
+                                                                        @if (!string.IsNullOrEmpty(Model.Data1.MDA_No))
+                                                                        {
+                                                                            <tr>
+                                                                                <td>MDA No. / एमडीए क्रमांक</td>
+                                                                                <td>@Model.Data1.MDA_No</td>
+                                                                            </tr>
+
+                                                                            <tr>
+                                                                                <td>Dispatch Date / प्रेषण की तारीख</td>
+                                                                                <td>@Model.Data1.DispatchDate</td>
+                                                                            </tr>
+
+                                                                            <tr>
+                                                                                <td>Party Name / पार्टी का नाम</td>
+                                                                                <td>@Model.Data1.PartyName</td>
+                                                                            </tr>
+
+                                                                            <tr>
+                                                                                <td>Destination / स्थान</td>
+                                                                                <td>@Model.Data1.Destination</td>
+                                                                            </tr>
+                                                                        }
+
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+
+                                                            <div class="col-md-5 col-sm-12 col-xs-12 table-responsive">
+                                                                <table id="table_Common_1" class="table table-bordered-new">
+                                                                    <tbody>
+                                                                        @if (Model.Data1 != null && ((decimal)Model.Data1.No_Of_Bottle) > 0)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>Bottle QR Code / बोतल क्यू आर संहिता</td>
+                                                                                <td>
+                                                                                    @if (!string.IsNullOrEmpty(Convert.ToString(Model.Data1.Bottle_QR_Codes)))
+                                                                                    {
+                                                                                        var list = Convert.ToString(Model.Data1.Bottle_QR_Codes).Split(',');
+
+                                                                                        <ol>
+                                                                                            @for (int i = 0; i < list.Length; i++)
+                                                                                            {
+                                                                                                <li>@(Convert.ToString(list[i]))</li>
+                                                                                            }
+                                                                                        </ol>
+                                                                                    }
+
+                                                                                </td>
+                                                                            </tr>
+                                                                        }
+
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    }
+
+                                                    @if (Model.Data3 != null)
+                                                    {
+                                                        <div class="row no-gooters">
+                                                            <div class="col-md-6 col-sm-12 col-xs-12 table-responsive">
+                                                                <table class="table table-bordered-new">
+
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td>Plant Name / इकाई</td>
+                                                                            <td>@Model.Data3.PlantName</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Invoice QR Code / चालान क्यू आर संहिता</td>
+                                                                            <td>@Model.Data3.InvoiceQrCode</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>MDA No. / एमडीए क्रमांक</td>
+                                                                            <td>@Model.Data3.Mda_No</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>Vehicle No. / वाहन क्रमांक</td>
+                                                                            <td>@Model.Data3.Truck_No</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>Dispatch Date / प्रेषण की तारीख</td>
+                                                                            <td>@Model.Data3.Gate_Out_Date</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>Party Name / पार्टी का नाम</td>
+                                                                            <td>@Model.Data3.Transporter_Name</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>Destination / स्थान</td>
+                                                                            <td>@Model.Data3.Desp_Place</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>Product Name / प्रोडक्ट का नाम</td>
+                                                                            <td>@Model.Data3.Prod_Desc</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>No of Bottle / बोतल की संख्या</td>
+                                                                            <td>@Model.Data3.NoOfBox</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>No of Shipper / शिपर की संख्या</td>
+                                                                            <td>@Model.Data3.Required_Shipper</td>
+                                                                        </tr>
+
+                                                                        <tr>
+                                                                            <td>No of Loaded Shipper / भारित शिपर की संख्या</td>
+                                                                            <td>@Model.Data3.Loaded_Shipper</td>
+                                                                        </tr>
+
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+
+                                                            <div class="col-md-6 col-sm-12 col-xs-12 table-responsive">
+                                                                <table  class="table table-bordered-new">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <td colspan="5">Batch Information / बैच जानकारी</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td width="5%"># / <br /> क्रमांक</td>
+                                                                            <td>Batch No. / <br /> बैच क्रमांक</td>
+                                                                            <td>Mfg. Date / <br /> निर्माण तारीख</td>
+                                                                            @*<td>Exp. Date / <br /> समाप्ति तारीख</td>*@
+                                                                            <td width="10%">Shipper Count / <br /> शिपर की संख्या</td>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @if (Model.Data3.listShipperBatch != null && ((List<ShipperBatch>)Model.Data3.listShipperBatch).Count() > 0)
+                                                                        {
+                                                                            var i = 1;
+
+                                                                            foreach (var item in ((List<ShipperBatch>)Model.Data3.listShipperBatch).GroupBy(x => new { x.Batch_no, x.mfg_dt, x.expiry_dt })
+                                                                            .Select(x => new { Batch_No = x.Key.Batch_no, MFG_Date = x.Key.mfg_dt, Expiry_Date = x.Key.expiry_dt, Count = x.Count() })
+                                                                            .OrderBy(x => x.Batch_No).ToList())
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>@(i++)</td>
+                                                                                    <td>@item.Batch_No</td>
+                                                                                    <td>@item.MFG_Date</td>
+                                                                                    @*<td>@item.Expiry_Date</td>*@
+                                                                                    <td class="text-right pr-5"><span class="mr-5 pr-5">@item.Count</span></td>
+                                                                                </tr>
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <tr>
+                                                                                <td colspan="5">No any records found.</td>
+                                                                            </tr>
+                                                                        }
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    }
+
+                                                </div>
+
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <footer class="main-footer m-0 p-0 d-flex justify-content-center border-0" style="background-color:#dcf2db">
+                <strong>© Copyright @DateTime.Now.Year <a href="https://www.iffco.in/en/corporate">IFFCO</a>.</strong>
+                All rights reserved.
+                <div class="float-right d-none d-sm-inline-block">
+                    <b>Version</b> 2.0.0
+                </div>
+            </footer>
+        </div>
+    </div>
+
+</body>
+</html>
+

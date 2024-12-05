@@ -1,0 +1,101 @@
+﻿@using System.Globalization;
+@model (string PageTitle_Primary, string PageTitle_Secondary, dynamic objFilter, List<MDA_Status> List, bool withDetail, bool isPrint)
+
+@if (Model.isPrint == true)
+{
+    ViewData["Title"] = "Gate In/Gate Out Summary Report";
+    Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+<div class="row col-12 mb-3">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12" style="text-align:center;">
+                <h2 class="font-weight-bold">@(!string.IsNullOrEmpty(Model.PageTitle_Primary) ? Model.PageTitle_Primary : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+            </div>
+            <br />
+            <div class="col-sm-12" style="text-align:center;">
+
+                @if (!string.IsNullOrEmpty(Model.PageTitle_Secondary))
+                {
+                    <h5 class="font-weight-bold">
+                        Gate In/Gate Out Detail : @Model.PageTitle_Secondary
+                    </h5>
+                }
+                else
+                {
+                    <h4 class="font-weight-bold">Gate In/Gate Out Summary Detail </h4>
+                }
+            </div>
+            <br />
+            <div class="col-sm-12 @(Model.isPrint == true ? "":"d-none")" style="text-align:right;">
+                <h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+            </div>
+            <br />
+        </div>
+    </div>
+</div>
+
+<div class="row col-12 mt-5 text-center">
+
+    @* <table id="table_Common" class="table table-bordered w-100 divDetail @((Model.withDetail == true) ? "" : "d-none")"> *@
+    <table class="table table-bordered w-100 table_Common divDetail" id="tblmain">
+        <thead>
+            <tr>
+                <th>Truck No</th>
+                <th>MDA No</th>
+                <th>MDA Qty (Shippers)</th>
+                <th>Transporter</th>
+                <th>Driver Name</th>
+                <th>Driver Contact</th>
+                <th>RFID</th>
+                @* <th>Status</th> *@
+                <th>Gate In DateTime</th>
+                <th>Weigh In DateTime</th>
+                <th>Tare Weight</th>
+                @* <th>Loading In DateTime</th>
+                <th>Loading Out DateTime</th> *@
+                <th>Weigh Out DateTime</th>
+                <th>Net Weight</th>
+                <th>Out of Tolerance</th>
+                <th>Out of Tolerance Weight</th>
+                @*<th>Gate Out/Dispatch</th>*@
+                @* <th>TAT (HH:MM)</th> *@
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.List != null && Model.List.Count() > 0)
+            {
+                @foreach (var item in Model.List.OrderBy(x => x.SrNo).ToList())
+                {
+                    <tr>
+                        <td>@item.TruckNo</td>
+                        <td>@item.MDANo</td>
+                        <td>@item.MDAQty</td>
+                        <td>@item.Transporter</td>
+                        <td>@item.DriverName</td>
+                        <td>@item.DriverContact</td>
+                        <td>@item.RFID</td>
+                        @* <td>@item.MDAStatus</td> *@
+                        <td>@item.GateInDateTime</td>
+                        <td>@item.WeighInDateTime</td>
+                        <td>@item.TareWeight</td>
+                        @* <td>@item.LoadingInDateTimePrintedFrom</td>
+                        <td>@item.LoadingOutDateTimePrintedFrom</td> *@
+                        <td>@item.WeighOutDateTime</td>
+                        <td>@item.NetWeight</td>
+                        <td>@item.OutofTolerance</td>
+                        <td>@item.OutofToleranceWeight</td>
+                        @* <td>@item.TATHHMM</td> *@
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan="14"><span class="w-100">No any records found.</span></td></tr>
+            }
+        </tbody>
+
+    </table>
+
+</div>

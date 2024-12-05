@@ -1,0 +1,191 @@
+﻿@model ResponseModel<UserRoleMenu>
+
+@{
+	ViewData["Title"] = "UserRoleMenu";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles{
+	<link rel="stylesheet" href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+	<link rel="stylesheet" href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+	<style>
+		.eye-pass {
+			position: absolute;
+			margin-top: 15px;
+			top: -4px;
+			right: 0;
+			margin-right: 35px;
+			cursor: pointer;
+		}
+
+		input[type=password]::-ms-reveal,
+		input[type=password]::-ms-clear {
+			display: none;
+		}
+	</style>
+}
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">Role Menu Mapping</h1>
+			</div>
+			<div class="col-sm-6">
+				<div class="float-sm-right">
+					@*@if (Model.IsCreate == true)
+					{*@
+					@* <button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","UserRoleMwnu", new {  area = "Admin" })');">
+						<i class="fas fa-plus"></i> &nbsp; Add new item
+					</button> *@
+					@*}*@
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<section class="content">
+	<div class="container-fluid">
+		<div class="row no-gutters divformSave_Display d-none" style="margin: 5px !important;">
+			<div class="col-12">
+				@*<form id="formSave" action="@Url.Action("Save","User", new {  area = "Admin"})" method="post">*@
+				<form id="formSave" asp-area="Admin" asp-controller="UserRoleMenu" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div class="row no-gutters" id="divformSave"></div>
+					<div class="clearfix"></div>
+					<hr />
+				</form>
+			</div>
+		</div>
+		<div class="row" id="divList">
+			<div class="col-12">
+				<div class="card card-primary card-outline">
+
+					<div class="card-body">
+
+							<div class="form-group row">
+								<div class="col-6">
+									<div class="input-group input-group-sm ">
+									<label for="Role_Id" class="col-sm-4 col-form-label pl-0">Role</label>
+										<span class="input-group-append col-sm-6 ml-0">
+										<select id="Role_Id" name="Role_Id" class="form-control form-control-sm select2" style="width: 100%;" onchange="getchklist()">
+												@if (Model != null && Model.SelectList != null)
+												{
+													foreach (var item in Model.SelectList)
+													{
+															<option value="@item.Value">@item.Text</option>
+
+													}
+												}
+											</select>
+
+										</span>
+									</div>
+								</div>
+								
+							</div>
+						
+							<div class="clearfix"></div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<section class="content d-none" id="chklist">
+	<div class="container-fluid">
+		<div class="form-group row">
+			<label for="Plan_Name" class="col-sm-2 col-form-label">Menu List</label>
+			<table id="Checkboxlist">
+
+			</table>
+
+		</div>
+		<div class="card-footer text-center">
+			<button type="button" class="btn btn-info btn-sm" onclick="validateform()">Submit</button>
+		</div>
+	</div>
+</section>
+@section Scripts{
+
+	<script type="text/javascript">
+		$(function () {
+
+		});
+		function getchklist() {
+			
+			$("#Checkboxlist").empty();
+			// $("#State_Id").empty();
+			// $("#District_Id").empty();
+			$("#chklist").removeClass('d-none');
+
+			$.ajax({
+				type: 'POST',
+				url: "@Url.Action("getchklist","UserRoleMenu")",
+				dataType: 'json',
+				data: { Role_Id: $('#Role_Id').val() }
+
+			})
+				.done(function (MenuList) {
+
+					var vhtml = "";
+					$.each(MenuList, function (i, MenuList) {
+						if (i % 4 == 0) {
+							vhtml = vhtml + '<tr>' + '</tr>';
+						}
+						if (MenuList.isselected == "Y") {
+							vhtml = vhtml + '<td><input data-val="true" class="checkboxLabel_change" id="Menu_Id" name="IsAddAllMenuChk" type="checkbox" value="' + MenuList.menu_Id + '" checked/><span style="padding-left:5px;padding-right:10px">' + MenuList.menu_Name + '</span>' + '</td>' +
+								'<td><input id="Menuidval_' + i + '" class="d-none" type="text" value="' + MenuList.menu_Id + '" /></td>';
+						}
+						else {
+						vhtml = vhtml + '<td><input data-val="true" class="checkboxLabel_change" id="Menu_Id" name="IsAddAllMenuChk" type="checkbox" value="' + MenuList.menu_Id + '" /><span style="padding-left:5px;padding-right:10px">' + MenuList.menu_Name + '</span>' + '</td>'+
+							'<td><input id="Menuidval_'+i+'" class="d-none" type="text" value="' + MenuList.menu_Id + '" /></td>';
+						}
+						// // $("#State_Id").append('<option value="' + state.value + '">' +
+						// // 	state.text + '</option>');
+					});
+					$("#Checkboxlist").append(vhtml);
+				}).fail(function (xhr) {
+					console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+				});
+			return false;
+		}
+		function validateform() {
+			var checked_checkboxes = document.getElementsByName('IsAddAllMenuChk');
+			var count = 0;
+			var ListRoleDetails = [];
+
+			$('#Checkboxlist input[type="checkbox"]').each(function (index, ele) 
+			{
+				var object = {
+
+					IsAddAllMenu: $(ele).is(':checked'),
+					Menu_Id: $("#Menuidval_" + index).val(),
+				};
+				//console.log($(ele).is(':checked')); console.log($(ele).attr('id'));
+				if (object.IsAddAllMenu) {
+					count += 1;
+				}
+				ListRoleDetails.push(object);
+				 });
+
+			var filters = {
+				Role_Id: $('#Role_Id').val()
+			};
+			// $("#Checkboxlist  tr:gt(0)").each(function (index, value) {
+			// 	var object = {
+			// 		//SR_NO: index + 1,
+			// 		//IsAddAllMenu: checked_checkboxes[index].checked,
+			// 		//Menu_Id: $(this).find("td:eq(1) input").val(),
+			// 		//Insurer_Id: $(this).find("td:eq(7) input").val(),
+			// 	};
+				
+			// });
+			//alert(JSON.stringify(ListRoleDetails));
+			fnSubmitTable(ListRoleDetails, '@Url.Action("AddMenuSave","UserRoleMenu", new { Area = "Admin" })', filters);
+		}
+	</script>
+}
+
+

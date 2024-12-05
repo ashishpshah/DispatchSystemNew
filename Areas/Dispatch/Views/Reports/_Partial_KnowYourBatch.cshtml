@@ -1,0 +1,209 @@
+﻿@using System.Globalization;
+@model (string SearchTerm, bool withDetail, ShipperData objShipper, List<KnowYourBatch> List, bool isPrint)
+
+@{
+	ViewData["Title"] = "Know Your Batch";
+}
+
+@if (Model.isPrint == true)
+{
+	Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+@if (Model.isPrint == true)
+{
+	<div class="row col-12 mb-3">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold">@(Model.objShipper != null && !string.IsNullOrEmpty(Model.objShipper.PlantCd) ? Model.objShipper.PlantCd : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+				</div>
+				<br />
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold">@((Model.withDetail == false) ? "Batch Summary" : "Batch Details") : <b>@Model.objShipper.Batch_no</b></h2>
+				</div>
+				<br />
+				<div class="col-sm-12" style="text-align:right;">
+					<h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+else
+{
+	<div class="form-group row mb-3">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold" id="lableReportTitle">@((Model.withDetail == false) ? "Batch Summary" : "Batch Details") : <b>@Model.objShipper.Batch_no</b></h2>
+				</div>
+				<br />
+			</div>
+		</div>
+	</div>
+
+	<div class="form-group row">
+		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_KnowYourBatch","Reports")?searchTerm=@(Model.SearchTerm)&isPrint=true')">Print</button>
+		<button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('BatchNo')">Export</button>
+	</div>
+}
+
+<div class="row col-12 mt-5">
+
+	<table id="table_Common_Main" class="table table-bordered w-100">
+		<tbody>
+			<tr>
+				<th>Batch No. : @Model.objShipper.Batch_no</th>
+
+				<td>MFG. Date : @Model.objShipper.Mfg_Date</td>
+
+				<td>EXP.Date : @Model.objShipper.Expiry_Date</td>
+			</tr>
+		</tbody>
+
+	</table>
+
+	@if (Model.List != null && Model.List.Where(x => x.Mda_Sys_Id > 0).Count() > 0)
+	{
+		<table id="table_Common" class="table table-bordered w-100 divDetail @((Model.withDetail == true) ? "" : "d-none")">
+
+			<tbody>
+				@foreach (var item in Model.List.Where(x => x.Mda_Sys_Id > 0).OrderBy(x => x.Mda_No).ToList())
+				{
+					<tr>
+						<th>MDA No.</th>
+						<th>MDA Date</th>
+						<th>Invoice No</th>
+						<th>Party Name</th>
+						<th>Destination</th>
+						<th>No.of Shipper</th>
+					</tr>
+					<tr>
+						<td>@item.Mda_No</td>
+						<td>@item.Mda_Date</td>
+						<td>@item.InvoiceQrCode</td>
+						<td>@item.Party_Name</td>
+						<td>@item.Desp_Place</td>
+						<td>@item.Loaded_Shipper</td>
+					</tr>
+					<tr><th colspan="9">Shipper QR Code List</th></tr>
+
+					{
+						List<(int Sr_No, string Qr_Code)> listQRCode = item.listShipper_QrCode.SelectMany(qrCodesString =>
+						{
+							string[] qrCodes = qrCodesString.Split(',').Select(code => code.Trim()).ToArray();
+
+							return qrCodes.Select(qrCode =>
+				{
+					string[] parts = qrCode.Split('.').Select(s => s.Trim()).ToArray();
+					return (Convert.ToInt32(parts[0]), Convert.ToString(parts[1]));
+				});
+						}).ToList();
+
+						var cnt = 0;
+
+						while (cnt < listQRCode.OrderBy(x => x.Sr_No).Count())
+						{
+							List<(int Sr_No, string Qr_Code)> listQR = listQRCode.OrderBy(x => x.Sr_No).Skip(cnt).Take(2).ToList();
+
+							<tr>
+								@foreach (var qr_code in listQR)
+								{
+									<td colspan="3" class="border-0">@(qr_code.Sr_No + ".   " + qr_code.Qr_Code)</td>
+								}
+								@if (listQR.Count() < 2)
+								{
+									for (int i = listQR.Count(); i < 2; i++)
+									{
+										<td colspan="3" class="border-0 border-right">&nbsp;</td>
+									}
+								}
+
+							</tr>
+
+							cnt += 2;
+						}
+
+						<tr><td colspan="9" class="border-0">&nbsp;</td></tr>
+					}
+				}
+			</tbody>
+		</table>
+
+		<table id="table_Common_" class="table table-bordered w-100 divDetail_Z @((Model.withDetail != true) ? "" : "d-none")">
+			<thead>
+				<tr>
+					<th>MDA No.</th>
+					<th>MDA Date</th>
+					<th>Invoice No</th>
+					<th>Party Name</th>
+					<th>Destination</th>
+					<th>No.of Shipper</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var item in Model.List.Where(x => x.Mda_Sys_Id > 0).OrderBy(x => x.Mda_No).ToList())
+				{
+					<tr>
+						<td>@item.Mda_No</td>
+						<td>@item.Mda_Date</td>
+						<td>@item.InvoiceQrCode</td>
+						<td>@item.Party_Name</td>
+						<td>@item.Desp_Place</td>
+						<td>@item.Loaded_Shipper</td>
+					</tr>
+				}
+			</tbody>
+
+		</table>
+	}
+
+	@if (Model.List != null && Model.List.Where(x => x.Mda_Sys_Id == 0).Count() > 0)
+	{
+		<table id="table_Common_0" class="table table-bordered table-striped w-100">
+
+			<tbody>
+				<tr>
+					<th colspan="5">Shipper QR Code List : In WMS</th>
+					<th>No.of Shipper : @Model.List.Where(x => x.Mda_Sys_Id == 0).Select(x => x.Loaded_Shipper).FirstOrDefault()</th>
+				</tr>
+				@foreach (var item in Model.List.Where(x => x.Mda_Sys_Id == 0).ToList())
+				{
+					{
+						List<(int Sr_No, string Qr_Code)> listQRCode = item.listShipper_QrCode.SelectMany(qrCodesString =>
+						{
+							string[] qrCodes = qrCodesString.Split(',').Select(code => code.Trim()).ToArray();
+
+							return qrCodes.Select(qrCode =>
+				{
+					string[] parts = qrCode.Split('.').Select(s => s.Trim()).ToArray();
+					return (Convert.ToInt32(parts[0]), Convert.ToString(parts[1]));
+				});
+						}).ToList();
+
+						var cnt = 0;
+
+						while (cnt < listQRCode.OrderBy(x => x.Sr_No).Count())
+						{
+							List<(int Sr_No, string Qr_Code)> listQR = listQRCode.OrderBy(x => x.Sr_No).Skip(cnt).Take(2).ToList();
+
+							<tr class="border-0">
+								@foreach (var qr_code in listQR)
+								{
+									<td colspan="3" class="border-0">@(qr_code.Sr_No + ".   " + qr_code.Qr_Code)</td>
+								}
+
+							</tr>
+
+							cnt += 2;
+						}
+
+					}
+				}
+
+			</tbody>
+
+		</table>
+	}
+</div>

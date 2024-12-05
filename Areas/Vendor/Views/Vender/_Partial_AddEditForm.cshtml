@@ -1,0 +1,129 @@
+﻿@model QRCodeGeneration
+@{
+	Layout = null;
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+	<div class="card card-primary card-outline">
+		<div class="card-body">
+			<form id="formSave" asp-area="Vendor" asp-controller="Vender" asp-action="Save_Print" method="post" class="form-horizontal" enctype="multipart/form-data">
+
+				<div class="row no-gutters p-0 m-0">
+					<input type="text" class="form-control d-none" name="Id" value="@Model.Id">
+					<input type="text" class="form-control d-none" id="VPO_Id" name="VPO_Id" value="@Model.VPO_Id">
+					<input type="text" class="form-control d-none" id="VendorId" name="VendorId" value="@Model.VendorId">
+
+					<div class="panel-divider col-12">
+						<span>Requests Header</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+								<div class="form-group row">
+									<label class="col-sm-1 col-form-label" style="align-content:start">Request No</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" value="@Model.RequestNo" autocomplete="off" readonly>
+									</div>
+									<label class="col-sm-1 col-form-label" style="align-content:start">Request Date</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" value="@Model.RequestDate_Text" autocomplete="off" readonly>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-1 col-form-label" style="align-content:start">PO No</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" value="@Model.PO_Number" autocomplete="off" readonly>
+									</div>
+									<label class="col-sm-1 col-form-label" style="align-content:start">PO Date</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" value="@Model.PO_Date_Text" autocomplete="off" readonly>
+									</div>
+									<label class="col-sm-1 col-form-label" style="align-content:start">PO Line Item</label>
+									<div class="col-sm-3">
+										<div class="input-group mb-2">
+											<div class="input-group-prepend"> <div class="input-group-text form-control-sm">@Model.LineItemNo</div> </div>
+											<input type="text" class="form-control form-control-sm" value="@Model.LineItemDesc" autocomplete="off" readonly>
+										</div>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-1 col-form-label" style="align-content:start">SKU Description</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" value="@Model.SkuDesc" autocomplete="off" readonly>
+									</div>
+									<label class="col-sm-1 col-form-label" style="align-content:start">Total Quantity</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" value="@Model.TotalQty" autocomplete="off" readonly>
+									</div>
+									<label class="col-sm-1 col-form-label" style="align-content:start">Required Quantity</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" value="@Model.RequestQty" autocomplete="off" readonly>
+									</div>
+									<label class="col-sm-1 col-form-label" style="align-content:start">Remaining Quantity</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" value="@Model.RemainQty" autocomplete="off" readonly>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="panel-divider col-12">
+						<span>QR Code Files</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-md-12 my-1">
+								<table class="table table-bordered table-striped table-hover" id="dataTable_Serial">
+									<thead>
+										<tr>
+											<td width="5%">Sr No</td>
+											<td width="10%">Required Quantity</td>
+											<td>File Download</td>
+											<td width="10%">Status</td>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model != null && Model != null && Model.listSerial != null)
+										{
+											for (int i = 0; i < Model.listSerial.Count(); i++)
+											{
+												<tr>
+													<td> @(i + 1) </td>
+													<td> @Model.listSerial[i].RequestQty </td>
+													<td>
+														@if (Model.listSerial[i].IsLock == true)
+														{
+															<span>@Model.listSerial[i].FileName</span>
+														}
+														else
+														{
+															<a href="@(Url.Action("Export_QRCode","Vender", new {  area = "Vendor" })+"?Id="+ Model.Id + "&Srl_Id="+Model.listSerial[i].Id+"&Vendor_Id="+Model.VendorId)" target="_blank">@Model.listSerial[i].FileName</a>
+														}
+
+													</td>
+													<td> @Model.listSerial[i].Status_FileDownload </td>
+
+												</tr>
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+					</div>
+
+				</div>
+
+				<div class="row no-gutters p-0 m-0">
+					<div class="col-12 text-center">
+						@if (Model != null && !string.IsNullOrEmpty(Model.RequestStatus) && (Model.RequestStatus.ToLower().Contains("pend") || Model.RequestStatus.ToLower().Contains("email")))
+						{
+							<button type="submit" class="btn btn-success btnSubmit">Finished Printing</button>
+						}
+						<button type="button" class="btn btn-danger" onclick="fnClose_Modal();">Cancel</button>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+			</form>
+		</div>
+	</div>
+</div>

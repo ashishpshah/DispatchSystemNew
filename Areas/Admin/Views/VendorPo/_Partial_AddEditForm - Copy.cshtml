@@ -1,0 +1,381 @@
+﻿@model ResponseModel<VendorPO>
+@{
+    List<VendorPoDtls> listVendorPoDtls = ViewBag.VendorPoDtlsList;
+    Layout = null;
+    var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+    <div class="card card-primary card-outline">
+        <div class="card-header">
+            <h3 class="card-title">@(Model.Obj.Id > 0 ? "Edit " : "Create") Vendor PO</h3>
+
+            <div class="card-tools">
+                <button type="button" class="btn btn-primary btn-sm" title="Back To List" onclick="fnBackToList('@IndexPageUrl')">
+                    <i class="fas fa-arrow-left"></i> Back To List
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body @(Model.Obj.Id > 0 ? " pt-0 mt-0":"")">
+            <input type="text" class="form-control d-none" name="Id" value="@Model.Obj.Id">
+
+            @if (Model.Obj.Id > 0)
+            {
+                @*<div class="row p-0 m-0 d-flex justify-content-between">
+                    <ul class="col-12 nav nav-tabs mr-auto p-2">
+                        <li class="nav-item text-bold"><a class="nav-link active" href="#tab_VendorPO" data-toggle="tab">Vendor PO</a></li>
+                        <li class="nav-item text-bold"><a class="nav-link" href="#tab_Site" data-toggle="tab">Vendor PO Details</a></li>
+                    </ul>
+                </div>*@
+
+                <div class="row p-0 m-0 d-flex">
+                    <div class="col-12 tab-content p-0 m-0">
+
+                        @*<div id="tab_Site" class="tab-pane">
+                        </div>*@
+
+                        <div id="tab_VendorPO" class="tab-pane active row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+                                <div class="form-group row">
+                                    @*<label for="VendorId" class="col-sm-2 col-form-label" style="align-content:start">Vendor Id<span style="color:red">*</span></label>
+                                <div class="col-sm-4">
+                                <input type="text" class="form-control form-control-sm" id="VendorId" name="VendorId" value="@Model.Obj.VendorId" maxlength="30" data-required data-msg="The Vendor Id field is required." autocomplete="off" @(Model.Obj.Id <= 0 ? "" : "readonly")>
+                                </div>*@
+                                    <label for="VendorId" class="col-sm-2 col-form-label" style="align-content:start">Vendor Id<span style="color:red">*</span></label>
+                                    <div class="col-sm-3">
+                                        <select id="VendorId" name="VendorId" class="form-control form-control-sm select2" style="width: 100%;" onchange="GetVendorSitelist()">
+                                            @if (Model != null && Model.SelectListItems != null)
+                                            {
+                                                foreach (var item in Model.SelectListItems)
+                                                {
+                                                    if (item.Value == Convert.ToString(@Model.Obj.VendorId))
+                                                    {
+                                                        <option value="@item.Value" selected>@item.Text</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.Value">@item.Text</option>
+                                                    }
+
+                                                }
+                                            }
+                                        </select>
+                                        @*<input type="text" class="form-control form-control-sm" id="VendorId" name="VendorId" value="@Model.Obj.VendorId" maxlength="30" data-required data-msg="The Vendor Id field is required." autocomplete="off" @(Model.Obj.Id <= 0 ? "" : "readonly")>*@
+                                    </div>
+                                    <label for="VendorSite" class="col-sm-2 col-form-label" style="align-content:start">Vendor Site<span style="color:red">*</span></label>
+                                    <div class="col-sm-3">
+                                        <div class="input-group input-group-sm">
+                                            @* <input type="text" class="form-control form-control-sm" id="VendorSite" name="VendorSite" value="@Model.Obj.VendorSite"
+                                        data-required data-msg="The Vendor Site field is required." autocomplete="off">*@
+                                            <select id="SiteId" name="SiteId" class="form-control form-control-sm select2" style="width: 100%;">
+                                                @if (Model != null && ViewBag.VendorSitelist != null)
+                                                {
+                                                    foreach (var item in ViewBag.VendorSitelist)
+                                                    {
+                                                        if (item.Value == Convert.ToString(@Model.Obj.SiteId))
+                                                        {
+                                                            <option value="@item.Value" selected>@item.Text</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.Value">@item.Text</option>
+                                                        }
+
+                                                    }
+                                                }
+                                            </select>
+                                            @* <span class="input-group-append">
+                                        <button type="button" class="btn btn-info btn-flat" onclick="fnSearch_Vendor($('#Organization_Name'))">Check</button>
+                                        </span>*@
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="PoNo" class="col-sm-2 col-form-label">Po No <span style="color:red">*</span></label>
+                                    <div class="col-sm-2">
+                                        <input type="text" class="form-control form-control-sm" id="PoNo" name="PoNo" value="@Model.Obj.PoNo" maxlength="50" data-required data-msg="The Po No field is required." autocomplete="off">
+                                    </div>
+                                    <label for="PoDate" class="col-sm-1 col-form-label">Po Date</label>
+                                    <div class="col-sm-2">
+                                        <input type="text" class="form-control form-control-sm" id="PoDate" name="PoDate" value="@Model.Obj.PoDate" maxlength="50" autocomplete="off">
+                                    </div>
+                                    <label for="PoDesc" class="col-sm-1 col-form-label">Po Desc <span style="color:red">*</span></label>
+                                    <div class="col-sm-2">
+                                        <input type="text" class="form-control form-control-sm" id="PoDesc" name="PoDesc" value="@Model.Obj.PoDesc" maxlength="50" data-required data-msg="The Po Desc field is required." autocomplete="off">
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group row">
+                                    <label class="col-sm-2 col-form-label text-right">Status </label>
+                                    <div class="col-sm-4">
+                                        <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+                                            <input type="checkbox" class="custom-control-input"
+                                               id="switch_Status" name="IsActive" @(Model.Obj == null || Model.Obj.IsActive == true || Model.Obj.Id == 0 ? "checked" : "")
+                                               onchange="fnChange_Switch(this, 'label_Switch_Status')">
+                                            <label class="custom-control-label" for="switch_Status" id="label_Switch_Status" data-true="Active" data-false="Inactive">@((Model.Obj != null && Model.Obj.IsActive == true) || Model.Obj == null || Model.Obj.Id == 0 ? "Active" : "Inactive")</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr />
+                                <div class="row mb-2">
+                                    <div class="col-sm-6">
+                                        <h5 class="m-0 text-left">Vendor PO Details</h5>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="float-sm-right">
+                                            @if (Common.IsAdmin())
+                                            {
+                                                @*<button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnLoadParialView('divformSave_VendorPOSite', '@Url.Action("Partial_AddEditForm_Site","VendorPO", new {  area = "Admin" })?id=@Model.Obj.Id');">
+                                        <i class="fas fa-plus"></i> &nbsp; Add new item
+                                        </button>*@
+                                                <button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnAddRow()">
+                                                    <i class="fas fa-plus"></i> &nbsp; Add new item
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row no-gooters">
+                                    <div class="col-md-12 my-1">
+                                        <table id="table_VendorPOSite" class="table table-bordered table-striped table_Common_SrNo w-100">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th hidden>VPO_Id</th>
+                                                    <th>Line No</th>
+                                                    <th>Line Description</th>
+                                                    <th>UOM</th>
+                                                    <th>Quantity</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model.Obj.listVendorPoDtls != null && Model.Obj.listVendorPoDtls.Count() > 0)
+                                                {
+                                                    for (int i = 0; i < Model.Obj.listVendorPoDtls.Count(); i++)
+                                                    {
+                                                        <tr>
+                                                            <td><input type="text" class="form-control form-control-sm d-none" id="listVendorPoDtls_(@i)_Id" asp-for="Obj.listVendorPoDtls[i].VPO_Id" value="listVendorPoDtls[@i].Id" maxlength="50" autocomplete="off"></td>
+                                                            <td><input type="text" class="form-control form-control-sm d-none" id="listVendorPoDtls_(@i)_VPO_Id" name="listVendorPoDtls[@i].VPO_Id" value="listVendorPoDtls[@i].VPO_Id" maxlength="50" autocomplete="off"></td>
+                                                            <td><input type="text" class="form-control form-control-sm" id="listVendorPoDtls_(@i)_LineNo" name="listVendorPoDtls[@i].LineNo" value="listVendorPoDtls[@i].LineNo" maxlength="50" autocomplete="off"></td>
+                                                            <td><input type="text" class="form-control form-control-sm" id="listVendorPoDtls_(@i)_LineDesc" name="listVendorPoDtls[@i].LineDesc" value="listVendorPoDtls[@i].LineDesc" maxlength="50" autocomplete="off"></td>
+                                                            <td><input type="text" class="form-control form-control-sm" id="listVendorPoDtls_(@i)_UOM" name="listVendorPoDtls[@i].UOM" value="listVendorPoDtls[@i].UOM" maxlength="50" autocomplete="off"></td>
+                                                            <td><input type="text" class="form-control form-control-sm" id="listVendorPoDtls_(@i)_LineQty" name="listVendorPoDtls[@i].LineQty" value="listVendorPoDtls[@i].LineQty" maxlength="50" autocomplete="off"></td>
+                                                            <td>
+                                                                <div class="btn-group">
+                                                                    <button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
+                                                                onclick="fnLoadParialView('divformSave_VendorPOSite', '@Url.Action("Partial_AddEditForm_Site","VendorPO", new {  area = "Admin" })?id=Id_@i');">
+                                                                        <i class="far fa-edit"></i>
+                                                                    </button>
+
+                                                                    <button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+                                                                onclick="fnDelete_Confirm('@Url.Action("Partial_AddEditForm_Site","VendorPO", new {  area = "Admin" })?id=Id_@i', '#table_VendorSite');">
+                                                                        <i class="far fa-trash-alt"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="clearfix"></div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-12 card-footer text-center">
+                                        <button type="button" class="btn btn-success btnSubmitVendorPo">Save</button>
+                                        <button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '#table_Common_SrNo');">Cancel</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            }
+            else
+            {
+                @*<div class="row p-0 m-0 d-flex justify-content-between">
+                    <ul class="col-12 nav nav-tabs mr-auto p-2">
+                        <li class="nav-item text-bold"><a class="nav-link active" href="#tab_VendorPO" data-toggle="tab">Vendor PO</a></li>
+                        <li class="nav-item text-bold"><a class="nav-link" href="#tab_Site" data-toggle="tab">Vendor PO Details</a></li>
+                    </ul>
+                </div>*@
+
+                <div class="row p-0 m-0 d-flex">
+                    <div class="col-12 tab-content p-0 m-0">
+
+                       @* <div id="tab_Site" class="tab-pane">
+                        </div>*@
+
+                        <div id="tab_VendorPO" class="tab-pane active row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+                                <div class="form-group row">
+                                    <label for="VendorId" class="col-sm-2 col-form-label" style="align-content:start">Vendor Id<span style="color:red">*</span></label>
+                                    <div class="col-sm-3">
+                                        <select id="VendorId" name="VendorId" class="form-control form-control-sm select2" style="width: 100%;" onchange="getVendorSite()">
+                                            @if (Model != null && Model.SelectListItems != null)
+                                            {
+                                                foreach (var item in Model.SelectListItems)
+                                                {
+                                                    if (item.Value == Convert.ToString(@Model.Obj.VendorId))
+                                                    {
+                                                        <option value="@item.Value" selected>@item.Text</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.Value">@item.Text</option>
+                                                    }
+
+                                                }
+                                            }
+                                        </select>
+                                        @*<input type="text" class="form-control form-control-sm" id="VendorId" name="VendorId" value="@Model.Obj.VendorId" maxlength="30" data-required data-msg="The Vendor Id field is required." autocomplete="off" @(Model.Obj.Id <= 0 ? "" : "readonly")>*@
+                                    </div>
+                                    <label for="SiteId" class="col-sm-2 col-form-label" style="align-content:start">Vendor Site<span style="color:red">*</span></label>
+                                    <div class="col-sm-3">
+                                        <div class="input-group input-group-sm">
+                                            @*<input type="text" class="form-control form-control-sm" id="VendorSite" name="VendorSite" value="@Model.Obj.SiteId" data-required data-msg="The Vendor Site field is required." autocomplete="off">*@
+                                            <select id="SiteId" name="SiteId" class="form-control form-control-sm select2" style="width: 100%;">
+                                                @if (Model != null && ViewBag.VendorSitelist != null)
+                                                {
+                                                    foreach (var item in ViewBag.VendorSitelist)
+                                                    {
+                                                        if (item.Value == Convert.ToString(@Model.Obj.SiteId))
+                                                        {
+                                                            <option value="@item.Value" selected>@item.Text</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.Value">@item.Text</option>
+                                                        }
+
+                                                    }
+                                                }
+                                            </select>
+                                            @* <span class="input-group-append">
+                                        <button type="button" class="btn btn-info btn-flat" onclick="fnSearch_Vendor($('#Organization_Name'))">Check</button>
+                                        </span>*@
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="PoNo" class="col-sm-2 col-form-label">Po No <span style="color:red">*</span></label>
+                                    <div class="col-sm-2">
+                                        <input type="text" class="form-control form-control-sm" id="PoNo" name="PoNo" value="@Model.Obj.PoNo" maxlength="50" data-required data-msg="The Po No field is required." autocomplete="off">
+                                    </div>
+                                    <label for="Middle_NaPoDateme" class="col-sm-1 col-form-label">Po Date</label>
+                                    <div class="col-sm-2">
+                                        <input type="date" class="form-control form-control-sm" id="PoDate" name="PoDate" value="@Model.Obj.PoDate" maxlength="50" autocomplete="off">
+                                    </div>
+                                    <label for="PoDesc" class="col-sm-1 col-form-label">Po Desc <span style="color:red">*</span></label>
+                                    <div class="col-sm-2">
+                                        <input type="text" class="form-control form-control-sm" id="PoDesc" name="PoDesc" value="@Model.Obj.PoDesc" maxlength="50" data-required data-msg="The Po Desc field is required." autocomplete="off">
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group row">
+                                    <label class="col-sm-2 col-form-label text-right">Status </label>
+                                    <div class="col-sm-4">
+                                        <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+                                            <input type="checkbox" class="custom-control-input"
+                                               id="switch_Status" name="IsActive" @(Model.Obj == null || Model.Obj.IsActive == true || Model.Obj.Id == 0 ? "checked" : "")
+                                               onchange="fnChange_Switch(this, 'label_Switch_Status')">
+                                            <label class="custom-control-label" for="switch_Status" id="label_Switch_Status" data-true="Active" data-false="Inactive">@((Model.Obj != null && Model.Obj.IsActive == true) || Model.Obj == null || Model.Obj.Id == 0 ? "Active" : "Inactive")</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr />
+                                <div class="row mb-2">
+                                    <div class="col-sm-6">
+                                        <h5 class="m-0 text-left">Vendor PO Details</h5>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="float-sm-right">
+                                            @if (Common.IsAdmin())
+                                            {
+                                                @*<button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnLoadParialView('divformSave_VendorPOSite', '@Url.Action("Partial_AddEditForm_Site","VendorPO", new {  area = "Admin" })?id=@Model.Obj.Id');">
+                                        <i class="fas fa-plus"></i> &nbsp; Add new item
+                                        </button>*@
+                                                <button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnAddRow()">
+                                                    <i class="fas fa-plus"></i> &nbsp; Add new item
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row no-gooters">
+                                    <div class="col-md-12 my-1">
+                                        <table id="table_VendorPOSite" class="table table-bordered table-striped w-100">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th hidden>VPO_Id</th>
+                                                    <th>Line No</th>
+                                                    <th>Line Description</th>
+                                                    <th>UOM</th>
+                                                    <th>Quantity</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (listVendorPoDtls != null && listVendorPoDtls.Count() > 0)
+                                                {
+                                                    for (int i = 0; i < listVendorPoDtls.Count(); i++)
+                                                    {
+                                                        <tr>
+                                                            <td><input type="text" class="form-control form-control-sm d-none" id="listVendorPoDtls_(@i)_Id" name="listVendorPoDtls[@i].Id" value="listVendorPoDtls[@i].Id" maxlength="50" autocomplete="off"></td>
+                                                            <td><input type="text" class="form-control form-control-sm d-none" id="listVendorPoDtls_(@i)_VPO_Id" name="listVendorPoDtls[@i].VPO_Id" value="listVendorPoDtls[@i].VPO_Id" maxlength="50" autocomplete="off"></td>
+                                                            <td><input type="text" class="form-control form-control-sm" id="listVendorPoDtls_(@i)_LineNo" name="listVendorPoDtls[@i].LineNo" value="listVendorPoDtls[@i].LineNo" maxlength="50" autocomplete="off"></td>
+                                                            <td><input type="text" class="form-control form-control-sm" id="listVendorPoDtls_(@i)_LineDesc" name="listVendorPoDtls[@i].LineDesc" value="listVendorPoDtls[@i].LineDesc" maxlength="50" autocomplete="off"></td>
+                                                            <td><input type="text" class="form-control form-control-sm" id="listVendorPoDtls_(@i)_UOM" name="listVendorPoDtls[@i].UOM" value="listVendorPoDtls[@i].UOM" maxlength="50" autocomplete="off"></td>
+                                                            <td><input type="text" class="form-control form-control-sm" id="listVendorPoDtls_(@i)_LineQty" name="listVendorPoDtls[@i].LineQty" value="listVendorPoDtls[@i].LineQty" maxlength="50" autocomplete="off"></td>
+                                                            <td>
+                                                                <div class="btn-group">
+                                                                    <button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
+                                                                onclick="fnLoadParialView('divformSave_VendorPOSite', '@Url.Action("Partial_AddEditForm_Site","VendorPO", new {  area = "Admin" })?id=Id_@i');">
+                                                                        <i class="far fa-edit"></i>
+                                                                    </button>
+
+                                                                    <button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+                                                                onclick="fnDelete_Confirm('@Url.Action("Partial_AddEditForm_Site","VendorPO", new {  area = "Admin" })?id=Id_@i', '#table_VendorSite');">
+                                                                        <i class="far fa-trash-alt"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-12 card-footer text-center">
+                                        <button type="submit" class="btn btn-success btnSubmit">Save</button>
+                                        <button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '#table_Common_SrNo');">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            }
+        </div>
+
+    </div>
+</div>

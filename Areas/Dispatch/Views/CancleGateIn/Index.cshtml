@@ -1,0 +1,506 @@
+﻿@model ResponseModel<GateIn>
+
+@{
+	ViewData["Title"] = "Cancel Gate In";
+}
+<!-- Content Header (Page header) -->
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-12">
+				<h1 class="font-weight-bold">Cancel Gate In</h1>
+			</div>
+			@*<div class="col-sm-6">
+			<ol class="breadcrumb float-sm-right">
+			<li class="breadcrumb-item"><a href="#">Home</a></li>
+			<li class="breadcrumb-item active">General Form</li>
+			</ol>
+			</div>*@
+		</div>
+	</div>
+</section>
+
+<!-- Main content -->
+<section class="content p-0">
+	<div class="container-fluid p-0">
+		<div class="row no-gutters">
+			<div class="col-12 card">
+				<form id="formSave" asp-controller="CancleGateIn" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data" data_form_isvalidate>
+					<div class="card-body pb-0">
+						<div class="panel-divider">
+							<span>Search Details</span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="form-horizontal">
+										<div class="card-body py-1 px-0">
+											<div class="form-group row">
+												<label for="ddlInward_Sys_Id" class="col-sm-2 col-form-label">Inward Type <span class="text-danger">*</span></label>
+												<div class="col-sm-4">
+													<select id="ddlInward_Sys_Id" class="form-control form-control-sm select2" style="width: 100%;"
+															data-required data-msg="The Inward Type field is required.">
+														@if (Model != null && Model.SelectListItems.Where(x => x.Group == "INWARDTYPE") != null)
+														{
+															foreach (var item in Model.SelectListItems.Where(x => x.Group == "INWARDTYPE" && (x.Value == "1" || x.Value == "4")).OrderBy(x => x.OrderBy).ToList())
+															{
+																if (item.Value == "1")
+																{
+																	<option value="@item.Value" data-type="" selected>@item.Text</option>
+																}
+																else
+																{
+																	<option value="@item.Value" data-type="">@item.Text</option>
+																}
+															}
+														}
+													</select>
+												</div>
+											</div>
+											<div class="form-group row">
+												<label for="Truck_No" class="col-sm-2 col-form-label">Vehicle Number / MDA Number <span class="text-danger">*</span></label>
+												<div class="col-sm-6">
+													<div class="input-group input-group-sm">
+														<input type="text" id="inputSearch" class="form-control form-control-sm">
+														<span class="input-group-append ml-2">
+															<button type="button" class="btn btn-info btn-flat mr-2" onclick="GetMDA(this, 'S')">Search</button>
+															<button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetMDA(this, 'V')">View Vehicle</button>
+														</span>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="panel-divider">
+							<span>Vehicle Details</span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="form-horizontal">
+										<div class="card-body py-1 px-0">
+											<div class="form-group row">
+												<label for="Truck_No" class="col-sm-2 col-form-label">Vehicle Number </label>
+												<div class="col-sm-4">
+													<input type="text" class="form-control form-control-sm" id="Truck_No" name="Truck_No" data-required data-msg="The Vehicle Number is required." autocomplete="off" readonly>
+													<input type="text" class="form-control form-control-sm d-none" id="Id" name="Id">
+													<input type="text" class="form-control form-control-sm d-none" id="Inward_Sys_Id" name="Inward_Sys_Id">
+												</div>
+												<label for="MDA_No" class="col-sm-2 col-form-label">MDA Number </label>
+												<div class="col-sm-4">
+													<input type="text" class="form-control form-control-sm" id="MDA_No" name="MDA_No" autocomplete="off" readonly>
+												</div>
+											</div>
+											<div class="form-group row">
+												<label for="tptr_name" class="col-sm-2 col-form-label">Transporter Name </label>
+												<div class="col-sm-10">
+													<input type="text" class="form-control form-control-sm" id="tptr_name" name="tptr_name" autocomplete="off" readonly>
+												</div>
+											</div>
+											<div class="form-group row">
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Driver_Name" class="col-sm-4 col-form-label pl-0">Driver Name </label>
+														<span class="input-group-append col-sm-6 ml-0">
+															<input type="text" class="form-control form-control-sm" id="Driver_Name" name="Driver_Name" autocomplete="off" readonly>
+														</span>
+													</div>
+												</div>
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Driver_Contact" class="col-sm-4 col-form-label pl-0">Driver Contact </label>
+														<span class="input-group-append col-sm-6 ml-0">
+															<input type="text" class="form-control form-control-sm isNumberKey" id="Driver_Contact" name="Driver_Contact" autocomplete="off" readonly>
+														</span>
+													</div>
+												</div>
+											</div>
+											<div class="form-group row">
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Driver_Id_Proof_Type" class="col-sm-4 col-form-label pl-0">Driver Id Proof Type </label>
+														<span class="input-group-append col-sm-6 ml-0">
+															<input type="text" class="form-control form-control-sm" id="Driver_Id_Proof_Type" autocomplete="off" readonly>
+														</span>
+													</div>
+												</div>
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Driver_Id_Number" class="col-sm-4 col-form-label pl-0">Driver Id Number </label>
+														<span class="input-group-append col-sm-6 ml-0">
+															<input type="text" class="form-control form-control-sm isNumberKey" id="Driver_Id_Number" autocomplete="off" readonly>
+														</span>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="panel-divider">
+							<span>Cancel Gate In</span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="form-horizontal">
+										<div class="card-body py-1 px-0">
+											<div class="form-group row">
+												<div class="col-10">
+													<div class="input-group input-group-sm ">
+														<label for="Cancel_Gate_Reason" class="col-sm-2 col-form-label pl-0">Reason for Cancellation <span class="text-danger">*</span></label>
+														<span class="input-group-append col-sm-10 ml-0">
+															<input type="text" class="form-control form-control-sm" id="Cancel_Gate_Reason" name="Cancel_Gate_Reason">
+														</span>
+													</div>
+												</div>
+											</div>
+											<div class="form-group row">
+												<label for="Verified_Documents" class="col-sm-2 col-form-label">Verified Documents?</label>
+												<div class="col-sm-4">
+													<div class="icheck-primary d-inline">
+														<input type="checkbox" id="Verified_Documents" name="Verified_Documents">
+														<label for="Verified_Documents"> &nbsp; </label>
+													</div>
+												</div>
+												<label for="Verified_Officer_Id" class="col-sm-2 col-form-label">Verified Officer Name</label>
+												<div class="col-sm-4">
+													@* <select id="Verified_Officer_Id" name="Verified_Officer_Id" class="form-control form-control-sm select2" style="width: 100%;"
+													data-required data-msg="The Verified Officer Name field is required.">
+													@if (Model != null && Model.SelectList != null)
+													{
+													foreach (var item in Model.SelectList)
+													{
+													<option value="@item.Value">@item.Text</option>
+													}
+													}
+													</select> *@
+
+													<input type="text" class="form-control form-control-sm" id="Verified_Officer" name="Verified_Officer" autocomplete="off" readonly>
+													<input type="text" class="form-control form-control-sm d-none" id="Verified_Officer_Id" name="Verified_Officer_Id" autocomplete="off" readonly>
+
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="card-footer">
+						<button type="button" class="btn btn-info btn-flat px-3 mr-3 btnSubmit">Save</button>
+						<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClearFormData('#formSave')">Clear</button>
+						<button type="button" class="btn btn-danger btn-flat px-3 mr-3">Close</button>
+						<span class="float-right mr-3"><span class="text-danger">*</span> Mandatory Fields</span>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</section>
+
+@section Scripts{
+	<script type="text/javascript">
+		var table = {};
+
+		$(document).ready(function () {
+
+			$('input#Verified_Officer_Id').val('@Common.Get_Session(SessionKey.USER_ID)');
+			$('input#Verified_Officer_Id').trigger('change');
+			$('input#Verified_Officer').val('@Common.Get_Session(SessionKey.USER_NAME)');
+			$('input#Verified_Officer').trigger('change');
+
+		});
+
+		function GetMDA($this, $type) {
+			ShowLoader(true);
+
+			if (typeof $type != 'undefined' && $type != null && $type != "null" && $type.trim() != 'S') $('#inputSearch').val('').trigger('change');
+			//	fnClear_MDA();
+
+			if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide(); //$('#modal-xl').modal('hide');
+
+			$.ajax({
+				type: "GET",
+				url: '@Url.Action("GetMDA","CancleGateIn")?type=' + $type + '&searchTerm=' + $('#inputSearch').val() + '&Inward_Sys_Id=' + $('#ddlInward_Sys_Id option:selected').val(),
+				data: null,
+				contentType: "application/json; charset=utf-8",
+				dataType: "html",
+				success: function (response) {
+
+					fnClear_MDA();
+
+					if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+
+						var Inward_Sys_Id = $('#ddlInward_Sys_Id option:selected').val();
+
+						if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 1) {
+
+							CommonAlert_Error("MDA Detail not Found.");
+
+						}
+						else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 4) {
+
+							CommonAlert_Error("Order/Other Detail not Found.");
+						}
+
+						return false;
+					}
+
+					if (response.indexOf('{') == 0) {
+
+						setTimeout(function () {
+
+							try {
+
+								if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+									var selectedData = JSON.parse(response);
+
+									$('#Id').val(selectedData['id']);
+									$('#Inward_Sys_Id').val(selectedData['inward_Sys_Id']);
+									$('#Truck_No').val(selectedData['vehicle_no']);
+									$('#MDA_No').val(selectedData['mda_no']);
+									$('#tptr_name').val(selectedData['tptr_name']);
+									$('#Driver_Name').val(selectedData['driver']);
+									$('#Driver_Contact').val(selectedData['mobile_no']);
+									$('#Driver_Id_Proof_Type').val(selectedData['driver_Id_Type']);
+									$('#Driver_Id_Number').val(selectedData['driver_Id_Number']);
+
+									$('#Id').trigger('change');
+									$('#Inward_Sys_Id').trigger('change');
+									$('#Truck_No').trigger('change');
+									$('#MDA_No').trigger('change');
+									$('#tptr_name').trigger('change');
+									$('#Driver_Name').trigger('change');
+									$('#Driver_Contact').trigger('change');
+									$('#Driver_Id_Proof_Type').trigger('change');
+									$('#Driver_Id_Number').trigger('change');
+								} else
+									CommonAlert_Error("No record found");
+
+							} catch { }
+
+							ShowLoader(false);
+
+						}, 1000);
+
+					}
+					else {
+
+						$('#modal-xl .modal-body').html('');
+						$('#modal-xl .modal-body').append(response);
+
+						debugger;
+
+						var Inward_Sys_Id = $('#ddlInward_Sys_Id option:selected').val();
+
+						if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 1) {
+
+							if ($type == 'S')
+								$('#modal-xl .modal-title').html('Search MDA');
+							else
+								$('#modal-xl .modal-title').html('View MDA');
+
+						}
+						else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 4) {
+
+							if ($type == 'S')
+								$('#modal-xl .modal-title').html('Search Other Material');
+							else
+								$('#modal-xl .modal-title').html('View Other Material');
+
+						}
+
+						setTimeout(function () {
+
+							try {
+
+								if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
+									$('#modal-xl .modal-body #table_Common').DataTable().destroy();
+								}
+
+								table = $('#modal-xl .modal-body #table_Common').DataTable({
+									paging: true,
+									lengthChange: true,
+									searching: true,
+									ordering: true,
+									info: true,
+									autoWidth: true,
+									responsive: true,
+									pageLength: 10,
+									lengthMenu: [
+										[10, 25, 50, -1],
+										[10, 25, 50, 'All']
+									],
+									//columnDefs: [
+									//	{ "targets": 0, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false },
+									//	{ "targets": -1, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false }
+									//],
+									fixedColumns: true,
+									dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+										"<'row'<'col-sm-12'tr>>" +
+										"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+								});
+
+								$('#modal-xl .modal-body #table_Common').css('width', '100%');
+
+								//let table = new DataTable('#example', {
+								//	select: true
+								//});
+
+								table.on('click', 'tbody tr', function (e) {
+
+									$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+										if (i != (e.currentTarget.rowIndex - 1))
+											$(ez).removeClass('bg-info');
+									});
+
+									if (e.currentTarget.classList.contains('bg-info')) {
+										//clear
+										$('#Id').val('');
+										$('#Inward_Sys_Id').val('');
+										$('#Truck_No').val('');
+										$('#MDA_No').val('');
+										$('#tptr_name').val('');
+										$('#Driver_Name').val('');
+										$('#Driver_Contact').val('');
+										$('#Driver_Id_Proof_Type').val('');
+										$('#Driver_Id_Number').val('');
+									}
+
+									e.currentTarget.classList.toggle('bg-info');
+
+									var selectedData = table.rows('.bg-info').data();
+
+
+									if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1) {
+
+										$('#Id').val(selectedData[0][9]);
+										$('#Inward_Sys_Id').val(selectedData[0][13]);
+										$('#Truck_No').val(selectedData[0][0]);
+										$('#MDA_No').val(selectedData[0][1]);
+										$('#tptr_name').val(selectedData[0][8]);
+										$('#Driver_Name').val(selectedData[0][5]);
+										$('#Driver_Contact').val(selectedData[0][6]);
+										$('#Driver_Id_Proof_Type').val(selectedData[0][11]);
+										$('#Driver_Id_Number').val(selectedData[0][12]);
+									}
+
+
+									$('#Id').trigger('change');
+									$('#Inward_Sys_Id').trigger('change');
+									$('#Truck_No').trigger('change');
+									$('#MDA_No').trigger('change');
+									$('#tptr_name').trigger('change');
+									$('#Driver_Name').trigger('change');
+									$('#Driver_Contact').trigger('change');
+									$('#Driver_Id_Proof_Type').trigger('change');
+									$('#Driver_Id_Number').trigger('change');
+
+								});
+
+
+							} catch { }
+
+							if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
+								$('#modal-xl').show(); //$('#modal-xl').modal('show');
+							else {
+
+								var Inward_Sys_Id = $('#ddlInward_Sys_Id option:selected').val();
+
+								if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 1) {
+
+									CommonAlert_Error("MDA Detail not Found.");
+
+								}
+								else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 4) {
+
+									CommonAlert_Error("Order/Other Detail not Found.");
+								}
+
+							}
+
+							ShowLoader(false);
+
+						}, 1000);
+					}
+				},
+				failure: function (response) { fnClear_MDA(); CommonAlert_Error(null); },
+				error: function (response) { fnClear_MDA(); CommonAlert_Error(null); }
+			});
+		}
+
+		function fnSelect_MDA() {
+
+			if ($('#table_Common tbody tr.bg-info').length <= 0) {
+				CommonAlert_Error("Please select one MDA Number");
+				return false;
+			}
+			else {
+				fnClose_Modal()
+			}
+		}
+
+		function fnClear_MDA() {
+
+			$('#table_Common tbody tr.bg-info').each(function (i, ez) {
+				$(ez).removeClass('bg-info');
+			});
+
+			$('#Id').val('');
+			$('#Inward_Sys_Id').val('');
+			$('#Truck_No').val('');
+			$('#MDA_No').val('');
+			$('#tptr_name').val('');
+			$('#Driver_Name').val('');
+			$('#Driver_Contact').val('');
+			$('#Driver_Id_Proof_Type').val('');
+			$('#Driver_Id_Number').val('');
+
+			$('#Id').trigger('change');
+			$('#Inward_Sys_Id').trigger('change');
+			$('#Truck_No').trigger('change');
+			$('#MDA_No').trigger('change');
+			$('#tptr_name').trigger('change');
+			$('#Driver_Name').trigger('change');
+			$('#Driver_Contact').trigger('change');
+			$('#Driver_Id_Proof_Type').trigger('change');
+			$('#Driver_Id_Number').trigger('change');
+
+		}
+
+		$(document).on("change", 'input[name="Option"]', function (e) {
+
+			$('input.truck_no').val('')
+			$('input.truck_no').trigger('change')
+			$('.mda_no input').val('')
+			$('.mda_no input').trigger('change')
+
+			if (e.target.id == 'MDA') {
+				//if ($('.mda_no').hasClass('d-none'))
+				//	$('.mda_no').removeClass('d-none')
+
+				$('input.truck_no').prop('readonly', true);
+			} else {
+				//if (!$('.mda_no').hasClass('d-none'))
+				//	$('.mda_no').addClass('d-none')
+
+				$('input.truck_no').prop('readonly', false);
+			}
+		});
+
+		$(document).on("change", 'input#Driver_Changed', function (e) {
+
+			$('input#New_Driver_Name').val('')
+			$('input#New_Driver_Name').trigger('change')
+
+			$('input#New_Driver_Contact').val('')
+			$('input#New_Driver_Contact').trigger('change')
+
+
+			$('input#New_Driver_Name').prop('readonly', !e.target.checked);
+			$('input#New_Driver_Contact').prop('readonly', !e.target.checked);
+		});
+	</script>
+}

@@ -1,0 +1,254 @@
+﻿@model ResponseModel<VendorPO>
+@{
+    Layout = null;
+    var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+    <div class="card card-primary card-outline">
+        <div class="card-header">
+            <h3 class="card-title">@(Model.Obj.Id > 0 ? "Edit " : "Create") Vendor PO</h3>
+
+            <div class="card-tools">
+                <button type="button" class="btn btn-primary btn-sm" title="Back To List" onclick="fnBackToList('@IndexPageUrl')">
+                    <i class="fas fa-arrow-left"></i> Back To List
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body @(Model.Obj.Id > 0 ? " pt-0 mt-0":"")">
+            <input type="text" class="form-control d-none" name="Id" value="@Model.Obj.Id">
+
+            <div class="row p-0 m-0 d-flex">
+                <div class="col-12 tab-content p-0 m-0">
+
+                    @*<div id="tab_Site" class="tab-pane">
+                    </div>*@
+
+                    <div id="tab_VendorPO" class="tab-pane active row no-gutters p-0 m-0">
+                        <div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+                            <div class="form-group row">
+                                <label for="PoNo" class="col-sm-2 col-form-label">PO No <span style="color:red">*</span></label>
+                                <div class="col-sm-3">
+                                    <input type="text" class="form-control form-control-sm" name="PoNo" value="@Model.Obj.PoNo" maxlength="50"
+                                           data-required data-msg="The Po No field is required." autocomplete="off">
+                                </div>
+                                <button type="button" class="col-sm-1 btn btn-info btn-md pull-left mr-2 @(Model.Obj.Id > 0 ? "d-none":"")" onclick="fnGet_PO_Details()"> Find PO Details </button>
+                            </div>
+                            <hr />
+                            <div class="form-group row">
+                                @*<label for="VendorId" class="col-sm-2 col-form-label" style="align-content:start">Vendor Id<span style="color:red">*</span></label>
+                                <div class="col-sm-4">
+                                <input type="text" class="form-control form-control-sm" id="VendorId" name="VendorId" value="@Model.Obj.VendorId" maxlength="30" data-required data-msg="The Vendor Id field is required." autocomplete="off" @(Model.Obj.Id <= 0 ? "" : "readonly")>
+                                </div>*@
+                                <label for="VendorId" class="col-sm-2 col-form-label" style="align-content:start">Vendor<span style="color:red">*</span></label>
+                                <div class="col-sm-3">
+                                    <select id="VendorId" name="VendorId" class="form-control form-control-sm select2" style="width: 100%;" onchange="getVendorSite()">
+                                        @if (Model != null && Model.SelectListItems != null)
+                                        {
+                                            foreach (var item in Model.SelectListItems.Where(x => x.Group == "V"))
+                                            {
+                                                if (item.Value == Convert.ToString(Model.Obj.VendorId))
+                                                {
+                                                    <option value="@item.Value" data-vendorcode="@item.Value2" selected>@item.Text</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.Value" data-vendorcode="@item.Value2">@item.Text</option>
+                                                }
+
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <label for="SiteId" class="col-sm-2 col-form-label" style="align-content:start">Vendor Site<span style="color:red">*</span></label>
+                                <div class="col-sm-3">
+                                    <div class="input-group input-group-sm">
+                                        <select id="SiteId" name="SiteId" class="form-control form-control-sm select2" style="width: 100%;">
+                                            @if (Model != null && Model.SelectListItems != null)
+                                            {
+                                                foreach (var item in Model.SelectListItems.Where(x => x.Group == "N"))
+                                                {
+                                                    if (item.Value == Convert.ToString(Model.Obj.SiteId))
+                                                    {
+                                                        <option value="@item.Value" selected>@item.Text</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.Value">@item.Text</option>
+                                                    }
+
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="PoDate" class="col-sm-2 col-form-label">PO Date</label>
+                                <div class="col-sm-3">
+                                    <input type="text" class="form-control form-control-sm datepicker" id="PoDate" name="PoDate" data-value="@Model.Obj.PoDate_Text" value="@Model.Obj.PoDate?.ToString("dd/MM/yyyy").Replace("-", "/")" maxlength="50" autocomplete="off">
+                                </div>
+
+                            </div>
+                            <div class="form-group row">
+                                <label for="PoDesc" class="col-sm-2 col-form-label">PO Description <span style="color:red">*</span></label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control form-control-sm" id="PoDesc" name="PoDesc" value="@Model.Obj.PoDesc" maxlength="50" data-required data-msg="The Po Desc field is required." autocomplete="off">
+                                </div>
+                            </div>
+
+                            @*<div class="form-group row">
+                            <label class="col-sm-2 col-form-label text-right">Status </label>
+                            <div class="col-sm-4">
+                            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+                            <input type="checkbox" class="custom-control-input"
+                            id="switch_Status" name="IsActive" @(Model.Obj == null || Model.Obj.IsActive == true || Model.Obj.Id == 0 ? "checked" : "")
+                            onchange="fnChange_Switch(this, 'label_Switch_Status')">
+                            <label class="custom-control-label" for="switch_Status" id="label_Switch_Status" data-true="Active" data-false="Inactive">@((Model.Obj != null && Model.Obj.IsActive == true) || Model.Obj == null || Model.Obj.Id == 0 ? "Active" : "Inactive")</label>
+                            </div>
+                            </div>
+                            </div>*@
+
+                            <hr />
+
+                            <div class="row mb-2">
+                                <div class="col-sm-6">
+                                    <h5 class="m-0 text-left">Vendor PO Details</h5>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="float-sm-right">
+                                        @* @if (Common.IsAdmin())
+                                        { *@
+                                        <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnAddRow()">
+                                            <i class="fas fa-plus"></i> &nbsp; Add PO Item
+                                        </button>
+                                        @* } *@
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row no-gooters">
+                                <div class="col-md-12 my-1">
+                                    <table id="table_VendorPOSite" class="table table-bordered table-striped w-100">
+                                        <thead>
+                                            <tr>
+                                                <th hidden>#</th>
+                                                <th hidden>Id</th>
+                                                <th hidden>VPO_Id</th>
+                                                <th width="5%">Line No</th>
+                                                <th>Line Description</th>
+                                                <th width="10%">UOM</th>
+                                                <th width="10%">Quantity</th>
+                                                <th width="10%" @(Model.Obj.Id == 0 ? "hidden" : "")>Adjusted Qty</th>
+                                                <th width="10%" @(Model.Obj.Id == 0 ? "hidden" : "")>Amendment Qty</th>
+                                                <th @(Model.Obj.Id == 0 ? "hidden" : "")>Remark</th>
+                                                <th width="5%">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr id="tr_ZX" class="d-none">
+                                                <td hidden></td>
+                                                <td hidden><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[ZX].Id" value="0" maxlength="50" autocomplete="off"></td>
+                                                <td hidden><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[ZX].VPO_Id" maxlength="50" autocomplete="off"></td>
+                                                <td><input type="text" class="form-control form-control-sm text-center" name="listVendorPoDtls[ZX].LineNo" maxlength="50" autocomplete="off" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[ZX].LineDesc" maxlength="50" autocomplete="off"></td>
+                                                <td>
+                                                    <input type="text" class="form-control form-control-sm d-none" id="listVendorPoDtls[ZX]_UOM" name="listVendorPoDtls[ZX].UOM" autocomplete="off">
+
+                                                    <select class="form-control form-control-sm ddlUOM" onchange="fnChange_Select(this,'form#formSave #table_VendorPOSite tbody tr#tr_ZX input[name*=\'UOM\']')">
+                                                        @if (Model != null && Model.SelectListItems != null)
+                                                        {
+                                                            foreach (var item in Model.SelectListItems.Where(x => x.Group == "U"))
+                                                            {
+                                                                <option value="@item.Value">@item.Text</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </td>
+                                                <td><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[ZX].LineQty" maxlength="50" autocomplete="off"></td>
+                                                <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[ZX].Adjusted_Qty" maxlength="50" autocomplete="off"></td>
+                                                <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[ZX].Amendment_Qty" maxlength="50" autocomplete="off"></td>
+                                                <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[ZX].Remark" maxlength="50" autocomplete="off"></td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+                                                                onclick="fnDelete_Row('ZX');">
+                                                            <i class="far fa-trash-alt"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            @if (Model.Obj.listVendorPoDtls != null && Model.Obj.listVendorPoDtls.Count() > 0)
+                                            {
+                                                for (int i = 0; i < Model.Obj.listVendorPoDtls.Count(); i++)
+                                                {
+                                                    <tr id="tr_@i">
+                                                        <td hidden></td>
+                                                        <td hidden><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].Id" value="@Model.Obj.listVendorPoDtls[i].Id" maxlength="50" autocomplete="off"></td>
+                                                        <td hidden><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].VPO_Id" value="@Model.Obj.listVendorPoDtls[i].VPO_Id" maxlength="50" autocomplete="off"></td>
+                                                        <td><input type="text" class="form-control form-control-sm text-center" name="listVendorPoDtls[@i].LineNo" value="@Model.Obj.listVendorPoDtls[i].LineNo" maxlength="50" autocomplete="off" readonly></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].LineDesc" value="@Model.Obj.listVendorPoDtls[i].LineDesc" maxlength="50" autocomplete="off"></td>
+                                                        @*<td><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].UOM" value="@Model.Obj.listVendorPoDtls[i].UOM" maxlength="50" autocomplete="off"></td>*@
+                                                        <td>
+                                                            <input type="text" class="form-control form-control-sm d-none" id="listVendorPoDtls[@i]_UOM" name="listVendorPoDtls[@i].UOM" value="@Model.Obj.listVendorPoDtls[i].UOM" autocomplete="off">
+
+                                                            <select class="form-control form-control-sm select2 ddlUOM" onchange="fnChange_Select(this,'form#formSave #table_VendorPOSite tbody tr#tr_@i input[name*=\'UOM\']')">
+                                                                @if (Model != null && Model.SelectListItems != null)
+                                                                {
+                                                                    foreach (var item in Model.SelectListItems.Where(x => x.Group == "U"))
+                                                                    {
+                                                                        if (item.Value == Convert.ToString(Model.Obj.listVendorPoDtls[i].UOM))
+                                                                        {
+                                                                            <option value="@item.Value" selected>@item.Text</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="@item.Value">@item.Text</option>
+                                                                        }
+
+                                                                    }
+                                                                }
+                                                            </select>
+                                                        </td>
+                                                        <td><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[@i].LineQty" value="@Model.Obj.listVendorPoDtls[i].LineQty" maxlength="50" autocomplete="off"></td>
+                                                        <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[@i].Adjusted_Qty" value="@Model.Obj.listVendorPoDtls[i].Adjusted_Qty" maxlength="50" autocomplete="off"></td>
+                                                        <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[@i].Amendment_Qty" value="@Model.Obj.listVendorPoDtls[i].Amendment_Qty" maxlength="50" autocomplete="off"></td>
+                                                        <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].Remark" value="@Model.Obj.listVendorPoDtls[i].Remark" maxlength="50" autocomplete="off"></td>
+                                                        <td>
+                                                            <div class="btn-group">
+                                                                <button type="button" onclick="fnDelete_Row('@i');" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"> <i class="far fa-trash-alt"></i> </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            @*else
+                                            {
+                                            <tr class="odd tr_no_record" style="background-color: rgba(0,0,0,.05);"><td valign="top" colspan="8" class="dataTables_empty text-center">No record found.</td></tr>
+                                            }*@
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="clearfix"></div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-12 card-footer text-center">
+                                    <button type="button" class="btn btn-success btnSubmit">Save</button>
+                                    <button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '#table_Common_SrNo');">Cancel</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>

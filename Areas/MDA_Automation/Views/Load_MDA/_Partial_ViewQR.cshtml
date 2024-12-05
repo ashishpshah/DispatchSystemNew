@@ -1,0 +1,35 @@
+﻿@model List<ShipperBatch>
+
+<div class="row col-12 w-100">
+	<table id="table_Common" class="table table-bordered table-striped w-100 table_Common">
+		<thead>
+			<tr>
+				<th width="3%">Sr. No.</th>
+				<th width="10%">Shipper QR Code</th>
+				<th width="5%">Status</th>
+				<th>Reject Reason</th>
+			</tr>
+		</thead>
+		<tbody>
+
+			@if (Model != null && Model.Count > 0)
+			{
+				var i = 1;
+
+				foreach (var item in Model)
+				{
+					<tr>
+						<td width="3%">@i</td>
+						<td width="10%" class="@(!string.IsNullOrEmpty(item.Status) && item.Status == "R"?"text-danger text-bold":"text-success text-bold")">@item.ShipperQRCode</td>
+						<td width="5%" class="@(!string.IsNullOrEmpty(item.Status) && item.Status == "R"?"text-danger text-bold":"text-success text-bold")">
+							@(!string.IsNullOrEmpty(item.Status) && item.Status == "R" ? "Reject" : "Success")
+						</td>
+						<td>@item.Reject_Reason</td>
+					</tr>
+
+					i = i + 1;
+				}
+			}
+		</tbody>
+	</table>
+</div>

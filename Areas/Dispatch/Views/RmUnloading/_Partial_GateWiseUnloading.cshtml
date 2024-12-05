@@ -1,0 +1,48 @@
+﻿@model List<PODtls>
+
+@{
+    Layout = null;
+}
+
+<div class="row col-12">
+    <table id="table_Common_dtls" class="table table-bordered table-striped" style="width:100%">
+        <thead>
+            <tr>
+
+                <th hidden>#</th>
+                <th hidden>#</th>
+                <th>Sr No</th>
+                <th>Item Description</th>
+                <th>PO Qty</th>
+                <th>UOM</th>
+                <th>Receiving Qty</th>
+                <th>UOM</th>
+                <th>Short Qty</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Count > 0)
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+
+                        <td hidden><input type="hidden" id="Id" name="Id" value="@item.Id" /></td>
+                        <td hidden><input type="hidden" id="PO_Id" name="PO_Id" value="@item.PO_Id" /></td>
+                        <td>@item.LineNo</td>
+                        <td>@item.LineDesc</td>
+                        <td>@item.LineQty <input type="hidden" id="LineQty" name="LineQty" value="@item.LineQty" /></td>
+                        <td>@item.UOM</td>
+                        <td><input type="text" class="form-control form-control-sm" id="ReceiveQty" name="ReceiveQty" onkeyup="fnCalc_ShortQty()" /></td>
+                        <td><input type="text" class="form-control form-control-sm" id="ReceiveUOM" name="ReceiveUOM" /></td>
+                        <td><input type="text" class="form-control form-control-sm" id="ShortQty" name="ShortQty" readonly style="background-color:#dadad7" /></td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+<div class="row text-center ml-1">
+    <button type="submit" class="btn btn-success btnSubmit mr-2">Save</button>
+    <button type="button" class="btn btn-danger" onclick="fnCloseParialView('div_DataTable', '#table_Common_dtls');">Cancel</button>
+</div>

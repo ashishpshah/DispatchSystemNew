@@ -1,0 +1,128 @@
+﻿@model ResponseModel<Vendor>
+
+@{
+	ViewData["Title"] = "Vendor";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">Insert Vendor details from ERP</h1>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section class="content">
+	<div class="container-fluid">
+		<div class="row no-gutters " style="margin: 5px !important;">
+			<div class="col-12">
+				<form id="formSave" asp-area="Admin" asp-controller="VendorERP" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div class="row no-gutters form-group">
+						<label for="VendorCode" class="col-sm-2 col-form-label" style="align-content:start">ERP Vendor Code</label>
+						<div class="col-sm-2">
+							<div class="input-group input-group-sm">
+								<input type="text" class="form-control form-control-sm isNumberKey" id="VendorCode" name="VendorCode">
+								@*<span class="input-group-append">
+								<button type="button" class="btn btn-info btn-flat btn-sm" onclick="fnLoad_Vendor_Dtls_ERP(this)">View from ERP</button>
+								</span>*@
+							</div>
+						</div>
+						<div class="col-sm-2 pl-5">
+							<button type="button" class="btn btn-info btn-flat btn-sm ml-5" onclick="fnLoad_Vendor_Data(this)">View Data</button>
+						</div>
+
+					</div>
+					<div class="row no-gutters" id="divformSave">
+						<div class="col-12 d-none" id="divformSave_Vendor_ERP"></div>
+						<div class="col-12 text-center d-none" id="btnformSave_Vendor">
+							<button type="submit" class="btn btn-success btnSubmit">Save</button>
+							<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', null);">Cancel</button>
+						</div>
+					</div>
+					<div class="clearfix"></div>
+					<hr />
+				</form>
+			</div>
+		</div>
+	</div>
+</section>
+
+@section Scripts{
+
+	<script type="text/javascript">
+		var table = {};
+		var $response = {};
+
+		$(function () {
+
+		});
+
+
+		// Handle click on "Select all" control
+		$(document).on('click', '#tbl_Vendor_ERP thead th:first input#checkbox_All', function () {
+			
+			// Check/uncheck checkboxes for all rows in the table
+			$('#tbl_Vendor_ERP tbody input[type="checkbox"]').prop('checked', this.checked);
+			$('#tbl_Vendor_ERP tbody input.listSite_Id').val('1');
+			$('#tbl_Vendor_ERP tbody input.listSite_Id').triger('change');
+		});
+
+		// Handle click on checkbox to set state of "Select all" control
+		$(document).on('change', '#tbl_Vendor_ERP tbody input[type="checkbox"]', function () {
+			
+			// If checkbox is not checked
+			if (!this.checked) {
+				$('#tbl_Vendor_ERP thead th:first input#checkbox_All').prop('checked', false);
+			}
+
+		});
+
+		function fnSubmitForm_Success(response, $id) {
+			$response = response;
+
+			fnLoad_Vendor_Data(null);
+		}
+
+		function fnLoad_Vendor_Data($this) {
+			$('#divformSave_Vendor_ERP').html('');
+
+			var VendorCode = $('#formSave').closest('div.row').find('input#VendorCode').val();
+
+			if (typeof VendorCode != 'undefined' && VendorCode != null && VendorCode != '' && VendorCode.trim() != '0' && VendorCode.trim().length > 0)
+				fnLoadParialView('divformSave_Vendor_ERP', '@Url.Action("Partial_AddEditForm_ERP","VendorERP", new {  area = "Admin" })?vendor_code=' + VendorCode + '&forCreate=true')
+			else
+				CommonAlert_Error("Please enter Vendor Code");
+
+			return false;
+		}
+
+		function fnParialView_Loaded_Success($id, $IsAlert) {
+
+			if (typeof $response != 'undefined' && $response != null && $response != '' && typeof $id != 'undefined' && $id != null && $id.indexOf('divformSave_Vendor') > -1) {
+
+				if (!$('#divformSave_Vendor_ERP').hasClass('d-none'))
+					$('#divformSave_Vendor_ERP').addClass('d-none');
+
+				if (!$('#btnformSave_Vendor').hasClass('d-none'))
+					$('#btnformSave_Vendor').addClass('d-none');
+
+
+				//if ($id.indexOf('ERP') > -1 || $('#divformSave_Vendor_ERP').innerHtml.length <= 0) {
+				if ($('#divformSave_Vendor_ERP').text().length > 0) {
+					$('#divformSave_Vendor_ERP').removeClass('d-none');
+					if ($('#divformSave_Vendor_ERP div.alert').length <= 0)
+						$('#btnformSave_Vendor').removeClass('d-none');
+				} else {
+					if (!$('#divformSave_Vendor_ERP').hasClass('d-none'))
+						$('#divformSave_Vendor_ERP').addClass('d-none');
+				}
+
+			}
+		}
+
+	</script>
+}
+

@@ -1,0 +1,294 @@
+﻿@model Dispatch_System.ResponseModel<Dispatch_System.GenerateBatchQR>
+
+@{
+    ViewData["Title"] = "Generate Batch QR Code - Image";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+
+@section Styles {
+    <style type="text/css">
+
+    </style>
+}
+
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12">
+                <h1 class="font-weight-bold">Generate Batch QR Code - Image</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content p-0">
+    <div class="container-fluid p-0">
+        <div class="row no-gutters">
+            <div class="col-12 card">
+                <form id="formSave" asp-controller="GateIn" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data" data_form_isvalidate>
+                    <div class="card-body pb-0">
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="form-horizontal">
+                                    <div class="card-body py-1 px-0">
+                                        <div class="form-group row">
+                                            <label for="MFG_Date" class="col-sm-2 col-form-label">Manufacturing Date <span class="text-danger">*</span></label>
+                                            <div class="col-sm-4">
+                                                <input type="text" class="form-control form-control-sm datepicker" id="MFG_Date" name="MFG_Date"
+                                                       data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off"
+                                                       data-required data-msg="The Manufacturing Date field is required." onchange="fnChange_MFG_Date()">
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label for="Plant_Code" class="col-sm-2 col-form-label">Plant Code <span class="text-danger">*</span></label>
+                                            <div class="col-sm-4">
+                                                <select id="Plant_Code" name="Plant_Code" class="form-control form-control-sm select2" style="width: 100%;"
+                                                        data-required data-msg="The Plant Code field is required." onchange="fnChange_GenerateBatchQR()">
+
+                                                    @if (Model != null && Model.SelectListItems.Where(x => x.Group == "PLANT") != null)
+                                                    {
+                                                        foreach (var item in Model.SelectListItems.Where(x => x.Group == "PLANT").ToList())
+                                                        {
+                                                            if (item.Value == "KL2")
+                                                            {
+                                                                <option value="@item.Value" data-type="" selected>@item.Text</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.Value" data-type="">@item.Text</option>
+                                                            }
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label for="Prod_Code" class="col-sm-2 col-form-label">Product Code <span class="text-danger">*</span></label>
+                                            <div class="col-sm-4">
+                                                <select id="Prod_Code" name="Prod_Code" class="form-control form-control-sm select2" style="width: 100%;"
+                                                        data-required data-msg="The Product Code field is required." onchange="fnChange_GenerateBatchQR()">
+
+                                                    @if (Model != null && Model.SelectListItems.Where(x => x.Group == "PRODUCT") != null)
+                                                    {
+                                                        foreach (var item in Model.SelectListItems.Where(x => x.Group == "PRODUCT").ToList())
+                                                        {
+                                                            if (item.Value == "DP")
+                                                            {
+                                                                <option value="@item.Value" data-type="" selected>@item.Text</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.Value" data-type="">@item.Text</option>
+                                                            }
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label for="Current_Year" class="col-sm-2 col-form-label">Current Year <span style="color:red">*</span></label>
+                                            <div class="col-sm-1">
+                                                <input type="text" class="form-control form-control-sm isNumberKey" id="Current_Year" name="Current_Year" autocomplete="off" readonly
+                                                       value="@(DateTime.Now.ToString("yy"))" onchange="fnChange_GenerateBatchQR()">
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label for="Julian_Day" class="col-sm-2 col-form-label">Julian Day <span style="color:red">*</span></label>
+                                            <div class="col-sm-1">
+                                                <input type="text" class="form-control form-control-sm isNumberKey" id="Julian_Day" name="Julian_Day" autocomplete="off" readonly
+                                                       value="@(DateTime.Now.DayOfYear.ToString())">
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label for="Serial_No" class="col-sm-2 col-form-label">Serial No. <span style="color:red">*</span></label>
+                                            <div class="col-sm-1">
+                                                <input type="text" class="form-control form-control-sm isNumberKey" id="Serial_No" name="Serial_No" autocomplete="off" readonly
+                                                       value="@(Model.Obj.Serial_No > 0 ? Model.Obj.Serial_No.ToString() : "")">
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label for="Batch_No" class="col-sm-2 col-form-label">Generate Batch <span style="color:red">*</span></label>
+                                            <div class="col-sm-3">
+                                                <input type="text" class="form-control form-control-sm" id="Batch_No" name="Batch_No" autocomplete="off" readonly />
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label class="col-sm-2 col-form-label">&nbsp;</label>
+                                            <div class="col-sm-4">
+                                                <button type="button" class="btn btn-info btn-flat px-3 mr-3" onclick="btnClick_ViewQRCode()">View QR Code</button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer" style="display:none">
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">&nbsp;</label>
+                            <div class="col-sm-4">
+                                <div class="box-profile">
+
+                                    <div class="text-left">
+                                        <img class="img-fluid" id="imgQRCodeImage" src="../../no_image_available.png" alt="QR Code - Image" style="max-width: 250px !important;">
+                                    </div>
+
+                                    <h3 class="profile-username text-left" id="lableQRCodeImage"></h3>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script type="text/javascript">
+
+        $(document).ready(function () { fnChange_GenerateBatchQR(); });
+
+        function fnChange_MFG_Date() {
+            fnChange_GenerateBatchQR();
+
+            $("#Julian_Day").val('').trigger('change');
+            $("#Serial_No").val('').trigger('change');
+
+            var date = $("#MFG_Date").val();
+            if (typeof date != 'undefined' && date != null && date != '') {
+                $("#Julian_Day").val(moment(date, "DD/MM/YYYY").dayOfYear())
+            }
+
+            if (typeof date != 'undefined' && date != null && date != '') {
+
+                ShowLoader(true);
+
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("GetSerialNo", "GenerateBatchQR", new { area = "LineMaster" })?MFG_Date=' + date,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+
+                        setTimeout(function () {
+                            debugger;
+                            try {
+                                if (response.statusCode === 1) {
+
+                                    $("#Serial_No").val(response.obj.serial_No).trigger('change');
+
+                                    fnChange_GenerateBatchQR();
+                                }
+                                else { CommonAlert_Error(response.message); }
+
+                            } catch { }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) { CommonAlert_Error(null) },
+                    error: function (response) { CommonAlert_Error(null) }
+                });
+
+            }
+
+        }
+
+        function btnClick_ViewQRCode() {
+
+            $(".card-footer").css('display', 'none');
+            $("#imgQRCodeImage").attr('src', '../../no_image_available.png');
+            $("#lableQRCodeImage").text('');
+
+            var Batch_No = $("#Batch_No").val();
+
+            if (typeof Batch_No != 'undefined' && Batch_No != null && Batch_No != '') {
+
+                ShowLoader(true);
+
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Generate_QRCode", "GenerateBatchQR", new { area = "LineMaster" })?strText=' + Batch_No + ',' + $('#MFG_Date').val(),
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+
+                        setTimeout(function () {
+                            debugger;
+                            try {
+                                if (response.statusCode === 1) {
+
+                                    $(".card-footer").css('display', 'block');
+                                    $("#imgQRCodeImage").attr('src', response.data1);
+                                    $("#lableQRCodeImage").text(Batch_No + ',' + $('#MFG_Date').val());
+
+                                }
+                                else { CommonAlert_Error(response.message); }
+
+                            } catch { }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) { CommonAlert_Error(null) },
+                    error: function (response) { CommonAlert_Error(null) }
+                });
+
+            }
+
+        }
+
+
+        function fnChange_GenerateBatchQR() {
+
+            $("#Batch_No").val('');
+
+            $(".card-footer").css('display', 'none');
+            $("#imgQRCodeImage").attr('src', '../../no_image_available.png');
+            $("#lableQRCodeImage").text('');
+
+            var Plant_Code = $("#Plant_Code option:selected").val();
+            var Prod_Code = $("#Prod_Code option:selected").val();
+
+            var Current_Year = $("#Current_Year").val();
+            var Julian_Day = $("#Julian_Day").val();
+
+            var Serial_No = $("#Serial_No").val();
+
+            if (typeof Plant_Code != 'undefined' && Plant_Code != null && Plant_Code != ''
+                && typeof Prod_Code != 'undefined' && Prod_Code != null && Prod_Code != ''
+                && typeof Current_Year != 'undefined' && Current_Year != null && Current_Year != ''
+                && typeof Julian_Day != 'undefined' && Julian_Day != null && Julian_Day != ''
+                && typeof Serial_No != 'undefined' && Serial_No != null && Serial_No != '') {
+
+                var numStr = Serial_No + "";
+                if (Serial_No < 1000)
+                    numStr = numStr.padStart(3, '0');
+
+                var Batch_No = Plant_Code + Prod_Code + Current_Year + Julian_Day + numStr;
+
+                $("#Batch_No").val(Batch_No);
+            }
+        }
+
+    </script>
+}

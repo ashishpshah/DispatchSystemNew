@@ -1,0 +1,43 @@
+﻿@model List<Vendor>
+
+<div class="row col-12 mb-3">
+	<button type="button" class="btn btn-info btn-flat px-3 mr-3" onclick="fnSelect_Record()">Select</button>
+	<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear_Record()">Clear</button>
+	<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClose_Modal()">Close</button>
+</div>
+
+<div class="row col-12 w-100">
+	<table id="table_Common" class="table table-bordered table-striped w-100 table_Common">
+		<thead>
+			<tr>
+				<th>Vendor Code</th>
+				<th>Company Name</th>
+				<th>Name</th>
+				<th hidden>First Name</th>
+				<th hidden>Middle Name</th>
+				<th hidden>Last Name</th>
+				<th>Mobile No</th>
+				<th>Email Id </th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.Count > 0)
+			{
+				foreach (var item in Model)
+				{
+					<tr>
+						<td>@item.VendorCode</td>
+						<td>@item.Organization_Name</td>
+						<td>@item.Fullname</td>
+						<td hidden>@item.First_Name</td>
+						<td hidden>@item.Middle_Name</td>
+						<td hidden>@item.Last_Name</td>
+						<td>@item.MobileNo</td>
+						<td>@item.Email_Id</td>
+					</tr>
+				}
+
+			}
+		</tbody>
+	</table>
+</div>

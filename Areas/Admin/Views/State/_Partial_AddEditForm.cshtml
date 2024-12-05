@@ -1,0 +1,69 @@
+﻿@model ResponseModel<State>
+@{
+    Layout = null;
+    var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+    <div class="card card-primary card-outline">
+        @* <form id="formSave" asp-area="Admin" asp-controller="State" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data"> *@
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">@(Model.Obj.Id > 0 ? "Edit " : "Create") State</h3>
+
+                <div class="card-tools">
+                    <button type="button" class="btn btn-primary btn-sm" title="Back To List" onclick="fnBackToList('@IndexPageUrl')">
+                        <i class="fas fa-arrow-left"></i> Back To List
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <input type="text" class="form-control d-none" name="Id" value="@Model.Obj.Id">
+
+                <div class="form-group row">
+                    <label for="Country_Name" class="col-sm-2 col-form-label">Country <span style="color:red">*</span></label>
+                    <div class="col-sm-4">
+                        <select id="CountryId" name="CountryId" class="form-control select2 w-100">
+                            @foreach (var item in Model.SelectListItems.Where(x => x.Group == "C"))
+                            {
+                                if (item.Value == Model.Obj.CountryId.ToString())
+                                {
+                                    <option value="@item.Value" selected>@item.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="State_Name" class="col-sm-2 col-form-label">State Name<span style="color:red">*</span></label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control form-control-sm" name="State_Name" value="@Model.Obj.State_Name" maxlength="50" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label text-right">Status </label>
+                    <div class="col-sm-4">
+                        <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+                            <input type="checkbox" class="custom-control-input"
+                                   id="switch_Status" name="IsActive" @(Model.Obj == null || Model.Obj.IsActive == true || Model.Obj.CountryId == 0 ? "checked" : "")
+                                   onchange="fnChange_Switch(this, 'label_Switch_Status')">
+                            <label class="custom-control-label" for="switch_Status" id="label_Switch_Status" data-true="Active" data-false="Inactive">@((Model.Obj != null && Model.Obj.IsActive == true) || Model.Obj == null || Model.Obj.CountryId == 0 ? "Active" : "Inactive")</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <button type="submit" class="btn btn-success btnSubmit">Save</button>
+            <button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '#table_Common_SrNo');">Cancel</button>
+
+            @* </form> *@
+        </div>
+    </div>
+</div>
+</div>

@@ -1,0 +1,434 @@
+﻿@model ResponseModel<QRCodeGeneration>
+
+@{
+	ViewData["Title"] = "Plant";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">QR Generation</h1>
+			</div>
+
+		</div>
+	</div>
+</div>
+<section class="content">
+	<div class="container-fluid">
+		<div class="card card-primary card-outline">
+			<div class="card-body">
+				<div class="panel-divider">
+					<span>Search PO</span>
+					<div class="row no-gutters p-0 m-0">
+						<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+							<div class="row no-gutters form-group">
+								<label class="col-sm-1 col-form-label" style="align-content:start">PO Number <span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<div class="input-group input-group-sm">
+										<input type="text" class="form-control form-control-sm isNumberKey" id="SearchTerm">
+									</div>
+								</div>
+								<div class="col-sm-2">
+									<button type="button" class="btn btn-info btn-flat btn-sm" onclick="fnSearch_PO()"> Search </button>
+									@*<button type="button" class="btn btn-info btn-flat btn-sm" onclick="fnShow_PO()"> View Vendor PO's </button>*@
+									<button type="button" class="btn btn-info btn-flat btn-sm" onclick="fnShow_Modal('@Url.Action("Search_VendorPO","QRGeneration")?type=V', 'List Vendor PO', true, 'html')"> View Vendor PO's </button>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+				<form id="formSave" asp-area="Admin" asp-controller="QRGeneration" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+
+					<div class="panel-divider">
+						<span>PO Header</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+
+								<div class="form-group row">
+									<label class="col-sm-2 col-form-label">PO Number </label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="PO_Number" autocomplete="off" readonly>
+									</div>
+									<label class="col-sm-2 col-form-label">PO Date</label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="PO_Date" autocomplete="off" readonly>
+									</div>
+								</div>
+
+								<div class="form-group row">
+									<label class="col-sm-2 col-form-label">Vendor Code </label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="Vendor_Code" autocomplete="off" readonly>
+										<input type="text" class="form-control form-control-sm d-none" id="VendorId" name="VendorId" autocomplete="off" readonly>
+										<input type="text" class="form-control form-control-sm d-none" id="Print_Label_Qty" autocomplete="off" readonly>
+									</div>
+									<label class="col-sm-2 col-form-label">Organization Name</label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="Organization_Name" autocomplete="off" readonly>
+									</div>
+								</div>
+
+								<div class="form-group row">
+									<label class="col-sm-2 col-form-label">Vendor Name </label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="Vendor_Name" autocomplete="off" readonly>
+									</div>
+									<label class="col-sm-2 col-form-label">Vendor Site Name</label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="Vendor_Site_Name" autocomplete="off" readonly>
+										<input type="text" class="form-control form-control-sm d-none" id="Vendor_Site_Code" autocomplete="off" readonly>
+									</div>
+								</div>
+
+								<div class="form-group row d-none">
+									<label class="col-sm-2 col-form-label">Plant Name </label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="Plant_Name" autocomplete="off" readonly>
+										<input type="text" class="form-control form-control-sm d-none" id="Plant_Id" autocomplete="off" readonly>
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+
+					<div class="panel-divider">
+						<span>PO Details</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+								<table id="table_PODtls" class="table table-bordered table-striped w-100">
+									<thead>
+										<tr>
+											<th width="10%">List Item</th>
+											<th>List Item Desc</th>
+											<th width="10%">Total Quantity</th>
+											<th width="15%">Remaining Quantity</th>
+											<th width="10%">Request Quantity</th>
+											<th width="10%">QR Code Per File</th>
+											<th width="10%">UOM</th>
+											<th width="5%">Action</th>
+											<th hidden></th>
+											<th hidden></th>
+										</tr>
+									</thead>
+									<tbody></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<div class="panel-divider">
+						<span>QR Code Generation</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+
+								<div class="form-group row">
+									<label class="col-sm-2 col-form-label">Line Item Description </label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="LineDesc" autocomplete="off" readonly>
+									</div>
+									<label class="col-sm-2 col-form-label">Line Item</label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="LineNo" name="LineItemNo" autocomplete="off" readonly>
+										<input type="text" class="form-control form-control-sm d-none" id="PO_Dtls_ID" name="VPO_Dtls_Id">
+										<input type="text" class="form-control form-control-sm d-none" id="PO_ID" name="VPO_Id">
+										@* <input type="text" class="form-control form-control-sm d-none" id="VendorId" name="VendorId"> *@
+									</div>
+								</div>
+
+								<div class="form-group row">
+									<label class="col-sm-2 col-form-label">SKU Description </label>
+									<div class="col-sm-3">
+										<select id="SkuCode" name="Prodsysid" class="form-control form-control-sm select2"></select>
+									</div>
+									<label class="col-sm-2 col-form-label">UOM</label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="UOM" autocomplete="off" readonly>
+									</div>
+								</div>
+
+								<div class="form-group row">
+									<label class="col-sm-2 col-form-label">Requesting Quantity </label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="Requested_Qty" name="RequestQty" autocomplete="off" onblur="fnChange_Requested_Qty(this)">
+									</div>
+									<label class="col-sm-2 col-form-label">Total Quantity </label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="LineQty" autocomplete="off" readonly>
+									</div>
+								</div>
+
+								<div class="form-group row">
+									<label class="col-sm-2 col-form-label">Remaining Quantity</label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="Remaining_Qty" data-value="" autocomplete="off" readonly>
+									</div>
+									<label class="col-sm-2 col-form-label">QR Code Quantity Per File</label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="PrintQty" name="PrintQty" autocomplete="off" readonly>
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+
+					<div class="clearfix"></div>
+					<hr />
+
+					<div class="form-group row">
+						<div class="col-12 card-footer text-center">
+							<button type="button" class="btn btn-success btnSubmit">Save</button>
+							<a class="btn btn-danger" href="@Url.Action("Index","Home", new { area=""})">Cancel</a>
+						</div>
+					</div>
+
+				</form>
+
+			</div>
+		</div>
+	</div>
+</section>
+
+
+
+@section Scripts{
+
+	<script type="text/javascript">
+
+		$(function () { });
+
+		function fnSearch_PO($id) {
+			var po_no = $('#SearchTerm').val();
+
+			$('#PO_Number').val('');
+			$('#PO_Date').val('');
+			$('#Vendor_Code').val('');
+			$('#VendorId').val('');
+			$('#Organization_Name').val('');
+			$('#Vendor_Name').val('');
+			$('#Vendor_Site_Name').val('');
+			$('#Vendor_Site_Code').val('');
+			$('#Plant_Id').val('');
+			$('#Print_Label_Qty').val('');
+
+			$('#table_PODtls tbody').html('');
+
+			$('#PO_Number').trigger('change');
+			$('#PO_Date').trigger('change');
+			$('#Vendor_Code').trigger('change');
+			$('#VendorId').trigger('change');
+			$('#Organization_Name').trigger('change');
+			$('#Vendor_Name').trigger('change');
+			$('#Vendor_Site_Name').trigger('change');
+			$('#Vendor_Site_Code').trigger('change');
+			$('#Plant_Id').trigger('change');
+			$('#Print_Label_Qty').trigger('change');
+
+			fnSelect_PODtls(null);
+
+			if ((typeof po_no != 'undefined' && po_no != null && po_no != '') || (typeof $id != 'undefined' && $id != null && $id != '')) {
+				$.ajax({
+					type: "GET",
+					url: '@Url.Action("Search_VendorPO","QRGeneration")?searchTerm=' + po_no + '&id=' + $id + '&type=S',
+					data: null,
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+					success: function (response) {
+
+						
+
+						if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+							CommonAlert_Error("No any record(s) found");
+							return false;
+						} else {
+
+							$('#PO_Number').val(response[0].poNo);
+							$('#PO_Date').val(response[0].poDate_Text);
+							$('#Vendor_Code').val(response[0].vendorCode);
+							$('#VendorId').val(response[0].vendorId);
+							$('#Organization_Name').val(response[0].vendorName);
+							$('#Vendor_Name').val(response[0].vendorName);
+							$('#Vendor_Site_Name').val(response[0].vendorSite);
+							$('#Vendor_Site_Code').val(response[0].siteId);
+							$('#Plant_Id').val(response[0].plantId);
+							$('#Print_Label_Qty').val(response[0].print_Label_Qty);
+
+							$('#PO_Number').trigger('change');
+							$('#PO_Date').trigger('change');
+							$('#Vendor_Code').trigger('change');
+							$('#VendorId').trigger('change');
+							$('#Organization_Name').trigger('change');
+							$('#Vendor_Name').trigger('change');
+							$('#Vendor_Site_Name').trigger('change');
+							$('#Vendor_Site_Code').trigger('change');
+							$('#Plant_Id').trigger('change');
+							$('#Print_Label_Qty').trigger('change');
+
+							var tbody = "";
+
+							if (typeof response[0].listVendorPoDtls != 'undefined' && response[0].listVendorPoDtls != null && response[0].listVendorPoDtls.length > 0) {
+
+								for (var i = 0; i < response[0].listVendorPoDtls.length; i++) {
+									tbody += "<tr>";
+									tbody += "<td>" + response[0].listVendorPoDtls[i].lineNo + "</td>";
+									tbody += "<td>" + response[0].listVendorPoDtls[i].lineDesc + "</td>";
+									tbody += "<td>" + response[0].listVendorPoDtls[i].lineQty + "</td>";
+									tbody += "<td>" + response[0].listVendorPoDtls[i].remaining_Qty + "</td>";
+									tbody += "<td>" + response[0].listVendorPoDtls[i].requested_Qty + "</td>";
+									tbody += "<td>" + $('#Print_Label_Qty').val() + "</td>";
+									tbody += "<td>" + response[0].listVendorPoDtls[i].uom + "</td>";
+									tbody += '<td><button type="button" class="btn btn-block btn-outline-info btn-flat border-0 p-0 m-0"  onclick="fnSelect_PODtls(this)">Select</button></td>';
+									tbody += "<td hidden>" + response[0].listVendorPoDtls[i].id + "</td>";
+									tbody += "<td hidden>" + response[0].listVendorPoDtls[i].vpO_Id + "</td>";
+									tbody += "</tr>";
+								}
+
+							}
+
+							$('#table_PODtls tbody').html(tbody);
+
+						}
+
+					},
+					failure: function (response) {
+						CommonAlert_Error(null)
+					},
+					error: function (response) {
+						CommonAlert_Error(null)
+					}
+				});
+			}
+		}
+
+		function fnShow_PO() {
+			fnShow_Modal('@Url.Action("Search_VendorPO","QRGeneration")?type=V', 'List Vendor PO', true, "html");
+		}
+
+
+		function fnSelect_Record() {
+
+			$('#SearchTerm').val('');
+			$('#SearchTerm').trigger('change');
+
+			fnSelect_PODtls(null);
+
+			if ($('#table_PO tbody tr.bg-info').length <= 0) {
+				CommonAlert_Error("Please select PO");
+
+				fnSearch_PO(null);
+
+				return false;
+			}
+			else {
+
+				var selectedData = table.rows('.bg-info').data();
+
+				if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1) {
+
+					//$('#SearchTerm').val(selectedData[0][0]);
+					//$('#SearchTerm').trigger('change');
+
+					fnSearch_PO(selectedData[0][0]);
+
+				}
+
+				fnClose_Modal();
+			}
+		}
+
+		function fnSelect_PODtls($this) {
+
+			$('#LineDesc').val('');
+			$('#LineNo').val('');
+			$('#UOM').val('');
+			$('#LineQty').val('');
+			$('#Remaining_Qty').val('');
+			$('#Remaining_Qty').attr('data-value', '');
+			$('#PrintQty').val('');
+			$('#PO_Dtls_ID').val('');
+			$('#PO_ID').val('');
+
+			if (typeof $this != 'undefined' && $this != null) {
+				var selectedPODtls = $($this).closest('tr').find('td');
+
+				if (typeof selectedPODtls != 'undefined' && selectedPODtls != null && selectedPODtls.length > 0) {
+
+					
+
+					$('#LineNo').val($(selectedPODtls[0]).text());
+					$('#LineDesc').val($(selectedPODtls[1]).text());
+					$('#UOM').val($(selectedPODtls[6]).text());
+					$('#LineQty').val($(selectedPODtls[2]).text());
+					$('#Remaining_Qty').val($(selectedPODtls[3]).text());
+					$('#Remaining_Qty').attr('data-value', $(selectedPODtls[3]).text());
+					$('#PrintQty').val($(selectedPODtls[5]).text());
+					$('#PO_Dtls_ID').val($(selectedPODtls[8]).text());
+					$('#PO_ID').val($(selectedPODtls[9]).text());
+
+					GetProductList();
+				}
+			}
+
+			$('#LineDesc').trigger('change');
+			$('#LineNo').trigger('change');
+			$('#UOM').trigger('change');
+			$('#LineQty').trigger('change');
+			$('#Remaining_Qty').trigger('change');
+			$('#PrintQty').trigger('change');
+			$('#PO_Dtls_ID').trigger('change');
+			$('#PO_ID').trigger('change');
+
+		}
+
+
+		function GetProductList($isNull) {
+
+			$("#SkuCode").html('');
+			$("#SkuCode").trigger('change');
+			$("#SkuCode").select2();
+
+			$("#SkuCode").empty();
+			$("#SkuCode").append('<option value="">-- Select SKU --</option>');
+
+			$.ajax({
+				type: 'POST',
+				url: "@Url.Action("GetProductList","QRGeneration")",
+				dataType: 'json',
+				data: {}
+			}).done(function (response) {
+				$.each(response, function (i, obj) { $("#SkuCode").append('<option value="' + obj.value + '">' + obj.text + '</option>'); });
+				$("#SkuCode").trigger('change');
+			}).fail(function (xhr) {
+				console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+			});
+
+			$("#SkuCode").trigger('change');
+			return false;
+		}
+
+
+		function fnChange_Requested_Qty($this) {
+			var remainQty = $('#Remaining_Qty').attr('data-value');
+
+			if (typeof remainQty != 'undefined' && remainQty != null && remainQty != '' && !isNaN(parseFloat(remainQty)))
+				remainQty = parseFloat(remainQty);
+			else
+				remainQty = 0;
+
+			if (typeof $($this).val() != 'undefined' && $($this).val() != null && $($this).val() != '' && !isNaN(parseFloat($($this).val()))) {
+
+				remainQty = remainQty - parseFloat($($this).val());
+
+			}
+
+			$('#Remaining_Qty').val(remainQty);
+			$('#Remaining_Qty').trigger('change');
+		}
+	</script>
+}
+

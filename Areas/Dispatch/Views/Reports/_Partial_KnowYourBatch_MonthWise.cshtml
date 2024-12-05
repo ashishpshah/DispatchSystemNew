@@ -1,0 +1,220 @@
+﻿@using System.Globalization;
+@model (string SearchTerm, int Month, int Year, bool withDetail, ShipperData objShipper, List<KnowYourBatch> List, List<MDA_Status> Dispatch_List, bool isPrint)
+
+@{
+    ViewData["Title"] = "Monthly Production & Dispatch Report";
+}
+
+@if (Model.isPrint == true)
+{
+    Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+@if (Model.isPrint == true)
+{
+    <div class="row col-12 mb-3">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12" style="text-align:center;">
+                    <h2 class="font-weight-bold">@(Model.objShipper != null && !string.IsNullOrEmpty(Model.objShipper.PlantCd) ? Model.objShipper.PlantCd : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+                </div>
+                <br />
+                <div class="col-sm-12" style="text-align:center;">
+                    <h2 class="font-weight-bold">Production Report of : @Model.objShipper.Mfg_Date</h2>
+                </div>
+                <br />
+                <div class="col-sm-12" style="text-align:right;">
+                    <h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="form-group row mb-3">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12" style="text-align:center;">
+                    <h2 class="font-weight-bold" id="lableReportTitle">
+                        Production Report of : @Model.objShipper.Mfg_Date
+
+                    </h2>
+                </div>
+                <br />
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_KnowYourBatch_MonthWise","Reports")?searchTerm=@(Model.SearchTerm)&Year=@(Model.Year)&Month=@(Model.Month)&isPrint=true')">Print</button>
+        <button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('BatchMonthWise')">Export</button>
+    </div>
+}
+
+<div class="row col-12 mt-5">
+
+    @* <table id="table_Common_Main" class="table table-bordered w-100">
+    <tbody>
+    <tr>
+    <th>Batch No. : @Model.objShipper.Batch_no</th>
+
+    <td>Plant : @Model.objShipper.PlantCd</td>
+
+    <td>Year : @Model.objShipper.Mfg_Date</td>
+    </tr>
+    </tbody>
+
+    </table> *@
+
+    @if (Model.List.Count > 0)
+    {
+        <table id="table_Common" class="table table-bordered w-100 divDetail @((Model.withDetail == true) ? "" : "d-none")">
+
+            <tbody>
+                @foreach (var item in Model.List.OrderBy(x => x.Batch_No).ToList())
+                {
+                    <tr>
+                        <th>Batch No.</th>
+                        <th>Batch Processing Date</th>
+                        <th width="15%">Mfg Date</th>
+                        <th>Expiry Date</th>
+                        <th>No.of Shipper</th>
+                        <th>Bottle Qty</th>
+                    </tr>
+                    <tr>
+                        <td>@item.Batch_No</td>
+                        <td>@item.Batch_Start_Date</td>
+                        <td width="15%">@item.Mfg_Date</td>
+                        <td>@item.Exp_Date</td>
+                        <td>@item.Loaded_Shipper</td>
+                        <td>@item.Bottle_QrCode</td>
+                    </tr>
+                }
+                <tr>
+                    <td colspan="4"><b>Total:</b></td>
+                    <td>@Model.List.Sum(x => Convert.ToInt32(x.Loaded_Shipper))</td>
+                    <td>@Model.List.Sum(x => Convert.ToInt32(x.Bottle_QrCode))</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table id="table_Common_" class="table table-bordered w-100 divDetail_Z @((Model.withDetail != true) ? "" : "d-none")">
+            <thead>
+                <tr>
+                    <th>Batch No.</th>
+                    <th>Batch Processing Date</th>
+                    <th width="15%">Mfg Date</th>
+                    <th>Expiry Date</th>
+                    <th>No.of Shipper</th>
+                    <th>Bottle Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.List.OrderBy(x => x.Batch_No).ToList())
+                {
+                    <tr>
+                        <td>@item.Batch_No</td>
+                        <td>@item.Batch_Start_Date</td>
+                        <td width="15%">@item.Mfg_Date</td>
+                        <td>@item.Exp_Date</td>
+                        <td>@item.Loaded_Shipper</td>
+                        <td>@item.Bottle_QrCode</td>
+                    </tr>
+                }
+
+                <tr>
+                    <td colspan="4"><b>Total:</b></td>
+                    <td>@Model.List.Sum(x => Convert.ToInt32(x.Loaded_Shipper))</td>
+                    <td>@Model.List.Sum(x => Convert.ToInt32(x.Bottle_QrCode))</td>
+                </tr>
+            </tbody>
+
+        </table>
+    }
+</div>
+<div class="row col-12 mt-5">
+    @if (Model.Dispatch_List.Count > 0)
+    {
+        <div class="col-12 row mb-3">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-12" style="text-align:center;">
+                        <h2 class="font-weight-bold" id="lableReportTitle">
+                            Dispatch Report of : @Model.objShipper.Mfg_Date
+                        </h2>
+                    </div>
+                    <br />
+                </div>
+            </div>
+        </div>
+
+        <table id="table_Common" class="table table-bordered w-100 divDetail @((Model.withDetail == true) ? "" : "d-none")">
+
+            <tbody>
+                @foreach (var item in Model.Dispatch_List.OrderBy(x => x.MDANo).ToList())
+                {
+                    <tr>
+                        <th>Dispatch Date</th>
+                        <th>MDA No.</th>
+                        <th>MDA Date.</th>
+                        <th>Vendor Name</th>
+                        <th>Destination</th>
+                        <th>No.of Shipper</th>
+                        <th>Bottle Qty</th>
+                    </tr>
+                    <tr>
+                        <td>@item.DispatchDateTime</td>
+                        <td>@item.MDANo</td>
+                        <td>@item.MDAReceiveDate</td>
+                        <td>@item.CustomerName</td>
+                        <td>@item.Destination</td>
+                        <td>@item.DispatchedQtyShipper</td>
+                        <td>@item.DispatchedQtyUnits</td>
+                    </tr>
+                }
+
+                <tr>
+                    <td colspan="5"><b>Total:</b></td>
+                    <td>@Model.Dispatch_List.Sum(x => Convert.ToInt64(x.DispatchedQtyShipper))</td>
+                    <td>@Model.Dispatch_List.Sum(x => Convert.ToInt64(x.DispatchedQtyUnits))</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table id="table_Common_" class="table table-bordered w-100 divDetail_Z @((Model.withDetail != true) ? "" : "d-none")">
+            <thead>
+                <tr>
+                    <th>Dispatch Date</th>
+                    <th>MDA No.</th>
+                    <th>MDA Date.</th>
+                    <th>Vendor Name</th>
+                    <th>Destination</th>
+                    <th>No.of Shipper</th>
+                    <th>Bottle Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Dispatch_List.OrderBy(x => x.MDANo).ToList())
+                {
+                    <tr>
+                        <td>@item.DispatchDateTime</td>
+                        <td>@item.MDANo</td>
+                        <td>@item.MDAReceiveDate</td>
+                        <td>@item.CustomerName</td>
+                        <td>@item.Destination</td>
+                        <td>@item.DispatchedQtyShipper</td>
+                        <td>@item.DispatchedQtyUnits</td>
+                    </tr>
+                }
+                <tr>
+                    <td colspan="5"><b>Total:</b></td>
+                    <td>@Model.Dispatch_List.Sum(x => Convert.ToInt64(x.DispatchedQtyShipper))</td>
+                    <td>@Model.Dispatch_List.Sum(x => Convert.ToInt64(x.DispatchedQtyUnits))</td>
+                </tr>
+            </tbody>
+
+        </table>
+    }
+
+</div>

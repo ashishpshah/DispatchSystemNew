@@ -1,0 +1,128 @@
+﻿@model ResponseModel<LOV>
+@{
+	Layout = null;
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/IndexLovDtl?Lov_Column=" + @ViewBag.Lov_Column1 + "&Column_For=" + @ViewBag.Column_For;
+}
+
+<div class="col-12">
+	<div class="card card-primary card-outline">
+		@* <form id="formSave" asp-area="Admin" asp-controller="Country" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data"> *@
+		<div class="card card-primary card-outline">
+			<div class="card-header">
+				<h3 class="card-title">@(Model.Obj.Lov_Column != "" ? "Edit " : "Create") Lov </h3>
+
+				<div class="card-tools">
+					<button type="button" class="btn btn-primary btn-sm" title="Back To List" onclick="fnBackToList('@IndexPageUrl')">
+						<i class="fas fa-arrow-left"></i> Back To List
+					</button>
+				</div>
+			</div>
+			<input type="text" class="form-control d-none" asp-for="Obj.Lov_Column">
+			<input type="text" class="form-control d-none" value="@ViewBag.Column_For" asp-for="Obj.Column_For">
+			<div class="card-body">
+				@if (Model.Obj.Lov_Code != "")
+				{
+					<input type="text" class="form-control d-none" asp-for="Obj.Action" value="UPDATE">
+				}
+				else
+				{
+					<input type="text" class="form-control d-none" asp-for="Obj.Action" value="INSERT">
+				}
+				<div class="form-group row">
+					<label for="Lov_Code" class="col-sm-2 col-form-label">Code<span style="color:red">*</span></label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control" id="Lov_Code" maxlength="50" asp-for="Obj.Lov_Code" readonly="@(Model.Obj.Lov_Code !="" && Model.Obj.Lov_Code !=null ? true : false)">
+
+					</div>
+					<label for="Lov_Desc" class="col-sm-2 col-form-label">Description<span style="color:red">*</span></label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control" id="Lov_Desc" maxlength="50" asp-for="Obj.Lov_Desc">
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="Tag_Data_Type" class="col-sm-2 col-form-label">Data Type<span style="color:red">*</span></label>
+					<div class="col-sm-4">
+						<div class="icheck-primary d-inline mr-3">
+							@if (string.IsNullOrEmpty(Model.Obj.Tag_Data_Type) || (!string.IsNullOrEmpty(Model.Obj.Tag_Data_Type) && Model.Obj.Tag_Data_Type == "AN"))
+							{
+								<input type="radio" name="Obj.Tag_Data_Type" id="Tag_Data_Type_Alphanumeric" value="AN" checked>
+							}
+							else
+							{
+								<input type="radio" name="Obj.Tag_Data_Type" id="Tag_Data_Type_Alphanumeric" value="AN">
+							}
+							<label for="Tag_Data_Type_Alphanumeric"> Alphanumeric </label>
+						</div>
+						<div class="icheck-primary d-inline mr-3">
+							@if (!string.IsNullOrEmpty(Model.Obj.Tag_Data_Type) && Model.Obj.Tag_Data_Type == "N")
+							{
+								<input type="radio" name="Obj.Tag_Data_Type" id="Tag_Data_Type_Numeric" value="N" checked>
+							}
+							else
+							{
+								<input type="radio" name="Obj.Tag_Data_Type" id="Tag_Data_Type_Numeric" value="N">
+							}
+							<label for="Tag_Data_Type_Numeric"> Numeric </label>
+						</div>
+					</div>
+					<label for="Tag_Data_Input_Mask" class="col-sm-2 col-form-label">Input Mask</label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control" id="Tag_Data_Input_Mask" maxlength="50" asp-for="Obj.Tag_Data_Input_Mask">
+					</div>
+				</div>
+
+				<div class="form-group row">
+					<label for="Display_Seq_No" class="col-sm-2 col-form-label">Display Seq No</label>
+					<div class="col-sm-2">
+						<input type="text" class="form-control isNumberKey" id="Display_Seq_No" maxlength="3" asp-for="Obj.Display_Seq_No" value="@Model.Obj.Display_Seq_No">
+					</div>
+				</div>
+
+				<hr />
+				<div class="form-group row">
+					<div class="col-sm-6 row p-0 m-0">
+						<label for="Tag_Min_Len" class="col-sm-4 col-form-label">Min Length</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control isNumberKey" id="Tag_Min_Len" asp-for="Obj.Tag_Min_Len" value="@Model.Obj.Tag_Min_Len">
+						</div>
+					</div>
+					<div class="col-sm-6 row p-0 m-0">
+						<label for="Tag_Max_Len" class="col-sm-4 col-form-label">Max Length</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control isNumberKey" id="Tag_Max_Len" asp-for="Obj.Tag_Max_Len" value="@Model.Obj.Tag_Max_Len">
+						</div>
+					</div>
+				</div>
+
+				<hr />
+				<div class="form-group row">
+					<label for="Tag_Default_Values" class="col-sm-2 col-form-label">Default Value</label>
+					<div class="col-sm-2">
+						<input type="text" class="form-control Tag_Value" id="Tag_Default_Values" asp-for="Obj.Tag_Default_Values" value="@Model.Obj.Tag_Default_Values">
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col-sm-6 row p-0 m-0">
+						<label for="Tag_Min_Value" class="col-sm-4 col-form-label">Min Value</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control Tag_Value" id="Tag_Min_Value" asp-for="Obj.Tag_Min_Value" value="@Model.Obj.Tag_Min_Value">
+						</div>
+					</div>
+					<div class="col-sm-6 row p-0 m-0">
+						<label for="Tag_Max_Value" class="col-sm-4 col-form-label">Max Value</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control Tag_Value" id="Tag_Max_Value" asp-for="Obj.Tag_Max_Value" value="@Model.Obj.Tag_Max_Value">
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+		<div class="card-footer text-center">
+			<button type="button" class="btn btn-success " onclick="fnSubmitForm('formSavelovdtl')">Save</button>
+			<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '#table_Common_SrNo');">Cancel</button>
+
+			@* </form> *@
+		</div>
+	</div>
+</div>

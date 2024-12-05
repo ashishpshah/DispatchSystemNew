@@ -1,0 +1,136 @@
+﻿@model ResponseModel<QRCodeGeneration>
+@{
+	Layout = null;
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+	<form id="formSave" asp-area="Admin" asp-controller="QRCode" asp-action="Save_Dispatch" method="post" class="form-horizontal" enctype="multipart/form-data">
+
+		<div class="row no-gutters p-0 m-0">
+			<input type="text" class="form-control d-none" name="Id" value="@Model.Obj.Id">
+			<input type="text" class="form-control d-none" id="VPO_Id" name="VPO_Id" value="@Model.Obj.VPO_Id">
+			<input type="text" class="form-control d-none" id="VendorId" name="VendorId" value="@Model.Obj.VendorId">
+
+			<div class="row no-gutters p-0 m-0">
+				<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+					<div class="form-group row">
+						<label class="col-sm-1 col-form-label" style="align-content:start">Request No</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" value="@Model.Obj.RequestNo" autocomplete="off" readonly>
+						</div>
+						<label class="col-sm-1 col-form-label" style="align-content:start">Request Date</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" value="@Model.Obj.RequestDate_Text" autocomplete="off" readonly>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-sm-1 col-form-label" style="align-content:start">Vendor Code</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" value="@Model.Obj.VendorCode" autocomplete="off" readonly>
+						</div>
+						<label class="col-sm-1 col-form-label" style="align-content:start">Vendor</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" value="@Model.Obj.VendorName" autocomplete="off" readonly>
+						</div>
+						<label class="col-sm-1 col-form-label" style="align-content:start">Vendor Site</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" value="@Model.Obj.VendorSiteName" autocomplete="off" readonly>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-sm-1 col-form-label" style="align-content:start">PO No</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" value="@Model.Obj.PO_Number" autocomplete="off" readonly>
+						</div>
+						<label class="col-sm-1 col-form-label" style="align-content:start">PO Date</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" value="@Model.Obj.PO_Date_Text" autocomplete="off" readonly>
+						</div>
+						<label class="col-sm-1 col-form-label" style="align-content:start">PO Line Item</label>
+						<div class="col-sm-3">
+							<div class="input-group mb-2">
+								<div class="input-group-prepend"> <div class="input-group-text form-control-sm">@Model.Obj.LineItemNo</div> </div>
+								<input type="text" class="form-control form-control-sm" value="@Model.Obj.LineItemDesc" autocomplete="off" readonly>
+							</div>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-sm-1 col-form-label" style="align-content:start">SKU Description</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" value="@Model.Obj.SkuDesc" autocomplete="off" readonly>
+						</div>
+						<label class="col-sm-1 col-form-label" style="align-content:start">Total Quantity</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" value="@Model.Obj.TotalQty" autocomplete="off" readonly>
+						</div>
+						<label class="col-sm-1 col-form-label" style="align-content:start">Required Quantity</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" value="@Model.Obj.RemainQty" autocomplete="off" readonly>
+						</div>
+						<label class="col-sm-1 col-form-label" style="align-content:start">Remaining Quantity</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" value="@Model.Obj.RemainQty" autocomplete="off" readonly>
+						</div>
+					</div>
+
+					<hr />
+
+					<div class="form-group row">
+						<label class="col-sm-1 col-form-label" style="align-content:start">Consignment No. <span style="color:red">*</span></label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm isNumberKey" name="ConsignmentNo" value="@Model.Obj.ConsignmentNo" autocomplete="off">
+						</div>
+						<label class="col-sm-1 col-form-label" style="align-content:start">Consignment Date <span style="color:red">*</span></label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm datepicker" name="ConsignmentDate_Text" data-value="@Model.Obj.ConsignmentDate_Text"
+								   data-min="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+						</div>
+						<label class="col-sm-1 col-form-label text-right" style="align-content:start">Mode Of Dispatch <span style="color:red">*</span></label>
+						<div class="col-sm-2">
+							<select class="form-control form-control-sm select2" id="ModeofDispatch">
+								@if (Model != null && Model.SelectListItems != null)
+								{
+									foreach (var item in Model.SelectListItems)
+									{
+										<option value="@item.Value">@item.Text</option>
+									}
+								}
+							</select>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-sm-1 col-form-label" style="align-content:start">Estimated Delivery Date <span style="color:red">*</span></label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm datepicker" name="EstimateDate_Text" data-value="@Model.Obj.EstimateDate_Text"
+								   data-min="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+						</div>
+						<label class="col-sm-1 col-form-label" style="align-content:start">Shipment Details <span style="color:red">*</span></label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control form-control-sm" name="Shipmentdetail" value="@Model.Obj.Shipmentdetail" autocomplete="off">
+						</div>
+						<div class="col-sm-6">
+							<div class="input-group input-file">
+
+								<input type="text" id="temp_file" name="temp_file" class="form-control form-control-sm temp_fileUpload" placeholder='Choose a file...' accept="pdf/*" onchange="validateFile_Pdf(this);" />
+
+								<span class="input-group-btn">
+									<button class="btn btn-sm btn-info btn-choose" type="button">Choose</button>
+									<button class="btn btn-sm btn-warning btn-reset" type="button">Reset</button>
+								</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row no-gutters p-0 m-0">
+			<div class="col-12 text-center">
+				<button type="submit" class="btn btn-success btnSubmit">Save</button>
+				<button type="button" class="btn btn-danger" onclick="fnClose_Modal();">Cancel</button>
+			</div>
+		</div>
+		<div class="clearfix"></div>
+	</form>
+</div>

@@ -1,0 +1,112 @@
+﻿@using System.Globalization;
+@model List<KnowYourBatch>
+
+@{
+	ViewData["Title"] = "Know Your Shipper Data";
+	Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+<div class="row col-12 mb-3">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-12" style="text-align:center;">
+				<h2 class="font-weight-bold"><b>@(Model != null ? Model.Select(x => x.PlantName).FirstOrDefault() : "")</b></h2>
+			</div>
+			<br />
+			<div class="col-sm-12" style="text-align:center;">
+				<h2 class="font-weight-bold">Detail of Shipper QR Code : @Model.Select(x => x.InvoiceQrCode).FirstOrDefault()</b></h2>
+			</div>
+			<br />
+			<div class="col-sm-12" style="text-align:right;">
+				<h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row col-12 mt-5">
+
+	<table id="table_Common_" class="table table-bordered w-100 border-0">
+
+		<thead>
+			@* <tr class="border-0">
+				<th colspan="9" class="border-0">Detail of Shipper QR Code : @Model.Select(x => x.InvoiceQrCode).FirstOrDefault()</th>
+			</tr>
+			<tr class="border-0"><td colspan="9" class="border-0">&nbsp;</td></tr> *@
+@* 
+			<tr class="border-0">
+				<th colspan="10" class="text-center border-0"><h3>@(Model != null ? Model.Select(x => x.PlantName).FirstOrDefault() : "")</h3></th>
+			</tr>
+			<tr class="border-0">
+				<th colspan="5" class="border-0">Detail of Shipper QR Code : @Model.Select(x => x.InvoiceQrCode).FirstOrDefault()</th>
+				<th colspan="5" class="text-right border-0"><h5>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt")</h5></th>
+			</tr>
+			<tr class="border-0"><td colspan="10" class="border-0">&nbsp;</td></tr> *@
+			<tr>
+				<th>Batch No.</th>
+				<th>Manufacturing Date</th>
+				<th>Expiry Date</th>
+				<th>Status</th>
+				<th>MDA No.</th>
+				<th>Dispatch Date</th>
+				<th>Party Name</th>
+				<th>Destination</th>
+				<th>No.of Bottles</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.OrderByDescending(x => x.Loaded_Shipper).ThenBy(x => x.Mda_No).ToList())
+			{
+				<tr>
+					<td>@item.Batch_No</td>
+					<td>@item.Mfg_Date</td>
+					<td>@item.Exp_Date</td>
+					<td>@item.Status</td>
+					<td>@item.Mda_No</td>
+					<td>@item.Mda_Date</td>
+					<td>@item.Party_Name</td>
+					<td>@item.Desp_Place</td>
+					<td>@item.Loaded_Shipper</td>
+				</tr>
+				<tr><td colspan="9">&nbsp;</td></tr>
+				<tr><th colspan="9">Bottle QR Code List</th></tr>
+
+				{
+					List<(int Sr_No, string Qr_Code)> listQRCode = item.listShipper_QrCode.SelectMany(qrCodesString =>
+					{
+						string[] qrCodes = qrCodesString.Split(',').Select(code => code.Trim()).ToArray();
+
+						return qrCodes.Select(qrCode =>
+				{
+					string[] parts = qrCode.Split('.').Select(s => s.Trim()).ToArray();
+					return (Convert.ToInt32(parts[0]), Convert.ToString(parts[1]));
+				});
+					}).ToList();
+
+					var cnt = 0;
+					var cnt_0 = 4;
+
+					while (cnt < listQRCode.OrderBy(x => x.Sr_No).Count())
+					{
+						List<(int Sr_No, string Qr_Code)> listQR = listQRCode.OrderBy(x => x.Sr_No).Skip(cnt).Take(2).ToList();
+
+						cnt_0 = 4;
+
+						<tr>
+							@foreach (var qr_code in listQR)
+							{
+								<td colspan="@cnt_0" class="border-0 p-0 m-0">@(qr_code.Sr_No + ".   " + qr_code.Qr_Code)</td>
+								cnt_0 = 5;
+							}
+						</tr>
+
+						cnt += 2;
+					}
+
+				}
+			}
+		</tbody>
+
+	</table>
+
+</div>

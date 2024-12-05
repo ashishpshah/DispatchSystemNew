@@ -1,0 +1,126 @@
+﻿@model MDA_Dtls
+
+@{
+	ViewData["Title"] = "Weighment Slip";
+	Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+<div style="padding:10px !important">
+	<div class="container-fluid">
+		<div class="col-sm-12" style="text-align:center;outline:solid;outline-color:black">
+			<div class="form-group row">
+				<div class="col-sm-12">
+					<h2 class="font-weight-bold">IFFCO NANO FERTILIZER PLANT - @(Model != null && !string.IsNullOrEmpty(Model.Plant_Name) ? Model.Plant_Name : "")</h2>
+					<h5 class="font-weight-bold">@(Model != null && !string.IsNullOrEmpty(Model.Plant_Address) ? Model.Plant_Address : "")</h5>
+				</div>
+			</div>
+
+			<hr style="border: 1px solid #000">
+
+			<div class="form-group row">
+				<label class="col-sm-2 col-form-label">MDA No. <span class="float-right">:</span> </label>
+				<label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Mda_No) ? Model.Mda_No : "") </label>
+				<label class="col-sm-2 col-form-label">MDA Date <span class="float-right">:</span> </label>
+				<label class="col-sm-4 col-form-label ml-0"> @(Model != null && Model.Mda_Dt != null ? Model.Mda_Dt?.ToString("dd/MM/yyyy").Replace("-","/") : "") </label>
+			</div>
+
+			<div class="form-group row">
+				<label class="col-sm-2 col-form-label">Vehicle No <span class="float-right">:</span> </label>
+				<label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Vehicle_No) ? Model.Vehicle_No : "") </label>
+			</div>
+
+			<br />
+
+			<div class="form-group row">
+				<label class="col-sm-2 col-form-label">Party Name  <span class="float-right">:</span> </label>
+				<label class="col-sm-8 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Party_Name) ? Model.Party_Name : "") &nbsp; @(Model != null && !string.IsNullOrEmpty(Model.Wh_Cd) ? "(" + Model.Wh_Cd + ")" : "") </label>
+			</div>
+
+			<div class="form-group row">
+				<label class="col-sm-2 col-form-label">Product  <span class="float-right">:</span> </label>
+				<label class="col-sm-8 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.prd_desc) ? Model.prd_desc : "") &nbsp; @(Model != null && !string.IsNullOrEmpty(Model.prd_cd) ? "(" + Model.prd_cd + ")" : "") </label>
+			</div>
+
+			<br />
+
+			<div class="form-group row">
+				<label class="col-sm-2 col-form-label">No. of Bottle  <span class="float-right">:</span> </label>
+				<label class="col-sm-8 col-form-label ml-0"> @(Model != null ? Model.Bag_Nos : 0M)</label>
+			</div>
+
+			<div class="form-group row">
+				<label class="col-sm-2 col-form-label">No. of Box in MDA <span class="float-right">:</span> </label>
+				<label class="col-sm-4 col-form-label ml-0"> @(Model != null ? Model.Required_Shipper : 0M)</label>
+				<label class="col-sm-2 col-form-label">No. of Box in Loaded <span class="float-right">:</span> </label>
+				<label class="col-sm-4 col-form-label ml-0"> @(Model != null ? Model.Loaded_Shipper : 0M)</label>
+			</div>
+
+			<br />
+
+			<div class="form-group row printButton">
+				<button class="btn btn-info" onclick="fnPrint_Report('@Url.Action("GetData_ShipperQRCodeList","Reports")/@(Model != null && !string.IsNullOrEmpty(Model.Mda_No) ? Model.Mda_No : "")')">Print</button>
+				@*<button class="btn btn-info ml-2" onclick="fnPrint_Report('@Url.Action("Export","Reports")/@(Model != null && !string.IsNullOrEmpty(Model.Truck_No) ? Model.Truck_No : "")')">Export</button>*@
+			</div>
+			<div class="row col-12 mt-5">
+				<table id="table_Common" class="table table-bordered table-striped">
+					<thead>
+						<tr>
+
+							<th width="5%">Sr. No.</th>
+							<th>Shipper QR Code</th>
+							<th>Shipper Batch No.</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (Model.listShipperBatch != null && Model.listShipperBatch.Count() > 0)
+						{
+							foreach (var item in Model.listShipperBatch)
+							{
+								<tr>
+
+									<td>@item.SrNo</td>
+									<td>@item.ShipperQRCode</td>
+									<td>@item.Batch_no</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+			<div class="row col-12 mt-5">
+				<table id="table_Common_Batch" class="table table-bordered table-striped">
+					<thead>
+						<tr>
+
+							<th width="5%">Sr. No.</th>
+							<th>Batch No.</th>
+							<th width="5%">Shipper Count</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (Model.listShipperBatch != null && Model.listShipperBatch.Count() > 0)
+						{
+							var i = 1;
+
+							foreach (var item in Model.listShipperBatch.GroupBy(x => x.Batch_no)
+							.Select(x => new { Batch_No = x.Key, Count = x.Count() }).OrderBy(x => x.Batch_No).ToList())
+							{
+								<tr>
+
+									<td>@i</td>
+									<td>@item.Batch_No</td>
+									<td class="text-right">@item.Count</td>
+								</tr>
+
+								i = i + 1;
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+			<div class="row col-12 mt-5">
+				<label class="col-sm-6 col-form-label" style="text-align:left !important">Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt").Replace("-", "/")</label>
+				<label class="col-sm-6 col-form-label ml-0" style="text-align:right !important"> Operator's Signature </label>
+			</div>
+		</div>
+	</div>
+</div>

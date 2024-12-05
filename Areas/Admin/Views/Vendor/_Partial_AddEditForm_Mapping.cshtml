@@ -1,0 +1,128 @@
+﻿@model ResponseModel<Vendor>
+@{
+	Layout = null;
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+	<form id="formSave_VendorMap" asp-area="Admin" asp-controller="Vendor" asp-action="Save_VendorMap" method="post" class="form-horizontal" enctype="multipart/form-data">
+		<div class="card card-primary card-outline">
+
+			<div class="card-body @(Model.Obj!= null&& Model.Obj.Id > 0 ? " pt-0 mt-0":"")">
+				<input type="text" class="form-control d-none" name="Vendor_Id" value="@Model.Obj.Id">
+				<input type="text" class="form-control d-none" name="SiteCode" value="@((Model.ListObj != null && Model.ListObj.Count() > 0) ? string.Join("|", Model.ListObj.Where(x=>x.Id > 0).Select(x=>x.Id).ToArray()) : "")">
+
+				<div class="panel-divider">
+					<span>Vendor Details</span>
+					<div class="row no-gutters p-0 m-0">
+						<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+							<div class="form-group row">
+								<label for="VendorCode" class="col-sm-3 col-form-label text-right" style="align-content:start">Vendor Code<span style="color:red">*</span></label>
+								<div class="col-sm-6">
+									<input type="text" class="form-control form-control-sm isNumberKey" value="@Model.Obj.VendorCode" maxlength="30" autocomplete="off" readonly>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label for="Organization_Name" class="col-sm-3 col-form-label text-right" style="align-content:start">Vendor Company Name<span style="color:red">*</span></label>
+								<div class="col-sm-6">
+									<input type="text" class="form-control form-control-sm" id="Organization_Name" value="@Model.Obj.Organization_Name" autocomplete="off">
+								</div>
+							</div>
+							<hr />
+							<div class="form-group row">
+								<label for="First_Name" class="col-sm-2 col-form-label text-right">First Name <span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm" value="@Model.Obj.First_Name" maxlength="50" autocomplete="off">
+								</div>
+								<label for="Middle_Name" class="col-sm-2 col-form-label text-right">Middle Name</label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm" value="@Model.Obj.Middle_Name" maxlength="50" autocomplete="off">
+								</div>
+							</div>
+							<div class="form-group row">
+								<label for="Last_Name" class="col-sm-2 col-form-label text-right">Last Name <span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm" value="@Model.Obj.Last_Name" maxlength="50" autocomplete="off">
+								</div>
+							</div>
+							<div class="form-group row">
+								<label for="MobileNo" class="col-sm-2 col-form-label text-right">Mobile No. <span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm isNumberKey" maxlength="11" autocomplete="off" value="@Model.Obj.MobileNo">
+								</div>
+								<label for="Email_Id" class="col-sm-2 col-form-label text-right">Email <span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm" autocomplete="off" value="@Model.Obj.Email_Id">
+								</div>
+							</div>
+							@*
+							<div class="form-group row">
+							<label for="Print_Label_Qty" class="col-sm-2 col-form-label text-right">Max QR Code / Per File <span style="color:red">*</span></label>
+							<div class="col-sm-4">
+							<input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="Print_Label_Qty" autocomplete="off" value="@(Model.Obj.Print_Label_Qty > 0?Model.Obj.Print_Label_Qty.ToString():"")">
+							</div>
+							</div>
+							*@
+						</div>
+					</div>
+
+				</div>
+
+				<div class="panel-divider">
+					<span>Site Details</span>
+					<div class="row no-gutters p-0 m-0">
+						<div class="col-md-12 my-1">
+							<table id="tbl_Vendor" class="table table-bordered table-striped w-100">
+								<thead>
+									<tr>
+										<th width="5%">#</th>
+										<th>Site Code</th>
+										<th>Site Name</th>
+										<th>Address</th>
+										<th hidden>City</th>
+										<th hidden>City</th>
+										<th hidden>City</th>
+										<th hidden>City</th>
+										<th>Mobile No</th>
+										<th>Email Id </th>
+									</tr>
+								</thead>
+								<tbody>
+									@if (Model.ListObj != null && Model.ListObj.Count() > 0)
+									{
+										var i = 0;
+										foreach (var item in Model.ListObj)
+										{
+											<tr>
+												<td>@(i + 1)</td>
+												<td>@item.SiteCode</td>
+												<td>@item.SiteName</td>
+												<td>@item.City &nbsp; @item.State_Name &nbsp; @item.Country_Name</td>
+												<td hidden>@item.City</td>
+												<td hidden>@item.State_Name</td>
+												<td hidden>@item.Country_Name</td>
+												<td hidden>@item.Full_Address</td>
+												<td>@item.Alt_Mobile_No</td>
+												<td>@item.Alt_Email_Id</td>
+											</tr>
+
+											i++;
+										}
+									}
+								</tbody>
+							</table>
+						</div>
+
+						<div class="clearfix"></div>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="card-footer text-center">
+				<button type="button" class="btn btn-success" onclick="fnSubmitForm('formSave_VendorMap')">Map to current Plant</button>
+				<button type="button" class="btn btn-danger" onclick="fnClose_Modal()">Cancel</button>
+			</div>
+		</div>
+	</form>
+</div>

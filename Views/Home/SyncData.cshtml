@@ -1,0 +1,163 @@
+﻿@{
+	ViewData["Title"] = "Home Page";
+
+}
+
+<div class="row no-gutters pt-5">
+	<div class="Col-12 w-100">
+		<div class="panel-divider mx-5">
+			<span style="background-color: #f4f6f9;">Date Range</span>
+			<div class="row no-gutters">
+				<div class="col-12 row p-0 m-0 shadow-none mt-3">
+
+					<div class="form-group col-md-2 mx-3">
+						<label class="col-form-label" style="align-content:start">From Date </label>
+						<input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-value="@DateTime.Now.AddDays(-1).ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+					</div>
+					<div class="form-group col-md-2 mx-3">
+						<label class="col-form-label" style="align-content:start">To Date To</label>
+						<input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+					</div>
+				</div>
+			</div>
+
+			<div class="row no-gutters">
+				<div class="col-12 row p-0 m-0 shadow-none mt-3">
+					<div class="form-group col-md-12 mx-3">
+						<label class="col-form-label text-right">&nbsp;</label>
+						@*<button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="ajaxPost('@Url.Action("SyncMDA", "Home", new { area = "" })?FromDate=' + $('#FromDate').val() + '&ToDate=' + $('#ToDate').val(), null)"> Sync MDA </button>*@
+						<button type="button" class="btn btn-info btn-md pull-right mr-5" onclick="fnClick_Btn('SyncMDA')"> Sync MDA </button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row no-gutters pt-5">
+	<div class="Col-12 w-100 mx-5">
+		<div class="row no-gutters mx-3">
+			<div class="col-12 row p-0 m-0 shadow-none mt-3">
+				<div class="form-group col-md-12 mx-3">
+					<label class="col-form-label text-right">&nbsp;</label>
+					<button type="button" class="btn btn-info btn-md pull-right mr-5" onclick="fnClick_Btn('SyncProduct')"> Sync Product </button>
+					<button type="button" class="btn btn-info btn-md pull-right mr-5" onclick="fnClick_Btn('SyncBatch')"> Sync Batch </button>
+					<button type="button" class="btn btn-info btn-md pull-right mr-5" onclick="fnClick_Btn('SyncPlant')"> Sync Plant </button>
+					<button type="button" class="btn btn-info btn-md pull-right mr-5" onclick="fnClick_Btn('SyncWarehouse')"> Sync Warehouse </button>
+					<button type="button" class="btn btn-info btn-md pull-right mr-5" onclick="fnClick_Btn('SyncWholesaler')"> Sync Wholesaler </button>
+					<button type="button" class="btn btn-info btn-md pull-right mr-5" onclick="fnClick_Btn('SyncRetailer')"> Sync Retailer/FSC </button>
+					<button type="button" class="btn btn-info btn-md pull-right mr-5" onclick="fnSend_ErrorLogFile('Send_ErrorLogFile')"> Send Error Log</button>
+				</div>
+			</div>
+			<div class="col-12 row p-0 m-0 shadow-none mt-5">
+				<div class="form-group col-md-12 mx-3">
+					<label class="col-form-label text-right">&nbsp;</label>
+					<button type="button" class="btn btn-info btn-md pull-right mr-5" onclick="fnClick_Btn('SyncBatch_Rework')"> Sync Batch (Rework)</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts{
+	<script type="text/javascript">
+
+		var locale_date_format = 'DD/MM/YYYY';
+
+		$(document).ready(function () {
+			//Datemask dd/mm/yyyy
+
+			$('.datepicker_Custom').each(function (i, e) {
+
+				$(e).daterangepicker({
+					singleDatePicker: true,
+					autoclose: true,
+					autoApply: true,
+					//timePicker: true,
+					ranges: {
+						'Today': [moment(), moment()],
+						'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+						'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+						'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+						'This Month': [moment().startOf('month'), moment().endOf('month')],
+						'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+					},
+					showDropdowns: true,
+					//maxDate: moment().format('DD/MM/YYYY'),
+					locale: { cancelLabel: 'Clear', format: locale_date_format/*, format: 'DD/MM/YYYY hh:mm A'*/ }
+				}, function (start, end, label) { try { fnChangeDatePicker(this, start, end, label); } catch { } });
+
+
+				var defaultDate = '';
+				var minDate = '';
+				var maxDate = '';
+
+				if (e.hasAttribute('data-max') && typeof e.getAttribute('data-max') != 'undefined' && e.getAttribute('data-max') != null && e.getAttribute('data-max').length > 0) {
+					maxDate = e.getAttribute('data-max');
+				}
+
+				if (e.hasAttribute('data-min') && typeof e.getAttribute('data-min') != 'undefined' && e.getAttribute('data-min') != null && e.getAttribute('data-min').length > 0) {
+					minDate = e.getAttribute('data-min');
+				}
+
+				if (e.hasAttribute('data-value') && typeof e.getAttribute('data-value') != 'undefined' && e.getAttribute('data-value') != null && e.getAttribute('data-value').length > 0) {
+					defaultDate = e.getAttribute('data-value');
+				}
+
+				$(e).data('daterangepicker').maxDate = moment(maxDate, locale_date_format)
+				$(e).data('daterangepicker').minDate = moment(minDate, locale_date_format)
+
+				$(e).val(defaultDate);
+
+				$(e).trigger('change');
+			})
+
+		});
+
+		function fnChangeDatePicker($this, $start, $end, $label) {
+
+			var $selector = $($($this.element).attr('data-todate'));
+
+			if (typeof $selector != 'undefined' && $selector != null && $selector.length > 0) {
+				$($selector).val(moment($end).format(locale_date_format));
+
+				$($selector).trigger('change');
+			}
+
+		}
+
+		function fnClick_Btn($action) {
+			var action = '@Url.Action("SyncMDA", "Home", new { area = "" })';
+
+			action = action.replace('SyncMDA', $action);
+
+			if ($action == 'SyncMDA')
+				action = action + '?FromDate=' + $('#FromDate').val() + '&ToDate=' + $('#ToDate').val()
+
+			//if (action == 'SyncBatch')
+			ajaxGet(action, false, null)
+			//else
+			//ajaxPost(action + '?FromDate=' + $('#FromDate').val() + '&ToDate=' + $('#ToDate').val(), null);
+
+
+		}
+
+		function fnSend_ErrorLogFile($action) {
+			var action = '@Url.Action("Send_ErrorLogFile", "Home", new { area = "" })';
+
+			action = action.replace('Send_ErrorLogFile', $action);
+
+			if ($action == 'Send_ErrorLogFile')
+				action = action + '?FromDate=' + $('#FromDate').val()
+
+			//if (action == 'SyncBatch')
+			ajaxGet(action, false, null)
+			//else
+			//ajaxPost(action + '?FromDate=' + $('#FromDate').val() + '&ToDate=' + $('#ToDate').val(), null);
+
+
+		}
+
+
+	</script>
+}

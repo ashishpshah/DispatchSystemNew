@@ -1,0 +1,147 @@
+﻿@model ResponseModel<District>
+
+@{
+	ViewData["Title"] = "District";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles{
+	<link rel="stylesheet" href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+	<link rel="stylesheet" href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+	<style>
+		.eye-pass {
+			position: absolute;
+			margin-top: 15px;
+			top: -4px;
+			right: 0;
+			margin-right: 35px;
+			cursor: pointer;
+		}
+
+		input[type=password]::-ms-reveal,
+		input[type=password]::-ms-clear {
+			display: none;
+		}
+	</style>
+}
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">District</h1>
+			</div>
+			<div class="col-sm-6">
+				<div class="float-sm-right">
+					@*@if (Model.IsCreate == true)
+					{*@
+					<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","District", new {  area = "Admin" })');">
+						<i class="fas fa-plus"></i> &nbsp; Add District
+					</button>
+					@*}*@
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<section class="content">
+	<div class="container-fluid">
+		<div class="row no-gutters divformSave_Display d-none" style="margin: 5px !important;">
+			<div class="col-12">
+				@*<form id="formSave" action="@Url.Action("Save","User", new {  area = "Admin"})" method="post">*@
+				<form id="formSave" asp-area="Admin" asp-controller="District" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div class="row no-gutters" id="divformSave"></div>
+					<div class="clearfix"></div>
+					<hr />
+				</form>
+			</div>
+		</div>
+		<div class="row" id="divList">
+			<div class="col-12">
+				<div class="card card-primary card-outline">
+
+					<div class="card-body">
+						<div class="row no-gooters">
+							<div class="col-md-12 my-1">
+								<table id="table_Common_SrNo" class="table table-bordered table-striped">
+									<thead>
+										<tr>
+											<th width="5%">#</th>
+											<th>Country</th>
+											<th>State</th>
+											<th>District</th>
+											<th width="5%">Status</th>
+											<th width="5%">Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in Model.ListObj)
+										{
+											<tr>
+												<td></td>
+												<td>@item.Country_Name</td>
+												<td>@item.State_Name</td>
+												<td>@item.District_Name</td>
+												<td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td>
+												<td>
+													<div class="btn-group">
+														<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
+																onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","District", new {  area = "Admin" })?Id=@item.Id&StateId=@item.State_Id&CountryId=@item.CountryId');">
+															<i class="far fa-edit"></i>
+														</button>
+
+														 <button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+																onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed","District", new {  area = "Admin" })?Id=@item.Id', '#table_Common_SrNo');">
+															<i class="far fa-trash-alt"></i>
+														</button> 
+
+													</div>
+												</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+@section Scripts{
+
+	<script type="text/javascript">
+		$(function () {
+
+		});
+
+		function GetStatelist() {
+
+			$("#State_Id").empty();
+
+			var Country_Id = $("#CountryId").val();
+			$.ajax({
+				type: 'POST',
+				url: "@Url.Action("GetStatelist","District")",
+				dataType: 'json',
+				data: { Country_Id: Country_Id }
+
+			}).done(function (State) {
+				$.each(State, function (i, State) {
+					$("#State_Id").append('<option value="' + State.value + '">' + State.text + '</option>');
+				});
+			}).fail(function (xhr) {
+				console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+			});
+			return false;
+		}
+
+	</script>
+}
+
+

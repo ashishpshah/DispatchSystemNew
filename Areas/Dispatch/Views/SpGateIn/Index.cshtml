@@ -1,0 +1,946 @@
+﻿@model ResponseModel<GateIn>
+
+@{
+}
+<!-- Content Header (Page header) -->
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12">
+                <h1 class="font-weight-bold">Gate In</h1>
+            </div>
+            @*<div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">General Form</li>
+            </ol>
+            </div>*@
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content p-0">
+    <div class="container-fluid p-0">
+        <div class="row no-gutters">
+            <div class="col-12 card">
+                <form id="formSave" asp-controller="SpGateIn" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data" data_form_isvalidate>
+                    <div class="card-body pb-0">
+                        <div class="panel-divider">
+                            <span>Search Details</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+                                            <div class="form-group row">
+                                                <label for="Inward_Sys_Id" class="col-sm-2 col-form-label">Inward Type <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <select id="Inward_Sys_Id" name="Inward_Sys_Id" class="form-control form-control-sm select2" style="width: 100%;"
+                                                            onchange="fnChange_Select(this, null)" data-required data-msg="The Inward Type field is required.">
+                                                        <option value="3" selected data-type="">Scrap</option>
+                                                        @*@if (Model != null && Model.SelectListItems.Where(x => x.Group == "INWARDTYPE") != null)
+                                                        {
+                                                        foreach (var item in Model.SelectListItems.Where(x => x.Group == "INWARDTYPE"))
+                                                        {
+                                                        <option value="@item.Value" data-type="">@item.Text</option>
+                                                        }
+                                                        }*@
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label class="col-sm-2 col-form-label">SO Number</label>
+                                                @*<div class="col-2">
+                                                <div class="icheck-primary d-inline mr-3">
+                                                <input type="radio" id="MDA" name="Option" checked>
+                                                <label for="MDA" id="radio_Common_Label"> MDA Number</label>
+                                                </div>
+                                                </div>*@
+                                                <div class="col-4">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="inputSearch" class="form-control form-control-sm">
+                                                        <span class="input-group-append ml-2">
+                                                            <button type="button" class="btn btn-info btn-flat mr-2" onclick="GetSO(this, 'S')">Search</button>
+                                                            <button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetSO(this, 'V')" id="button_Common_View">View SO</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="Truck_No" class="col-sm-2 col-form-label">Vehicle Number <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" class="form-control form-control-sm truck_no" id="Truck_No" name="Truck_No" data-required data-msg="Vehicle Number is required." autocomplete="off">
+                                                </div>
+                                                @*<label for="MDA_No" class="col-sm-2 col-form-label">MDA Number <span class="text-danger">*</span></label>
+                                                <div class="col-sm-3">
+                                                <input type="text" class="form-control form-control-sm" id="MDA_No" name="MDA_No" autocomplete="off" readonly>
+                                                </div>*@
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="Transporter_Name" class="col-sm-2 col-form-label">Transporter Name  <span class="text-danger">*</span></label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control form-control-sm truck_no" id="Transporter_Name" name="Transporter_Name" autocomplete="off">
+                                                    <input type="text" class="form-control form-control-sm d-none" id="Transporter_Code" name="Transporter_Code" autocomplete="off">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label for="Driver_Name" class="col-sm-4 col-form-label pl-0">Driver Name <span class="text-danger">*</span></label>
+                                                        <span class="input-group-append col-sm-6 ml-0">
+                                                            <input type="text" class="form-control form-control-sm truck_no" id="Driver_Name" name="Driver_Name" autocomplete="off">
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label for="Driver_Contact" class="col-sm-4 col-form-label pl-0">Driver Contact <span class="text-danger">*</span></label>
+                                                        <span class="input-group-append col-sm-6 ml-0">
+                                                            <input type="text" class="form-control form-control-sm truck_no isNumberKey" id="Driver_Contact" name="Driver_Contact" autocomplete="off">
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-divider">
+                            <span id="span_common_no">MDA Details</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+                                            <div class="form-group row">
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label class="col-sm-4 col-form-label pl-0" id="label_Common_No">MDA Number <span class="text-danger">*</span></label>
+                                                        <span class="col-sm-6 ml-0">
+                                                            <input type="text" class="form-control form-control-sm" id="input_Common_No" name="Common_No" readonly>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label class="col-sm-4 col-form-label pl-0" id="label_Common_Date">MDA Date <span class="text-danger">*</span></label>
+                                                        <span class="col-sm-6 ml-0">
+                                                            <input type="text" class="form-control form-control-sm" id="input_Common_Date" name="Common_Date" readonly>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row divVendor_dtls d-none">
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label class="col-sm-4 col-form-label pl-0" id="label_Common_Name">Vendor Name <span class="text-danger">*</span></label>
+                                                        <span class="col-sm-6 ml-0">
+                                                            <input type="text" class="form-control form-control-sm" id="input_Common_Name" readonly>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label class="col-sm-4 col-form-label pl-0" id="label_Common_Code">Vendor Code <span class="text-danger">*</span></label>
+                                                        <span class="col-sm-6 ml-0">
+                                                            <input type="text" class="form-control form-control-sm" id="input_Common_Code" name="Vendor_Code" readonly>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group row divVendor_dtls d-none">
+                                                <label for="Is_Common_Dtls_Manually" class="col-sm-2 col-form-label" id="label_Common_Dtls_Manually">Enter PO Details Manually?</label>
+                                                <div class="col-sm-3">
+                                                    <div class="icheck-primary d-inline">
+                                                        <input type="checkbox" id="Is_Common_Dtls_Manually" name="Is_Common_Dtls_Manually">
+                                                        <label for="Is_Common_Dtls_Manually"> &nbsp; </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <button type="button" class="btn btn-primary px-3 mr-3" id="btn_Common_Manually">Add PO</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-divider">
+                            <span>Driver Details Validation</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+                                            <div class="form-group row">
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label for="Driver_Id_Type" class="col-sm-4 col-form-label pl-0">Driver ID Proof Type</label>
+                                                        <span class="input-group-append col-sm-6 ml-0">
+                                                            <select id="Driver_Id_Type" name="Driver_Id_Type" class="form-control form-control-sm select2" style="width: 100%;">
+                                                                @if (Model != null && Model.SelectListItems.Where(x => x.Group == "DRVIDPROOF") != null)
+                                                                {
+                                                                    foreach (var item in Model.SelectListItems.Where(x => x.Group == "DRVIDPROOF"))
+                                                                    {
+                                                                        <option value="@item.Value" data-type="">@item.Text</option>
+                                                                    }
+                                                                }
+
+                                                            </select>
+
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label for="Driver_Id_Number" class="col-sm-4 col-form-label pl-0">ID Proof Number</label>
+                                                        <span class="input-group-append col-sm-6 ml-0">
+                                                            <input type="text" class="form-control form-control-sm" id="Driver_Id_Number" name="Driver_Id_Number">
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="Driver_Changed" class="col-sm-2 col-form-label">Is Driver Details Changed?</label>
+                                                <div class="col-sm-10">
+                                                    <div class="icheck-primary d-inline">
+                                                        <input type="checkbox" id="Driver_Changed" name="Driver_Changed">
+                                                        <label for="Driver_Changed"> &nbsp; </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label for="New_Driver_Name" class="col-sm-4 col-form-label pl-0">New Driver Name</label>
+                                                        <span class="input-group-append col-sm-6 ml-0">
+                                                            <input type="text" class="form-control form-control-sm" id="New_Driver_Name" name="Driver_Name_New" readonly>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm ">
+                                                        <label for="New_Driver_Contact" class="col-sm-4 col-form-label pl-0">New Driver Contact</label>
+                                                        <span class="input-group-append col-sm-6 ml-0">
+                                                            <input type="text" class="form-control form-control-sm isNumberKey" id="New_Driver_Contact" name="Driver_Contact_New" readonly>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-divider">
+                            <span>Vehicle Details Validation</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+                                            <div class="form-group row">
+                                                <label for="Is_Truck_Validated" class="col-sm-2 col-form-label">Is Vehicle Validated?</label>
+                                                <div class="col-sm-10">
+                                                    <div class="icheck-primary d-inline">
+                                                        <input type="checkbox" id="Is_Truck_Validated" name="Truck_Validation">
+                                                        <label for="Is_Truck_Validated"> &nbsp; </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-divider mb-1">
+                            <span>RFID Details</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+
+                                            <div class="form-group row">
+                                                <label for="RFID_Number" class="col-sm-2 col-form-label">RFID Number <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="RFID_Number" name="RFID_Number" class="form-control form-control-sm" autocomplete="off">
+                                                        <span class="input-group-append ml-2">
+                                                            <button type="button" onclick="getRfidNoCode('RfidNo')" class="btn btn-info btn-flat mr-2">Read RFID</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group row">
+                                                <label for="Is_RFID_Card_Read_Issue" class="col-sm-2 col-form-label">Is RFID Card Read Issue?</label>
+                                                <div class="col-sm-10">
+                                                    <div class="icheck-primary d-inline">
+                                                        <input type="checkbox" id="Is_RFID_Card_Read_Issue" name="Rfid_Receive">
+                                                        <label for="Is_RFID_Card_Read_Issue"> &nbsp; </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group row">
+                                                <label for="RFID_Serial_Number" class="col-sm-2 col-form-label">RFID Serial Number <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="RFID_Serial_Number" name="RFID_Serial_Number" class="form-control form-control-sm">
+                                                        <span class="input-group-append ml-2">
+                                                            <button type="button" onclick="getRfidNoCode('RfidCode')" class="btn btn-info btn-flat mr-2">Validate</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-info btn-flat px-3 mr-3 btnSubmit">Save</button>
+                        @* <button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClearFormData('#formSave')">Clear</button> *@
+                        <button type="button" class="btn btn-danger btn-flat px-3 mr-3">Close</button>
+                        <span class="float-right mr-3"><span class="text-danger">*</span> Mandatory Fields</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts{
+    <script type="text/javascript">
+        var table = {};
+
+        $(document).ready(function () {
+
+            //$('.select2_TextOrder').select2({
+            //	/* Sort data using localeCompare */
+            //	sortResults: data => data.sort((a, b) => a.text.localeCompare(b.text)),
+            //});
+
+            $('input#MDA').prop('checked', true);
+            $('input#MDA').trigger('change');
+
+            var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+
+            if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 3) {
+                $('#span_common_no').html('SO Details');
+                $('#label_Common_No').html('SO Number');
+                $('#radio_Common_Label').html('SO Number');
+                $('#button_Common_View').html('View SO');
+                $('#label_Common_Date').html('SO Date');
+                $('#label_Common_Name').html('Customer Name');
+                $('#label_Common_Code').html('Customer Code');
+                $('#label_Common_Dtls_Manually').html('Enter SO Details Manually?');
+                $('#btn_Common_Manually').html('Add SO');
+                $('.divVendor_dtls').removeClass('d-none');
+
+                $('#btn_Common_Manually').prop('disabled', true);
+            }
+        });
+
+
+        $(document).on("click", 'button#btn_Common_Manually', function (e) {
+
+            if (!$('#btn_Common_Manually').prop('disabled')) {
+
+                var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+                //var Inward_Sys_Id = $($this).val();
+
+                if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 2) {
+                    fnShow_Modal('@Url.Action("Partial_AddEditForm_PO","RmGateIn", new { area = "Dispatch" })', 'Purchase Order', false, "html")
+                }
+                else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 3) {
+                    fnShow_Modal('@Url.Action("Partial_AddEditForm_SO","SpGateIn", new { area = "Dispatch" })', 'Sell Order', false, "html")
+                }
+
+            }
+        });
+
+        $(document).on("change", 'input#Is_Common_Dtls_Manually', function (e) {
+            $('#btn_Common_Manually').prop('disabled', !e.target.checked);
+            $('#input_Common_No').attr("readonly", !e.target.checked);
+            $('#input_Common_Date').attr("readonly", !e.target.checked);
+            $('#input_Common_Name').attr("readonly", !e.target.checked);
+            $('#input_Common_Code').attr("readonly", !e.target.checked);
+        });
+
+        function fnChange_Select($this, $selecter) {
+
+            if (typeof $selecter != 'undefined' && $selecter != null && $selecter != '' && $selecter.length > 0) {
+
+                var selectedValue = $($this).find('option:selected').val();
+
+                if (typeof selectedValue != 'undefined' && selectedValue != null && selectedValue != '' && selectedValue.length > 0)
+                    $($selecter).val(selectedValue);
+                else
+                    $($selecter).val('');
+
+                $($selecter).trigger('change');
+            }
+            else {
+                if ($this != null)
+                    fnClear_MDA();
+
+                if ($this == null || $($this).attr('id') == 'Inward_Sys_Id') {
+
+                    //$('#span_common_no').html('MDA Details');
+                    //$('#label_Common_No').html('MDA Number');
+                    //$('#radio_Common_Label').html('MDA Number');
+                    //$('#button_Common_View').html('View MDA');
+                    //$('#label_Common_Date').html('MDA Date');
+                    //$('#label_Common_Name').html('Vendor Name');
+                    //$('#label_Common_Code').html('Vendor Code');
+                    //$('#label_Common_Dtls_Manually').html('Enter MDA Details Manually?');
+
+                    //$('.divVendor_dtls input').val('');
+                    //$('.divVendor_dtls input').trigger('change');
+
+                    //$('.divVendor_dtls input[type="checkbox"]').prop('checked', false);
+                    //$('.divVendor_dtls input[type="checkbox"]').prop('readonly', false);
+                    //$('.divVendor_dtls input[type="checkbox"]').trigger('change');
+
+                    //$('#btn_Common_Manually').prop('disabled', true);
+
+                    //$('.divVendor_dtls').addClass('d-none');
+
+                    var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+                    //var Inward_Sys_Id = $($this).val();
+
+                    if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 2) {
+                        $('#span_common_no').html('PO Details');
+                        $('#label_Common_No').html('PO Number');
+                        $('#radio_Common_Label').html('PO Number');
+                        $('#button_Common_View').html('View PO');
+                        $('#label_Common_Date').html('PO Date');
+                        $('#label_Common_Name').html('Vendor Name');
+                        $('#label_Common_Code').html('Vendor Code');
+                        $('#label_Common_Dtls_Manually').html('Enter PO Details Manually?');
+                        $('#btn_Common_Manually').html('Add PO');
+                        $('.divVendor_dtls').removeClass('d-none');
+                    }
+                    else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 3) {
+                        $('#span_common_no').html('SO Details');
+                        $('#label_Common_No').html('SO Number');
+                        $('#radio_Common_Label').html('SO Number');
+                        $('#button_Common_View').html('View SO');
+                        $('#label_Common_Date').html('SO Date');
+                        $('#label_Common_Name').html('Customer Name');
+                        $('#label_Common_Code').html('Site');
+                        $('#label_Common_Dtls_Manually').html('Enter SO Details Manually?');
+                        $('#btn_Common_Manually').html('Add SO');
+                        $('.divVendor_dtls').removeClass('d-none');
+                    }
+
+                    $('#label_Common_No').append('<span class="text-danger">*</span>');
+                    $('#label_Common_Date').append('<span class="text-danger">*</span>');
+                    $('#label_Common_Name').append('<span class="text-danger">*</span>');
+                    $('#label_Common_Code').append('<span class="text-danger">*</span>');
+
+                }
+            }
+        }
+
+        function GetSO($this, $type) {
+            ShowLoader(true);
+
+            if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide(); //$('#modal-xl').modal('hide');
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("GetSO","SpGateIn", new { area = "Dispatch" })?type=' + $type + '&searchTerm=' + $('#inputSearch').val() + '&Inward_Sys_Id=' + $('#Inward_Sys_Id option:selected').val(),
+                data: null,
+                contentType: "application/json; charset=utf-8",
+                dataType: "html",
+                success: function (response) {
+
+                    fnClear_MDA();
+
+                    if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+                        CommonAlert_Error("No any record(s) found");
+                        return false;
+                    }
+
+                    if (response.indexOf('{') == 0) {
+
+                        setTimeout(function () {
+
+                            try {
+
+                                if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+                                    var selectedData = JSON.parse(response);
+
+
+
+                                    //$('#Truck_No').val(selectedData['vehicle_no']);
+                                    $('#input_Common_No').val(selectedData['soNo']);
+                                    $('#input_Common_Date').val(selectedData['soDate_Text']);
+                                    $('#input_Common_Name').val(selectedData['custName']);
+                                    $('#input_Common_Code').val(selectedData['siteName']);
+                                    $('#Truck_No').val(selectedData['truck_No']);
+                                    $('#Transporter_Name').val(selectedData['transporter_Name']);
+                                    //$('#Driver_Name').val(selectedData['driver']);
+                                    //$('#Driver_Contact').val(selectedData['mobile_no']);
+
+                                    //$('#Truck_No').trigger('change');
+                                    $('#input_Common_No').trigger('change');
+                                    $('#input_Common_Date').trigger('change');
+                                    $('#input_Common_Name').trigger('change');
+                                    $('#input_Common_Code').trigger('change');
+                                    $('#Truck_No').trigger('change');
+                                    $('#Transporter_Name').trigger('change');
+                                } else
+                                    CommonAlert_Error("No record found");
+
+                            } catch { }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    }
+                    else {
+
+                        $('#modal-xl .modal-body').html('');
+                        $('#modal-xl .modal-body').append(response);
+
+                        if ($type == 'S')
+                            $('#modal-xl .modal-title').html('Search SO');
+                        else
+                            $('#modal-xl .modal-title').html('View SO');
+
+
+                        setTimeout(function () {
+
+                            try {
+
+                                if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
+                                    $('#modal-xl .modal-body #table_Common').DataTable().destroy();
+                                }
+
+                                table = $('#modal-xl .modal-body #table_Common').DataTable({
+                                    paging: true,
+                                    lengthChange: true,
+                                    searching: true,
+                                    ordering: true,
+                                    info: true,
+                                    autoWidth: true,
+                                    responsive: true,
+                                    pageLength: 10,
+                                    lengthMenu: [
+                                        [10, 25, 50, -1],
+                                        [10, 25, 50, 'All']
+                                    ],
+                                    //columnDefs: [
+                                    //	{ "targets": 0, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false },
+                                    //	{ "targets": -1, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false }
+                                    //],
+                                    fixedColumns: true,
+                                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                                        "<'row'<'col-sm-12'tr>>" +
+                                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+                                });
+
+                                $('#modal-xl .modal-body #table_Common').css('width', '100%');
+
+                                table.on('click', 'tbody tr', function (e) {
+
+                                    $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+                                        if (i != (e.currentTarget.rowIndex - 1))
+                                            $(ez).removeClass('bg-info');
+                                    });
+
+                                    if (e.currentTarget.classList.contains('bg-info')) {
+
+                                        $('#Truck_No').val('');
+                                        $('#input_Common_No').val('');
+                                        $('#input_Common_Date').val('');
+                                        $('#Transporter_Code').val('');
+                                        $('#Transporter_Name').val('');
+                                        $('#Driver_Name').val('');
+                                        $('#Driver_Contact').val('');
+                                    }
+
+                                    e.currentTarget.classList.toggle('bg-info');
+
+                                    var selectedData = table.rows('.bg-info').data();
+
+
+                                    $('.divVendor_dtls input').val('');
+                                    $('.divVendor_dtls input').trigger('change');
+
+                                    $('.divVendor_dtls input[type="checkbox"]').prop('readonly', false);
+                                    $('.divVendor_dtls input[type="checkbox"]').trigger('change');
+
+                                    $('.divVendor_dtls').addClass('d-none');
+
+                                    var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+
+                                    if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 3) {
+
+                                        if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1) {
+                                            //$('#Truck_No').val(selectedData[0][0]);
+                                            $('#input_Common_No').val(selectedData[0][0]);
+                                            $('#input_Common_Date').val(selectedData[0][1]);
+                                            $('#input_Common_Name').val(selectedData[0][3]);
+                                            $('#input_Common_Code').val(selectedData[0][4]);
+                                            $('#Truck_No').val(selectedData[0][7]);
+                                            $('#Transporter_Name').val(selectedData[0][8]);
+
+                                        }
+
+
+                                        fnChange_Select(null, null);
+
+                                        $('#Truck_No').trigger('change');
+                                        $('#input_Common_No').trigger('change');
+                                        $('#input_Common_Date').trigger('change');
+                                        $('#input_Common_Name').trigger('change');
+                                        $('#input_Common_Code').trigger('change');
+                                        $('#Truck_No').trigger('change');
+                                        $('#Transporter_Name').trigger('change');
+
+                                    }
+                                    else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 2) {
+                                        $('.divVendor_dtls').removeClass('d-none');
+                                    }
+                                    //else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 3) {
+                                    //    $('.divVendor_dtls').removeClass('d-none');
+                                    //}
+
+                                });
+
+
+                            } catch { }
+
+                            if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
+                                $('#modal-xl').show(); //$('#modal-xl').modal('show');
+                            else
+                                CommonAlert_Error("No any record(s) found");
+
+                            ShowLoader(false);
+
+                        }, 1000);
+                    }
+                },
+                failure: function (response) { fnClear_MDA(); CommonAlert_Error(null); },
+                error: function (response) { fnClear_MDA(); CommonAlert_Error(null); }
+            });
+        }
+
+        function fnSelect_MDA() {
+
+            if ($('#table_Common tbody tr.bg-info').length <= 0) {
+                CommonAlert_Error("Please select one MDA Number");
+                return false;
+            }
+            else {
+                fnClose_Modal()
+            }
+        }
+
+        function fnClear_MDA() {
+
+            $('#table_Common tbody tr.bg-info').each(function (i, ez) {
+                $(ez).removeClass('bg-info');
+            });
+
+            //fnChange_Select(null);
+
+            $('#Truck_No').val('');
+            $('#input_Common_No').val('');
+            $('#input_Common_Name').val('');
+            $('#input_Common_Code').val('');
+            $('#input_Common_Date').val('');
+            $('#Transporter_Code').val('');
+            $('#Transporter_Name').val('');
+            $('#Driver_Name').val('');
+            $('#Driver_Contact').val('');
+
+            $('#Truck_No').trigger('change');
+            $('#input_Common_No').trigger('change');
+            $('#input_Common_Name').trigger('change');
+            $('#input_Common_Code').trigger('change');
+            $('#input_Common_Date').trigger('change');
+            $('#Transporter_Code').trigger('change');
+            $('#Transporter_Name').trigger('change');
+            $('#Driver_Name').trigger('change');
+            $('#Driver_Contact').trigger('change');
+
+            $('#RFID_Number').val('');
+            $('#RFID_Serial_Number').val('');
+            $('#Is_RFID_Card_Read_Issue').prop('checked', false);
+
+            $('#RFID_Number').trigger('change');
+            $('#RFID_Serial_Number').trigger('change');
+            $('#Is_RFID_Card_Read_Issue').trigger('change');
+
+
+            $('#Driver_Id_Type').val('');
+            $('#Driver_Id_Type').trigger('change');
+
+            $('#Driver_Changed').prop('checked', false);
+            $('#Driver_Changed').trigger('change');
+
+            $('#Is_Truck_Validated').prop('checked', false);
+            $('#Is_Truck_Validated').trigger('change');
+
+        }
+
+        function fnClearFormData_Success($selector) {
+
+            $('select[name="Inward_Sys_Id"]').val($('select[name="Inward_Sys_Id"] option:eq(0)').val());
+            $('select[name="Inward_Sys_Id"]').trigger('change');
+
+        }
+
+        //$(document).on("change", 'select[name="Inward_Sys_Id"]', function (e) {
+        //	fnClear_MDA();
+        //});
+
+        $(document).on("change", 'input[name="Option"]', function (e) {
+
+            $('input.truck_no').val('')
+            $('input.truck_no').trigger('change')
+            $('.mda_no input').val('')
+            $('.mda_no input').trigger('change')
+
+            if (e.target.id == 'MDA') {
+                $('input.truck_no').prop('readonly', true);
+            } else {
+                $('input.truck_no').prop('readonly', false);
+            }
+        });
+
+        $(document).on("change", 'input#Driver_Changed', function (e) {
+
+            $('input#New_Driver_Name').val('')
+            $('input#New_Driver_Name').trigger('change')
+
+            $('input#New_Driver_Contact').val('')
+            $('input#New_Driver_Contact').trigger('change')
+
+            $('input#New_Driver_Name').prop('readonly', !e.target.checked);
+            $('input#New_Driver_Contact').prop('readonly', !e.target.checked);
+        });
+
+        function getRfidNoCode(btn) {
+            ShowLoader(true);
+
+            if (btn == 'RfidNo') {
+                $('#RFID_Serial_Number').val('');
+            } else {
+                $('#RFID_Number').val('');
+            }
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("fnGetRfidNoCode","GateIn")?rfidNo=' + $('#RFID_Serial_Number').val() + '&rfidCode=' + $('#RFID_Number').val(),
+                data: null,
+                contentType: "application/json; charset=utf-8",
+                dataType: "html",
+                success: function (response) {
+
+                    if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+                        CommonAlert_Error("No any record(s) found");
+                        return false;
+                    }
+
+                    if (response.indexOf('{') == 0) {
+
+                        setTimeout(function () {
+
+                            try {
+
+                                if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+                                    var selectedData = JSON.parse(response);
+
+                                    if (selectedData['status'] != "Active") {
+                                        CommonAlert_Error(selectedData['reasonforEdit']);
+                                        return false;
+                                    }
+
+                                    $('#RFID_Number').val(selectedData['rfidCode']);
+                                    $('#RFID_Serial_Number').val(selectedData['rfidSrno']);
+                                    //$('#Remarks').html(selectedData['remarks']);
+                                    //$('#Allow_Out_Tolerance').html(selectedData['allow_Out_Tolerance']);
+
+                                    $('#RFID_Number').trigger('change');
+                                    $('#RFID_Serial_Number').trigger('change');
+                                } else
+                                    CommonAlert_Error("No any record(s) found");
+
+                            } catch { }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    }
+                },
+                failure: function (response) {
+                    CommonAlert_Error(null)
+                },
+                error: function (response) {
+                    CommonAlert_Error(null)
+                }
+            });
+        }
+
+
+        function getVendorSite() {
+
+            $("#SiteId").empty();
+
+            $.ajax({
+                type: 'POST',
+                url: "@Url.Action("GetVendorSitelist","VendorPO", new { area = "Admin" })",
+                dataType: 'json',
+                data: { Vendor_Id: $('#VendorId').val() }
+            }).done(function (state) {
+
+                $.each(state, function (i, state) {
+                    $("#SiteId").append('<option value="' + state.value + '">' +
+                        state.text + '</option>');
+                });
+            }).fail(function (xhr) {
+                console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+            });
+            return false;
+        }
+
+        function getVendorSiteForSO() {
+
+            $("#SiteId").empty();
+
+            $.ajax({
+                type: 'POST',
+                url: "@Url.Action("GetVendorSitelist","VendorPO", new { area = "Admin" })",
+                dataType: 'json',
+                data: { Vendor_Id: $('#VendorId').val() }
+            }).done(function (state) {
+
+                $.each(state, function (i, state) {
+                    $("#SiteId").append('<option value="' + state.text + '">' +
+                        state.text + '</option>');
+                });
+            }).fail(function (xhr) {
+                console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+            });
+            return false;
+        }
+
+
+        function fnSoAddRow() {
+
+            var rowNum = $('#table_SODtls tbody tr:not(#tr_ZX)').length;
+
+            var newRow = $('#table_SODtls tbody tr#tr_ZX')[0].innerHTML;
+
+            newRow = '<tr id="tr_' + rowNum + '">' + newRow.replaceAll('ZX', rowNum) + '</tr>';
+
+            $("#table_SODtls tbody").append(newRow);
+
+            $("#table_SODtls tbody tr#tr_" + rowNum + ' select').addClass('select2');
+            $("#table_SODtls tbody tr#tr_" + rowNum + ' select.select2').select2();
+            $("#table_SODtls tbody tr#tr_" + rowNum + ' input[name="listVendorSoDtls[' + rowNum + '].LineNo"]').val((rowNum + 1));
+        }
+
+
+        function fnAddRow() {
+
+            var rowNum = $('#table_PODtls tbody tr:not(#tr_ZX)').length;
+
+            var newRow = $('#table_PODtls tbody tr#tr_ZX')[0].innerHTML;
+
+            newRow = '<tr id="tr_' + rowNum + '">' + newRow.replaceAll('ZX', rowNum) + '</tr>';
+
+            $("#table_PODtls tbody").append(newRow);
+
+            $("#table_PODtls tbody tr#tr_" + rowNum + ' select').addClass('select2');
+            $("#table_PODtls tbody tr#tr_" + rowNum + ' select.select2').select2();
+            $("#table_PODtls tbody tr#tr_" + rowNum + ' input[name="listVendorPoDtls[' + rowNum + '].LineNo"]').val((rowNum + 1));
+        }
+
+        var delete_$rowNum = null;
+
+        function fnSoDelete_Row($rowNum) {
+
+            var so_id = $('input[name="Id"]').val();
+            var so_dtls_id = $("#table_SODtls tbody tr#tr_" + $rowNum).find('input[name="listVendorSoDtls[' + $rowNum + '].Id"]').val();
+
+            if (typeof so_id != 'undefined' && so_id != null && so_id.length > 0 && !isNaN(parseFloat(so_id)) && parseFloat(so_id) > 0
+                && typeof so_dtls_id != 'undefined' && so_dtls_id != null && so_dtls_id.length > 0 && !isNaN(parseFloat(so_dtls_id)) && parseFloat(so_dtls_id) > 0) {
+                delete_$rowNum = $rowNum;
+                //fnDelete_Confirm('@Url.Action("DeleteConfirmed","VendorSO", new {  area = "Admin" })?id=' + so_id + '&id_dtls=' + so_dtls_id);
+            }
+            else {
+                delete_$rowNum = null;
+                $("#table_SODtls tbody tr#tr_" + $rowNum).remove();
+            }
+        }
+
+        function fnDelete_Row($rowNum) {
+
+            var po_id = $('input[name="Id"]').val();
+            var po_dtls_id = $("#table_PODtls tbody tr#tr_" + $rowNum).find('input[name="listVendorPoDtls[' + $rowNum + '].Id"]').val();
+
+            if (typeof po_id != 'undefined' && po_id != null && po_id.length > 0 && !isNaN(parseFloat(po_id)) && parseFloat(po_id) > 0
+                && typeof po_dtls_id != 'undefined' && po_dtls_id != null && po_dtls_id.length > 0 && !isNaN(parseFloat(po_dtls_id)) && parseFloat(po_dtls_id) > 0) {
+                delete_$rowNum = $rowNum;
+                fnDelete_Confirm('@Url.Action("DeleteConfirmed","VendorPO", new {  area = "Admin" })?id=' + po_id + '&id_dtls=' + po_dtls_id);
+            }
+            else {
+                delete_$rowNum = null;
+                $("#table_PODtls tbody tr#tr_" + $rowNum).remove();
+            }
+        }
+
+        function fnDelete_Success(response) {
+
+            if (response.statusCode === 1 && delete_$rowNum != null && delete_$rowNum > -1) {
+                $("#table_PODtls tbody tr#tr_" + delete_$rowNum).remove();
+            }
+
+            delete_$rowNum = null;
+        }
+
+        function fnSubmitForm_Success(response, $id) {
+
+
+            $('input#input_Common_No').val('')
+            $('input#input_Common_Date').val('')
+            $('input#input_Common_Name').val('')
+            $('input#input_Common_Code').val('')
+
+            if (response.statusCode === 1) {
+
+                $('input#input_Common_No').val(response.obj.poNo)
+                $('input#input_Common_Date').val(response.obj.poDate_Text)
+                $('input#input_Common_Name').val(response.selectListItems[0].text)
+                $('input#input_Common_Code').val(response.selectListItems[0].value)
+                $('input#input_Common_No').val(response.obj.soNo)
+                $('input#input_Common_Date').val(response.obj.soDate_Text)
+
+                fnClose_Modal();
+
+            }
+
+            $('input#input_Common_No').trigger('change')
+            $('input#input_Common_Date').trigger('change')
+            $('input#input_Common_Name').trigger('change')
+            $('input#input_Common_Code').trigger('change')
+
+        }
+
+    </script>
+}

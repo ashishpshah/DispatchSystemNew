@@ -1,0 +1,179 @@
+﻿@model ResponseModel<PO>
+@{
+	Layout = null;
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+	<form id="formSave_PO" asp-area="Dispatch" asp-controller="GateIn" asp-action="Save_PO" method="post" class="form-horizontal" enctype="multipart/form-data">
+		<div class="card card-primary card-outline">
+			<div class="card-body @(Model.Obj.Id > 0 ? " pt-0 mt-0":"")">
+				<input type="text" class="form-control d-none" name="Id" value="@Model.Obj.Id">
+
+				<div class="row p-0 m-0 d-flex">
+					<div class="col-12 tab-content p-0 m-0">
+
+						<div id="tab_PO" class="tab-pane active row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+								<div class="form-group row">
+									<label for="PoNo" class="col-sm-2 col-form-label">PO No <span style="color:red">*</span></label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" name="PoNo" value="@Model.Obj.PoNo" maxlength="50"
+											   data-required data-msg="The Po No field is required." autocomplete="off">
+									</div>
+								</div>
+								<hr />
+								<div class="form-group row">
+									<label for="VendorId" class="col-sm-2 col-form-label" style="align-content:start">Vendor <span style="color:red">*</span></label>
+									<div class="col-sm-3">
+										<select id="VendorId" name="VendorId" class="form-control form-control-sm select2" style="width: 100%;"
+												onchange="getVendorSite()" data-required data-msg="The Vendor field is required.">
+											@if (Model != null && Model.SelectListItems != null)
+											{
+												foreach (var item in Model.SelectListItems.Where(x => x.Group == "V"))
+												{
+													<option value="@item.Value" data-vendorcode="@item.Value2">@item.Text</option>
+												}
+											}
+										</select>
+									</div>
+									<label for="SiteId" class="col-sm-2 col-form-label" style="align-content:start">Vendor Site<span style="color:red">*</span></label>
+									<div class="col-sm-3">
+										<div class="input-group input-group-sm">
+											<select id="SiteId" name="SiteId" class="form-control form-control-sm select2" style="width: 100%;"
+													data-required data-msg="The Vendor Site field is required.">
+												@if (Model != null && Model.SelectListItems != null)
+												{
+													foreach (var item in Model.SelectListItems.Where(x => x.Group == "N"))
+													{
+														<option value="@item.Value">@item.Text</option>
+													}
+												}
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="PoDate" class="col-sm-2 col-form-label">PO Date</label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm datepicker" id="PoDate" name="PoDate"
+											   data-value="@Model.Obj.PoDate_Text" value="@Model.Obj.PoDate?.ToString("dd/MM/yyyy").Replace("-", "/")" maxlength="50"
+											   data-required data-msg="The Po Date field is required." autocomplete="off">
+									</div>
+
+								</div>
+								<div class="form-group row">
+									<label for="PoDesc" class="col-sm-2 col-form-label">PO Description <span style="color:red">*</span></label>
+									<div class="col-sm-8">
+										<input type="text" class="form-control form-control-sm" id="PoDesc" name="PoDesc" value="@Model.Obj.PoDesc" maxlength="50"
+											   data-required data-msg="The Po Desc field is required." autocomplete="off">
+									</div>
+								</div>
+
+								<hr />
+								<div class="form-group row">
+									<label for="TransId" class="col-sm-2 col-form-label" style="align-content:start">Transporter <span style="color:red">*</span></label>
+									<div class="col-sm-3">
+										<select id="TransId" name="TransId" class="form-control form-control-sm select2" style="width: 100%;"
+												data-required data-msg="The Transporter field is required.">
+											@if (Model != null && Model.SelectListItems != null)
+											{
+												foreach (var item in Model.SelectListItems.Where(x => x.Group == "T"))
+												{
+													<option value="@item.Value">@item.Text</option>
+												}
+											}
+										</select>
+									</div>
+									<label for="TruckNo" class="col-sm-2 col-form-label">Truck No. <span style="color:red">*</span></label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" id="TruckNo" name="TruckNo"
+											   data-required data-msg="The Truck No. field is required." autocomplete="off">
+									</div>
+
+								</div>
+								<hr />
+
+								<div class="row mb-2">
+									<div class="col-sm-6">
+										<h5 class="m-0 text-left">Vendor PO Details</h5>
+									</div>
+									<div class="col-sm-6">
+										<div class="float-sm-right">
+											@* @if (Common.IsAdmin())
+											{ *@
+											<button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnAddRow()">
+												<i class="fas fa-plus"></i> &nbsp; Add PO Item
+											</button>
+											@* } *@
+										</div>
+									</div>
+								</div>
+
+
+								<div class="row no-gooters">
+									<div class="col-md-12 my-1">
+										<table id="table_PODtls" class="table table-bordered table-striped w-100">
+											<thead>
+												<tr>
+													<th width="5%">Line No</th>
+													<th>Line Description</th>
+													<th width="15%">UOM</th>
+													<th width="15%">Quantity</th>
+													<th width="5%">Action</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr id="tr_ZX" class="d-none">
+													<td><input type="text" class="form-control form-control-sm text-center" name="listPODtls[ZX].LineNo" maxlength="50" autocomplete="off" readonly></td>
+													<td><input type="text" class="form-control form-control-sm" name="listPODtls[ZX].LineDesc" maxlength="50" autocomplete="off"></td>
+													<td>
+														<input type="text" class="form-control form-control-sm d-none" id="listPODtls[ZX]_UOM" name="listPODtls[ZX].UOM" autocomplete="off">
+
+														<select class="form-control form-control-sm ddlUOM" onchange="fnChange_Select(this,'form#formSave_PO #table_PODtls tbody tr#tr_ZX input[name*=\'UOM\']')">
+															@if (Model != null && Model.SelectListItems != null)
+															{
+																foreach (var item in Model.SelectListItems.Where(x => x.Group == "U"))
+																{
+																	<option value="@item.Value">@item.Text</option>
+																}
+															}
+														</select>
+													</td>
+													<td><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listPODtls[ZX].LineQty" maxlength="50" autocomplete="off"></td>
+													<td>
+														<div class="btn-group">
+															<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+																	onclick="fnDelete_Row('ZX');">
+																<i class="far fa-trash-alt"></i>
+															</button>
+														</div>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+
+									<div class="clearfix"></div>
+								</div>
+
+								<div class="form-group row">
+									<div class="col-12 card-footer text-center">
+										<button type="button" class="btn btn-success" onclick="fnSubmitForm('formSave_PO');">Save</button>
+										<button type="button" class="btn btn-danger" onclick="fnClose_Modal()">Cancel</button>
+									</div>
+								</div>
+
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+		<hr />
+	</form>
+</div>

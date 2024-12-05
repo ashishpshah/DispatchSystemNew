@@ -1,0 +1,280 @@
+﻿@model ResponseModel<MDA_Status>
+
+@{
+    ViewData["Title"] = "Shipper Stock Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Batch Stock(ARS) List</h1>
+            </div>
+
+        </div>
+    </div>
+</div>
+<section class="content">
+    <div class="container-fluid">
+        <div class="card card-primary card-outline">
+
+            <div class="card-body">
+
+                <div class="panel-divider">
+                    <span>Search</span>
+                    <div class="row no-gutters p-0 m-0">
+                        <div class="col-12 row no-gutters">
+                            <div class="form-group col-md-3 mx-3">
+                                <label class="col-form-label" style="align-content:start">Plant</label>
+                                <input type="hidden" class="form-control form-control-sm" id="PlantId" value="@Model.Obj.PlantId">
+                                <input type="text" class="form-control form-control-sm" id="PlantName" value="@Model.Obj.PlantName" autocomplete="off" readonly>
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Batch No</label>
+                                <input type="text" class="form-control form-control-sm" id="BatchNo" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Manufacturing Date From</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="MfgFromDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Manufacturing Date To</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="MfgToDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Expiry Date From</label>
+                                <input type="text" class="form-control form-control-sm datepicker" data-value="" id="ExpiryFromDate" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Expiry Date To</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="ExpiryToDate" autocomplete="off">
+                            </div>
+                        </div>
+
+                        @*<div class="col-12 no-gutters my-3">
+                            <div class="form-group mx-3 text-center">
+                                <label class="col-form-label text-right" style="align-content:start">&nbsp;</label>
+
+                                <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnLoadTableData()"> Search </button>
+                                <button type="button" class="btn btn-danger btn-md pull-right mr-2" onclick="fnClear()"> Clear </button>
+                            </div>
+                        </div>*@
+                        <div class="col-12 no-gutters my-3">
+                            <div class="form-group mx-3 text-center">
+                                <label class="col-form-label text-right" style="align-content:start">&nbsp;</label>
+
+                                <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnExecute_Report(false)"> Search </button>
+                                <button type="button" class="btn btn-danger btn-md pull-right mr-2" onclick="fnClear()"> Clear </button>
+                                <button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnExecute_Report(true)"> Print </button>
+                                <button type="button" class="btn btn-success btn-md pull-right mr-2" id="btnExport"> Export </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="panel-divider">
+                    <span>Details</span>
+                    <div class="row no-gooters">
+                        <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                            <div class="card-body py-1 px-0" id="div_DataTable"></div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        function fnClear() {
+            $('#BatchNo').val("");
+            $('#MfgFromDate').val("");
+            $('#MfgToDate').val("");
+            $('#ExpiryFromDate').val("");
+            $('#ExpiryToDate').val("");
+            $('#div_DataTable').html('');
+        }
+
+        $("#btnExport").click(function () {
+            $("#tblmain").table2excel({
+                filename: "ShipperStock.xls"
+            });
+            return false;
+        });
+
+        $(function () { });
+
+        function fnExecute_Report($isPrint) {
+
+            $('#div_DataTable').html('');
+
+            var BatchNo = $('#BatchNo').val();
+            var MfgFromDate = $('#MfgFromDate').val();
+            var MfgToDate = $('#MfgToDate').val();
+            var ExpiryFromDate = $('#ExpiryFromDate').val();
+            var ExpiryToDate = $('#ExpiryToDate').val();
+
+            // if ((typeof Truck_No != 'undefined' && Truck_No != null && Truck_No.length > 0)
+            //     || (typeof FromDate != 'undefined' && FromDate != null && FromDate.length > 0)
+            //     || (typeof ToDate != 'undefined' && ToDate != null && ToDate.length > 0)
+            // ) {
+
+            var $url = '@Url.Action("GetData", "ShipperStock", new { area = "Admin" })?Batch_No=' + BatchNo + '&Mfg_From_Date=' + MfgFromDate + '&Mfg_To_Date=' + MfgToDate + '&Expiry_From_Date=' + ExpiryFromDate + '&Expiry_To_Date=' + ExpiryToDate + '&isPrint=' + $isPrint;
+
+            if ($isPrint == true) {
+                var printWindow = window.open($url, '_blank');
+
+                if (printWindow) {
+                    printWindow.onload = function () {
+                        printWindow.print();
+                    };
+                }
+            }
+            else {
+
+                ShowLoader(true);
+
+                $.ajax({
+                    type: "GET",
+                    url: $url,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "html",
+                    success: function (response) {
+
+                        setTimeout(function () {
+
+                            $('#div_DataTable').html(response);
+
+                            try { fnLoadCommonTable('#div_DataTable .table_Common'); } catch { }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) {
+                        ShowLoader(false);
+                        CommonAlert_Error(null);
+                    },
+                    error: function (response) {
+                        ShowLoader(false);
+                        CommonAlert_Error(null);
+                    }
+                });
+            }
+            // }
+            // else
+            //ShowLoader(false);
+        }
+
+        //function fnLoadTableData() {
+
+        //    var subHeading = "";
+
+        //    if ($('#BatchNo').val() != null && $('#BatchNo').val() != '') {
+        //        subHeading = 'Batch No: ' + $('#BatchNo').val();
+        //    }
+
+        //    if ($('#MfgFromDate').val() != null && $('#MfgFromDate').val() != '') {
+        //        subHeading = 'Manufacturing Form Date: ' + $('#MfgFromDate').val() + ' To Date: ' + $('#MfgToDate').val();
+        //    }
+
+        //    if ($('#ExpiryFromDate').val() != null && $('#ExpiryFromDate').val() != '') {
+        //        subHeading = 'Expiry Form Date: ' + $('#ExpiryFromDate').val() + ' To Date: ' + $('#ExpiryToDate').val();
+        //    }
+
+        //    if ($.fn.DataTable.isDataTable('#dataTable_PoDetails')) {
+        //        $('#dataTable_PoDetails').DataTable().destroy();
+        //    }
+
+        //    dataTableMain = $("#dataTable_PoDetails")
+        //        .DataTable({
+        //            "destroy": true,
+        //            "pageLength": "All","lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        //            "sAjaxSource": "@Url_RootToController/GetData_ShipperStock",
+        //            "bServerSide": true,
+        //            "bProcessing": true,
+        //            "bSearchable": true,
+        //            "scrollX": true,
+        //            "order": [[0, 'asc']],
+        //            "language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+        //            "fnServerParams": function (aoData) {
+        //                aoData.push({ "name": "BatchNo", "value": "" + $('#BatchNo').val() });
+        //                aoData.push({ "name": "MfgFromDate", "value": "" + $('#MfgFromDate').val() });
+        //                aoData.push({ "name": "MfgToDate", "value": "" + $('#MfgToDate').val() });
+        //                aoData.push({ "name": "ExpiryFromDate", "value": "" + $('#ExpiryFromDate').val() });
+        //                aoData.push({ "name": "ExpiryToDate", "value": "" + $('#ExpiryToDate').val() });
+        //                aoData.push({ "name": "Type", "value": "" });
+        //            },
+        //            "columns": [
+        //                { "title": "Batch No", "data": "batchNo", "autoWidth": true, "searchable": true },
+        //                { "title": "Manufacturing Date", "data": "manufacturingDate", "autoWidth": true, "searchable": true },
+        //                { "title": "Expiry Date", "data": "expiryDate", "autoWidth": true, "searchable": true },
+        //                { "title": "Total Shipper Qty", "data": "totalShipperQTY", "autoWidth": true, "searchable": true },
+        //            ],
+        //            "dom": "<'row'<'col-sm-6 mb-3'B>>" +
+        //                "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+        //                "<'row'<'col-sm-12'tr>>" +
+        //                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        //            "buttons": [
+        //            //     {
+        //            //     extend: "csv",
+        //            //     className: "btn-flat btn-info mx-2 px-3",
+        //            //     titleAttr: 'Export in CSV',
+        //            //     text: 'CSV',
+        //            //     filename: 'Shipper Stock List',
+        //            //     init: function (api, node, config) { $(node).removeClass('btn-default') }
+        //            // },
+        //            // {
+        //            //     extend: "excel",
+        //            //     className: "btn-flat btn-success mx-2 px-3",
+        //            //     titleAttr: 'Export in Excel',
+        //            //     text: 'Excel',
+        //            //     filename: 'Shipper Stock List',
+        //            //     init: function (api, node, config) { $(node).removeClass('btn-default') }
+        //            // },
+        //            {
+        //                extend: "pdfHtml5",
+        //                className: "btn-flat btn-danger mx-2 px-3",
+        //                titleAttr: 'Export in PDF',
+        //                text: 'PDF',
+        //                pageSize: 'LEGAL',
+        //                filename: 'Shipper Stock Report',
+        //                exportOptions: {
+        //                    modifier: {
+        //                        page: 'all' // Export all pages
+        //                    }
+        //                },
+        //                init: function (api, node, config) { $(node).removeClass('btn-default') },
+        //                customize: function (doc) {
+        //                    doc.defaultStyle.fontSize = 9;
+        //                    doc.pageMargins = [5, 10, 5, 10]; // Adjust margins
+        //                    doc.pageOrientation = 'A4';
+        //                    doc.content.splice(1, 0, {
+        //                        text: subHeading,
+        //                        style: 'subheader'
+        //                    });
+        //                    doc.styles.subheader = {
+        //                        fontSize: 12,
+        //                        italics: true,
+        //                        margin: [10, 0, 0, 10]
+        //                    };
+        //                }
+        //            }]
+        //        });
+
+        //}
+    </script>
+}
+

@@ -1,0 +1,313 @@
+﻿@model ResponseModel<QRCodeGeneration>
+@{
+	ViewData["Title"] = "Index";
+
+	//var needPasswordChange = Common.Get_Session_Int(SessionKey.NEED_PASSWORD_CHANGE);
+}
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">QR Code Requests</h1>
+			</div><!-- /.col -->
+		</div><!-- /.row -->
+	</div><!-- /.container-fluid -->
+
+	<section class="content">
+		<div class="container-fluid">
+			<!-- Small boxes (Stat box) -->
+			<div class="row">
+				<div class="col-lg-3 col-6">
+					<!-- small box -->
+					<div class="small-box bg-info">
+						<div class="inner">
+							<h3>@Model.Data1.Pending_request_cnt</h3>
+
+							<p>NO OF OPENED REQUEST</p>
+						</div>
+						<div class="icon">
+							<i class="ion ion-bag"></i>
+						</div>
+
+						<div class="progress">
+							<div class="progress-bar" style="width: 100%"></div>
+						</div>
+						<span class="progress-description d-flex justify-content-between mx-2">
+							No of File(s) : @Model.Data1.Pending_file_cnt
+						</span>
+					</div>
+				</div>
+				<!-- ./col -->
+				<div class="col-lg-3 col-6">
+					<!-- small box -->
+					<div class="small-box bg-success">
+						<div class="inner">
+							<h3>
+								@Model.Data1.Download_request_cnt
+							</h3>
+
+							<p>NO OF DOWNLOADED REQUEST </p>
+						</div>
+						<div class="icon">
+							<i class="ion ion-stats-bars"></i>
+						</div>
+						<div class="progress">
+							<div class="progress-bar" style="width: 100%"></div>
+						</div>
+						<span class="progress-description d-flex justify-content-between mx-2">
+							<span>No of File(s) : @Model.Data1.Download_file_cnt </span>
+							<span>Not Downloaded : @Model.Data1.Download_file_not_download_cnt</span>
+						</span>
+					</div>
+				</div>
+				<!-- ./col -->
+				<div class="col-lg-3 col-6">
+					<!-- small box -->
+					<div class="small-box bg-warning">
+						<div class="inner">
+							<h3>@Model.Data1.Print_request_cnt</h3>
+
+							<p>NO OF PRINTED REQUEST </p>
+						</div>
+						<div class="icon">
+							<i class="ion ion-person-add"></i>
+						</div>
+						<div class="progress">
+							<div class="progress-bar" style="width: 100%"></div>
+						</div>
+						<span class="progress-description d-flex justify-content-between mx-2">
+							No of File(s) : @Model.Data1.Print_file_cnt
+						</span>
+					</div>
+				</div>
+				<!-- ./col -->
+				<div class="col-lg-3 col-6">
+					<!-- small box -->
+					<div class="small-box bg-danger">
+						<div class="inner">
+							<h3>@Model.Data1.Dispatch_request_cnt</h3>
+
+							<p>NO OF DISPATCHED REQUEST</p>
+						</div>
+						<div class="icon">
+							<i class="ion ion-pie-graph"></i>
+						</div>
+						<div class="progress">
+							<div class="progress-bar" style="width: 100%"></div>
+						</div>
+						<span class="progress-description d-flex justify-content-between mx-2">
+							No of File(s) : @Model.Data1.Dispatch_file_cnt
+						</span>
+					</div>
+				</div>
+				<!-- ./col -->
+			</div>
+		</div><!-- /.container-fluid -->
+	</section>
+
+	<div class="row no-gutters divformSave_Display d-none" style="margin: 5px !important;">
+		<div class="col-12">
+			@*<form id="formSave" asp-area="#" asp-controller="#" asp-action="#" method="post" class="form-horizontal" enctype="multipart/form-data">*@
+			<div class="row no-gutters" id="divformSave"></div>
+			<div class="clearfix"></div>
+			<hr />
+			@*</form>*@
+		</div>
+	</div>
+	<div class="row" id="divList">
+		<div class="col-12">
+			<div class="card card-primary card-outline">
+
+				<div class="card-body">
+					<div class="row no-gooters">
+						<div class="col-md-12 my-1">
+							<table class="table table-bordered table-striped" id="tblVenDash">
+								<thead>
+									<tr>
+										<th>PO No.</th>
+										<th width="15%">Request No</th>
+										<th>Plant Name</th>
+										<th width="5%">Status</th>
+										<th width="15%">SKU Description</th>
+										<th>Request Date</th>
+										<th width="15%">Request Quantity</th>
+										@* <th>Request Total</th> *@
+										@* <th>Remaining Quantity</th> *@
+									</tr>
+								</thead>
+								<tbody>
+									@if (Model.ListObj != null && Model.ListObj.Count() > 0)
+									{
+										foreach (var item in Model.ListObj)
+										{
+											<tr>
+												@*<td><a href="#" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","Vender", new {  area = "Vendor" })?requestNo=@item.RequestNo');">@item.RequestNo</a></td>*@
+												<td>@item.PO_Number</td>
+												<td><a href="#" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","Vender", new {  area = "Vendor" })?Id=@item.Id');">@item.RequestNo</a></td>
+												<td>@item.SelectedPlants</td>
+												<td>@item.RequestStatus</td>
+												<td>@item.SkuDesc</td>
+												<td>@item.RequestDate</td>
+												<td>@item.RequestQty</td>
+												@* <td>@item.TotalQty</td> *@
+												@* <td>@item.RemainQty</td> *@
+											</tr>
+										}
+									}
+									else
+									{
+										<tr><td colspan="7" class="text-center">No any record(s) found.</td></tr>
+									}
+
+								</tbody>
+							</table>
+						</div>
+
+						<div class="clearfix"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@*@section scripts{
+
+	@if (needPasswordChange == 1)
+	{
+		<script type="text/javascript">
+			$(document).ready(function () {
+
+				ShowLoader(false);
+
+				Swal.fire({
+					title: 'Change Password',
+					showDenyButton: false,
+					showCancelButton: true,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'Confirm!',
+					html: '<label class="col-form-label" style="align-content:start">Current Password <span style="color:red">*</span></label>' +
+						'<input type="password" class="swal2-input" name="txtCurrentPassword" autocomplete="off">' +
+						'<label class="col-form-label" style="align-content:start">New Password <span style="color:red">*</span></label>' +
+						'<input type="password" class="swal2-input" name="txtNewPassword" autocomplete="off">' +
+						'<label class="col-form-label" style="align-content:start">Confirm New Password <span style="color:red">*</span></label>' +
+						'<input type="password" class="swal2-input" name="txtConfirmPassword" autocomplete="off">',
+					preConfirm: () => {
+
+						var password = $('input[name="txtCurrentPassword"]').val();
+
+						if (typeof password == 'undefined' || password == null || password == "") {
+							Swal.showValidationMessage('Please enter Current Password');
+							return false;
+						}
+
+						var newPassword = $('input[name="txtNewPassword"]').val();
+
+						if (typeof newPassword == 'undefined' || newPassword == null || newPassword == "") {
+							Swal.showValidationMessage('Please enter New Password');
+							return false;
+						}
+
+						var confirmPassword = $('input[name="txtConfirmPassword"]').val();
+
+						if (typeof confirmPassword == 'undefined' || confirmPassword == null || confirmPassword == "") {
+							Swal.showValidationMessage('Please enter Confirm New Password');
+							return false;
+						}
+
+						if (newPassword != confirmPassword) {
+							Swal.showValidationMessage('New Password and Confirm New Password not match');
+							return false;
+						}
+					},
+				}).then((result) => {
+
+					if (result.isConfirmed === true) {
+
+						var password = $('input[name="txtCurrentPassword"]').val();
+
+						var newPassword = $('input[name="txtNewPassword"]').val();
+
+						var confirmPassword = $('input[name="txtConfirmPassword"]').val();
+
+						let formData = new FormData();
+
+						formData.append('CurrentPassword', password);
+						formData.append('NewPassword', newPassword);
+						formData.append('ConfirmPassword', confirmPassword);
+
+						$.ajax({
+							type: 'POST',
+							url: '@Url.Action("Save","ChangePassword", new {  area = "Vendor" })',
+							data: formData,
+							cache: false,
+							contentType: false,
+							processData: false,
+							dataType: "json",
+							success: function (response) {
+								debugger;
+
+								try {
+									ShowLoader(false);
+									if (response.statusCode === 1) {
+										if (typeof response.isConfirm != 'undefined' && response.isConfirm != '' && response.isConfirm != null && response.isConfirm == true)
+											if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+												CommonConfirmed_Success(response.message, response.redirectURL, null);
+											else
+												CommonConfirmed_Success(response.message, fnSubmitForm_Success, [response, $id]);
+										else
+											if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+												window.location = response.redirectURL;
+											else
+												fnSubmitForm_Success(response, $id);
+									}
+									else {
+										CommonAlert_Error(response.message, null)
+									}
+								} catch {
+									window.location.reload();
+								}
+							},
+							//xhr: function () {
+							//    var fileXhr = $.ajaxSettings.xhr();
+							//    if (fileXhr.upload) {
+							//        $("progress").show();
+							//        fileXhr.upload.addEventListener("progress", function (e) {
+							//            if (e.lengthComputable) {
+							//                $("#fileProgress").attr({
+							//                    value: e.loaded,
+							//                    max: e.total
+							//                });
+							//            }
+							//        }, false);
+							//    }
+							//    return fileXhr;
+							//},
+							failure: function (response) {
+
+								ShowLoader(false);
+								Swal.fire({ icon: 'error', title: 'Oops...! Something went wrong!' })
+							},
+							error: function (response) {
+
+								ShowLoader(false);
+								Swal.fire({ icon: 'error', title: 'Oops...! Something went wrong!' })
+							}
+						});
+
+					}
+					else
+						ShowLoader(false);
+				})
+
+			});
+		</script>
+
+	}
+
+}*@

@@ -1,0 +1,371 @@
+﻿@model ResponseModel<RFID_Lost>
+@{
+    ViewData["Title"] = "RFID";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<!-- Content Header (Page header) -->
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12">
+                <h1 class="font-weight-bold">CHANGE/LOST RFID CARD</h1>
+            </div>
+            @*<div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">General Form</li>
+            </ol>
+            </div>*@
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content p-0">
+    <div class="container-fluid p-0">
+        <div class="row no-gutters">
+            <div class="col-12 card">
+                <form id="formSave" asp-controller="LostRFIDCard" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data" data_form_isvalidate>
+                    <div class="card-body pb-0">
+                        <div class="panel-divider">
+                            <span>Search Details</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+                                            <div class="form-group row">
+                                                <label for="RefSysId" class="col-sm-2 col-form-label">RFID Number </label>
+                                                <div class="col-sm-4">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="RefSysId" name="RefSysId" class="form-control form-control-sm">
+                                                        <span class="input-group-append ml-2">
+                                                            @*<button type="button" class="btn btn-info btn-flat mr-2" onclick="GetMDA(this, 'S')">Search</button>*@
+                                                            <button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetMDA(this, 'V')">Read RFID</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <label for="RfidCode" class="col-sm-2 col-form-label">RFID Serial Number </label>
+                                                <div class="col-sm-4">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="RfidCode" name="RfidCode" class="form-control form-control-sm">
+                                                        <span class="input-group-append ml-2">
+                                                            <button type="button" class="btn btn-info btn-flat mr-2" onclick="GetMDA(this, 'S')">Search</button>
+                                                            @*<button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetMDA(this, 'V')">Read RFID</button>*@
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-divider">
+                            <span>MDA</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+                                            <div class="form-group row">
+                                                <label for="Inward_Type" class="col-sm-2 col-form-label">Inward Type <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <span>:</span> <label id="Inward_Type"></label>
+                                                    <input type="hidden" id="Inward_Sys_Id" name="Inward_Sys_Id" />
+                                                    <input type="hidden" id="GateId" name="GateId" />
+                                                </div>
+                                                <label for="vehicle_no" class="col-sm-2 col-form-label">Truck Number <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <span>:</span> <label id="vehicle_no"></label>
+                                                    @*<input type="text" class="form-control form-control-sm" id="Truck_Number" autocomplete="off" readonly>*@
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="driver" class="col-sm-2 col-form-label">Driver Name <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <span>:</span> <label id="driver"></label>
+                                                    @*<input type="text" class="form-control form-control-sm" id="Driver_Name" name="Driver_Name" autocomplete="off" readonly>*@
+                                                </div>
+                                                <label for="tptr_name" class="col-sm-2 col-form-label">Transporter Name  <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <span>:</span> <label id="tptr_name"></label>
+                                                    @*<input type="text" class="form-control form-control-sm" id="Transporter_Name" name="Transporter_Name" autocomplete="off" readonly>*@
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="Tare_Wt" class="col-sm-2 col-form-label">Tare Weight (KG)  <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <span>:</span> <label id="Tare_Wt"></label>
+                                                    @*<input type="text" id="Tare_Wt" class="form-control form-control-sm isNumberKey_Decimal" readonly>*@
+                                                </div>
+                                                <label for="mobile_no" class="col-sm-2 col-form-label">Driver Contact <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <span>:</span> <label id="mobile_no"></label>
+                                                    @*<input type="text" class="form-control form-control-sm isNumberKey" id="Driver_Contact" name="Driver_Contact" autocomplete="off" readonly>*@
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="gross_qty" class="col-sm-2 col-form-label">Gross Weight (KG)  <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    <span>:</span> <label id="gross_qty"></label>
+                                                    @*<input type="text" id="Gross_Wt" name="Gross_Wt" class="form-control form-control-sm isNumberKey_Decimal" readonly>*@
+                                                </div>
+                                                <label class="col-sm-2 col-form-label">Weighment Out DateTime</label>
+                                                <div class="col-sm-4">
+                                                    <span>:</span> <label id="out_time"></label>
+                                                    @*<input type="text" class="form-control form-control-sm" id="Weighment_Out_Dt" autocomplete="off" readonly>*@
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="nett_qty" class="col-sm-2 col-form-label">Net Weight (KG)  <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    @*<input type="text" id="Net_Wt" class="form-control form-control-sm isNumberKey_Decimal" readonly>*@
+                                                    <span>:</span> <label id="nett_qty"></label>
+                                                </div>
+                                                <label for="Out_Tolerance_Weight" class="col-sm-2 col-form-label">Is Out of Tolerance Weight? (KG)</label>
+                                                <div class="col-sm-4">
+                                                    @*<input type="text" class="form-control form-control-sm" id="Out_Tolerance_Weight" autocomplete="off" readonly>*@
+                                                    <span>:</span> <label id="Out_Tolerance_Weight"></label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="Remarks" class="col-sm-2 col-form-label">Remarks  <span class="text-danger">*</span></label>
+                                                <div class="col-sm-4">
+                                                    @*<textarea rows="1" class="form-control" id="Remarks" name="Remarks" autocomplete="off"></textarea>*@
+                                                    <span>:</span> <label id="Remarks"></label>
+                                                </div>
+                                                <label for="Allow_Out_Tolerance" class="col-sm-2 col-form-label">Allow Out of Tolerance Weight?</label>
+                                                <div class="col-sm-4">
+                                                    <span>:</span> <label id="Allow_Out_Tolerance"></label>
+                                                    @*<input type="text" class="form-control form-control-sm" id="Allow_Out_Tolerance" autocomplete="off" readonly>*@
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @*<div class="row pb-2">
+                                <div class="col-12 text-center">
+                                    <button type="button" class="btn btn-info btn-flat px-3 mr-3">View MDA Details</button>
+                                </div>
+                            </div>*@
+                        </div>
+                        <div class="panel-divider">
+                            <span>Issue New RFID Card</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+                                            <div class="form-group row">
+                                                <label for="Id" class="col-sm-2 col-form-label">RFID Number </label>
+                                                <div class="col-sm-4">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="RefSysId" name="RefSysId" class="form-control form-control-sm">
+                                                        <span class="input-group-append ml-2">
+                                                            @*<button type="button" class="btn btn-info btn-flat mr-2" onclick="GetMDA(this, 'S')">Search</button>*@
+                                                            <button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetMDA(this, 'V')">Read RFID</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <label for="RfidSrno" class="col-sm-2 col-form-label">RFID Serial Number </label>
+                                                <div class="col-sm-4">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="RfidSrno" name="RfidSrno" class="form-control form-control-sm">
+                                                        <span class="input-group-append ml-2">
+                                                            <button type="button" class="btn btn-info btn-flat mr-2" onclick="GetMDA(this, 'S')">Search</button>
+                                                            @*<button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetMDA(this, 'V')">Read RFID</button>*@
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="Reason" class="col-sm-2 col-form-label">Reason For Change RFID </label>
+                                                <div class="col-sm-4">
+                                                    <div class="input-group input-group-sm">
+                                                        @*<input type="text" id="Reason" name="Reason" class="form-control form-control-sm">*@
+                                                        <select id="Reason" name="Reason" class="form-control form-control-sm select2 data-required data-msg="The Reason field is required."">
+                                                            <option value="0">--Select--</option>
+                                                            <option value="Lost">Lost RFID</option>
+                                                            <option value="Broke">Broke RFID</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <label for="Remark" class="col-sm-2 col-form-label">Remark </label>
+                                                <div class="col-sm-4">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="Remark" name="Remark" class="form-control form-control-sm">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-info btn-flat px-3 mr-3 btnSubmit">Save</button>
+                        <button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClearFormData('#formSave')">Clear</button>
+                        <button type="button" class="btn btn-danger btn-flat px-3 mr-3">Close</button>
+                        <span class="float-right mr-3"><span class="text-danger">*</span> Mandatory Fields</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts{
+    <script type="text/javascript">
+        var table = {};
+
+        $(document).ready(function () {
+
+        });
+
+        function GetMDA($this, $type) {
+            ShowLoader(true);
+
+            if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide(); //$('#modal-xl').modal('hide');
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("GetMDA","LostRFIDCard")?Rfid=' + $('#RfidSrno').val() + '&RfidSrNo=' + $('#RfidCode').val(),
+                data: null,
+                contentType: "application/json; charset=utf-8",
+                dataType: "html",
+                success: function (response) {
+
+                    fnClear_MDA();
+
+                    if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+                        CommonAlert_Error("No any record(s) found");
+                        return false;
+                    }
+
+                    if (response.indexOf('{') == 0) {
+
+                        setTimeout(function () {
+
+                            try {
+
+                                if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+                                    var selectedData = JSON.parse(response);
+
+                                    $('#GateId').val(selectedData['id']);
+                                    $('#Inward_Sys_Id').val(selectedData['inward_Sys_Id']);
+                                    $('#Inward_Type').html(selectedData['inward_Type']);
+                                    $('#vehicle_no').html(selectedData['vehicle_no']);
+                                    $('#driver').html(selectedData['driver']);
+                                    $('#tptr_name').html(selectedData['tptr_name']);
+                                    $('#Tare_Wt').html(selectedData['tare_Wt']);
+                                    $('#mobile_no').html(selectedData['mobile_no']);
+                                    $('#gross_qty').html(selectedData['gross_qty']);
+                                    $('#out_time').html(selectedData['out_time']);
+                                    $('#nett_qty').html(selectedData['nett_qty']);
+                                    $('#Out_Tolerance_Weight').html(selectedData['out_Tolerance_Weight']);
+                                    $('#Remarks').html(selectedData['remarks']);
+                                    $('#Allow_Out_Tolerance').html(selectedData['allow_Out_Tolerance']);
+
+                                    $('#GateId').trigger('change');
+                                    $('#Inward_Sys_Id').trigger('change');
+                                    $('#Inward_Type').trigger('change');
+                                    $('#vehicle_no').trigger('change');
+                                    $('#driver').trigger('change');
+                                    $('#tptr_name').trigger('change');
+                                    $('#Tare_Wt').trigger('change');
+                                    $('#mobile_no').trigger('change');
+                                    $('#gross_qty').trigger('change');
+                                    $('#out_time').trigger('change');
+                                    $('#nett_qty').trigger('change');
+                                    $('#Out_Tolerance_Weight').trigger('change');
+                                    $('#Remarks').trigger('change');
+                                    $('#Allow_Out_Tolerance').trigger('change');
+                                } else
+                                    CommonAlert_Error("No any record(s) found");
+
+                            } catch { }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    }
+                },
+                failure: function (response) { fnClear_MDA(); CommonAlert_Error(null); },
+                error: function (response) { fnClear_MDA(); CommonAlert_Error(null); }
+            });
+        }
+
+        function fnSelect_MDA() {
+
+            if ($('#table_Common tbody tr.bg-info').length <= 0) {
+                CommonAlert_Error("Please select one MDA Number");
+                return false;
+            }
+            else {
+                fnClose_Modal()
+            }
+        }
+
+        function fnClear_MDA() {
+            
+            $('#table_Common tbody tr.bg-info').each(function (i, ez) {
+                $(ez).removeClass('bg-info');
+            });
+
+            $('#GateId').val('');
+            $('#Inward_Sys_Id').val('');
+             $('#Inward_Type').html('');
+             $('#vehicle_no').html('');
+             $('#driver').html('');
+             $('#tptr_name').html('');
+             $('#Tare_Wt').html('');
+             $('#mobile_no').html('');
+             $('#gross_qty').html('');
+             $('#out_time').html('');
+             $('#nett_qty').html('');
+             $('#Out_Tolerance_Weight').html('');
+             $('#Remarks').html('');
+             $('#Allow_Out_Tolerance').html('');
+
+            $('#GateId').trigger('change');
+             $('#Inward_Type').trigger('change');
+             $('#vehicle_no').trigger('change');
+             $('#driver').trigger('change');
+             $('#tptr_name').trigger('change');
+             $('#Tare_Wt').trigger('change');
+             $('#mobile_no').trigger('change');
+             $('#gross_qty').trigger('change');
+             $('#out_time').trigger('change');
+             $('#nett_qty').trigger('change');
+             $('#Out_Tolerance_Weight').trigger('change');
+             $('#Remarks').trigger('change');
+             $('#Allow_Out_Tolerance').trigger('change');
+
+
+        }
+
+        $(document).on("change", 'input[name="Option"]', function (e) {
+
+            $('input.truck_no').val('')
+            $('input.truck_no').trigger('change')
+            $('.mda_no input').val('')
+            $('.mda_no input').trigger('change')
+
+            if (e.target.id == 'MDA') {
+                //if ($('.mda_no').hasClass('d-none'))
+                //	$('.mda_no').removeClass('d-none')
+
+                $('input.truck_no').prop('readonly', true);
+            } else {
+                //if (!$('.mda_no').hasClass('d-none'))
+                //	$('.mda_no').addClass('d-none')
+
+                $('input.truck_no').prop('readonly', false);
+            }
+        });
+
+    </script>
+}

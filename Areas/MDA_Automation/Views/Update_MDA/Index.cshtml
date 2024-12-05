@@ -1,0 +1,517 @@
+﻿@model Dispatch_System.ResponseModel<MDA>
+
+@{
+	ViewData["Title"] = "MDA Update";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-12">
+				<h1 class="font-weight-bold">Update MDA</h1>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Main content -->
+<section class="content p-0">
+	<div class="container-fluid p-0">
+		<div class="row no-gutters">
+			<div class="col-12 card">
+				<form id="formSave" asp-controller="Update_MDA" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data" data_form_isvalidate>
+					<div class="card-body pb-0">
+
+						<div class="panel-divider">
+							<span>Search Details</span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="form-horizontal">
+										<div class="card-body py-1 px-0">
+											<div class="form-group row">
+												<label for="inputSearch" class="col-sm-3 col-form-label">Vehicle Number / MDA number <span class="text-danger">*</span></label>
+												<div class="col-sm-8">
+													<div class="input-group input-group-sm">
+														<input type="text" id="inputSearch" class="form-control form-control-sm">
+														<span class="input-group-append ml-2">
+															<button type="button" class="btn btn-info btn-flat mr-2" onclick="GetMDA(this, 'S')">Search</button>
+															<button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetMDA(this, 'V')">View Vehicle</button>
+														</span>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="panel-divider">
+							<span>Vehicle Details</span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="form-horizontal">
+										<div class="card-body py-1 px-0">
+											<div class="form-group row">
+												<label for="Truck_No" class="col-sm-3 col-form-label">Vehicle Number <span class="text-danger">*</span></label>
+												<div class="col-sm-4">
+													<input type="text" class="form-control form-control-sm" id="Truck_No" name="Truck_No" data-required data-msg="Vehicle Number is required." autocomplete="off" readonly>
+													@*<input type="text" class="form-control form-control-sm d-none" id="MDA_No" name="MDA_No">*@
+													<input type="text" class="form-control form-control-sm d-none" id="Id" name="Id">
+													<input type="text" class="form-control form-control-sm d-none" id="GateInOut_Id" name="GateInOut_Id">
+													<input type="text" class="form-control form-control-sm d-none" id="Is_End_Loading">
+													<input type="text" class="form-control form-control-sm d-none" id="Loaded_Shipper">
+												</div>
+												@*<label for="MDA_No" class="col-sm-3 col-form-label">MDA Number <span class="text-danger">*</span></label>
+												<div class="col-sm-4">
+												<input type="text" class="form-control form-control-sm" id="MDA_No" name="MDA_No" autocomplete="off" readonly>
+												</div>*@
+											</div>
+											<div class="form-group row">
+												<label for="Transporter_Name" class="col-sm-3 col-form-label">Transporter Name  <span class="text-danger">*</span></label>
+												<div class="col-sm-9">
+													<input type="text" class="form-control form-control-sm" id="Transporter_Name" name="Transporter_Name" autocomplete="off" readonly>
+												</div>
+											</div>
+											<div class="form-group row">
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Driver_Name" class="col-sm-6 col-form-label pl-0">Driver Name <span class="text-danger">*</span></label>
+														<span class="input-group-append col-sm-6 ml-0">
+															<input type="text" class="form-control form-control-sm" id="Driver_Name" name="Driver_Name" autocomplete="off" readonly>
+														</span>
+													</div>
+												</div>
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Driver_Contact" class="col-sm-6 col-form-label pl-0 text-right">Driver Contact <span class="text-danger">*</span></label>
+														<span class="input-group-append col-sm-6 ml-0">
+															<input type="text" class="form-control form-control-sm isNumberKey" id="Driver_Contact" name="Driver_Contact" autocomplete="off" readonly>
+														</span>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="panel-divider">
+							<span>MDA Details</span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="card-body py-1 px-0" id="divMDA_Dtls">
+
+										<div class="row col-12 w-100 d-flex flex-row-reverse">
+											<span class="col-10">&nbsp;</span>
+											<button id="btnCheck_MDAUpdate" type="button" class="btn btn-info btn-flat col-4" onclick="fnClick_MDAUpdate()"> Check for MDA Update</button>
+											<input type="text" class="form-control form-control-sm d-none" id="input_GateInOut_Id" autocomplete="off">
+										</div>
+
+										<div class="row col-12 w-100">
+											<table id="table_MDA_Dtls" class="table table-bordered table-striped w-100">
+												<thead>
+													<tr>
+														<th hidden width="0%"></th>
+														<th hidden width="0%"></th>
+														<th hidden width="0%"></th>
+														<th width="10%">MDA Number</th>
+														@*<th width="10%">Transporter Code</th>
+														<th>Transporter Name</th>*@
+														<th width="10%">Customer Code</th>
+														<th>Customer Name</th>
+														<th width="10%">No of Bags</th>
+														<th width="10%">Required Shipper</th>
+														<th width="10%">Loaded Shipper</th>
+														<th width="10%">Distance</th>
+														<th width="10%">Despatch Place</th>
+														<th hidden width="0%"></th>
+														@*<th hidden width="0%"></th>*@
+													</tr>
+												</thead>
+												<tbody>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</section>
+
+@section Scripts {
+	<script type="text/javascript">
+		var table = {};
+		var tableDtls = {};
+
+		var updateProgress_Interval = null;
+		var isUpdateProgress_Interval = false;
+
+		function fnLoad_MDA_Dtls() {
+			ShowLoader(true);
+
+			$('#input_GateInOut_Id').val('');
+			$('#input_GateInOut_Id').trigger('change');
+
+			$('#table_MDA_Dtls tbody').html('');
+
+			LoadTable_MDA_Dtls();
+
+			var Truck_No = $('#Truck_No').val();
+			var Gate_In_Out_Id = $('#GateInOut_Id').val();
+
+			if (typeof Truck_No != 'undefined' && Truck_No != null && Truck_No.length > 0) {
+
+				$.ajax({
+					type: "GET",
+					url: '@Url_RootToController/Load_MDA_Dtls?searchTerm=' + Truck_No + '&Gate_In_Out_Id=' + Gate_In_Out_Id,
+					data: null,
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+					success: function (response) {
+
+						LoadTable_MDA_Dtls(response);
+
+						setTimeout(function () {
+
+							if ($('#table_MDA_Dtls tbody tr').length <= 0)
+								CommonAlert_Error("No any record(s) found");
+
+							ShowLoader(false);
+
+						}, 1000);
+
+					},
+					failure: function (response) {
+						CommonAlert_Error(null)
+					},
+					error: function (response) {
+						CommonAlert_Error(null)
+					}
+				});
+
+			}
+			else {
+				LoadTable_MDA_Dtls(null);
+				ShowLoader(false);
+			}
+		}
+
+		function LoadTable_MDA_Dtls($data) {
+			try {
+
+				if ($.fn.DataTable.isDataTable('#table_MDA_Dtls')) {
+					$('#table_MDA_Dtls').DataTable().destroy();
+				}
+
+				tableDtls = $('#table_MDA_Dtls').DataTable({
+					paging: false,
+					lengthChange: false,
+					searching: false,
+					ordering: false,
+					info: false,
+					autoWidth: false,
+					responsive: true,
+					order: [[0, 'asc']],
+					columnDefs: [
+						{ "targets": 0, "width": "0%", "visible": false },
+						{ "targets": 1, "width": "0%", "visible": false },
+						{ "targets": 2, "width": "0%", "visible": false },
+						{ "targets": -6, "className": "text-center" },
+						{ "targets": -5, "className": "text-center" },
+						{ "targets": -4, "className": "text-center" },
+						{ "targets": -3, "className": "text-center" },
+						{ "targets": -2, "className": "text-center" },
+						{ "targets": -1, "width": "0%", "visible": false }
+					],
+					fixedColumns: true,
+					dom: "<'row'<'col-sm-12'tr>>"
+				});
+
+
+				if (typeof $data != 'undefined' && $data != null && $data.length > 0) {
+
+					for (var i = 0; i < $data.length; i++) {
+
+						tableDtls.row.add([$data[i].mda_order, $data[i].mda_Id, $data[i].id, $data[i].mda_No, /*$data[i].tptr_cd, $data[i].tptr_name,*/ $data[i].wh_Cd, $data[i].party_Name, $data[i].bag_Nos, $data[i].required_Shipper, $data[i].loaded_Shipper, $data[i].dist, $data[i].desp_Place, $data[i].gateInOut_Id]).draw(false);
+
+						$(tableDtls.rows(i).nodes().to$()).attr('id', 'tr_' + $data[i].gateInOut_Id + '_' + $data[i].mda_Id);
+						$(tableDtls.rows(i).nodes().to$()).attr('data-mdaid', $data[i].mda_Id);
+						$(tableDtls.rows(i).nodes().to$()).attr('data-gateinoutid', $data[i].gateInOut_Id);
+
+
+						$('#input_GateInOut_Id').val($data[i].gateInOut_Id);
+						$('#input_GateInOut_Id').trigger('change');
+					};
+
+				}
+				else {
+					tableDtls.clear().draw();
+				}
+
+			} catch { }
+
+		}
+
+
+		function fnClick_MDAUpdate(isConfirm) {
+
+			if (typeof $('#input_GateInOut_Id').val() != 'undefined' && $('#input_GateInOut_Id').val() != null && parseInt($('#input_GateInOut_Id').val()) > 0) {
+
+				ShowLoader(true);
+
+				$.ajax({
+					type: "GET",
+					url: '@Url_RootToController/Check_MDA_Update?GateInOut_Id=' + $('#input_GateInOut_Id').val() + '&isConfirm_Update=' + isConfirm,
+					data: null,
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+					success: function (response) {
+
+						try {
+							ShowLoader(false);
+
+							if (response.statusCode === 1) {
+								if (typeof response.isConfirm != 'undefined' && response.isConfirm != '' && response.isConfirm != null && response.isConfirm == true)
+									if (typeof response.isSuccess != 'undefined' && response.isSuccess != '' && response.isSuccess != null && response.isSuccess == true)
+										if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+											CommonConfirmed_Success(response.message, fnClick_MDAUpdate, [true]);
+										else
+											fnLoad_MDA_Dtls();
+									else
+										CommonAlert_Success(response.message);
+
+							}
+							else { ShowLoader(false); CommonAlert_Error(response.message, null); }
+						} catch { window.location.reload(); }
+
+					},
+					failure: function (response) { ShowLoader(false); CommonAlert_Error(null) },
+					error: function (response) { ShowLoader(false); CommonAlert_Error(null) }
+				});
+
+			}
+			
+			return false;
+		}
+
+
+		function GetMDA($this, $type) {
+			ShowLoader(true);
+
+			if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
+
+			$.ajax({
+				type: "GET",
+				url: '@Url_RootToController/GetMDA?type=' + $type + '&searchTerm=' + $('#inputSearch').val(),
+				data: null,
+				contentType: "application/json; charset=utf-8",
+				dataType: "html",
+				success: function (response) {
+
+					fnClear_MDA();
+
+					if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+						CommonAlert_Error("No any record(s) found");
+						return false;
+					}
+
+					if (response.indexOf('{') == 0 || response.indexOf('[') == 0) {
+
+						setTimeout(function () {
+
+							try {
+
+								if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+									var selectedData = JSON.parse(response);
+
+									if (response.indexOf('[') == 0)
+										selectedData = JSON.parse(response)[0];
+
+
+									$('#GateInOut_Id').val(selectedData['gateInOut_Id']);
+									$('#Truck_No').val(selectedData['vehicle_no']);
+									//$('#MDA_No').val(selectedData['mda_no']);
+									$('#Transporter_Name').val(selectedData['tptr_cd'] + " - " + selectedData['tptr_name']);
+									$('#Driver_Name').val(selectedData['driver']);
+									$('#Driver_Contact').val(selectedData['mobile_no']);
+									$('#Loaded_Shipper').val('');
+
+									$('#GateInOut_Id').trigger('change');
+									$('#Truck_No').trigger('change');
+									//$('#MDA_No').trigger('change');
+									$('#Transporter_Name').trigger('change');
+									$('#Driver_Name').trigger('change');
+									$('#Driver_Contact').trigger('change');
+									$('#Loaded_Shipper').trigger('change');
+
+									fnLoad_MDA_Dtls();
+								} else
+									CommonAlert_Error("No any record(s) found");
+
+							} catch { }
+
+							ShowLoader(false);
+
+						}, 1000);
+
+					}
+					else {
+
+						$('#modal-xl .modal-body').html('');
+						$('#modal-xl .modal-body').append(response);
+
+						if ($type == 'S')
+							$('#modal-xl .modal-title').html('Search MDA');
+						else
+							$('#modal-xl .modal-title').html('View MDA');
+
+						setTimeout(function () {
+
+							try {
+
+								if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
+									$('#modal-xl .modal-body #table_Common').DataTable().destroy();
+								}
+
+								table = $('#modal-xl .modal-body #table_Common').DataTable({
+									paging: true,
+									lengthChange: true,
+									searching: true,
+									ordering: true,
+									info: true,
+									autoWidth: true,
+									responsive: true,
+									pageLength: 10,
+									lengthMenu: [
+										[10, 25, 50, -1],
+										[10, 25, 50, 'All']
+									],
+									fixedColumns: true,
+									dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+										"<'row'<'col-sm-12'tr>>" +
+										"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+								});
+
+								$('#modal-xl .modal-body #table_Common').css('width', '100%');
+
+								table.on('click', 'tbody tr', function (e) {
+
+									$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+										if (i != (e.currentTarget.rowIndex - 1))
+											$(ez).removeClass('bg-info');
+									});
+
+									if (e.currentTarget.classList.contains('bg-info')) {
+
+										$('#GateInOut_Id').val('');
+										$('#Truck_No').val('');
+										//$('#MDA_No').val('');
+										$('#Transporter_Name').val('');
+										$('#Driver_Name').val('');
+										$('#Driver_Contact').val('');
+										$('#Loaded_Shipper').val('');
+										$('#GateInOut_Id').val('');
+									}
+
+									e.currentTarget.classList.toggle('bg-info');
+
+									var selectedData = table.rows('.bg-info').data();
+
+									if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1) {
+
+										$('#GateInOut_Id').val(selectedData[0][8]);
+										$('#Truck_No').val(selectedData[0][0]);
+										$('#Transporter_Name').val(selectedData[0][3]);
+										$('#Driver_Name').val(selectedData[0][5]);
+										$('#Driver_Contact').val(selectedData[0][6]);
+										$('#Loaded_Shipper').val('');
+									}
+
+
+									$('#GateInOut_Id').trigger('change');
+									$('#Truck_No').trigger('change');
+									//$('#MDA_No').trigger('change');
+									$('#Transporter_Name').trigger('change');
+									$('#Driver_Name').trigger('change');
+									$('#Driver_Contact').trigger('change');
+									$('#Loaded_Shipper').trigger('change');
+
+								});
+
+							} catch { }
+
+							if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
+								$('#modal-xl').show();
+							else
+								CommonAlert_Error("No any record(s) found");
+
+							ShowLoader(false);
+
+						}, 1000);
+
+					}
+				},
+				failure: function (response) { fnClear_MDA(); CommonAlert_Error(null); },
+				error: function (response) { fnClear_MDA(); CommonAlert_Error(null); }
+			});
+		}
+
+		function fnSelect_MDA() {
+
+			if ($('#table_Common tbody tr.bg-info').length <= 0) {
+				CommonAlert_Error("Please select one MDA Number");
+				return false;
+			}
+			else {
+				fnClose_Modal();
+
+				fnLoad_MDA_Dtls();
+			}
+		}
+
+		function fnClear_MDA() {
+
+			$('#table_Common tbody tr.bg-info').each(function (i, ez) {
+				$(ez).removeClass('bg-info');
+			});
+
+			$('#GateInOut_Id').val('');
+			$('#Truck_No').val('');
+			//$('#MDA_No').val('');
+			$('#Transporter_Name').val('');
+			$('#Driver_Name').val('');
+			$('#Driver_Contact').val('');
+			$('#Loaded_Shipper').val('');
+
+			$('#GateInOut_Id').trigger('change');
+			$('#Truck_No').trigger('change');
+			//$('#MDA_No').trigger('change');
+			$('#Transporter_Name').trigger('change');
+			$('#Driver_Name').trigger('change');
+			$('#Driver_Contact').trigger('change');
+			$('#Loaded_Shipper').trigger('change');
+
+			fnLoad_MDA_Dtls();
+		}
+
+		function fnClearFormData_Success($selector) {
+
+			$('#Truck_No').val('');
+			$('#Truck_No').trigger('change');
+
+			fnLoad_MDA_Dtls();
+		}
+
+	</script>
+}

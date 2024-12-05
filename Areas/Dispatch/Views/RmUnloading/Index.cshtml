@@ -1,0 +1,223 @@
+﻿@model ResponseModel<GateIn>
+
+@{
+}
+
+@section Styles{
+    <style type="text/css">
+        th, td {
+            white-space: nowrap;
+        }
+    </style>
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12" style="text-align:center;">
+                <h3 class="font-weight-bold">Gate Wise Unloading Sequance</h3>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content p-0">
+    <div class="container-fluid p-0">
+        <div class="row no-gutters">
+            <div class="col-12 card">
+                <div class="card-body pb-0">
+                    <div class="panel-divider">
+                        <span>Search Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <table id="table_Common_dtls" class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+
+                                            <th>PO No</th>
+                                            <th>Truck No</th>
+                                            <th>Unloading Gate No</th>
+                                            <th>Unloading Seq.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        
+                                        @if (Model.ListObj != null && Model.ListObj.Count() > 0)
+                                        {
+
+                                            var i = 1;
+                                            foreach (var item in Model.ListObj)
+                                            {
+                                                <tr>
+
+                                                    <td><a href="#" role="button" onclick="fnLoad_RmUnloading_Dtls('@item.Common_No')">@item.Common_No</a></td>
+                                                    <td>@item.Truck_No</td>
+                                                    <td>Gate 2</td>
+                                                    <td>@i</td>
+                                                </tr>
+                                                i++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-divider">
+                        <span>Enter Details </span>
+                        <div class="container-fluid mt-5">
+                            <form id="formSave" asp-area="Dispatch" asp-controller="RmUnloading" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+                                <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="card-body py-1 px-0" id="div_DataTable"></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear()">Clear</button>
+                    <span class="float-right mr-3"><span class="text-danger">*</span> Mandatory Fields</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts{
+    <script type="text/javascript">
+        //var table = {};
+        //var tableDtls = {};
+
+        var divToPrint_HTML = '';
+
+        $(document).ready(function () {
+
+            //fnLoad_RmUnloading_Dtls();
+        });
+
+        function printDiv($selector) {
+
+            var divToPrint = $($selector);
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+
+            let tagToAdd_html = document.createElement('html');
+
+            let tagToAdd_body = document.createElement('body');
+
+            tagToAdd_body.appendChild(divToPrint_HTML);
+
+            tagToAdd_html.appendChild(tagToAdd_body);
+
+            newWin.document.appendChild(tagToAdd_html);
+
+            //tagToAdd = document.createElement('body');
+            //newWin.document.appendChild(tagToAdd);
+
+            //let linkToAdd = document.createElement('link');
+
+            //// Link to water.css stylesheet
+            //linkToAdd.href = '~/dist/css/alt/adminlte.min.css';
+
+            //linkToAdd.rel = 'stylesheet';
+
+            //// Get the head element of the document
+            //// and append the link
+            //newWin.document.head.appendChild(linkToAdd);
+
+
+            newWin.document.close();
+
+            //setTimeout(function () { newWin.close(); }, 10);
+
+        }
+
+        function fnLoad_RmUnloading_Dtls(poNo) {
+            ShowLoader(true);
+
+            $('#div_DataTable').html('');
+
+            if (typeof poNo !== 'undefined' && poNo !== null && poNo.length > 0) {
+
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Load_RmUnloading_Dtls", "RmUnloading")?PoNo=' + poNo,
+                    data: null,
+                    dataType: "html",
+                    success: function (response) {
+
+                        setTimeout(function () {
+                            $('#div_DataTable').html(response);
+                            ShowLoader(false);
+                        }, 1000);
+                    },
+                    error: function (response) {
+
+                        CommonAlert_Error(null);
+                        ShowLoader(false);  // Ensure loader is hidden on error
+                    },
+                    failure: function (response) {
+
+                        CommonAlert_Error(null);
+                        ShowLoader(false);  // Ensure loader is hidden on failure
+                    }
+                });
+
+            } else {
+                ShowLoader(false);
+            }
+        }
+
+        function fnCalc_ShortQty() {
+
+            var LineQty = $('#LineQty').val();
+            var ReceiveQty = $('#ReceiveQty').val();
+
+			if (typeof LineQty == 'undefined' || LineQty == null || LineQty == '' || isNaN(parseFloat(LineQty))) { LineQty = 0; } else { LineQty = parseFloat(LineQty); }
+
+			if (typeof ReceiveQty == 'undefined' || ReceiveQty == null || ReceiveQty == '' || isNaN(parseFloat(ReceiveQty))) { ReceiveQty = 0; } else { ReceiveQty = parseFloat(ReceiveQty); }
+
+			var ShortQty = LineQty - ReceiveQty;
+
+			if (typeof ShortQty == 'undefined' || ShortQty == null || ShortQty == '' || isNaN(parseFloat(ShortQty))) { ShortQty = ''; }
+			else { ShortQty = parseFloat(ShortQty); }
+
+            $('input#ShortQty').val(ShortQty);
+            $('input#ShortQty').trigger('change');
+
+		}
+
+        function fnClear() {
+
+            $('#inputSearch').val('');
+            $('#div_DataTable').html('');
+
+        }
+
+
+        function getBase64FromImageUrl(url) {
+            var img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = function () {
+                var canvas = document.createElement("canvas");
+                canvas.width = this.width;
+                canvas.height = this.height;
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(this, 0, 0);
+                var dataURL = canvas.toDataURL("image/png");
+                return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+            };
+            img.src = url;
+        }
+        function fnPrint_Report($url) {
+            window.open($url, '_blank');
+        }
+
+    </script>
+}

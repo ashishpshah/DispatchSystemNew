@@ -1,0 +1,176 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>9632f210-1977-4ad4-9015-704bea6f6a16</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="Areas\Admin\Data\**" />
+		<Compile Remove="Areas\Admin\Models\**" />
+		<Compile Remove="Areas\Admin\Views\AssignUserRole\**" />
+		<Compile Remove="Areas\Admin\Views\GlobalSetting\**" />
+		<Compile Remove="Areas\Admin\Views\LOV_Old\**" />
+		<Compile Remove="Areas\Admin\Views\Transport\**" />
+		<Compile Remove="Areas\Admin\Views\Url\**" />
+		<Compile Remove="Areas\Admin\Views\UserRoleMenu\**" />
+		<Compile Remove="Areas\Dispatch\Data\**" />
+		<Compile Remove="Areas\MDA_Automation\Views\Load_MDA_New\**" />
+		<Compile Remove="Areas\Vendor\Data\**" />
+		<Content Remove="Areas\Admin\Data\**" />
+		<Content Remove="Areas\Admin\Models\**" />
+		<Content Remove="Areas\Admin\Views\AssignUserRole\**" />
+		<Content Remove="Areas\Admin\Views\GlobalSetting\**" />
+		<Content Remove="Areas\Admin\Views\LOV_Old\**" />
+		<Content Remove="Areas\Admin\Views\Transport\**" />
+		<Content Remove="Areas\Admin\Views\Url\**" />
+		<Content Remove="Areas\Admin\Views\UserRoleMenu\**" />
+		<Content Remove="Areas\Dispatch\Data\**" />
+		<Content Remove="Areas\MDA_Automation\Views\Load_MDA_New\**" />
+		<Content Remove="Areas\Vendor\Data\**" />
+		<EmbeddedResource Remove="Areas\Admin\Data\**" />
+		<EmbeddedResource Remove="Areas\Admin\Models\**" />
+		<EmbeddedResource Remove="Areas\Admin\Views\AssignUserRole\**" />
+		<EmbeddedResource Remove="Areas\Admin\Views\GlobalSetting\**" />
+		<EmbeddedResource Remove="Areas\Admin\Views\LOV_Old\**" />
+		<EmbeddedResource Remove="Areas\Admin\Views\Transport\**" />
+		<EmbeddedResource Remove="Areas\Admin\Views\Url\**" />
+		<EmbeddedResource Remove="Areas\Admin\Views\UserRoleMenu\**" />
+		<EmbeddedResource Remove="Areas\Dispatch\Data\**" />
+		<EmbeddedResource Remove="Areas\MDA_Automation\Views\Load_MDA_New\**" />
+		<EmbeddedResource Remove="Areas\Vendor\Data\**" />
+		<None Remove="Areas\Admin\Data\**" />
+		<None Remove="Areas\Admin\Models\**" />
+		<None Remove="Areas\Admin\Views\AssignUserRole\**" />
+		<None Remove="Areas\Admin\Views\GlobalSetting\**" />
+		<None Remove="Areas\Admin\Views\LOV_Old\**" />
+		<None Remove="Areas\Admin\Views\Transport\**" />
+		<None Remove="Areas\Admin\Views\Url\**" />
+		<None Remove="Areas\Admin\Views\UserRoleMenu\**" />
+		<None Remove="Areas\Dispatch\Data\**" />
+		<None Remove="Areas\MDA_Automation\Views\Load_MDA_New\**" />
+		<None Remove="Areas\Vendor\Data\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Areas\Admin\Controllers\AssignUserRoleController.cs" />
+	  <Compile Remove="Areas\Admin\Controllers\GlobalSettingController.cs" />
+	  <Compile Remove="Areas\Admin\Controllers\LOVController_Old.cs" />
+	  <Compile Remove="Areas\Admin\Controllers\TransportController.cs" />
+	  <Compile Remove="Areas\Admin\Controllers\UrlController.cs" />
+	  <Compile Remove="Areas\Admin\Controllers\UserRoleMenuController.cs" />
+	  <Compile Remove="Areas\MDA_Automation\Controllers\Load_MDA_NewController.cs" />
+	  <Compile Remove="Infra\ChatHub.cs" />
+	  <Compile Remove="Infra\DataContext - Copy.cs" />
+	  <Compile Remove="Infra\Services\SocketBackgroundTask - Copy.cs" />
+	  <Compile Remove="Infra\Services\SocketBackgroundTask_Working.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Remove="appsettings_KL0.Development.json" />
+		<Content Remove="appsettings_KL0.json" />
+		<Content Remove="Areas\Admin\Views\ChangePassword\Index1.cshtml" />
+		<Content Remove="Areas\Admin\Views\LOV\Index1.cshtml" />
+		<Content Remove="Areas\Admin\Views\LOV\_Partial_AddEditForm1.cshtml" />
+		<Content Remove="Areas\Admin\Views\Menu\Index2.cshtml" />
+		<Content Remove="Areas\Admin\Views\QRGeneration\_Partial_AddEditForm.cshtml" />
+		<Content Remove="Areas\Admin\Views\User\Index1.cshtml" />
+		<Content Remove="Areas\Admin\Views\VendorPo\_Partial_AddEditForm - Copy.cshtml" />
+		<Content Remove="Areas\Dispatch\Views\Reports\Index_Print.cshtml" />
+		<Content Remove="Areas\Dispatch\Views\WeighmentOutSlip\_Partial_ShipperQRList_Detail.cshtml" />
+	</ItemGroup>
+
+
+
+	<ItemGroup>
+		<None Include="Areas\Admin\Views\Home\Index.cshtml" />
+		<None Include="Areas\Admin\Views\QRGeneration\_Partial_AddEditForm.cshtml" />
+		<None Include="Areas\Admin\Views\Country\Index.cshtml" />
+		<None Include="Areas\Admin\Views\Country\_Partial_AddEditForm.cshtml" />
+		<None Include="Areas\Admin\Views\District\Index.cshtml" />
+		<None Include="Areas\Admin\Views\District\_Partial_AddEditForm.cshtml" />
+		<None Include="Areas\Admin\Views\Plant\Index.cshtml" />
+		<None Include="Areas\Admin\Views\Plant\_Partial_AddEditForm.cshtml" />
+		<None Include="Areas\Admin\Views\Role\Index.cshtml" />
+		<None Include="Areas\Admin\Views\Role\_Partial_AddEditForm.cshtml" />
+		<None Include="Areas\Admin\Views\State\Index.cshtml" />
+		<None Include="Areas\Admin\Views\State\_Partial_AddEditForm.cshtml" />
+		<None Include="Areas\Dispatch\Views\CancleGateIn\Index.cshtml" />
+		<None Include="Areas\Dispatch\Views\CancleGateIn\_Partial_MDA.cshtml" />
+		<None Include="Areas\Dispatch\Views\GateIn\Index.cshtml" />
+		<None Include="Areas\Dispatch\Views\GateIn\_Partial_MDA.cshtml" />
+		<None Include="Areas\Dispatch\Views\GateOut\Index.cshtml" />
+		<None Include="Areas\Dispatch\Views\GateOut\_Partial_MDA.cshtml" />
+		<None Include="Areas\Dispatch\Views\LoadBatch\Index.cshtml" />
+		<None Include="Areas\Dispatch\Views\Reports\Index_Print.cshtml" />
+		<None Include="Areas\Dispatch\Views\WeighmentInSlip\Index.cshtml" />
+		<None Include="Areas\Dispatch\Views\WeighmentOutSlip\Index.cshtml" />
+		<None Include="Areas\Dispatch\Views\WeightIn\Index.cshtml" />
+		<None Include="Areas\Dispatch\Views\WeightIn\_Partial_MDA.cshtml" />
+		<None Include="Areas\Dispatch\Views\WeightOut\Index.cshtml" />
+		<None Include="Areas\Dispatch\Views\WeightOut\_Partial_MDA.cshtml" />
+		<None Include="Areas\Export\Views\GateIn\Index.cshtml" />
+		<None Include="Areas\Export\Views\GateIn\_Partial_MDA.cshtml" />
+		<None Include="Areas\Export\Views\GateOut\Index.cshtml" />
+		<None Include="Areas\Export\Views\GateOut\_Partial_MDA.cshtml" />
+		<None Include="Areas\Export\Views\WeighmentInSlip\Index.cshtml" />
+		<None Include="Areas\Export\Views\WeighmentInSlip\_Partial_Report.cshtml" />
+		<None Include="Areas\Export\Views\WeighmentOutSlip\Index.cshtml" />
+		<None Include="Areas\Export\Views\WeighmentOutSlip\_Partial_Report.cshtml" />
+		<None Include="Areas\Export\Views\WeightIn\Index.cshtml" />
+		<None Include="Areas\Export\Views\WeightIn\_Partial_MDA.cshtml" />
+		<None Include="Areas\Export\Views\WeightOut\Index.cshtml" />
+		<None Include="Areas\Export\Views\WeightOut\_Partial_MDA.cshtml" />
+		<None Include="VendorQRGeneration.sln" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="ClosedXML" Version="0.102.1" />
+		<PackageReference Include="EPPlus" Version="7.1.0" />
+		<PackageReference Include="iTextSharp" Version="5.5.13.4" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.25" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.25">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.18" />
+		<PackageReference Include="MySql.Data" Version="8.4.0" />
+		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="3.21.130" />
+		<PackageReference Include="QRCoder" Version="1.4.3" />
+		<PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+		<PackageReference Include="ZXing.Net" Version="0.16.9" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Areas\Export\Data\" />
+	  <Folder Include="Areas\Export\Models\" />
+	  <Folder Include="Areas\LineMaster\Data\" />
+	  <Folder Include="Areas\MDA_Automation\Data\" />
+	  <Folder Include="wwwroot\ErrorLogFiles\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Properties\Resources.Designer.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>Resources.resx</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Update="Properties\Resources.resx">
+	    <Generator>ResXFileCodeGenerator</Generator>
+	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+	  </EmbeddedResource>
+	</ItemGroup>
+
+	<!--<ItemGroup>
+	  <Reference Include="Oracle.ManagedDataAccess">
+	    <HintPath>Packages\Oracle.ManagedDataAccess.dll</HintPath>
+	  </Reference>
+	</ItemGroup>-->
+
+</Project>

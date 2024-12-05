@@ -1,0 +1,264 @@
+﻿@model QRCodeGeneration
+@{
+    Layout = null;
+    var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+    @if (Model != null && !string.IsNullOrEmpty(Model.RequestStatus) && (Model.RequestStatus.ToLower().Contains("pend") || Model.RequestStatus.ToLower().Contains("email")))
+    {
+        <div class="card card-primary card-outline d-none" id="divEmailTemp">
+            <div class="card-header">
+                Send Email
+            </div>
+            <div class="card-body">
+                <div class="row no-gutters p-0 m-0">
+                    <div class="col-12">
+                        <div class="row no-gutters form-group">
+                            <label class="col-1 col-form-label">Email Note</label>
+                            <div class="col-md-8">
+                                <input type="text" placeholder="Enter Note" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                        <div class="row no-gutters form-group">
+                            <label class="col-1 col-form-label">To</label>
+                            <div class="col-sm-4">
+                                <input type="text" placeholder="Enter To" readonly class="form-control form-control-sm" value="@(Model!=null&&!string.IsNullOrEmpty(Model.VendorEmail) ? Model.VendorEmail:"")">
+                            </div>
+                        </div>
+                        <div class="row no-gutters form-group">
+                            <label class="col-sm-1 col-form-label">CC Email</label>
+                            <div class="col-sm-4">
+                                <input type="text" id="CC_Email" name="CC_Email" class="form-control form-control-sm" value="@Model.CC_Email" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="row no-gutters form-group mt-3">
+                            <label class="col-1 col-form-label">Subject</label>
+                            <div class="col-12 col-md-8">
+                                <label class="col-form-label">QR Code Generation Requests No @Model.RequestNo</label>
+                            </div>
+                        </div>
+
+                        <div class="row no-gutters form-group">
+                            <div class="col-1">
+                                <label class="col-form-label">Dear</label>
+                            </div>
+                            <div class="col-10">
+                                <p class="mt-2">@Model.VendorName</p>
+                            </div>
+                        </div>
+                        <div class="row no-gutters form-group">
+                            <p>
+                                We have a printing request for QR code labels associated with Request ID:
+                                <strong> @Model.RequestNo</strong> . The details of the files and quantities required are as follows:
+                            </p>
+                        </div>
+                        <div class="row no-gutters form-group">
+                            <p>
+                                <br />
+                                @if (Model != null && Model != null && Model.listSerial != null)
+                                {
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <td class="px-5">Sr. No.</td>
+                                                <td class="px-5">File name</td>
+                                                <td class="px-5">Qty</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @for (int i = 0; i < Model.listSerial.Count(); i++)
+                                            {
+                                                <tr>
+                                                    <td class="px-5"> @(i + 1) </td>
+                                                    <td class="px-5"> @Model.listSerial[i].FileName</td>
+                                                    <td class="px-5"> @Model.listSerial[i].RequestQty </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+
+                                <br />
+                            </p>
+                        </div>
+                        <div class="row no-gutters form-group">
+                            <p>
+                                It Contains
+                                <strong> @(Model.Nooffiles != null && Model.Nooffiles > 0 ? Model.Nooffiles + " file(s)" : "0 file")  </strong> to download.
+                                Kindly download all the files from our system for printing. Once printed, we kindly request you to update the printing status and provide dispatch details in our system.
+                                Please login https://nfpdev.iffco.coop/ to download the file.
+                            </p>
+                        </div>
+
+                        <br />
+                        <br />
+
+                        <div class="row no-gutters form-group">
+                            <p>This is an auto-generated e-mail. Please do not reply to this e-mail.</p>
+                        </div>
+                        <div class="row no-gutters form-group">
+                            <div class="col-12 col-md-6 m-md-2">
+                                <button type="button" class="btn btn-success m-2 col-lg-3" style="width: 40%;" onclick="fnSend_Email_QR('@Model.Id','@Model.VPO_Id','@Model.VendorId')"> Send Email </button>
+                            </div>
+                            <div class="col-12 col-md-5 m-2 mt-2">
+                                <p class="float-end">@DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    }
+
+    <form id="formSave" asp-area="Admin" asp-controller="QRCode" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+
+        <div class="row no-gutters p-0 m-0">
+            <input type="text" class="form-control d-none" name="Id" value="@Model.Id">
+            <input type="text" class="form-control d-none" id="VPO_Id" name="VPO_Id" value="@Model.VPO_Id">
+            <input type="text" class="form-control d-none" id="VendorId" name="VendorId" value="@Model.VendorId">
+
+            <div class="panel-divider col-12">
+                <span>Requests Header</span>
+                <div class="row no-gutters p-0 m-0">
+                    <div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label" style="align-content:start">Request No</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm" value="@Model.RequestNo" autocomplete="off" readonly>
+                            </div>
+                            <label class="col-sm-1 col-form-label" style="align-content:start">Request Date</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm" value="@Model.RequestDate_Text" autocomplete="off" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label" style="align-content:start">Vendor Code</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm" value="@Model.VendorCode" autocomplete="off" readonly>
+                            </div>
+                            <label class="col-sm-1 col-form-label" style="align-content:start">Vendor</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm" value="@Model.VendorName" autocomplete="off" readonly>
+                            </div>
+                            <label class="col-sm-1 col-form-label" style="align-content:start">Vendor Site</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm" value="@Model.VendorSiteName" autocomplete="off" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label" style="align-content:start">PO No</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm" value="@Model.PO_Number" autocomplete="off" readonly>
+                            </div>
+                            <label class="col-sm-1 col-form-label" style="align-content:start">PO Date</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm" value="@Model.PO_Date_Text" autocomplete="off" readonly>
+                            </div>
+                            <label class="col-sm-1 col-form-label" style="align-content:start">PO Line Item</label>
+                            <div class="col-sm-3">
+                                <div class="input-group mb-2">
+                                    <div class="input-group-prepend"> <div class="input-group-text form-control-sm">@Model.LineItemNo</div> </div>
+                                    <input type="text" class="form-control form-control-sm" value="@Model.LineItemDesc" autocomplete="off" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label" style="align-content:start">SKU Description</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm" value="@Model.SkuDesc" autocomplete="off" readonly>
+                            </div>
+                            <label class="col-sm-1 col-form-label" style="align-content:start">Total Quantity</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm" value="@Model.TotalQty" autocomplete="off" readonly>
+                            </div>
+                            <label class="col-sm-1 col-form-label" style="align-content:start">Required Quantity</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm" value="@Model.RequestQty" autocomplete="off" readonly>
+                            </div>
+                            <label class="col-sm-1 col-form-label" style="align-content:start">Remaining Quantity</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm" value="@Model.RemainQty" autocomplete="off" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label" style="align-content:start">Expected Delivery</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control form-control-sm datepicker" name="ExpectedDate_Text" data-value="@Model.ExpectedDate_Text"
+                                       data-min="@Model.RequestDate_Text" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-divider col-12">
+                <span>User Access</span>
+                <div class="row no-gutters p-0 m-0">
+                    <div class="col-md-12 my-1">
+                        <table class="table table-bordered table-striped table-hover" id="dataTable_Serial">
+                            <thead>
+                                <tr>
+                                    <td width="5%">Sr No</td>
+                                    <td width="10%">Required Quantity</td>
+                                    <td>File Download</td>
+                                    <td width="10%">Status</td>
+                                    <td width="10%">Lock</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model != null && Model.listSerial != null)
+                                {
+                                    for (int i = 0; i < Model.listSerial.Count(); i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @(i + 1)
+                                                <input type="text" class="form-control d-none" name="listSerial[@i].Id" value="@Model.listSerial[i].Id">
+                                            </td>
+                                            <td> @Model.listSerial[i].RequestQty </td>
+                                            <td>
+                                                @if (Model.listSerial[i].IsLock == true)
+                                                {
+                                                    <span>@Model.listSerial[i].FileName</span>
+                                                }
+                                                else
+                                                {
+                                                    <a href="@(Url.Action("Export_QRCode","QRCode", new {  area = "Admin" })+"?Id="+ Model.Id + "&Srl_Id="+Model.listSerial[i].Id+"&Vendor_Id="+Model.VendorId)" target="_blank">@Model.listSerial[i].FileName</a>
+                                                }
+                                            </td>
+                                            <td> @Model.listSerial[i].Status_FileDownload </td>
+                                            <td>
+                                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                           id="switch_Status_@i" name="listSerial[@i].IsLock" @(Model.listSerial[i].IsLock ? "checked" : "")
+                                                           onchange="fnChange_Switch(this, 'label_Switch_Status_@i')">
+                                                    <label class="custom-control-label" for="switch_Status_@i" id="label_Switch_Status_@i" data-true="Lock" data-false="UnLock">@((Model.listSerial[i].IsLock == true) ? "Lock" : "UnLock")</label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row no-gutters p-0 m-0">
+            <div class="col-12 text-center">
+                @if (Model != null && !string.IsNullOrEmpty(Model.RequestStatus) && (Model.RequestStatus.ToLower().Contains("pend") || Model.RequestStatus.ToLower().Contains("email")))
+                {
+                    <button type="button" class="btn btn-info" onclick="fnShow_EmailTemp('#divEmailTemp')">Send Email</button>
+                }
+                <button type="submit" class="btn btn-success btnSubmit">Save</button>
+                <button type="button" class="btn btn-danger" onclick="fnClose_Modal();">Cancel</button>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </form>
+</div>

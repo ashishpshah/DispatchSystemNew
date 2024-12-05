@@ -1,0 +1,155 @@
+﻿@{
+	ViewData["Title"] = "Report";
+}
+
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-12">
+				<h1 class="font-weight-bold">Gate In/Out Report</h1>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+
+<section class="content p-0">
+	<div class="container-fluid p-0">
+		<div class="row no-gutters">
+			<div class="col-12 card">
+				<div class="card-body pb-0">
+					<div class="panel-divider">
+						<span>Search Details</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+								<div class="form-horizontal">
+									<div class="card-body py-1 px-0">
+
+										<div class="row no-gutters p-0 m-0">
+											<div class="form-group col-md-3 mx-3">
+												<label class="col-form-label" style="align-content:start">Vehicle Number</label>
+												<input type="text" id="inputSearch" class="form-control form-control-sm" autocomplete="off" />
+											</div>
+										</div>
+
+										<div class="row no-gutters p-0 m-0">
+											<div class="form-group col-md-3 mx-3">
+												<label class="col-form-label" style="align-content:start">Date From</label>
+												<input type="text" class="form-control form-control-sm datepicker" id="FromDate"
+													   data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+											</div>
+											<div class="form-group col-md-3 mx-3">
+												<label class="col-form-label" style="align-content:start">Date To</label>
+												<input type="text" class="form-control form-control-sm datepicker" id="ToDate"
+													   data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+											</div>
+										</div>
+
+
+										<div class="form-group row col-sm-12 text-center ml-5 pl-5">
+											<button type="button" class="btn btn-info btn-flat" onclick="fnLoadTableData()">Search</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="panel-divider">
+						<span>Report </span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+								<div class="card-body py-1 px-0" id="div_DataTable">
+									<div class="row col-12 w-100">
+										<table id="table_Common_Data" class="table table-bordered table-striped w-100">
+											@*<thead>
+											<tr>
+											<th width="5%">Gate In</th>
+											<th width="5%">Gate Out</th>
+											<th width="10%">Vehicle Number</th>
+											<th width="5%">RFID No</th>
+											<th width="5%">Status</th>
+											<th width="10%">Gate In Dt</th>
+											<th width="10%">Gate Out Dt</th>
+											<th>Transporter Name</th>
+											<th>Driver Name</th>
+											<th>Driver Contact</th>
+											<th>Loaded Shipper / Required Shipper</th>
+											</tr>
+											</thead>
+											<tbody> </tbody>*@
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+@section Scripts
+	{
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+			fnLoadTableData();
+		});
+
+		function fnLoadTableData() {
+			if ($.fn.DataTable.isDataTable('#table_Common_Data')) {
+				$('#table_Common_Data').DataTable().destroy();
+			}
+
+			debugger;
+
+			$("#table_Common_Data").DataTable({
+				"destroy": true,
+				"pageLength": 50,
+				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+				"sAjaxSource": "@Url.Action("GetData_Gate_In_Out_Report","Reports", new { area = "Dispatch"})",
+				"bServerSide": true,
+				"bProcessing": true,
+				"bSearchable": true,
+				"order": [[0, 'asc']],
+				"language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+				"fnServerParams": function (aoData) {
+					//aoData.push({ "name": "SearchTerm", "value": "" + $('#inputSearch').val() });
+					aoData.push({ "name": "FromDate", "value": "" + $('#FromDate').val() });
+					aoData.push({ "name": "ToDate", "value": "" + $('#ToDate').val() });
+				},
+				"columns": [
+					{
+						"title": "Weightment In", "data": null, "autoWidth": false, "searchable": false, "orderable": false, "width": "5%",
+						"render": function (data, type, row, meta) { return '<a href="@Url.Action("Index", "WeighmentInSlip")?Id=' + data.gate_In_Id + '&PurposeType=' + data.inward_sys_id + '&IsPrint=true" target="_blank">Gate In</a>'; }
+					},
+					{
+						"title": "Weightment Out", "data": null, "autoWidth": false, "searchable": false, "orderable": false, "width": "5%",
+						"render": function (data, type, row, meta) {
+							if (typeof data.gate_Out_Dt != 'undefined' && data.gate_Out_Dt != null && data.gate_Out_Dt != '')
+								return '<a href="@Url.Action("Index", "WeighmentOutSlip")?Id=' + data.gate_In_Id + '&PurposeType=' + data.inward_sys_id + '&IsPrint=true" target="_blank">Gate Out</a>';
+							else return ''
+						}
+					},
+					{ "title": "Sr. No.", "data": "srNo", "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
+					{ "title": "Vehicle Number", "data": "truck_No", "autoWidth": true, "searchable": true, "width": "5%", "class": "text-bold" },
+					{ "title": "MDA No", "data": "mdA_No", "autoWidth": true, "searchable": true },
+					{ "title": "RFID No", "data": "rfiD_No", "autoWidth": true, "searchable": true, "width": "5%" },
+					{ "title": "Status", "data": "status", "autoWidth": true, "searchable": true, "width": "5%" },
+					{ "title": "Gate In Dt", "data": "gate_In_Dt", "autoWidth": true, "searchable": true },
+					{ "title": "Gate Out Dt", "data": "gate_Out_Dt", "autoWidth": true, "searchable": true },
+					{ "title": "Transporter Name", "data": "transporter_Name", "autoWidth": true, "searchable": true },
+					{ "title": "Driver Name", "data": "driver_Name", "autoWidth": true, "searchable": true },
+					{ "title": "Driver Contact", "data": "driver_Contact", "autoWidth": true, "searchable": true },
+					{ "title": "Required Shipper", "data": "required_Shipper", "autoWidth": true, "searchable": true, "width": "5%" },
+					{ "title": "Loaded Shipper", "data": "loaded_Shipper", "autoWidth": true, "searchable": true, "width": "5%" }
+				],
+			});
+		}
+	</script>
+}

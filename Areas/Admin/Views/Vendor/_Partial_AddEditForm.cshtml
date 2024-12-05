@@ -1,0 +1,457 @@
+﻿@model ResponseModel<Vendor>
+@{
+	Layout = null;
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+	<div class="card card-primary card-outline">
+		<div class="card-header">
+			<h3 class="card-title">@(Model.Obj.Id > 0 ? "Edit " : "Create") Vendor</h3>
+
+			<div class="card-tools">
+				<button type="button" class="btn btn-primary btn-sm" title="Back To List" onclick="fnBackToList('@IndexPageUrl')">
+					<i class="fas fa-arrow-left"></i> Back To List
+				</button>
+			</div>
+		</div>
+
+		<div class="card-body @(Model.Obj.Id > 0 ? " pt-0 mt-0":"")">
+			<input type="text" class="form-control d-none" name="Id" value="@Model.Obj.Id">
+
+			@if (Model.Obj.Id > 0)
+			{
+				<div class="row p-0 m-0 d-flex justify-content-between">
+					<ul class="col-12 nav nav-tabs mr-auto p-2">
+						<li class="nav-item text-bold"><a class="nav-link active" href="#tab_Vendor" data-toggle="tab">Vendor</a></li>
+						<li class="nav-item text-bold"><a class="nav-link" href="#tab_Site" data-toggle="tab">Site Details</a></li>
+					</ul>
+				</div>
+
+				<div class="row p-0 m-0 d-flex">
+					<div class="col-12 tab-content p-0 m-0">
+
+						<div id="tab_Site" class="tab-pane">
+							<div class="row mb-2">
+								<div class="col-sm-6">
+									<h1 class="m-0">&nbsp;</h1>
+								</div>
+								<div class="col-sm-6">
+									<div class="float-sm-right">
+										@* @if (Common.IsAdmin())
+										{ *@
+											<button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnLoadParialView('divformSave_VendorSite', '@Url.Action("Partial_AddEditForm_Site","Vendor", new {  area = "Admin" })?id=@Model.Obj.Id');">
+												<i class="fas fa-plus"></i> &nbsp; Add Site
+											</button>
+										@* } *@
+									</div>
+								</div>
+							</div>
+							<div class="row no-gutters divformSave_VendorSite_Display d-none" style="margin: 5px !important;">
+								<div class="col-12">
+									<div class="row no-gutters" id="divformSave_VendorSite"></div>
+									<div class="clearfix"></div>
+									<hr />
+								</div>
+							</div>
+
+							<div class="row no-gooters">
+								<div class="col-md-12 my-1">
+									<table id="table_VendorSite" class="table table-bordered table-striped table_Common_SrNo w-100">
+										<thead>
+											<tr>
+												<th>#</th>
+												<th>Site Code</th>
+												<th>Site Name</th>
+												<th>City</th>
+												<th>Mobile No</th>
+												<th>Email Id </th>
+												<th>Action</th>
+											</tr>
+										</thead>
+										<tbody>
+											@if (Model.ListObj != null && Model.ListObj.Count() > 0)
+											{
+												foreach (var item in Model.ListObj)
+												{
+													<tr>
+														<td></td>
+														<td>@item.SiteCode</td>
+														<td>@item.SiteName</td>
+														<td>@item.City</td>
+														<td>@item.Alt_Mobile_No</td>
+														<td>@item.Alt_Email_Id</td>
+														<td>
+															<div class="btn-group">
+																<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
+																		onclick="fnLoadParialView('divformSave_VendorSite', '@Url.Action("Partial_AddEditForm_Site","Vendor", new {  area = "Admin" })?id=@Model.Obj.Id&vendor_code=@item.SiteCode');">
+																	<i class="far fa-edit"></i>
+																</button>
+
+																@* <button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+													onclick="fnDelete_Confirm('@Url.Action("Partial_AddEditForm_Site","Vendor", new {  area = "Admin" })?id=@Model.Obj.Id&vendor_code=@item.SiteCode', '#table_VendorSite');">
+													<i class="far fa-trash-alt"></i>
+													</button> *@
+															</div>
+														</td>
+													</tr>
+												}
+											}
+										</tbody>
+									</table>
+								</div>
+
+								<div class="clearfix"></div>
+							</div>
+						</div>
+
+						<div id="tab_Vendor" class="tab-pane active row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+								<div class="form-group row">
+									<label for="VendorCode" class="col-sm-2 col-form-label" style="align-content:start">Vendor Code<span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm isNumberKey" name="VendorCode" value="@Model.Obj.VendorCode" maxlength="30" data-required data-msg="The Vendor Code field is required." autocomplete="off" @(Model.Obj.Id <= 0 ? "" : "readonly")>
+									</div>
+									<label for="Organization_Name" class="col-sm-2 col-form-label" style="align-content:start">Vendor Company Name<span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<div class="input-group input-group-sm">
+											<input type="text" class="form-control form-control-sm" id="Organization_Name" name="Organization_Name" value="@Model.Obj.Organization_Name"
+												   data-required data-msg="The Company Name field is required." autocomplete="off">
+											<span class="input-group-append">
+												<button type="button" class="btn btn-info btn-flat" onclick="fnSearch_Vendor($('#Organization_Name'))">Check</button>
+											</span>
+										</div>
+									</div>
+								</div>
+								<div class="form-group row">
+									@if (Model.Obj.Id <= 0)
+									{
+										<label for="Password" class="col-sm-2 col-form-label">Password<span style="color:red">*</span></label>
+										<div class="col-sm-4">
+											<input type="password" id="Password" class="form-control form-control-sm" name="Password" data-required data-msg="The Password field is required." autocomplete="off">
+											<i class="fa fa-eye eye-pass fa-eye-slash" onclick="fnChangeIcon('Password')" id="togglePassword"></i>
+										</div>
+										<label for="ConfirmPassword" class="col-sm-2 col-form-label">Confirm Password<span style="color:red">*</span></label>
+										<div class="col-sm-4">
+											<input type="password" id="ConfirmPassword" class="form-control form-control-sm" name="ConfirmPassword" data-required data-msg="The Confirm Password field is required." autocomplete="off">
+											<i class="fa fa-eye eye-pass fa-eye-slash" onclick="fnChangeIcon('ConfirmPassword')" id="toggleConfirmPassword"></i>
+										</div>
+									}
+									else
+									{
+										<label for="IsPassword_Reset" class="col-sm-2 col-form-label text-right">Password Reset</label>
+										<div class="col-sm-2">
+											<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0 mb-2">
+												<input type="checkbox" class="custom-control-input" id="switch_Password_Reset"
+													   name="IsPassword_Reset" onchange="fnChange_Switch(this, 'label_Switch_Password_Reset')">
+												<label class="custom-control-label" for="switch_Password_Reset" id="label_Switch_Password_Reset" data-true="Yes" data-false="No">No</label>
+											</div>
+											<span class="info-container"> <span class="info">Default password: 12345</span>   </span>
+										</div>
+									}
+								</div>
+								<hr />
+								<div class="form-group row">
+									<label for="First_Name" class="col-sm-2 col-form-label">Firstname <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="First_Name" value="@Model.Obj.First_Name" maxlength="50" data-required data-msg="The Firstname field is required." autocomplete="off">
+									</div>
+									<label for="Middle_Name" class="col-sm-1 col-form-label">Middlename</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="Middle_Name" value="@Model.Obj.Middle_Name" maxlength="50" autocomplete="off">
+									</div>
+									<label for="Last_Name" class="col-sm-1 col-form-label">Lastname <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="Last_Name" value="@Model.Obj.Last_Name" maxlength="50" autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="MobileNo" class="col-sm-2 col-form-label">Primary Mobile No. <span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm isNumberKey" name="MobileNo" maxlength="11" data-required data-msg="The Mobile No. field is required." autocomplete="off" value="@Model.Obj.MobileNo">
+									</div>
+									<label for="Email_Id" class="col-sm-2 col-form-label">Primary Email <span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm" name="Email_Id" data-required data-msg="The Email field is required." autocomplete="off" value="@Model.Obj.Email_Id">
+									</div>
+								</div>
+
+								<div class="form-group row">
+									<label for="Print_Label_Qty" class="col-sm-2 col-form-label">Max QR Code / Per File <span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="Print_Label_Qty" autocomplete="off" value="@(Model.Obj.Print_Label_Qty > 0?Model.Obj.Print_Label_Qty.ToString():"")">
+									</div>
+								</div>
+
+								<div class="form-group row">
+									<label class="col-sm-2 col-form-label text-right">Status </label>
+									<div class="col-sm-4">
+										<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+											<input type="checkbox" class="custom-control-input"
+												   id="switch_Status" name="Is_Active" @(Model.Obj == null || Model.Obj.Is_Active == true || Model.Obj.Id == 0 ? "checked" : "")
+												   onchange="fnChange_Switch(this, 'label_Switch_Status')">
+											<label class="custom-control-label" for="switch_Status" id="label_Switch_Status" data-true="Active" data-false="Inactive">@((Model.Obj != null && Model.Obj.Is_Active == true) || Model.Obj == null || Model.Obj.Id == 0 ? "Active" : "Inactive")</label>
+										</div>
+									</div>
+									<label class="col-sm-2 col-form-label text-right">Is System User ? </label>
+									<div class="col-sm-4">
+										<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+											<input type="checkbox" class="custom-control-input"
+												   id="switch_System_User" name="Is_System_User" @(Model.Obj != null && Model.Obj.Is_System_User == true ? "checked" : "")
+												   onchange="fnChange_Switch(this, 'label_Switch_System_User')">
+											<label class="custom-control-label" for="switch_System_User" id="label_Switch_System_User" data-true="Yes" data-false="No">@((Model.Obj != null && Model.Obj.Is_System_User == true) ? "Yes" : "No")</label>
+										</div>
+									</div>
+								</div>
+
+								<div class="form-group row">
+									<div class="col-12 card-footer text-center">
+										<button type="submit" class="btn btn-success btnSubmit">Save</button>
+										<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '#table_Common_SrNo');">Cancel</button>
+									</div>
+								</div>
+
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+			}
+			else
+			{
+				<div class="panel-divider">
+					<span>Vendor Details</span>
+					<div class="row no-gutters p-0 m-0">
+						<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+							<div class="form-group row">
+								<label for="VendorCode" class="col-sm-2 col-form-label" style="align-content:start">Vendor Code<span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm isNumberKey" name="VendorCode" value="@Model.Obj.VendorCode" maxlength="30"
+										   data-required data-msg="The Vendor Code field is required." autocomplete="off" @(Model.Obj.Id <= 0 ? "" : "readonly")>
+								</div>
+								<label for="Organization_Name" class="col-sm-2 col-form-label" style="align-content:start">Vendor Company Name<span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<div class="input-group input-group-sm">
+										<input type="text" class="form-control form-control-sm" id="Organization_Name" name="Organization_Name" value="@Model.Obj.Organization_Name"
+											   data-required data-msg="The Company Name field is required." autocomplete="off">
+										<span class="input-group-append">
+											<button type="button" class="btn btn-info btn-flat" onclick="fnSearch_Vendor($('#Organization_Name'))">Check</button>
+										</span>
+									</div>
+								</div>
+							</div>
+							@*<div class="form-group row d-none">
+						<div class="col-sm-2">&nbsp;</div>
+						<div class="col-sm-4">
+						<button type="button" class="btn btn-block btn-sm bg-gradient-success btn-flat">
+						Vendor is already available in another Plant.<br />
+						You want to map in your plant ? Click here
+						</button>
+						</div>
+						</div>*@
+							<div class="form-group row">
+								@if (Model.Obj.Id <= 0)
+								{
+									<label for="Password" class="col-sm-2 col-form-label">Password<span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="password" id="Password" class="form-control form-control-sm" name="Password" data-required data-msg="The Password field is required." autocomplete="off">
+										<i class="fa fa-eye eye-pass fa-eye-slash" onclick="fnChangeIcon('Password')" id="togglePassword"></i>
+									</div>
+									<label for="ConfirmPassword" class="col-sm-2 col-form-label">Confirm Password<span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="password" id="ConfirmPassword" class="form-control form-control-sm" name="ConfirmPassword" data-required data-msg="The Confirm Password field is required." autocomplete="off">
+										<i class="fa fa-eye eye-pass fa-eye-slash" onclick="fnChangeIcon('ConfirmPassword')" id="toggleConfirmPassword"></i>
+									</div>
+								}
+								else
+								{
+									<label for="IsPassword_Reset" class="col-sm-2 col-form-label text-right">Password Reset</label>
+									<div class="col-sm-2">
+										<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0 mb-2">
+											<input type="checkbox" class="custom-control-input" id="switch_Password_Reset"
+												   name="IsPassword_Reset" onchange="fnChange_Switch(this, 'label_Switch_Password_Reset')">
+											<label class="custom-control-label" for="switch_Password_Reset" id="label_Switch_Password_Reset" data-true="Yes" data-false="No">No</label>
+										</div>
+										<span class="info-container"> <span class="info">Default password: 12345</span>   </span>
+									</div>
+								}
+							</div>
+							<hr />
+							<div class="form-group row">
+								<label for="First_Name" class="col-sm-2 col-form-label">Firstname <span style="color:red">*</span></label>
+								<div class="col-sm-2">
+									<input type="text" class="form-control form-control-sm" name="First_Name" value="@Model.Obj.First_Name" maxlength="50" data-required data-msg="The Firstname field is required." autocomplete="off">
+								</div>
+								<label for="Middle_Name" class="col-sm-1 col-form-label">Middlename</label>
+								<div class="col-sm-2">
+									<input type="text" class="form-control form-control-sm" name="Middle_Name" value="@Model.Obj.Middle_Name" maxlength="50" autocomplete="off">
+								</div>
+								<label for="Last_Name" class="col-sm-1 col-form-label">Lastname <span style="color:red">*</span></label>
+								<div class="col-sm-2">
+									<input type="text" class="form-control form-control-sm" name="Last_Name" value="@Model.Obj.Last_Name" maxlength="50" autocomplete="off">
+								</div>
+							</div>
+							<div class="form-group row">
+								<label for="MobileNo" class="col-sm-2 col-form-label">Primary Mobile No. <span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm isNumberKey" name="MobileNo" maxlength="11" data-required data-msg="The Mobile No. field is required." autocomplete="off" value="@Model.Obj.MobileNo">
+								</div>
+								<label for="Email_Id" class="col-sm-2 col-form-label">Primary Email <span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm" name="Email_Id" data-required data-msg="The Email field is required." autocomplete="off" value="@Model.Obj.Email_Id">
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label for="Print_Label_Qty" class="col-sm-2 col-form-label">Max QR Code / Per File <span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="Print_Label_Qty" autocomplete="off" value="@(Model.Obj.Print_Label_Qty > 0?Model.Obj.Print_Label_Qty.ToString():"200000")">
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label class="col-sm-2 col-form-label text-right">Status </label>
+								<div class="col-sm-4">
+									<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+										<input type="checkbox" class="custom-control-input"
+											   id="switch_Status" name="Is_Active" @(Model.Obj == null || Model.Obj.Is_Active == true || Model.Obj.Id == 0 ? "checked" : "")
+											   onchange="fnChange_Switch(this, 'label_Switch_Status')">
+										<label class="custom-control-label" for="switch_Status" id="label_Switch_Status" data-true="Active" data-false="Inactive">@((Model.Obj != null && Model.Obj.Is_Active == true) || Model.Obj == null || Model.Obj.Id == 0 ? "Active" : "Inactive")</label>
+									</div>
+								</div>
+								<label class="col-sm-2 col-form-label text-right">Is System User ? </label>
+								<div class="col-sm-4">
+									<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+										<input type="checkbox" class="custom-control-input"
+											   id="switch_System_User" name="Is_System_User" @(Model.Obj != null && Model.Obj.Is_System_User == true ? "checked" : "")
+											   onchange="fnChange_Switch(this, 'label_Switch_System_User')">
+										<label class="custom-control-label" for="switch_System_User" id="label_Switch_System_User" data-true="Yes" data-false="No">@((Model.Obj != null && Model.Obj.Is_System_User == true) ? "Yes" : "No")</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+
+				<div class="panel-divider">
+					<span>Site Details</span>
+					<div class="row no-gutters p-0 m-0">
+						<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+							<div class="form-group row">
+								<label for="SiteCode" class="col-sm-2 col-form-label">Site Code <span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm isNumberKey" name="SiteCode" value="@Model.Obj.SiteCode" data-required data-msg="The Site Code field is required." autocomplete="off" @(Model.Obj.Id <= 0 ? "" : "readonly")>
+								</div>
+								<label for="SiteName" class="col-sm-2 col-form-label">Site Name <span style="color:red">*</span></label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm" name="SiteName" value="@Model.Obj.SiteName" data-required data-msg="The Site Name is required." autocomplete="off">
+								</div>
+							</div>
+
+
+							<div class="form-group row">
+								<label for="Alt_Mobile_No" class="col-sm-2 col-form-label">Mobile No.</label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm isNumberKey" name="Alt_Mobile_No" maxlength="11" autocomplete="off" value="@Model.Obj.Alt_Mobile_No">
+								</div>
+								<label for="Alt_Email_Id" class="col-sm-2 col-form-label">Email</label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control form-control-sm" name="Alt_Email_Id" autocomplete="off" value="@Model.Obj.Alt_Email_Id">
+								</div>
+							</div>
+							<div class="form-group row">
+								<label for="Full_Address" class="col-sm-2 col-form-label">Address <span style="color:red">*</span></label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control form-control-sm" name="Full_Address" data-required data-msg="The Address field is required." autocomplete="off" value="@Model.Obj.Full_Address">
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-2 col-form-label">Country <span style="color:red">*</span></label>
+								<div class="col-sm-2">
+									<select id="Country_Id" name="Country_Id" class="form-control form-control-sm select2" onchange="Get_StateList()">
+										@if (Model != null && Model.SelectListItems != null)
+										{
+											foreach (var item in Model.SelectListItems.Where(x => x.Group == "C"))
+											{
+												if (item.Value == Convert.ToString(Model.Obj.Country_Id))
+												{
+													<option value="@item.Value" selected>@item.Text</option>
+												}
+												else
+												{
+													<option value="@item.Value">@item.Text</option>
+												}
+
+											}
+										}
+									</select>
+								</div>
+								<label class="col-sm-1 col-form-label">State <span style="color:red">*</span></label>
+								<div class="col-sm-2">
+									<select id="State_Id" name="State_Id" class="form-control form-control-sm select2" onchange="Get_DistrictList()">
+										@if (Model != null && Model.SelectListItems != null)
+										{
+											foreach (var item in Model.SelectListItems.Where(x => x.Group == "S"))
+											{
+												if (item.Value == Convert.ToString(Model.Obj.State_Id))
+												{
+													<option value="@item.Value" selected>@item.Text</option>
+												}
+												else
+												{
+													<option value="@item.Value">@item.Text</option>
+												}
+
+											}
+										}
+									</select>
+								</div>
+								<label class="col-sm-2 col-form-label">District <span style="color:red">*</span></label>
+								<div class="col-sm-2">
+									<select id="District_Id" name="District_Id" class="col-sm-3 form-control form-control-sm select2">
+										@if (Model != null && Model.SelectListItems != null)
+										{
+											foreach (var item in Model.SelectListItems.Where(x => x.Group == "D"))
+											{
+												if (item.Value == Convert.ToString(Model.Obj.District_Id))
+												{
+													<option value="@item.Value" selected>@item.Text</option>
+												}
+												else
+												{
+													<option value="@item.Value">@item.Text</option>
+												}
+
+											}
+										}
+									</select>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label for="City" class="col-sm-2 col-form-label">City</label>
+								<div class="col-sm-3">
+									<input type="text" class="form-control form-control-sm" name="City" maxlength="11" autocomplete="off" value="@Model.Obj.City">
+								</div>
+								<label for="Postal_Code" class="col-sm-2 col-form-label">Postal Code</label>
+								<div class="col-sm-2">
+									<input type="text" class="form-control form-control-sm isNumberKey" name="Postal_Code" maxlength="6" autocomplete="off" value="@(Model.Obj.Postal_Code > 0 ? Model.Obj.Postal_Code.ToString():"" )">
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+				<div class="card-footer text-center">
+					<button type="submit" class="btn btn-success btnSubmit">Save</button>
+					<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '#table_Common_SrNo');">Cancel</button>
+				</div>
+			}
+
+		</div>
+
+	</div>
+</div>

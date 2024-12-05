@@ -1,0 +1,294 @@
+﻿@model ResponseModel<MDA_Status>
+
+@{
+    ViewData["Title"] = "Plant Summary View";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Plant Summary Report</h1>
+            </div>
+
+        </div>
+    </div>
+</div>
+<section class="content">
+    <div class="container-fluid">
+        <div class="card card-primary card-outline">
+
+            <div class="card-body">
+
+                <div class="panel-divider">
+                    <span>Search</span>
+                    <div class="row no-gutters p-0 m-0">
+                        <div class="col-12 row no-gutters">
+                            <div class="form-group col-md-3 mx-3">
+                                <label class="col-form-label" style="align-content:start">Plant</label>
+                                <input type="hidden" class="form-control form-control-sm" id="PlantId" value="@Model.Obj.PlantId">
+                                <input type="text" class="form-control form-control-sm" id="PlantName" value="@Model.Obj.PlantName" autocomplete="off" readonly>
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">MDA No</label>
+                                <input type="text" class="form-control form-control-sm" id="MDA_No" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Truck No</label>
+                                <input type="text" class="form-control form-control-sm" id="Truck_No" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Party Name</label>
+                                <input type="text" class="form-control form-control-sm" id="PartyName" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Gate In Date From</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="GateInFromDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Gate In Date To</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="GateInToDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Dispatch Date From</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Dispatch Date To</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Destination On</label>
+                                <input type="text" class="form-control form-control-sm" id="Destination" autocomplete="off">
+                            </div>
+                        </div>
+
+                        @*<div class="col-12 no-gutters my-3">
+                        <div class="form-group mx-3 text-center">
+                        <label class="col-form-label text-right" style="align-content:start">&nbsp;</label>
+
+                        <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnLoadTableData()"> Search </button>
+                        <button type="button" class="btn btn-danger btn-md pull-right mr-2" onclick="fnClear()"> Clear </button>
+                        </div>*@
+
+                        <div class="col-12 no-gutters my-3">
+                            <div class="form-group mx-3 text-center">
+                                <label class="col-form-label text-right" style="align-content:start">&nbsp;</label>
+
+                                <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnExecute_Report(false)"> Search </button>
+                                <button type="button" class="btn btn-danger btn-md pull-right mr-2" onclick="fnClear()"> Clear </button>
+                                <button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnExecute_Report(true)"> Print </button>
+                                <button type="button" class="btn btn-success btn-md pull-right mr-2" id="btnExport"> Export </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="panel-divider">
+                    <span>Details</span>
+                    <div class="row no-gooters">
+                        <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                            <div class="card-body py-1 px-0" id="div_DataTable"></div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+@section Scripts{
+
+    <script type="text/javascript">
+
+        function fnClear() {
+            $('#MDA_No').val("");
+            $('#Truck_No').val("");
+            $('#GateInFromDate').val("");
+            $('#GateInToDate').val("");
+            $('#FromDate').val("");
+            $('#ToDate').val("");
+            $('#PartyName').val("");
+            $('#Destination').val("");
+            $('#div_DataTable').html('');
+        }
+
+        $("#btnExport").click(function () {
+            $("#tblmain").table2excel({
+                filename: "MDADispatchShippersRejectionList.xls"
+            });
+            return false;
+        });
+
+        $(function () { });
+
+        function fnExecute_Report($isPrint) {
+
+            $('#div_DataTable').html('');
+
+            var Truck_No = $('#Truck_No').val();
+            var FromDate = $('#FromDate').val();
+            var ToDate = $('#ToDate').val();
+            var GateInFromDate = $('#GateInFromDate').val();
+            var GateInToDate = $('#GateInToDate').val();
+            var MdaNo = $('#MDA_No').val();
+            var PartyName = $('#PartyName').val();
+            var Destination = $('#Destination').val();
+
+            // if ((typeof Truck_No != 'undefined' && Truck_No != null && Truck_No.length > 0)
+            //     || (typeof FromDate != 'undefined' && FromDate != null && FromDate.length > 0)
+            //     || (typeof ToDate != 'undefined' && ToDate != null && ToDate.length > 0)
+            // ) {
+
+            var $url = '@Url.Action("GetData", "PlantSummary", new { area = "Admin" })?Truck_No=' + Truck_No + '&From_Date=' + FromDate + '&To_Date=' + ToDate + '&Gate_In_From_Date=' + GateInFromDate + '&Gate_In_To_Date=' + GateInToDate + '&Mda_No=' + MdaNo + '&Party_Name=' + PartyName + '&Destination=' + Destination + '&isPrint=' + $isPrint;
+
+            if ($isPrint == true) {
+                var printWindow = window.open($url, '_blank');
+
+                if (printWindow) {
+                    printWindow.onload = function () {
+                        printWindow.print();
+                    };
+                }
+            }
+            else {
+
+                ShowLoader(true);
+
+                $.ajax({
+                    type: "GET",
+                    url: $url,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "html",
+                    success: function (response) {
+
+                        setTimeout(function () {
+
+                            $('#div_DataTable').html(response);
+
+                            try { fnLoadCommonTable('#div_DataTable .table_Common'); } catch { }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) {
+                        ShowLoader(false);
+                        CommonAlert_Error(null);
+                    },
+                    error: function (response) {
+                        ShowLoader(false);
+                        CommonAlert_Error(null);
+                    }
+                });
+            }
+            // }
+            // else
+            //ShowLoader(false);
+        }
+
+                //function fnLoadTableData() {
+                //    if ($.fn.DataTable.isDataTable('#dataTable_PoDetails')) {
+                //        $('#dataTable_PoDetails').DataTable().destroy();
+                //    }
+
+                //    dataTableMain = $("#dataTable_PoDetails")
+                //        .DataTable({
+                //            "destroy": true,
+                //            "pageLength": "All", "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                //            "sAjaxSource": "@Url_RootToController/GetData_PlantSummary",
+                //            "bServerSide": true,
+                //            "bProcessing": true,
+                //            "bSearchable": true,
+                //            "scrollX": true,
+                //            "order": [[0, 'asc']],
+                //            "language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+                //            "fnServerParams": function (aoData) {
+                //                aoData.push({ "name": "MdaNo", "value": "" + $('#MDA_No').val() });
+                //                aoData.push({ "name": "TruckNo", "value": "" + $('#Truck_No').val() });
+                //                aoData.push({ "name": "PartyName", "value": "" + $('#PartyName').val() });
+                //                aoData.push({ "name": "Destination", "value": "" + $('#Destination').val() });
+                //                aoData.push({ "name": "FromDate", "value": "" + $('#FromDate').val() });
+                //                aoData.push({ "name": "ToDate", "value": "" + $('#ToDate').val() });
+                //                aoData.push({ "name": "GateInFromDate", "value": "" + $('#GateInFromDate').val() });
+                //                aoData.push({ "name": "GateInToDate", "value": "" + $('#GateInToDate').val() });
+                //                aoData.push({ "name": "Type", "value": "" });
+                //            },
+                //            "columns": [
+                //                { "title": "Truck No.", "data": "truckNo", "autoWidth": true, "searchable": true },
+                //                { "title": "MDA No.", "data": "mdaNo", "autoWidth": true, "searchable": true },
+                //                { "title": "MDA Qty (Shippers)", "data": "mdaQty", "autoWidth": true, "searchable": true },
+                //                { "title": "Transporter", "data": "transporter", "autoWidth": true, "searchable": true },
+                //                { "title": "Driver Name", "data": "driverName", "autoWidth": true, "searchable": true },
+                //                { "title": "Driver Contact	", "data": "driverContact", "autoWidth": true, "searchable": true },
+                //                { "title": "RFID", "data": "rfid", "autoWidth": true, "searchable": true },
+                //                { "title": "Status", "data": "mdaStatus", "autoWidth": true, "searchable": true },
+                //                { "title": "Gate In DateTime", "data": "gateInDateTime", "autoWidth": true, "searchable": true },
+                //                { "title": "Weigh In DateTime", "data": "weighInDateTime", "autoWidth": true, "searchable": true },
+                //                { "title": "Tare Weight", "data": "tareWeight", "autoWidth": true, "searchable": true },
+                //                { "title": "Loading In DateTime", "data": "loadingInDateTimePrintedFrom", "autoWidth": true, "searchable": true },
+                //                { "title": "Loading Out DateTime", "data": "loadingOutDateTimePrintedFrom", "autoWidth": true, "searchable": true },
+                //                { "title": "Weigh Out DateTime", "data": "weighOutDateTime", "autoWidth": true, "searchable": true },
+                //                { "title": "Net Weight", "data": "netWeight", "autoWidth": true, "searchable": true },
+                //                { "title": "Out of Tolerance	", "data": "outofTolerance", "autoWidth": true, "searchable": true },
+                //                { "title": "Out of Tolerance Weight", "data": "outofToleranceWeight", "autoWidth": true, "searchable": true },
+                //                { "title": "Gate Out/Dispatch", "data": "gateOutDispatch", "autoWidth": true, "searchable": true },
+                //                { "title": "TAT (HH:MM)", "data": "tathhmm", "autoWidth": true, "searchable": true },
+                //            ],
+                //            "dom": "<'row'<'col-sm-6 mb-3'B>>" +
+                //                "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                //                "<'row'<'col-sm-12'tr>>" +
+                //                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                //            "buttons": [
+                //                //     {
+                //                //     extend: "csv",
+                //                //     className: "btn-flat btn-info mx-2 px-3",
+                //                //     titleAttr: 'Export in CSV',
+                //                //     text: 'CSV',
+                //                //     filename: 'MDA Status List',
+                //                //     init: function (api, node, config) { $(node).removeClass('btn-default') }
+                //                // },
+                //                // {
+                //                //     extend: "excel",
+                //                //     className: "btn-flat btn-success mx-2 px-3",
+                //                //     titleAttr: 'Export in Excel',
+                //                //     text: 'Excel',
+                //                //     filename: 'MDA Status List',
+                //                //     init: function (api, node, config) { $(node).removeClass('btn-default') }
+                //                // },
+                //                {
+                //                    extend: "pdfHtml5",
+                //                    className: "btn-flat btn-danger mx-2 px-3",
+                //                    titleAttr: 'Export in PDF',
+                //                    text: 'PDF',
+                //                    pageSize: 'LEGAL',
+                //                    filename: 'Plant Summary Report',
+                //                    exportOptions: {
+                //                        modifier: {
+                //                            page: 'all' // Export all pages
+                //                        }
+                //                    },
+                //                    init: function (api, node, config) { $(node).removeClass('btn-default') },
+                //                    customize: function (doc) {
+                //                        doc.defaultStyle.fontSize = 9;
+                //                        doc.pageMargins = [5, 10, 5, 10]; // Adjust margins
+                //                        doc.pageOrientation = 'landscape'; // Set orientation
+                //                        //doc.content[0].table.widths = ['*', '*', '*', '*', '*' ];
+                //                        // Add more customization options as needed
+                //                    }
+                //                }]
+                //        });
+
+                //}
+    </script>
+}
+

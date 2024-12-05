@@ -1,0 +1,1071 @@
+﻿@model ResponseModel<WeightIn>
+
+@{
+	ViewData["Title"] = "Weighment Out";
+}
+<!-- Content Header (Page header) -->
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-12">
+				<h1 class="font-weight-bold">Weighment Out</h1>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Main content -->
+<section class="content p-0">
+	<div class="container-fluid p-0">
+		<div class="row no-gutters">
+			<div class="col-12 card">
+				<form id="formSave" asp-controller="RmSpWeightOut" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data" data_form_isvalidate>
+					<div class="card-body pb-0">
+						<div class="panel-divider">
+							<span>Search Details</span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="form-horizontal">
+										<div class="card-body py-1 px-0">
+											<div class="form-group row">
+												<label for="Inward_Sys_Id" class="col-sm-2 col-form-label">Inward Type <span class="text-danger">*</span></label>
+												<div class="col-sm-4">
+													<select id="Inward_Sys_Id" name="Inward_Sys_Id" class="form-control form-control-sm select2" style="width: 100%;"
+															onchange="fnChange_Select(this, null)" data-required data-msg="The Inward Type field is required.">
+														@if (Model != null && Model.SelectListItems.Where(x => x.Group == "INWARDTYPE") != null)
+														{
+															foreach (var item in Model.SelectListItems.Where(x => x.Group == "INWARDTYPE").OrderBy(x => x.OrderBy).ToList())
+															{
+																if (item.Value != "1" && item.Value != "4")
+																{
+																	<option value="@item.Value" data-type="">@item.Text</option>
+																}
+															}
+														}
+													</select>
+												</div>
+											</div>
+											<div class="form-group row">
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label class="col-sm-4 col-form-label pl-0">RFID Number / Vehicle Number </label>
+														<span class="input-group-append col-sm-8 ml-0">
+															<input type="text" class="form-control form-control-sm" id="inputSearch" autocomplete="off">
+														</span>
+													</div>
+												</div>
+												<div class="col-3">
+													<span class="input-group-append ml-0">
+														<button type="button" class="btn btn-info btn-flat mr-2" onclick="GetPO(this, 'S')">Search</button>
+														<button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetPO(this, 'V')">View Vehicle</button>
+														@*<a href="~/batchfile/checkfile1.bat">Fetch Data</a>*@
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="panel-divider">
+							<span>Vehicle Details</span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="form-horizontal">
+										<div class="card-body py-1 px-0">
+											<div class="form-group row">
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Truck_No" class="col-sm-4 col-form-label pl-0">Vehicle Number <span class="text-danger">*</span></label>
+														<div class="col-sm-6">
+															<input type="text" class="form-control form-control-sm" id="Truck_No" name="Truck_No" data-required data-msg="Vehicle Number is required." autocomplete="off" readonly>
+															<input type="text" class="form-control form-control-sm d-none" id="Id" name="Id">
+															<input type="text" class="form-control form-control-sm d-none" id="Gate_In_Id" name="Gate_In_Id">
+															<input type="text" class="form-control form-control-sm d-none" id="Inward_Sys_Id" name="Inward_Sys_Id" value="">
+														</div>
+													</div>
+												</div>
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="input_Common_No" class="col-sm-4 col-form-label" id="label_Common_No">PO Number <span class="text-danger">*</span></label>
+														<div class="col-sm-6">
+															<input type="text" class="form-control form-control-sm" id="input_Common_No" name="Common_No" autocomplete="off" readonly>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="form-group row">
+												<label for="Transporter_Name" class="col-sm-2 col-form-label">Transporter Name  <span class="text-danger">*</span></label>
+												<div class="col-sm-9">
+													<input type="text" class="form-control form-control-sm" id="Transporter_Name" name="Transporter_Name" autocomplete="off" readonly>
+												</div>
+											</div>
+											<div class="form-group row">
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Driver_Name" class="col-sm-4 col-form-label pl-0">Driver Name <span class="text-danger">*</span></label>
+														<span class="input-group-append col-sm-6 ml-0">
+															<input type="text" class="form-control form-control-sm" id="Driver_Name" name="Driver_Name" autocomplete="off" readonly>
+														</span>
+													</div>
+												</div>
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Driver_Contact" class="col-sm-4 col-form-label pl-0">Driver Contact <span class="text-danger">*</span></label>
+														<span class="input-group-append col-sm-6 ml-0">
+															<input type="text" class="form-control form-control-sm isNumberKey" id="Driver_Contact" name="Driver_Contact" autocomplete="off" readonly>
+														</span>
+													</div>
+												</div>
+											</div>
+											<div class="form-group row">
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Driver_Id_Proof_Type" class="col-sm-4 col-form-label pl-0">Driver Id Proof Type <span class="text-danger">*</span></label>
+														<span class="input-group-append col-sm-6 ml-0">
+															<input type="text" class="form-control form-control-sm" id="Driver_Id_Proof_Type" autocomplete="off" readonly>
+														</span>
+													</div>
+												</div>
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Driver_Id_Number" class="col-sm-4 col-form-label pl-0">Driver Id Number <span class="text-danger">*</span></label>
+														<span class="input-group-append col-sm-6 ml-0">
+															<input type="text" class="form-control form-control-sm isNumberKey" id="Driver_Id_Number" autocomplete="off" readonly>
+														</span>
+													</div>
+												</div>
+											</div>
+											<div class="form-group row divTransactionType d-none">
+												<div class="col-6">
+													<div class="input-group input-group-sm ">
+														<label for="Driver_Id_Proof_Type" class="col-sm-4 col-form-label pl-0">Transaction Type <span class="text-danger">*</span></label>
+														<span class="input-group-append col-sm-6 ml-0">
+															<input type="text" class="form-control form-control-sm" id="TransactionType" autocomplete="off" readonly>
+														</span>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						@*<div class="panel-divider">
+						<span>Weighment Details</span>
+						<div class="row no-gutters p-0 m-0">
+						<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+						<div class="form-horizontal">
+						<div class="card-body py-1 px-0">
+						<div class="form-group row">
+						<label class="col-sm-2 col-form-label" id="label_Common_Weight">Gross Weight </label>
+						<div class="col-sm-4">
+						<input type="text" class="form-control form-control-sm isNumberKey_Decimal d-none" id="Tare_Wt" name="Tare_Wt" autocomplete="off">
+						<input type="text" class="form-control form-control-sm isNumberKey_Decimal" id="Gross_Wt" name="Gross_Wt" autocomplete="off">
+						</div>
+						<div class="col-sm-2">
+						<span class="input-group-append ml-0">
+						<button type="button" class="btn btn-info btn-flat mr-2" onclick="fnRead_Weight()">Read Weight</button>
+						</span>
+						</div>
+						</div>
+						<div class="form-group row">
+						<label class="col-sm-2 col-form-label">Weighment DateTime</label>
+						<div class="col-sm-4">
+						<input type="text" class="form-control form-control-sm" value="@DateTime.Now.ToString()" autocomplete="off" readonly>
+						</div>
+						<label id="chkTareWeightManually" for="chkTareWeightManually" class="col-sm-3 col-form-label">Enter Gross Weight Manually?</label>
+						<div class="col-sm-3">
+						<div class="icheck-primary d-inline">
+						<input type="checkbox" class="d-none" id="Is_Tare_Wt_Manually" name="Is_Tare_Wt_Manually" checked>
+						<input type="checkbox" class="" id="Gross_Wt_Manually" name="Gross_Wt_Manually" checked>
+						<label for="chkTareWeightManually"> &nbsp; </label>
+						</div>
+						</div>
+						</div>
+						</div>
+						</div>
+						</div>
+						</div>
+						</div>*@
+
+
+						<div class="panel-divider">
+							<span>Weighment In Details</span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="form-horizontal">
+										<div class="card-body py-1 px-0">
+											<div class="form-group row">
+												<label for="Gross_Wt" id="label_Gross_Wt" class="col-sm-2 col-form-label">Gross Weight   <span class="text-danger">*</span></label>
+												<div class="col-sm-4">
+													<div class="input-group input-group-sm">
+														<input type="text" id="Tare_Wt" name="Tare_Wt" class="form-control form-control-sm isNumberKey_Decimal d-none" readonly>
+														<input type="text" id="Gross_Wt" name="Gross_Wt" class="form-control form-control-sm isNumberKey_Decimal" readonly>
+
+														@*<span class="input-group-append ml-2">
+														<button type="button" class="btn btn-info btn-flat mr-2">Capture</button>
+														</span>*@
+													</div>
+												</div>
+
+												<label class="col-sm-2 col-form-label">Weighment In DateTime</label>
+												<div class="col-sm-4">
+													<input type="text" class="form-control form-control-sm d-none" id="Tare_Wt_Dt" name="Tare_Wt_Dt" autocomplete="off" readonly>
+													<input type="text" class="form-control form-control-sm" id="Gross_Wt_Dt" name="Gross_Wt_Dt" autocomplete="off" readonly>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="panel-divider">
+							<span>Weighment Out Details</span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="form-horizontal">
+										<div class="card-body py-1 px-0">
+											<div class="form-group row">
+												<label for="Tare_Wt" id="label_Tare_Wt" class="col-sm-2 col-form-label">Tare Weight  <span class="text-danger">*</span></label>
+												<div class="col-sm-4">
+													<div class="input-group input-group-sm">
+														<input type="text" id="Tare_Wt_1" name="Tare_Wt_1" class="form-control form-control-sm isNumberKey_Decimal " autocomplete="off" onkeyup="fnCalc_Net_Wt()">
+														<input type="text" id="Gross_Wt_1" name="Gross_Wt_1" class="form-control form-control-sm isNumberKey_Decimal  d-none" autocomplete="off" onkeyup="fnCalc_Net_Wt()">
+														<span class="input-group-append ml-2">
+															<button type="button" class="btn btn-info btn-flat mr-2" onclick="fnRead_Weight()">Capture</button>
+														</span>
+													</div>
+												</div>
+
+												<label class="col-sm-2 col-form-label">Weighment Out DateTime</label>
+												<div class="col-sm-4">
+													<input type="text" class="form-control form-control-sm" id="WeighDateTime" value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off" readonly>
+												</div>
+											</div>
+
+											<div class="form-group row">
+												<label for="chkNetWeightManually" class="col-sm-3 col-form-label">Enter Net Weight Manually </label>
+												<div class="col-sm-3">
+													<div class="icheck-primary d-inline">
+														<input type="checkbox" id="chkNetWeightManually" checked>
+														<label for="chkNetWeightManually"> &nbsp; </label>
+													</div>
+												</div>
+											</div>
+
+											<div class="form-group row">
+												<label for="Net_Wt" class="col-sm-2 col-form-label">Net Weight  <span class="text-danger">*</span></label>
+												<div class="col-sm-4">
+													<div class="input-group input-group-sm">
+														<input type="text" id="Net_Wt" name="Net_Wt" class="form-control form-control-sm isNumberKey_Decimal" readonly>
+													</div>
+												</div>
+
+											</div>
+
+											<div class="form-group row">
+												<label for="Gross_Wt_Note" class="col-sm-2 col-form-label">Remarks </label>
+												<div class="col-sm-10">
+													<textarea rows="4" class="form-control d-none" id="Gross_Wt_Note" name="Gross_Wt_Note" autocomplete="off"></textarea>
+													<textarea rows="4" class="form-control" id="Tare_Wt_Note" name="Tare_Wt_Note" autocomplete="off"></textarea>
+												</div>
+
+											</div>
+
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						@*<div class="panel-divider">
+						<span>Notes</span>
+						<div class="row no-gutters p-0 m-0">
+						<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+						<div class="form-horizontal">
+						<div class="card-body py-1 px-0">
+						<div class="form-group row">
+						<div class="col-12">
+						<div class="input-group input-group-sm ">
+						<label for="Notes" class="col-sm-2 col-form-label pl-0">Notes</label>
+						<span class="input-group-append col-sm-9 ml-0">
+						<input type="text" class="form-control form-control-sm d-none" id="Tare_Wt_Note" name="Tare_Wt_Note">
+						<input type="text" class="form-control form-control-sm" id="Gross_Wt_Note" name="Gross_Wt_Note">
+						</span>
+						</div>
+						</div>
+						</div>
+						<div class="form-group row">
+						<label for="Verified_Documents" class="col-sm-3 col-form-label">Verified Documents?</label>
+						<div class="col-sm-3">
+						<div class="icheck-primary d-inline">
+						<input type="checkbox" id="Verified_Documents" name="Verified_Documents">
+						<label for="Verified_Documents"> &nbsp; </label>
+						</div>
+						</div>
+						<label for="Verified_Officer" class="col-sm-2 col-form-label">Verified Officer Name</label>
+						<div class="col-sm-3">
+						<input type="text" class="form-control form-control-sm" id="Verified_Officer" name="Verified_Officer" autocomplete="off" readonly>
+						<input type="text" class="form-control form-control-sm d-none" id="Verified_Officer_Id" name="Verified_Officer_Id" autocomplete="off" readonly>
+						</div>
+						</div>
+						</div>
+						</div>
+						</div>
+						</div>
+						</div>*@
+					</div>
+					<div class="card-footer">
+						<button type="button" class="btn btn-info btn-flat px-3 mr-3 btnSubmit">Save</button>
+						<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClearFormData('#formSave')">Clear</button>
+						<button type="button" class="btn btn-danger btn-flat px-3 mr-3">Close</button>
+						<span class="float-right mr-3"><span class="text-danger">*</span> Mandatory Fields</span>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</section>
+
+@section Scripts{
+	<script type="text/javascript">
+		var table = {};
+
+		var currentUser = '@Common.Get_Session(SessionKey.USER_NAME)';
+
+		$(document).ready(function () {
+
+			$('input#MDA').prop('checked', true);
+			$('input#MDA').trigger('change');
+			$('input#Verified_Officer_Id').val('@Common.Get_Session(SessionKey.USER_ID)');
+			$('input#Verified_Officer_Id').trigger('change');
+			$('input#Verified_Officer').val('@Common.Get_Session(SessionKey.USER_NAME)');
+			$('input#Verified_Officer').trigger('change');
+
+			$('#chkTareWeightManually').change(function () {
+				if ($(this).is(':checked')) {
+					$('#Tare_Wt').removeAttr('readonly');
+				} else {
+					$('#Tare_Wt').attr('readonly', 'readonly');
+				}
+			});
+
+		});
+
+		$(document).on("change", 'input#chkNetWeightManually', function (e) {
+
+			$('input#Net_Wt').prop('readonly', !e.target.checked);
+
+			fnCalc_Net_Wt();
+		});
+
+		function fnCalc_Net_Wt() {
+			debugger;
+
+			var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+			var Gross_Wt = $('#Gross_Wt').val();
+			var Tare_Wt = $('#Tare_Wt').val();
+			var Gross_Wt_1 = $('#Gross_Wt_1').val();
+			var Tare_Wt_1 = $('#Tare_Wt_1').val();
+
+			if (Inward_Sys_Id == "2" && Inward_Sys_Id != null) {
+
+				if (typeof Gross_Wt == 'undefined' || Gross_Wt == null || Gross_Wt == '' || isNaN(parseFloat(Gross_Wt))) { Gross_Wt = 0; } else { Gross_Wt = parseFloat(Gross_Wt); }
+
+				if (typeof Tare_Wt_1 == 'undefined' || Tare_Wt_1 == null || Tare_Wt_1 == '' || isNaN(parseFloat(Tare_Wt_1))) { Tare_Wt_1 = 0; } else { Tare_Wt_1 = parseFloat(Tare_Wt_1); }
+
+				var Net_Wt = Gross_Wt - Tare_Wt_1;
+
+				if (typeof Net_Wt == 'undefined' || Net_Wt == null || Net_Wt == '' || isNaN(parseFloat(Net_Wt))) { Net_Wt = '0'; }
+				else { Net_Wt = parseFloat(Net_Wt); }
+
+				$('input#Net_Wt').val(Net_Wt);
+				$('input#Net_Wt').trigger('change');
+			}
+
+			if (Inward_Sys_Id == "3" && Inward_Sys_Id != null) {
+
+				if (typeof Gross_Wt_1 == 'undefined' || Gross_Wt_1 == null || Gross_Wt_1 == '' || isNaN(parseFloat(Gross_Wt_1))) { Gross_Wt_1 = 0; } else { Gross_Wt_1 = parseFloat(Gross_Wt_1); }
+
+				if (typeof Tare_Wt == 'undefined' || Tare_Wt == null || Tare_Wt == '' || isNaN(parseFloat(Tare_Wt))) { Tare_Wt = 0; } else { Tare_Wt = parseFloat(Tare_Wt); }
+
+				var Net_Wt = Gross_Wt_1 - Tare_Wt;
+
+				if (typeof Net_Wt == 'undefined' || Net_Wt == null || Net_Wt == '' || isNaN(parseFloat(Net_Wt))) { Net_Wt = '0'; }
+				else { Net_Wt = parseFloat(Net_Wt); }
+
+				$('input#Net_Wt').val(Net_Wt);
+				$('input#Net_Wt').trigger('change');
+			}
+
+			if (Inward_Sys_Id == "4" && Inward_Sys_Id != null) {
+
+				if (typeof Gross_Wt_1 == 'undefined' || Gross_Wt_1 == null || Gross_Wt_1 == '' || isNaN(parseFloat(Gross_Wt_1))) { Gross_Wt_1 = 0; } else { Gross_Wt_1 = parseFloat(Gross_Wt_1); }
+
+				if (typeof Tare_Wt == 'undefined' || Tare_Wt == null || Tare_Wt == '' || isNaN(parseFloat(Tare_Wt))) { Tare_Wt = 0; } else { Tare_Wt = parseFloat(Tare_Wt); }
+
+				var Net_Wt = Gross_Wt_1 - Tare_Wt;
+
+				if (typeof Net_Wt == 'undefined' || Net_Wt == null || Net_Wt == '' || isNaN(parseFloat(Net_Wt))) { Net_Wt = '0'; }
+				else { Net_Wt = parseFloat(Net_Wt); }
+
+				$('input#Net_Wt').val(Net_Wt);
+				$('input#Net_Wt').trigger('change');
+			}
+
+		}
+
+		function fnChange_Select($this, $selecter) {
+			debugger
+			if (typeof $selecter != 'undefined' && $selecter != null && $selecter != '' && $selecter.length > 0) {
+
+				var selectedValue = $($this).find('option:selected').val();
+
+				if (typeof selectedValue != 'undefined' && selectedValue != null && selectedValue != '' && selectedValue.length > 0)
+					$($selecter).val(selectedValue);
+				else
+					$($selecter).val('');
+
+				$($selecter).trigger('change');
+			}
+			else {
+				//if ($this != null)
+				//    fnClear_PO();
+
+				if ($this == null || $($this).attr('id') == 'Inward_Sys_Id') {
+
+					var keepId2 = '#WeighDateTime';
+
+					$('input').each(function () {
+						if ($(this).attr('id') !== keepId2.substring(1)) {
+							$(this).val('');
+						}
+					});
+
+					$('.divTransactionType').addClass('d-none');
+					$('#TransactionType').val('').trigger('change');
+
+					var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+					//var Inward_Sys_Id = $($this).val();
+
+					if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 2) {
+						// $('#span_common_no').html('PO Details');
+						$('#label_Common_No').html('PO Number');
+						$('#label_Gross_Wt').html('Gross Weight');
+						$('#label_Tare_Wt').html('Tare Weight');
+						$('#Tare_Wt').addClass('d-none');
+						$('#Gross_Wt_Note').addClass('d-none');
+						$('#Tare_Wt_Note').removeClass('d-none');
+						$('#Gross_Wt').removeClass('d-none');
+						$('#Tare_Wt_1').removeClass('d-none');
+						$('#Gross_Wt_1').addClass('d-none');
+						$('#Tare_Wt_Dt').addClass('d-none');
+						$('#Gross_Wt_Dt').removeClass('d-none');
+						$('#label_Common_Weight').html('Gross Weight');
+						$('#chkTareWeightManually').html('Enter Gross Weight Manually?');
+					}
+					else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 3) {
+						$('#label_Common_No').html('SO Number');
+						$('#label_Tare_Wt').html('Gross Weight');
+						$('#label_Gross_Wt').html('Tare Weight');
+						$('#Tare_Wt').removeClass('d-none');
+						$('#Gross_Wt').addClass('d-none');
+						$('#Gross_Wt_Note').removeClass('d-none');
+						$('#Tare_Wt_Note').addClass('d-none');
+						$('#Tare_Wt_1').addClass('d-none');
+						$('#Gross_Wt_1').removeClass('d-none');
+						$('#Tare_Wt_Dt').removeClass('d-none');
+						$('#Gross_Wt_Dt').addClass('d-none');
+						$('#label_Common_Weight').html('Tare Weight');
+						$('#chkTareWeightManually').html('Enter Tare Weight Manually?');
+					}
+					else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 4) {
+
+						$('#label_Common_No').html('Order Number');
+						$('#label_Tare_Wt').html('Gross Weight');
+						$('#label_Gross_Wt').html('Tare Weight');
+						$('#Tare_Wt').removeClass('d-none');
+						$('#Gross_Wt').addClass('d-none');
+						$('#Gross_Wt_Note').removeClass('d-none');
+						$('#Tare_Wt_Note').addClass('d-none');
+						$('#Tare_Wt_1').addClass('d-none');
+						$('#Gross_Wt_1').removeClass('d-none');
+						$('#Tare_Wt_Dt').removeClass('d-none');
+						$('#Gross_Wt_Dt').addClass('d-none');
+						$('#label_Common_Weight').html('Tare Weight');
+						$('#chkTareWeightManually').html('Enter Tare Weight Manually?');
+
+						$('.divTransactionType').removeClass('d-none');
+						$('#TransactionType').val('').trigger('change');
+					}
+
+
+					$('#label_Common_No').append('<span class="text-danger">*</span>');
+					$('#label_Common_Date').append('<span class="text-danger">*</span>');
+					$('#label_Common_Name').append('<span class="text-danger">*</span>');
+					$('#label_Common_Code').append('<span class="text-danger">*</span>');
+
+				}
+			}
+		}
+
+		function GetPO($this, $type) {
+			ShowLoader(true);
+
+			if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide(); //$('#modal-xl').modal('hide');
+
+			$.ajax({
+				type: "GET",
+				url: '@Url.Action("GetPO","RmSpWeightOut", new { area = "Dispatch" })?type=' + $type + '&searchTerm=' + $('#inputSearch').val() + '&Inward_Sys_Id=' + $('#Inward_Sys_Id option:selected').val(),
+				data: null,
+				contentType: "application/json; charset=utf-8",
+				dataType: "html",
+				success: function (response) {
+					debugger
+					if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+						CommonAlert_Error("No any record(s) found");
+						return false;
+					}
+
+					if (response.indexOf('{') == 0) {
+
+						setTimeout(function () {
+
+							try {
+
+								if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+									var selectedData = JSON.parse(response);
+
+									var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+
+									if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id != 4) {
+
+										$('#Truck_No').val(selectedData['truck_No']);
+										$('#input_Common_No').val(selectedData['common_No']);
+										$('#input_Common_Date').val(selectedData['common_Date']);
+										$('#Transporter_Code').val(selectedData['transporter_Code']);
+										$('#Transporter_Name').val(selectedData['transporter_Name']);
+										$('#Driver_Name').val(selectedData['driver_Name']);
+										$('#Driver_Contact').val(selectedData['driver_Contact']);
+										$('#Driver_Id_Proof_Type').val(selectedData['driver_Id_Type']);
+										$('#Driver_Id_Number').val(selectedData['driver_Id_Number']);
+										$('#Gate_In_Id').val(selectedData['gateIn_Id']);
+										$('#Gross_Wt').val(selectedData['gross_Wt']);
+										$('#Gross_Wt_Dt').val(selectedData['gross_wt_Dt']);
+										$('#Tare_Wt').val(selectedData['tare_Wt']);
+										$('#Tare_Wt_Dt').val(selectedData['tare_Wt_Dt']);
+
+									}
+									else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 4) {
+
+										debugger;
+
+										$('#Truck_No').val(selectedData['truck_No']);
+										$('#input_Common_No').val(selectedData['common_No']);
+										$('#input_Common_Date').val(selectedData['common_Date']);
+										$('#Transporter_Code').val(selectedData['transporter_Code']);
+										$('#Transporter_Name').val(selectedData['transporter_Name']);
+										$('#Driver_Name').val(selectedData['driver_Name']);
+										$('#Driver_Contact').val(selectedData['driver_Contact']);
+										$('#Driver_Id_Proof_Type').val(selectedData['driver_Id_Type']);
+										$('#Driver_Id_Number').val(selectedData['driver_Id_Number']);
+										$('#Gate_In_Id').val(selectedData['id']);
+										$('#Gross_Wt').val(selectedData['gross_Wt']);
+										$('#Gross_Wt_Dt').val(selectedData['gross_wt_Dt']);
+										$('#Tare_Wt').val(selectedData['tare_Wt']);
+										$('#Tare_Wt_Dt').val(selectedData['tare_Wt_Dt']);
+										$('#TransactionType').val(selectedData['transactionType']).trigger('change');
+
+									}
+
+									$('#Truck_No').trigger('change');
+									$('#input_Common_No').trigger('change');
+									$('#input_Common_Date').trigger('change');
+									$('#Transporter_Code').trigger('change');
+									$('#Transporter_Name').trigger('change');
+									$('#Driver_Name').trigger('change');
+									$('#Driver_Contact').trigger('change');
+									$('#Driver_Id_Proof_Type').trigger('change');
+									$('#Driver_Id_Number').trigger('change');
+									$('#Gate_In_Id').trigger('change');
+									$('#Gross_Wt').trigger('change');
+									$('#Gross_Wt_Dt').trigger('change');
+									$('#Tare_Wt').trigger('change');
+									$('#Tare_Wt_Dt').trigger('change');
+								} else
+									CommonAlert_Error("No record found");
+
+							} catch { }
+
+							ShowLoader(false);
+
+						}, 1000);
+
+					}
+					else {
+
+						$('#modal-xl .modal-body').html('');
+						$('#modal-xl .modal-body').append(response);
+
+						var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+
+						if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 2) {
+
+							if ($type == 'S')
+								$('#modal-xl .modal-title').html('Search PO');
+							else
+								$('#modal-xl .modal-title').html('View PO');
+
+						}
+						else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 3) {
+
+							if ($type == 'S')
+								$('#modal-xl .modal-title').html('Search SO');
+							else
+								$('#modal-xl .modal-title').html('View SO');
+
+						}
+						else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 4) {
+
+							if ($type == 'S')
+								$('#modal-xl .modal-title').html('Search Other Material');
+							else
+								$('#modal-xl .modal-title').html('View Other Material');
+
+						}
+
+
+						setTimeout(function () {
+
+							try {
+
+								if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
+									$('#modal-xl .modal-body #table_Common').DataTable().destroy();
+								}
+
+								table = $('#modal-xl .modal-body #table_Common').DataTable({
+									paging: true,
+									lengthChange: true,
+									searching: true,
+									ordering: true,
+									info: true,
+									autoWidth: true,
+									responsive: true,
+									pageLength: 10,
+									lengthMenu: [
+										[10, 25, 50, -1],
+										[10, 25, 50, 'All']
+									],
+									//columnDefs: [
+									//	{ "targets": 0, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false },
+									//	{ "targets": -1, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false }
+									//],
+									fixedColumns: true,
+									dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+										"<'row'<'col-sm-12'tr>>" +
+										"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+								});
+
+								$('#modal-xl .modal-body #table_Common').css('width', '100%');
+
+								table.on('click', 'tbody tr', function (e) {
+
+									$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+										if (i != (e.currentTarget.rowIndex - 1))
+											$(ez).removeClass('bg-info');
+									});
+
+									if (e.currentTarget.classList.contains('bg-info')) {
+
+										$('#Truck_No').val('');
+										$('#input_Common_No').val('');
+										$('#input_Common_Date').val('');
+										$('#Transporter_Code').val('');
+										$('#Transporter_Name').val('');
+										$('#Driver_Name').val('');
+										$('#Driver_Contact').val('');
+										$('#Driver_Id_Proof_Type').val('');
+										$('#Driver_Id_Number').val('');
+										$('#Gate_In_Id').val('');
+										$('#Gross_Wt').val('');
+										$('#Gross_Wt_Dt').val('');
+										$('#Tare_Wt').val('');
+										$('#Tare_Wt_Dt').val('');
+									}
+
+									e.currentTarget.classList.toggle('bg-info');
+
+									var selectedData = table.rows('.bg-info').data();
+
+
+									$('.divVendor_dtls input').val('');
+									$('.divVendor_dtls input').trigger('change');
+
+									$('.divVendor_dtls input[type="checkbox"]').prop('readonly', false);
+									$('.divVendor_dtls input[type="checkbox"]').trigger('change');
+
+									$('.divVendor_dtls').addClass('d-none');
+
+									var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+
+									if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 2) {
+
+										if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1) {
+
+											$('#Id').val(selectedData[0][7]);
+											$('#Gate_In_Id').val(selectedData[0][12]);
+											$('#Truck_No').val(selectedData[0][0]);
+											$('#input_Common_No').val(selectedData[0][1]);
+											$('#Transporter_Name').val(selectedData[0][5]);
+											$('#Driver_Name').val(selectedData[0][3]);
+											$('#Driver_Contact').val(selectedData[0][4]);
+											$('#Driver_Id_Proof_Type').val(selectedData[0][13]);
+											$('#Driver_Id_Number').val(selectedData[0][14]);
+											$('#Gross_Wt').val(selectedData[0][9]);
+											$('#Gross_Wt_Dt').val(selectedData[0][10]);
+										}
+
+										//fnChange_Select(null, null);
+
+										$('#Id').trigger('change');
+										$('#Gate_In_Id').trigger('change');
+										$('#Truck_No').trigger('change');
+										$('#input_Common_No').trigger('change');
+										$('#Transporter_Name').trigger('change');
+										$('#Driver_Name').trigger('change');
+										$('#Driver_Contact').trigger('change');
+										$('#Gross_Wt').trigger('change');
+										$('#Gross_Wt_Dt').trigger('change');
+										$('#Driver_Id_Proof_Type').trigger('change');
+										$('#Driver_Id_Number').trigger('change');
+										$('#UOM').trigger('change');
+
+									}
+									else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 3) {
+
+										if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1) {
+
+											$('#Id').val(selectedData[0][7]);
+											$('#Gate_In_Id').val(selectedData[0][12]);
+											$('#Truck_No').val(selectedData[0][0]);
+											$('#input_Common_No').val(selectedData[0][1]);
+											$('#Transporter_Name').val(selectedData[0][5]);
+											$('#Driver_Name').val(selectedData[0][3]);
+											$('#Driver_Contact').val(selectedData[0][4]);
+											$('#Driver_Id_Proof_Type').val(selectedData[0][13]);
+											$('#Driver_Id_Number').val(selectedData[0][14]);
+											$('#Tare_Wt').val(selectedData[0][9]);
+											$('#Tare_Wt_Dt').val(selectedData[0][10]);
+											//$('#Driver_Id_Proof_Type').val(selectedData[0][13]);
+											//$('#Driver_Id_Number').val(selectedData[0][14]);
+											//$('#UOM').val(selectedData[0][15]);
+										}
+
+										//fnChange_Select(null, null);
+
+										$('#Id').trigger('change');
+										$('#Gate_In_Id').trigger('change');
+										$('#Truck_No').trigger('change');
+										$('#input_Common_No').trigger('change');
+										$('#Transporter_Name').trigger('change');
+										$('#Driver_Name').trigger('change');
+										$('#Driver_Contact').trigger('change');
+										$('#Tare_Wt').trigger('change');
+										$('#Tare_Wt_Dt').trigger('change');
+										$('#Driver_Id_Proof_Type').trigger('change');
+										$('#Driver_Id_Number').trigger('change');
+										$('#UOM').trigger('change');
+									}
+									else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 4) {
+
+										debugger;
+
+										$('#Tare_Wt').val('');
+										$('#Tare_Wt_Dt').val('');
+										$('#Gross_Wt').val('');
+										$('#Gross_Wt_Dt').val('');
+
+										if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1) {
+
+											debugger;
+
+											$('#Id').val(selectedData[0][8]);
+											$('#Gate_In_Id').val(selectedData[0][13]);
+											$('#Truck_No').val(selectedData[0][0]);
+											$('#MDA_No').val(selectedData[0][1]);
+											$('#Transporter_Name').val(selectedData[0][6]);
+											$('#Driver_Name').val(selectedData[0][4]);
+											$('#Driver_Contact').val(selectedData[0][5]);
+											$('#Tare_Wt').val(selectedData[0][10]);
+											$('#Tare_Wt_Dt').val(selectedData[0][11]);
+											$('#Driver_Id_Proof_Type').val(selectedData[0][14]);
+											$('#Driver_Id_Number').val(selectedData[0][15]);
+											$('#UOM').val(selectedData[0][16]);
+
+											$('#Verified_Documents').prop('checked', (typeof (selectedData[0][13]) != 'undefined' && (selectedData[0][13]) != null && (selectedData[0][13]) == 'True' ? true : false));
+
+											$('.divTransactionType').removeClass('d-none');
+											$('#TransactionType').val(selectedData[0][3]).trigger('change');
+										}
+
+										$('#Truck_No').trigger('change');
+										$('#input_Common_No').trigger('change');
+										$('#input_Common_Date').trigger('change');
+										$('#Transporter_Code').trigger('change');
+										$('#Transporter_Name').trigger('change');
+										$('#Driver_Name').trigger('change');
+										$('#Driver_Contact').trigger('change');
+										$('#Driver_Id_Proof_Type').trigger('change');
+										$('#Driver_Id_Number').trigger('change');
+										$('#Gate_In_Id').trigger('change');
+										$('#Tare_Wt').trigger('change');
+										$('#Tare_Wt_Dt').trigger('change');
+										$('#Gross_Wt').trigger('change');
+										$('#Gross_Wt_Dt').trigger('change');
+									}
+									else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 3) {
+										$('.divVendor_dtls').removeClass('d-none');
+									}
+
+								});
+
+
+							} catch { }
+
+							if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
+								$('#modal-xl').show(); //$('#modal-xl').modal('show');
+							else
+								CommonAlert_Error("No any record(s) found");
+
+							ShowLoader(false);
+
+						}, 1000);
+					}
+				},
+				failure: function (response) {
+					CommonAlert_Error(null)
+				},
+				error: function (response) {
+					CommonAlert_Error(null)
+				}
+			});
+		}
+
+		function fnSelect_PO() {
+
+			if ($('#table_Common tbody tr.bg-info').length <= 0) {
+				CommonAlert_Error("Please select one PO Number");
+				return false;
+			}
+			else {
+				fnClose_Modal()
+			}
+		}
+
+		function fnClear_PO() {
+			debugger
+			$('#table_Common tbody tr.bg-info').each(function (i, ez) {
+				$(ez).removeClass('bg-info');
+			});
+
+			$('#Id').val('');
+			$('#Gate_In_Id').val('');
+			$('#Inward_Sys_Id').val('');
+			$('#Truck_No').val('');
+			$('#MDA_No').val('');
+			$('#Transporter_Name').val('');
+			$('#Driver_Name').val('');
+			$('#Driver_Contact').val('');
+			//$('#Verified_Officer_Id').val('');
+			$('#Driver_Id_Proof_Type').val('');
+			$('#Driver_Id_Number').val('');
+			$('#input_Common_Weight').val('');
+			//$('#Verified_Officer').val(currentUser);
+			$('#Verified_Documents').prop('checked', false);
+
+			$('#Id').trigger('change');
+			$('#Gate_In_Id').trigger('change');
+			$('#Inward_Sys_Id').trigger('change');
+			$('#Truck_No').trigger('change');
+			$('#MDA_No').trigger('change');
+			$('#Transporter_Name').trigger('change');
+			$('#Driver_Name').trigger('change');
+			$('#Driver_Contact').trigger('change');
+			$('#input_Common_Weight').trigger('change');
+			//$('#Verified_Officer_Id').trigger('change');
+			//$('#Verified_Officer').trigger('change');
+			$('#Verified_Documents').trigger('change');
+			$('#Driver_Id_Proof_Type').trigger('change');
+			$('#Driver_Id_Number').trigger('change');
+
+			$('input#Verified_Officer_Id').val('@Common.Get_Session(SessionKey.USER_ID)');
+			$('input#Verified_Officer_Id').trigger('change');
+			$('input#Verified_Officer').val('@Common.Get_Session(SessionKey.USER_NAME)');
+			$('input#Verified_Officer').trigger('change');
+		}
+
+		$(document).on("change", 'input[name="Option"]', function (e) {
+
+			$('input.truck_no').val('')
+			$('input.truck_no').trigger('change')
+			$('.mda_no input').val('')
+			$('.mda_no input').trigger('change')
+
+			if (e.target.id == 'MDA') {
+				$('input.truck_no').prop('readonly', true);
+			} else {
+				$('input.truck_no').prop('readonly', false);
+			}
+		});
+
+		function fnRead_Weight() {
+
+			ShowLoader(true);
+
+			if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
+
+			var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+
+			if (Inward_Sys_Id == 2) {
+				$('#Tare_Wt_1').val('');
+				$('#Tare_Wt_1').trigger('change');
+			}
+			else {
+				$('#Gross_Wt_1').val('');
+				$('#Gross_Wt_1').trigger('change');
+			}
+
+			debugger;
+			var strEntries = '@Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Weighbridge_Interface_IPs_Ports").Value ?? "")';
+
+			var listWeighbridge = [];
+			var entries = strEntries.split(',');
+
+			entries.forEach(function (entry) {
+				var parts = entry.trim().split(':');
+				if (parts.length === 3 && !isNaN(parseInt(parts[2], 10))) {
+					listWeighbridge.push({
+						Name: parts[0],
+						IP: parts[1],
+						Port: parseInt(parts[2], 10)
+					});
+				}
+			});
+
+			debugger;
+			if (typeof listWeighbridge != 'undefined' && listWeighbridge != null && listWeighbridge.length > 1) {
+
+				var strHTML = '';
+
+				listWeighbridge.forEach(function (tuple, i) {
+					var radioButton = '<label><input type="radio" name="weighbridge" value="' + tuple.IP + ':' + tuple.Port + '" ' + (i == 0 ? "checked" : "") + '>' + tuple.Name + '</label><br>';
+					strHTML += radioButton;
+				});
+
+				debugger;
+
+				Swal.fire({
+					icon: 'warning',
+					title: "Select Weighbridge",
+					showDenyButton: false,
+					showCancelButton: true,
+					confirmButtonText: 'Confirm!',
+					cancelButtonText: 'Cancel',
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					html: strHTML,
+				}).then((result) => {
+					debugger;
+					if (result != null && result.isConfirmed == true
+						&& typeof $('input[name="weighbridge"]:checked').val() != 'undefined'
+						&& $('input[name="weighbridge"]:checked').val() != null
+						&& $('input[name="weighbridge"]:checked').val().length > 0) {
+
+						$.ajax({
+							type: "GET",
+							url: '@Url.Action("GetWeighbridge_Interface_Data","RmSpWeightIn")?Weighbridge_Id=' + $('input[name="weighbridge"]:checked').val(),
+							data: null,
+							contentType: "application/json; charset=utf-8",
+							dataType: "json",
+							success: function (response) {
+
+								setTimeout(function () {
+
+									ShowLoader(false);
+
+									try {
+										if (typeof response != 'undefined' && response != '' && response != null
+											&& typeof response.statusCode != 'undefined' && response.statusCode != '' && response.statusCode != null && response.statusCode === 1) {
+
+											if (Inward_Sys_Id == 2) {
+												$('#Tare_Wt_1').val(response.data1);
+												$('#Tare_Wt_1').trigger('change');
+											}
+											else {
+												$('#Gross_Wt_1').val(response.data1);
+												$('#Gross_Wt_1').trigger('change');
+											}
+										}
+										else {
+											CommonAlert_Error(response.message, null)
+										}
+									} catch { if (Inward_Sys_Id == 2) { $('#Tare_Wt_1').val('0'); $('#Tare_Wt_1').trigger('change'); } else { $('#Gross_Wt_1').val('0'); $('#Gross_Wt_1').trigger('change'); } }
+
+								}, 2000);
+
+							},
+							failure: function (response) { ShowLoader(false); if (Inward_Sys_Id == 2) { $('#Tare_Wt_1').val('0'); $('#Tare_Wt_1').trigger('change'); } else { $('#Gross_Wt_1').val('0'); $('#Gross_Wt_1').trigger('change'); } },
+							error: function (response) { ShowLoader(false); if (Inward_Sys_Id == 2) { $('#Tare_Wt_1').val('0'); $('#Tare_Wt_1').trigger('change'); } else { $('#Gross_Wt_1').val('0'); $('#Gross_Wt_1').trigger('change'); } }
+						});
+					}
+				});
+
+			}
+			else {
+
+				$.ajax({
+					type: "GET",
+					url: '@Url.Action("GetWeighbridge_Interface_Data","RmSpWeightIn")?Weighbridge_Id=',
+					data: null,
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+					success: function (response) {
+
+						setTimeout(function () {
+
+							ShowLoader(false);
+
+							try {
+								if (typeof response != 'undefined' && response != '' && response != null
+									&& typeof response.statusCode != 'undefined' && response.statusCode != '' && response.statusCode != null && response.statusCode === 1) {
+
+									if (Inward_Sys_Id == 2) {
+										$('#Tare_Wt_1').val(response.data1);
+										$('#Tare_Wt_1').trigger('change');
+									}
+									else {
+										$('#Gross_Wt_1').val(response.data1);
+										$('#Gross_Wt_1').trigger('change');
+									}
+								}
+								else {
+									CommonAlert_Error(response.message, null)
+								}
+							} catch { if (Inward_Sys_Id == 2) { $('#Tare_Wt_1').val('0'); $('#Tare_Wt_1').trigger('change'); } else { $('#Gross_Wt_1').val('0'); $('#Gross_Wt_1').trigger('change'); } }
+
+						}, 2000);
+
+					},
+					failure: function (response) { ShowLoader(false); if (Inward_Sys_Id == 2) { $('#Tare_Wt_1').val('0'); $('#Tare_Wt_1').trigger('change'); } else { $('#Gross_Wt_1').val('0'); $('#Gross_Wt_1').trigger('change'); } },
+					error: function (response) { ShowLoader(false); if (Inward_Sys_Id == 2) { $('#Tare_Wt_1').val('0'); $('#Tare_Wt_1').trigger('change'); } else { $('#Gross_Wt_1').val('0'); $('#Gross_Wt_1').trigger('change'); } }
+				});
+			}
+
+		}
+	</script>
+}

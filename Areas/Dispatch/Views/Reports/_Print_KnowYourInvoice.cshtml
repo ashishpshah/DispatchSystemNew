@@ -1,0 +1,122 @@
+﻿@using System.Globalization;
+@model (string invoice_qr_code, bool withDetail, KnowYourInvoice Obj)
+
+@{
+    ViewData["Title"] = "Know Your Batch Data";
+    Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+<div class="row col-12 mb-3">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12" style="text-align:center;">
+                <h2 class="font-weight-bold"><b>@Model.Obj.PlantName</b></h2>
+            </div>
+            <br />
+            <div class="col-sm-12" style="text-align:center;">
+                <h2 class="font-weight-bold">@((Model.withDetail == false) ? "Summary" : "Detail") of Invoice No: <b>@Model.invoice_qr_code</b></h2>
+            </div>
+            <br />
+            <div class="col-sm-12" style="text-align:right;">
+                <h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row col-12 mt-5">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+
+                <th width="5%">MDA No.</th>
+                <th width="5%">MDA Date</th>
+                <th width="5%">Vehicle No</th>
+                <th width="25%">Party Name</th>
+                <th width="15%">Product</th>
+                <th width="5%">No. of Bottle</th>
+                <th width="5%">Required Shipper</th>
+                <th width="5%">Loaded Shipper</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td>@(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Mda_No) ? Model.Obj.Mda_No : "")</td>
+                <td>@(Model.Obj != null && Model.Obj.Mda_Date != null ? Model.Obj.Mda_Date : "")</td>
+                <td>@(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Truck_No) ? Model.Obj.Truck_No : "")</td>
+                <td>@(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Transporter_Name) ? Model.Obj.Transporter_Name : "")</td>
+                <td>@(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Prod_Desc) ? Model.Obj.Prod_Desc : "")</td>
+                <td>@(Model.Obj != null ? Model.Obj.NoOfBox : "")</td>
+                <td>@(Model.Obj != null ? Model.Obj.Required_Shipper : "")</td>
+                <td>@(Model.Obj != null ? Model.Obj.Loaded_Shipper : "")</td>
+            </tr>
+
+        </tbody>
+    </table>
+
+    @if (Model.withDetail == true)
+    {
+        <br />
+
+        <table id="table_Common_dtls" class="table table-bordered table-striped mt-3">
+            <thead>
+                <tr>
+                    <th width="5%">Sr. No.</th>
+                    <th>Shipper QR Code</th>
+                    <th width="10%">Shipper Batch No.</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Obj.listShipperBatch != null && Model.Obj.listShipperBatch.Count() > 0)
+                {
+                    var i = 1;
+
+                    @foreach (var item in Model.Obj.listShipperBatch.OrderBy(x => x.Batch_no).ThenBy(x => x.ShipperQRCode))
+                    {
+                        <tr>
+                            <td>@(i++)</td>
+                            <td>@item.ShipperQRCode</td>
+                            <td>@item.Batch_no</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="row col-12 mt-5">
+    <table id="table_Common_Batch" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+
+                <th width="5%">Sr. No.</th>
+                <th>Batch No.</th>
+                <th>MFG Date</th>
+                <th>Expiry Date</th>
+                <th width="25%">Shipper Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Obj.listShipperBatch != null && Model.Obj.listShipperBatch.Count() > 0)
+            {
+                var i = 1;
+
+                foreach (var item in Model.Obj.listShipperBatch.GroupBy(x => new { x.Batch_no, x.mfg_dt, x.expiry_dt })
+                .Select(x => new { Batch_No = x.Key.Batch_no, MFG_Date = x.Key.mfg_dt, Expiry_Date = x.Key.expiry_dt, Count = x.Count() })
+                .OrderBy(x => x.Batch_No).ToList())
+                {
+                    <tr>
+
+                        <td>@(i++)</td>
+                        <td>@item.Batch_No</td>
+                        <td>@item.MFG_Date</td>
+                        <td>@item.Expiry_Date</td>
+                        <td class="text-right pr-5"><span class="mr-5 pr-5">@item.Count</span></td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

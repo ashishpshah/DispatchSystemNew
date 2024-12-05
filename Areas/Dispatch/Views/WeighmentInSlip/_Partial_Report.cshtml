@@ -1,0 +1,198 @@
+﻿@using System.Globalization;
+@model (Weighment Obj, int PurposeType, bool isPrint)
+
+@{
+	ViewData["Title"] = "Weighment In Slip";
+}
+
+@if (Model.isPrint == true)
+{
+	Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+<div class="container-fluid">
+	<div class="col-sm-12 p-0 m-0" style="@((Model.isPrint == true) ? "outline:solid;outline-color:black":"")">
+
+		@if (Model.isPrint == true)
+		{
+			<div class="row col-12 p-0 m-0">
+				<div class="container-fluid p-0 m-0">
+					<div class="row p-0 m-0">
+						<div class="col-sm-12 p-0 m-0" style="text-align:center;outline:solid;outline-color:black">
+							<h2 class="font-weight-bold">@(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Plant_Name) ? Model.Obj.Plant_Name : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+							<h5 class="font-weight-bold">@(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Plant_Address) ? Model.Obj.Plant_Address : "KALOL") </h5>
+						</div>
+						<br />
+						<div class="col-sm-12 pt-3 mt-2" style="text-align:center;">
+							<h3 class="font-weight-bold">@(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Report_Title) ? Model.Obj.Report_Title : "Weighment Slip - Weigh In")</h3>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+		else
+		{
+			<div class="form-group row mb-3">
+				<div class="container-fluid">
+					<div class="row mb-2">
+						<div class="col-sm-12" style="text-align:center;">
+							<h3 class="font-weight-bold">@(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Report_Title) ? Model.Obj.Report_Title : "Weighment Slip - Weigh In")</h3>
+						</div>
+						<br />
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group row mb-3">
+				<button class="btn btn-info mb-3" onclick="fnPrint_Report('@Url.Action("Index","WeighmentInSlip")?Vehicle_No=@(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Vehicle_No) ? Model.Obj.Vehicle_No : "")&PurposeType=@(Model.PurposeType)')">Print</button>
+			</div>
+		}
+
+
+		<div class="m-2">
+			<div class="form-group row">
+				<label class="col-sm-3 col-form-label">RFID No. <span class="float-right">:</span> </label>
+				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.RFID_No) ? Model.Obj.RFID_No : "") </label>
+				<label class="col-sm-3 col-form-label">Weigh In Date & Time<span class="float-right">:</span> </label>
+				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.WeighIn_Wt_Dt) ? Model.Obj.WeighIn_Wt_Dt : "") </label>
+			</div>
+
+			<div class="form-group row">
+				<label class="col-sm-3 col-form-label">Vehicle No <span class="float-right">:</span> </label>
+				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Vehicle_No) ? Model.Obj.Vehicle_No : "") </label>
+				<label class="col-sm-3 col-form-label">In Weight  <span class="float-right">:</span> </label>
+				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null ? Model.Obj.WeighIn_Wt.ToString() : "")  &nbsp; @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.UOM) ? Model.Obj.UOM : "") </label>
+			</div>
+			<br />
+
+			<div class="form-group row">
+				<label class="col-sm-3 col-form-label">Transporter Name  <span class="float-right">:</span> </label>
+				<label class="col-sm-8 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Transporter_Name) ? Model.Obj.Transporter_Name : "") </label>
+			</div>
+
+			@if (Model.PurposeType == 4)
+			{
+				<div class="form-group row">
+					<label class="col-sm-3 col-form-label">Order No.  <span class="float-right">:</span> </label>
+					<label class="col-sm-8 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Common_No) ? Model.Obj.Common_No : "") </label>
+				</div>
+				<div class="form-group row">
+					<label class="col-sm-3 col-form-label">Party Name  <span class="float-right">:</span> </label>
+					<label class="col-sm-8 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Party_Name) ? Model.Obj.Party_Name : "") </label>
+				</div>
+				<div class="form-group row">
+					<label class="col-sm-3 col-form-label">Transaction Type <span class="float-right">:</span> </label>
+					<label class="col-sm-8 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Status) ? Model.Obj.Status : "") </label>
+				</div>
+			}
+
+			<div class="form-group row">
+				<label class="col-sm-3 col-form-label">Remarks  <span class="float-right">:</span> </label>
+				<label class="col-sm-8 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.WeighIn_Wt_Note) ? Model.Obj.WeighIn_Wt_Note : "") </label>
+			</div>
+
+			<div class="row col-12 mt-5">
+
+				@if (Model.PurposeType == 1)
+				{
+
+					<table class="table table-bordered w-100">
+						<thead>
+							<tr>
+								<th width="10%">MDA No.</th>
+								<th>Product Description</th>
+								<th class="text-center">Destination</th>
+								<th width="10%" class="text-center">Distance</th>
+								<th width="10%" class="text-center">No. of Bottle</th>
+								<th width="10%" class="text-center">No. of Box</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model.Obj.listWeighmentDtls != null && Model.Obj.listWeighmentDtls.Count() > 0)
+							{
+								var list = Model.Obj.listWeighmentDtls.GroupBy(x => new
+								{
+									Common_No = x.Common_No,
+									Product_Desc = x.Product_Desc,
+									Desp_Place = x.Desp_Place,
+									Distance = x.Distance,
+									No_of_bottle = x.No_of_bottle,
+									No_of_Box = x.No_of_Box,
+								}).OrderBy(x => x.Key.Distance).ToList();
+
+								foreach (var item in list)
+								{
+									<tr>
+
+										<td width="10%">@item.Key.Common_No</td>
+										<td>@item.Key.Product_Desc</td>
+										<td class="text-center">@item.Key.Desp_Place</td>
+										<td class="text-center">@item.Key.Distance</td>
+										<td class="text-center">@item.Key.No_of_bottle</td>
+										<td class="text-center">@item.Key.No_of_Box</td>
+									</tr>
+								}
+
+								<tr>
+									<td colspan="4" class="text-bold text-right"> Total &nbsp;&nbsp;&nbsp;</td>
+									<td class="text-bold text-center">@list.Sum(x=>x.Key.No_of_bottle)</td>
+									<td class="text-bold text-center">@list.Sum(x=>x.Key.No_of_Box)</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+
+				}
+				else if (Model.PurposeType == 4)
+				{
+
+					<table class="table table-bordered w-100">
+						<thead>
+							<tr>
+								<th width="10%">Sr. No.</th>
+								<th>Material</th>
+								<th>Material Description</th>
+								<th width="10%" class="text-center">Qty</th>
+								<th width="10%" class="text-center">UoM</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model.Obj.listWeighmentDtls != null && Model.Obj.listWeighmentDtls.Count() > 0)
+							{
+								var list = Model.Obj.listWeighmentDtls.GroupBy(x => new
+								{
+									SrNo = x.SrNo,
+									Product_Code = x.Product_Code,
+									Product_Desc = x.Product_Desc,
+									Qty = x.Qty,
+									UOM = x.UOM,
+								}).OrderBy(x => x.Key.SrNo).ToList();
+
+								foreach (var item in list)
+								{
+									<tr>
+
+										<td width="10%">@item.Key.SrNo</td>
+										<td>@item.Key.Product_Code</td>
+										<td>@item.Key.Product_Desc</td>
+										<td class="text-center">@item.Key.Qty</td>
+										<td class="text-center">@item.Key.UOM</td>
+									</tr>
+								}
+
+							}
+						</tbody>
+					</table>
+
+				}
+			</div>
+
+			@if (Model.isPrint == true)
+			{
+				<div class="row col-12 mt-5">
+					<label class="col-sm-6 col-form-label" style="text-align:left !important">Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt").Replace("-", "/")</label>
+					<label class="col-sm-6 col-form-label ml-0" style="text-align:right !important"> Operator's Signature </label>
+				</div>
+			}
+		</div>
+	</div>
+</div>

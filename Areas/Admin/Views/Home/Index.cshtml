@@ -1,0 +1,86 @@
+﻿@model ResponseModel<LoginViewModel>
+@{
+	ViewData["Title"] = "Home Page";
+
+	var listPlant = Common.GetUserPlantAccesses();
+}
+
+<div class="row no-gutters pt-5">
+	<div class="Col-12 w-100">
+		<div class="panel-divider mx-5">
+			<span style="background-color: #f4f6f9;">Plant Access</span>
+			<div class="row no-gutters">
+				<div class="col-12 p-0 m-0 shadow-none mt-3">
+					<!-- radio -->
+					<div class="form-group clearfix">
+						@if (listPlant != null)
+						{
+							foreach (var item in listPlant)
+							{
+								if (Common.Get_Session_Int(SessionKey.PLANT_ID) == item.PlantID)
+								{
+									<div class="icheck-primary d-inline mr-5">
+										<input type="radio" id="radioPrimary_@item.PlantID" name="PlantID" data-plantid="@item.PlantID" checked>
+										<label for="radioPrimary_@item.PlantID"> @item.Plant_Name</label>
+									</div>
+								}
+								else
+								{
+									<div class="icheck-primary d-inline mr-5">
+										<input type="radio" id="radioPrimary_@item.PlantID" name="PlantID" data-plantid="@item.PlantID">
+										<label for="radioPrimary_@item.PlantID"> @item.Plant_Name</label>
+									</div>
+								}
+							}
+						}
+
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<div class="panel-divider mx-5">
+			<span style="background-color: #f4f6f9;">QR Codes</span>
+			<div class="row no-gutters">
+				<div class="col-6 p-0 m-0 shadow-none mt-3">
+					<!-- radio -->
+					<table id="table_Qr_SrNo" class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th>Period</th>
+								<th>QR Generated</th>
+								<th>QR Recived</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model != null && Model.ListObj.Count > 0)
+							{
+								foreach (var item in Model.ListObj)
+								{
+									<tr>
+										<td>@item.ColName</td>
+										<td>@item.TodayGeneration</td>
+										<td>@item.TodayRecevied</td>
+									</tr>
+								}
+							}
+
+						</tbody>
+					</table>
+				</div>
+				<div class="col-6 p-0 m-0 shadow-none mt-3">
+					<!-- radio -->
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+@section scripts{
+	<script type="text/javascript">
+		$(document).on('change', 'input[type="radio"]', function (event) {
+			ajaxPost('@Url.Action("Change_Plant", "Home", new { area = "" })?id=' + $(this).attr('data-plantid'), window.location.href)
+		});
+	</script>
+
+							}

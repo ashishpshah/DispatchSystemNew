@@ -1,0 +1,84 @@
+﻿@using System.Globalization;
+@model (string PageTitle_Primary, string PageTitle_Secondary, dynamic objFilter, List<QRCodeGeneration> List, bool withDetail, bool isPrint)
+
+@if (Model.isPrint == true)
+{
+    ViewData["Title"] = "Vendor PO vs QR Code Gen";
+    Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+<div class="row col-12 mb-3">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12" style="text-align:center;">
+                <h2 class="font-weight-bold">@(!string.IsNullOrEmpty(Model.PageTitle_Primary) ? Model.PageTitle_Primary : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+            </div>
+            <br />
+            <div class="col-sm-12" style="text-align:center;">
+
+                @if (!string.IsNullOrEmpty(Model.PageTitle_Secondary))
+                {
+                    <h5 class="font-weight-bold">
+                        QR Code Generation Detail : @Model.PageTitle_Secondary
+                    </h5>
+                }
+                else
+                {
+                    <h4 class="font-weight-bold">QR Code Generation Detail </h4>
+                }
+            </div>
+            <br />
+            <div class="col-sm-12 @(Model.isPrint == true ? "":"d-none")" style="text-align:right;">
+                <h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+            </div>
+            <br />
+        </div>
+    </div>
+</div>
+
+<div class="row col-12 mt-5 text-center">
+
+    @* <table id="table_Common" class="table table-bordered w-100 divDetail @((Model.withDetail == true) ? "" : "d-none")"> *@
+    <table class="table table-bordered w-100 table_Common divDetail" id="tblmain">
+        <thead>
+            <tr>
+                <th>PO No</th>
+                <th>PO Date</th>
+                <th width="15%">Vendor Name</th>
+                <th>PO Qty</th>
+                <th>Request No</th>
+                <th>Request Date</th>
+                <th>SKU Name</th>
+                <th>Request Qty</th>
+                <th>Remain Qty</th>
+                <th>No Of Files</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.List != null && Model.List.Count() > 0)
+            {
+                @foreach (var item in Model.List.OrderBy(x => x.SrNo).ToList())
+                {
+                    <tr>
+                        <td>@item.PO_Number</td>
+                        <td>@item.PO_Date_Text</td>
+                        <td>@item.VendorName</td>
+                        <td>@item.TotalQty</td>
+                        <td>@item.RequestNo</td>
+                        <td>@item.RequestDate_Text</td>
+                        <td>@item.SkuDesc</td>
+                        <td>@item.RequestQty</td>
+                        <td>@item.RemainQty</td>
+                        <td>@item.Nooffiles</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan="10"><span class="w-100">No any records found.</span></td></tr>
+            }
+        </tbody>
+
+    </table>
+
+</div>

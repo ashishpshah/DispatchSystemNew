@@ -1,0 +1,45 @@
+﻿@model List<MDA>
+
+<div class="row col-12 mb-3">
+	<button type="button" class="btn btn-info btn-flat px-3 mr-3" onclick="fnSelect_MDA()">Select</button>
+	<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear_MDA()">Clear</button>
+	<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClose_Modal()">Close</button>
+</div>
+
+<div class="row col-12 w-100">
+	<table id="table_Common" class="table table-bordered table-striped w-100">
+		<thead>
+			<tr>
+				<th width="5%">Vehicle Number</th>
+				<th width="5%">MDA Number</th>
+				<th width="5%">MDA Date</th>
+				<th>Transporter Name</th>
+				<th>Customer Name</th>
+				<th>Driver Name</th>
+				<th>Driver Contact</th>
+				<th hidden width="0%">Id</th>
+				<th hidden width="0%">Id</th>
+			</tr>
+		</thead>
+		<tbody>
+
+			@if (Model != null && Model.Count > 0)
+			{
+				foreach (var item in Model)
+				{
+					<tr>
+						<td>@item.vehicle_no</td>
+						<td>@item.mda_no</td>
+						<td>@item.mda_dt</td>
+						<td>@item.wh_cd - @item.party_name</td>
+						<td>@item.tptr_cd - @item.tptr_name</td>
+						<td>@item.driver</td>
+						<td>@item.mobile_no</td>
+						<td hidden>@item.Id</td>
+						<td hidden>@item.GateInOut_Id</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

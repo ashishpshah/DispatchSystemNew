@@ -1,0 +1,285 @@
+﻿@model ResponseModel<Vendor>
+@{
+	Layout = null;
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+	<div class="card card-primary card-outline">
+
+		<div class="card-body @(Model.Obj!= null&& Model.Obj.Id > 0 ? " pt-0 mt-0":"")">
+
+			@if (Model.Obj == null)
+			{
+				<div class="row no-gutters p-0 m-0">
+					<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+
+						<div class="alert alert-danger alert-dismissible">
+							<h5><i class="icon fas fa-ban"></i> Alert!</h5>
+							@if (Model.Data2 != null)
+							{
+								<span>@Model.Data2</span>
+							}
+							else
+							{
+								<span>No vendor found.</span>
+							}
+						</div>
+
+					</div>
+				</div>
+
+			}
+			else
+			{
+				@if (Model.Data1 != null && ((bool)Model.Data1) == true)
+				{
+					<div class="panel-divider">
+						<span>Vendor Details</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+								<div class="form-group row">
+									<label for="VendorCode" class="col-sm-3 col-form-label text-right" style="align-content:start">Vendor Code<span style="color:red">*</span></label>
+									<div class="col-sm-6">
+										<input type="text" class="form-control form-control-sm isNumberKey" name="VendorCode" value="@Model.Obj.VendorCode" maxlength="30" autocomplete="off" readonly>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="Organization_Name" class="col-sm-3 col-form-label text-right" style="align-content:start">Vendor Company Name<span style="color:red">*</span></label>
+									<div class="col-sm-6">
+										<input type="text" class="form-control form-control-sm" id="Organization_Name" name="Organization_Name" value="@Model.Obj.Organization_Name" autocomplete="off">
+									</div>
+								</div>
+								<hr />
+								<div class="form-group row">
+									<label for="First_Name" class="col-sm-2 col-form-label text-right">First Name <span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm" name="First_Name" value="@Model.Obj.First_Name" maxlength="50" autocomplete="off">
+									</div>
+									<label for="Middle_Name" class="col-sm-2 col-form-label text-right">Middle Name</label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm" name="Middle_Name" value="@Model.Obj.Middle_Name" maxlength="50" autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="Last_Name" class="col-sm-2 col-form-label text-right">Last Name <span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm" name="Last_Name" value="@Model.Obj.Last_Name" maxlength="50" autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="MobileNo" class="col-sm-2 col-form-label text-right">Mobile No. <span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm isNumberKey" name="MobileNo" maxlength="11" autocomplete="off" value="@Model.Obj.MobileNo">
+									</div>
+									<label for="Email_Id" class="col-sm-2 col-form-label text-right">Email <span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm" name="Email_Id" autocomplete="off" value="@Model.Obj.Email_Id">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="Full_Address" class="col-sm-2 col-form-label text-right">Address</label>
+									<div class="col-sm-8">
+										<input type="text" class="form-control form-control-sm" name="Full_Address" autocomplete="off" value="@Model.Obj.Full_Address">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="City" class="col-sm-2 col-form-label text-right">City</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="City" autocomplete="off" value="@Model.Obj.City">
+									</div>
+									<label for="State_Name" class="col-sm-2 col-form-label text-right">State</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="State_Name" autocomplete="off" value="@Model.Obj.State_Name">
+									</div>
+									<label for="Country_Name" class="col-sm-2 col-form-label text-right">Country</label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="Country_Name" autocomplete="off" value="@Model.Obj.Country_Name">
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+					<div class="panel-divider">
+						<span>Site Details</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-md-12 my-1">
+								<table id="tbl_Vendor_ERP" class="table table-bordered table-striped w-100">
+									<thead>
+										<tr>
+											<th width="5%"><input type="checkbox" id="checkbox_All" value="" checked></th>
+											<th width="5%">#</th>
+											@*<th>Site Code</th>*@
+											<th>Site Name</th>
+											<th>Address</th>
+											<th hidden>City</th>
+											<th hidden>City</th>
+											<th hidden>City</th>
+											<th hidden>City</th>
+											<th>Mobile No</th>
+											<th>Email Id </th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model.ListObj != null && Model.ListObj.Count() > 0)
+										{
+											var i = 0;
+											foreach (var item in Model.ListObj)
+											{
+												<tr>
+													<td><input type="checkbox" value="@i" checked></td>
+													<td>@(i + 1)</td>
+													@*<td>@item.SiteCode</td>*@
+													<td>
+														@item.SiteName
+														<input type="text" name="listSite[@i].Id" value="1" class="form-control form-control-sm d-none listSite_Id">
+														<input type="text" name="listSite[@i].SiteName" value="@item.SiteName" class="form-control form-control-sm d-none">
+														<input type="text" name="listSite[@i].City" value="@item.City" class="form-control form-control-sm d-none">
+														<input type="text" name="listSite[@i].State_Name" value="@item.State_Name" class="form-control form-control-sm d-none">
+														<input type="text" name="listSite[@i].Country_Name" value="@item.Country_Name" class="form-control form-control-sm d-none">
+														<input type="text" name="listSite[@i].Full_Address" value="@item.Full_Address" class="form-control form-control-sm d-none">
+														<input type="text" name="listSite[@i].MobileNo" value="@item.MobileNo" class="form-control form-control-sm d-none">
+														<input type="text" name="listSite[@i].Email_Id" value="@item.Email_Id" class="form-control form-control-sm d-none">
+													</td>
+													<td>@item.City &nbsp; @item.State_Name &nbsp; @item.Country_Name</td>
+													<td hidden>@item.City</td>
+													<td hidden>@item.State_Name</td>
+													<td hidden>@item.Country_Name</td>
+													<td hidden>@item.Full_Address</td>
+													<td>@item.Alt_Mobile_No</td>
+													<td>@item.Alt_Email_Id</td>
+												</tr>
+
+												i++;
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+
+				}
+				else
+				{
+
+					<div class="panel-divider">
+						<span>ERP Vendor Details</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+								<div class="form-group row">
+									<label for="VendorCode" class="col-sm-3 col-form-label text-right" style="align-content:start">Vendor Code<span style="color:red">*</span></label>
+									<div class="col-sm-6">
+										<input type="text" class="form-control form-control-sm isNumberKey" name="VendorCode_ERP" value="@Model.Obj.VendorCode" maxlength="30" autocomplete="off" readonly>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="Organization_Name" class="col-sm-3 col-form-label text-right" style="align-content:start">Vendor Company Name<span style="color:red">*</span></label>
+									<div class="col-sm-6">
+										<input type="text" class="form-control form-control-sm" id="Organization_Name" name="Organization_Name_ERP" value="@Model.Obj.Organization_Name" autocomplete="off">
+									</div>
+								</div>
+								<hr />
+								<div class="form-group row">
+									<label for="First_Name" class="col-sm-2 col-form-label text-right">First Name <span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm" name="First_Name_ERP" value="@Model.Obj.First_Name" maxlength="50" autocomplete="off">
+									</div>
+									<label for="Middle_Name" class="col-sm-2 col-form-label text-right">Middle Name</label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm" name="Middle_Name_ERP" value="@Model.Obj.Middle_Name" maxlength="50" autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="Last_Name" class="col-sm-2 col-form-label text-right">Last Name <span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm" name="Last_Name_ERP" value="@Model.Obj.Last_Name" maxlength="50" autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="MobileNo" class="col-sm-2 col-form-label text-right">Mobile No. <span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm isNumberKey" name="MobileNo_ERP" maxlength="11" autocomplete="off" value="@Model.Obj.MobileNo">
+									</div>
+									<label for="Email_Id" class="col-sm-2 col-form-label text-right">Email <span style="color:red">*</span></label>
+									<div class="col-sm-4">
+										<input type="text" class="form-control form-control-sm" name="Email_Id_ERP" autocomplete="off" value="@Model.Obj.Email_Id">
+									</div>
+								</div>
+								@*
+						<div class="form-group row">
+						<label for="Print_Label_Qty" class="col-sm-2 col-form-label text-right">Max QR Code / Per File <span style="color:red">*</span></label>
+						<div class="col-sm-4">
+						<input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="Print_Label_Qty_ERP" autocomplete="off" value="@(Model.Obj.Print_Label_Qty > 0?Model.Obj.Print_Label_Qty.ToString():"")">
+						</div>
+						</div>
+						*@
+							</div>
+						</div>
+
+					</div>
+
+					<div class="panel-divider">
+						<span>ERP Site Details</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-md-12 my-1">
+								<table id="tbl_Vendor_ERP" class="table table-bordered table-striped w-100">
+									<thead>
+										<tr>
+											<th width="5%">#</th>
+											@*<th>Site Code</th>*@
+											<th>Site Name</th>
+											<th>Address</th>
+											<th hidden>City</th>
+											<th hidden>City</th>
+											<th hidden>City</th>
+											<th hidden>City</th>
+											<th>Mobile No</th>
+											<th>Email Id </th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model.ListObj != null && Model.ListObj.Count() > 0)
+										{
+											var i = 0;
+											foreach (var item in Model.ListObj)
+											{
+												<tr>
+													<td>
+														<div class="icheck-primary d-inline mr-5">
+															<input type="radio" id="radioPrimary_ERP_@i" name="Vendor_Site_ERP" onchange="fnChange_Site(this)">
+															<label for="radioPrimary_ERP_@i"> &nbsp;</label>
+														</div>
+													</td>
+													@*<td>@item.SiteCode</td>*@
+													<td>@item.SiteName</td>
+													<td>@item.City &nbsp; @item.State_Name &nbsp; @item.Country_Name</td>
+													<td hidden>@item.City</td>
+													<td hidden>@item.State_Name</td>
+													<td hidden>@item.Country_Name</td>
+													<td hidden>@item.Full_Address</td>
+													<td>@item.Alt_Mobile_No</td>
+													<td>@item.Alt_Email_Id</td>
+												</tr>
+
+												i++;
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				}
+			}
+
+		</div>
+
+	</div>
+</div>

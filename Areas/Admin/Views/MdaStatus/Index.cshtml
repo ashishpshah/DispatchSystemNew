@@ -1,0 +1,329 @@
+﻿@model ResponseModel<MDA>
+
+@{
+    ViewData["Title"] = "MDA Status View";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+
+    string hashZ = "@";
+
+}
+
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">MDA Status Report</h1>
+            </div>
+
+        </div>
+    </div>
+</div>
+<section class="content">
+    <div class="container-fluid">
+        <div class="card card-primary card-outline">
+
+            <div class="card-body">
+
+                <div class="panel-divider">
+                    <span>Search</span>
+                    <div class="row no-gutters p-0 m-0">
+                        <div class="col-12 row no-gutters">
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">MDA No</label>
+                                <input type="text" class="form-control form-control-sm" id="MDA_No" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">MDA Date From</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">MDA Date To</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Truck No</label>
+                                <input type="text" class="form-control form-control-sm" id="Truck_No" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Invoice Qr Code</label>
+                                <input type="text" class="form-control form-control-sm" id="Invoice_Qr_Code" autocomplete="off">
+                            </div>
+                        </div>
+
+                        @* <div class="col-12 no-gutters my-3">
+                        <div class="form-group mx-3 text-center">
+                        <label class="col-form-label text-right" style="align-content:start">&nbsp;</label>
+
+                        <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnLoadTableData()"> Search </button>
+                        <button type="button" class="btn btn-danger btn-md pull-right mr-2" onclick="fnClear()"> Clear </button>
+                        </div>
+                        </div>*@
+                        <div class="col-12 no-gutters my-3">
+                            <div class="form-group mx-3 text-center">
+                                <label class="col-form-label text-right" style="align-content:start">&nbsp;</label>
+
+                                <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnExecute_Report(false)"> Search </button>
+                                <button type="button" class="btn btn-danger btn-md pull-right mr-2" onclick="fnClear()"> Clear </button>
+                                <button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnExecute_Report(true)"> Print </button>
+                                <button type="button" class="btn btn-success btn-md pull-right mr-2" id="btnExport"> Export </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="panel-divider">
+                    <span>Details</span>
+                    <div class="row no-gooters">
+                        <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                            <div class="card-body py-1 px-0" id="div_DataTable"></div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        function fnClear() {
+            $('#MDA_No').val("");
+            $('#Truck_No').val("");
+            $('#Invoice_Qr_Code').val("");
+            $('#FromDate').val("");
+            $('#ToDate').val("");
+            $('#div_DataTable').html('');
+        }
+
+        $("#btnExport").click(function () {
+            $("#tblmain").table2excel({
+                filename: "MDAStatus.xls"
+            });
+            return false;
+        });
+
+        $(function () { });
+
+        function fnExecute_Report($isPrint) {
+
+            $('#div_DataTable').html('');
+
+            var Truck_No = $('#Truck_No').val();
+            var FromDate = $('#FromDate').val();
+            var ToDate = $('#ToDate').val();
+            var MdaNo = $('#MDA_No').val();
+            var InvoiceQrCode = $('#Invoice_Qr_Code').val();
+
+            // if ((typeof Truck_No != 'undefined' && Truck_No != null && Truck_No.length > 0)
+            //     || (typeof FromDate != 'undefined' && FromDate != null && FromDate.length > 0)
+            //     || (typeof ToDate != 'undefined' && ToDate != null && ToDate.length > 0)
+            // ) {
+
+            var $url = '@Url.Action("GetData", "MdaStatus", new { area = "Admin" })?Truck_No=' + Truck_No + '&From_Date=' + FromDate + '&To_Date=' + ToDate + '&Mda_No=' + MdaNo + '&Invoice_Qr_Code=' + InvoiceQrCode + '&isPrint=' + $isPrint;
+
+            if ($isPrint == true) {
+                var printWindow = window.open($url, '_blank');
+
+                if (printWindow) {
+                    printWindow.onload = function () {
+
+                        var css = '@hashZ' + 'page { size: landscape; }',
+                            head = printWindow.document.head || printWindow.document.getElementsByTagName('head')[0],
+                            style = document.createElement('style');
+
+                        style.type = 'text/css';
+                        style.media = 'print';
+
+                        if (style.styleSheet) {
+                            style.styleSheet.cssText = css;
+                        } else {
+                            style.appendChild(document.createTextNode(css));
+                        }
+
+                        head.appendChild(style);
+
+                        //don't forget to find and remove style if you don't want all you documents stay in landscape
+
+                        printWindow.print();
+                    };
+                }
+            }
+            else {
+
+                ShowLoader(true);
+
+                $.ajax({
+                    type: "GET",
+                    url: $url,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "html",
+                    success: function (response) {
+
+                        setTimeout(function () {
+
+                            $('#div_DataTable').html(response);
+
+                            try { fnLoadCommonTable('#div_DataTable .table_Common'); } catch { }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) {
+                        ShowLoader(false);
+                        CommonAlert_Error(null);
+                    },
+                    error: function (response) {
+                        ShowLoader(false);
+                        CommonAlert_Error(null);
+                    }
+                });
+            }
+            // }
+            // else
+            //ShowLoader(false);
+        }
+
+                                //function fnLoadTableData() {
+                                //    if ($.fn.DataTable.isDataTable('#dataTable_PoDetails')) {
+                                //        $('#dataTable_PoDetails').DataTable().destroy();
+                                //    }
+
+
+                                //    var subHeading = "";
+
+                                //    if ($('#MDA_No').val() != null && $('#MDA_No').val() != '') {
+                                //        subHeading = 'MDA No: ' + $('#MDA_No').val();
+                                //    }
+
+                                //    if ($('#Truck_No').val() != null && $('#Truck_No').val() != '') {
+                                //        subHeading = 'Truck No: ' + $('#Truck_No').val();
+                                //    }
+
+                                //    if ($('#Invoice_Qr_Code').val() != null && $('#Invoice_Qr_Code').val() != '') {
+                                //        subHeading = 'Invoice Qr Code: ' + $('#Invoice_Qr_Code').val();
+                                //    }
+
+                                //    if ($('#FromDate').val() != null && $('#FromDate').val() != '') {
+                                //        subHeading = 'Form Date: ' + $('#FromDate').val() + ' To Date: ' + $('#ToDate').val();
+                                //    }
+
+                                //    dataTableMain = $("#dataTable_PoDetails")
+                                //        .DataTable({
+                                //            "destroy": true,
+                                //            "pageLength": "All",
+                                //            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                                //            "sAjaxSource": "@Url_RootToController/GetData_MdaStatus",
+                                //            "bServerSide": true,
+                                //            "bProcessing": true,
+                                //            "bSearchable": true,
+                                //            "scrollX": true,
+                                //            "order": [[0, 'asc']],
+                                //            "language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+                                //            "fnServerParams": function (aoData) {
+                                //                aoData.push({ "name": "MdaNo", "value": "" + $('#MDA_No').val() });
+                                //                aoData.push({ "name": "TruckNo", "value": "" + $('#Truck_No').val() });
+                                //                aoData.push({ "name": "InvoiceQrCode", "value": "" + $('#Invoice_Qr_Code').val() });
+                                //                aoData.push({ "name": "FromDate", "value": "" + $('#FromDate').val() });
+                                //                aoData.push({ "name": "ToDate", "value": "" + $('#ToDate').val() });
+                                //                aoData.push({ "name": "Type", "value": "" });
+                                //            },
+                                //            "columns": [
+                                //                { "title": "MDA No.", "data": "mdaNo", "autoWidth": true, "searchable": true },
+                                //                { "title": "MDA Status", "data": "mdaStatus", "autoWidth": true, "searchable": true },
+                                //                { "title": "MDA Receive Date", "data": "mdaReceiveDate", "autoWidth": true, "searchable": true },
+                                //                { "title": "Truck No", "data": "truckNo", "autoWidth": true, "searchable": true },
+                                //                { "title": "Driver Name", "data": "driverName", "autoWidth": true, "searchable": true },
+                                //                { "title": "Customer Name", "data": "customerName", "autoWidth": true, "searchable": true },
+                                //                { "title": "SKU Code", "data": "skuCode", "autoWidth": true, "searchable": true },
+                                //                { "title": "SKU Desc", "data": "skuDesc", "autoWidth": true, "searchable": true },
+                                //                { "title": "Destination", "data": "destination", "autoWidth": true, "searchable": true },
+                                //                { "title": "Loading In Date Printed From", "data": "loadingInDateTimePrintedFrom", "autoWidth": true, "searchable": true },
+                                //                { "title": "Loading Out Date Printed To ", "data": "loadingOutDateTimePrintedFrom", "autoWidth": true, "searchable": true },
+                                //                { "title": "Loading Bay: Printed To", "data": "loadingBayPrintedTo", "autoWidth": true, "searchable": true },
+                                //                { "title": "Loading Bay Operator: Printed To ", "data": "loadingBayOperatorTo", "autoWidth": true, "searchable": true },
+                                //                { "title": "MDA Qty", "data": "mdaQty", "autoWidth": true, "searchable": true },
+                                //                { "title": "MDA Update Qty", "data": "mdaUpdateQty", "autoWidth": true, "searchable": true },
+                                //                { "title": "Loaded Qty", "data": "loadedQty", "autoWidth": true, "searchable": true },
+                                //                { "title": "Dispatch Date-Time", "data": "dispatchDateTime", "autoWidth": true, "searchable": true },
+                                //                { "title": "Invoice QR Code", "data": "invoiceQrCode", "autoWidth": true, "searchable": true },
+                                //                //{
+                                //                //    "title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
+                                //                //    "render": function (data, type, row, meta) {
+                                //                //        return '<div class="btn-group"><a class="btn btn-info btn-sm btn-flat" href="javascript:void(0);" onclick="fnShow_Modal(\'@Url.Action("Partial_AddEditForm", "QRCode", new { area = "Admin" })?Id=' + data.id + '\', \'View QR Code Requests\', false, \'html\', false)"><span><i class="far fa-edit"></i></span></a></div>';
+                                //                //    }
+                                //                //}
+                                //            ],
+                                //            "dom": "<'row'<'col-sm-6 mb-3'B>>" +
+                                //                "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                                //                "<'row'<'col-sm-12'tr>>" +
+                                //                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                                //            "buttons": [
+                                //                //     {
+                                //                //     extend: "csv",
+                                //                //     className: "btn-flat btn-info mx-2 px-3",
+                                //                //     titleAttr: 'Export in CSV',
+                                //                //     text: 'CSV',
+                                //                //     filename: 'MDA Status List',
+                                //                //     init: function (api, node, config) { $(node).removeClass('btn-default') }
+                                //                // },
+                                //                // {
+                                //                //     extend: "excel",
+                                //                //     className: "btn-flat btn-success mx-2 px-3",
+                                //                //     titleAttr: 'Export in Excel',
+                                //                //     text: 'Excel',
+                                //                //     filename: 'MDA Status List',
+                                //                //     exportOptions: {
+                                //                //         columns: ':visible', // Export visible columns only
+                                //                //         modifier: {
+                                //                //             page: 'all' // Export all pages
+                                //                //         }
+                                //                //     },
+                                //                //     init: function (api, node, config) { $(node).removeClass('btn-default') }
+                                //                // },
+                                //                {
+                                //                    extend: "pdfHtml5",
+                                //                    className: "btn-flat btn-danger mx-2 px-3",
+                                //                    titleAttr: 'Export in PDF',
+                                //                    text: 'PDF',
+                                //                    pageSize: 'LEGAL',
+                                //                    filename: 'MDA Status Report',
+                                //                    exportOptions: {
+                                //                        modifier: {
+                                //                            page: 'all' // Export all pages
+                                //                        }
+                                //                    },
+                                //                    init: function (api, node, config) { $(node).removeClass('btn-default') },
+                                //                    customize: function (doc) {
+                                //                        doc.defaultStyle.fontSize = 8;
+                                //                        doc.pageMargins = [5, 10, 5, 10]; // Adjust margins
+                                //                        doc.pageOrientation = 'landscape'; // Set orientation
+                                //                        doc.content.splice(1, 0, {
+                                //                            text: subHeading,
+                                //                            style: 'subheader'
+                                //                        });
+                                //                        doc.styles.subheader = {
+                                //                            fontSize: 12,
+                                //                            italics: true,
+                                //                            margin: [10, 0, 0, 10]
+                                //                        };
+                                //                        //doc.content[0].table.widths = ['*', '*', '*', '*', '*' ];
+                                //                        // Add more customization options as needed
+                                //                    }
+                                //                }]
+                                //        });
+
+                                //}
+    </script>
+}
+

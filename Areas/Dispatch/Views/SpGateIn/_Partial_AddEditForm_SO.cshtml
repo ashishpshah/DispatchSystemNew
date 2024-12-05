@@ -1,0 +1,257 @@
+﻿@model ResponseModel<SO>
+@{
+	Layout = null;
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+	<form id="formSave_SO" asp-area="Dispatch" asp-controller="SpGateIn" asp-action="Save_SO" method="post" class="form-horizontal" enctype="multipart/form-data">
+		<div class="card card-primary card-outline">
+			<div class="card-body @(Model.Obj.Id > 0 ? " pt-0 mt-0":"")">
+				<input type="text" class="form-control d-none" name="Id" value="@Model.Obj.Id">
+
+				<div class="row p-0 m-0 d-flex">
+					<div class="col-12 tab-content p-0 m-0">
+
+						<div id="tab_SO" class="tab-pane active row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+								<div class="form-group row">
+									<label for="SoNo" class="col-sm-2 col-form-label">Order Number <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm isNumberKey" name="SoNo" value="@Model.Obj.SoNo" maxlength="50"
+											   data-required data-msg="The SO No field is required." autocomplete="off">
+									</div>
+									<label for="SoDate" class="col-sm-2 col-form-label">Order Date <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm datepicker" id="SoDate" name="SoDate"
+											   data-value="@Model.Obj.SoDate_Text" value="@Model.Obj.SoDate?.ToString("dd/MM/yyyy").Replace("-", "/")" maxlength="50"
+											   data-required data-msg="The SO Date field is required." autocomplete="off">
+									</div>
+									<label for="Rivision" class="col-sm-2 col-form-label">Revision <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="Rivision" value="@Model.Obj.Rivision" maxlength="50"
+											   data-required data-msg="The Rivision field is required." autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="Transporter_Name" class="col-sm-2 col-form-label">Transporter Name <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="Transporter_Name" value="@Model.Obj.Transporter_Name" maxlength="50"
+											   data-required data-msg="The Transporter Name field is required." autocomplete="off">
+									</div>
+									<label for="Truck_No" class="col-sm-2 col-form-label">Truck No <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="Truck_No" value="@Model.Obj.Truck_No" maxlength="50"
+											   data-required data-msg="The Truck No field is required." autocomplete="off">
+									</div>
+									<label for="Loading_Gate" class="col-sm-2 col-form-label">Loading Gate <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="Loading_Gate" value="@Model.Obj.Loading_Gate" maxlength="50"
+											   data-required data-msg="The Loading Gate field is required." autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="TenderType" class="col-sm-2 col-form-label">Order Type <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="TenderType" value="@Model.Obj.TenderType" maxlength="50"
+											   data-required data-msg="The Order Type field is required." autocomplete="off">
+									</div>
+									<label for="SoReleaseDate" class="col-sm-2 col-form-label">Order Release Date <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm datepicker" id="SoReleaseDate" name="SoReleaseDate"
+											   data-value="@Model.Obj.SoReleaseDate_Text" value="@Model.Obj.SoReleaseDate?.ToString("dd/MM/yyyy").Replace("-", "/")" maxlength="50"
+											   data-required data-msg="The So Release Date field is required." autocomplete="off">
+									</div>
+									<label for="SoValidDate" class="col-sm-2 col-form-label">Valid Date <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm datepicker" id="SoValidDate" name="SoValidDate"
+											   data-value="@Model.Obj.SoValidDate_Text" value="@Model.Obj.SoValidDate?.ToString("dd/MM/yyyy").Replace("-", "/")" maxlength="50"
+											   data-required data-msg="The Valid Date field is required." autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="EmdAmt" class="col-sm-2 col-form-label">EMD Amount <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm isNumberKey" name="EmdAmt" value="@Model.Obj.EmdAmt" maxlength="50"
+											   data-required data-msg="The EMD Amount field is required." autocomplete="off">
+									</div>
+									<label for="AmendNo" class="col-sm-2 col-form-label">MSR Number <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm isNumberKey" name="AmendNo" value="@Model.Obj.AmendNo" maxlength="50"
+											   data-required data-msg="The MSR Number field is required." autocomplete="off">
+									</div>
+									<label for="CustName" class="col-sm-2 col-form-label">Customer Name <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="CustName" value="@Model.Obj.CustName" maxlength="50"
+											   data-required data-msg="The Customer Name field is required." autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">	
+									<label for="SiteName" class="col-sm-2 col-form-label">Site <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="SiteName" value="@Model.Obj.SiteName" maxlength="50"
+											   data-required data-msg="The Site Name field is required." autocomplete="off">
+									</div>
+									<label for="Add1" class="col-sm-2 col-form-label">Address <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="Add1" value="@Model.Obj.Add1" maxlength="50"
+											   data-required data-msg="The Address field is required." autocomplete="off">
+									</div>
+									<label for="City" class="col-sm-2 col-form-label">City <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="City" value="@Model.Obj.City" maxlength="50"
+											   data-required data-msg="The City field is required." autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="State" class="col-sm-2 col-form-label">State <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="State" value="@Model.Obj.State" maxlength="50"
+											   data-required data-msg="The State field is required." autocomplete="off">
+									</div>
+									<label for="PanNo" class="col-sm-2 col-form-label">PAN Card <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="PanNo" value="@Model.Obj.PanNo" maxlength="50"
+											   data-required data-msg="The PAN Card field is required." autocomplete="off">
+									</div>
+									<label for="GstnNo" class="col-sm-2 col-form-label">GSTN No. <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="GstnNo" value="@Model.Obj.GstnNo" maxlength="50"
+											   data-required data-msg="The Gstn No field is required." autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="TermsPrice" class="col-sm-2 col-form-label">Price Terms <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm isNumberKey" name="TermsPrice" value="@Model.Obj.TermsPrice" maxlength="50"
+											   data-required data-msg="The Price Terms field is required." autocomplete="off">
+									</div>
+									<label for="TermsPymtTerm" class="col-sm-2 col-form-label">Payment Terms <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="TermsPymtTerm" value="@Model.Obj.TermsPymtTerm" maxlength="50"
+											   data-required data-msg="The Payment Terms field is required." autocomplete="off">
+									</div>
+									<label for="TermsLiftingPeriodDays" class="col-sm-2 col-form-label">Lifting Period (Days) <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm isNumberKey" name="TermsLiftingPeriodDays" value="@Model.Obj.TermsLiftingPeriodDays" maxlength="50"
+											   data-required data-msg="The Lifting Period field is required." autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="SoRemarks" class="col-sm-2 col-form-label">Order Remarks <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="SoRemarks" value="@Model.Obj.SoRemarks" maxlength="50"
+											   data-required data-msg="The SO Remarks field is required." autocomplete="off">
+									</div>
+									<label for="Status" class="col-sm-2 col-form-label">Order Status <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="SoRemarks" value="@Model.Obj.Status" maxlength="50"
+											   data-required data-msg="The Order Status field is required." autocomplete="off">
+									</div>
+									<label for="StatusRemarks" class="col-sm-2 col-form-label">Status Remarks <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm" name="StatusRemarks" value="@Model.Obj.StatusRemarks" maxlength="50"
+											   data-required data-msg="The Status Remarks field is required." autocomplete="off">
+									</div>
+								</div>
+								<hr />
+
+								<div class="row mb-2">
+									<div class="col-sm-6">
+										<h5 class="m-0 text-left">Vendor SO Details</h5>
+									</div>
+									<div class="col-sm-6">
+										<div class="float-sm-right">
+											@* @if (Common.IsAdmin())
+											{ *@
+											<button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnSoAddRow()">
+												<i class="fas fa-plus"></i> &nbsp; Add SO Item
+											</button>
+											@* } *@
+										</div>
+									</div>
+								</div>
+
+
+								<div class="row no-gooters">
+									<div class="col-md-12 my-1">
+										<table id="table_SODtls" class="table table-bordered table-striped w-100">
+											<thead>
+												<tr>
+													<th width="5%">Line No</th>
+													<th>Line Description</th>
+													<th width="15%">UOM</th>
+													<th width="15%">SO Qty</th>
+													<th width="15%">Loading Qty</th>
+													<th width="15%">Loading UOM</th>
+													<th width="5%">Action</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr id="tr_ZX" class="d-none">
+													<td><input type="text" class="form-control form-control-sm text-center" name="listSODtls[ZX].SlNo" maxlength="50" autocomplete="off" readonly></td>
+													<td><input type="text" class="form-control form-control-sm" name="listSODtls[ZX].ScrapDesc" maxlength="50" autocomplete="off"></td>
+													<td>
+														<input type="text" class="form-control form-control-sm d-none" id="listSODtls[ZX]_Uom" name="listSODtls[ZX].Uom" autocomplete="off">
+
+														<select class="form-control form-control-sm ddlUOM" onchange="fnChange_Select(this,'form#formSave_SO #table_SODtls tbody tr#tr_ZX input[name*=\'Uom\']')">
+															@if (Model != null && Model.SelectListItems != null)
+															{
+																foreach (var item in Model.SelectListItems.Where(x => x.Group == "U"))
+																{
+																	<option value="@item.Value">@item.Text</option>
+																}
+															}
+														</select>
+													</td>
+													<td><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listSODtls[ZX].SoQty" maxlength="50" autocomplete="off"></td>
+													<td><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listSODtls[ZX].LoadingQty" maxlength="50" autocomplete="off"></td>
+													<td>
+														<input type="text" class="form-control form-control-sm d-none" id="listSODtls[ZX]_LoadingUom" name="listSODtls[ZX].LoadingUom" autocomplete="off">
+
+														<select class="form-control form-control-sm ddlUOM" onchange="fnChange_Select(this,'form#formSave_SO #table_SODtls tbody tr#tr_ZX input[name*=\'LoadingUom\']')">
+															@if (Model != null && Model.SelectListItems != null)
+															{
+																foreach (var item in Model.SelectListItems.Where(x => x.Group == "U"))
+																{
+																	<option value="@item.Value">@item.Text</option>
+																}
+															}
+														</select>
+													</td>
+													<td>
+														<div class="btn-group">
+															<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+																	onclick="fnSoDelete_Row('ZX');">
+																<i class="far fa-trash-alt"></i>
+															</button>
+														</div>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+
+									<div class="clearfix"></div>
+								</div>
+
+								<div class="form-group row">
+									<div class="col-12 card-footer text-center">
+										<button type="button" class="btn btn-success" onclick="fnSubmitForm('formSave_SO');">Save</button>
+										<button type="button" class="btn btn-danger" onclick="fnClose_Modal()">Cancel</button>
+									</div>
+								</div>
+
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+		<hr />
+	</form>
+</div>

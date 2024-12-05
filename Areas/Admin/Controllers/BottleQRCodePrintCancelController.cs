@@ -1,0 +1,147 @@
+﻿
+using Dispatch_System.Controllers;
+using Microsoft.AspNetCore.Mvc;
+using Oracle.ManagedDataAccess.Client;
+using System.Data;
+using System.Data.SqlClient;
+
+namespace Dispatch_System.Areas.Admin.Controllers
+{
+	[Area("Admin")]
+	public class BottleQRCodePrintCancelController : BaseController<ResponseModel<QRCodeGeneration>>
+	{
+		public IActionResult Index()
+		{
+			var list = new List<SelectListItem_Custom>();
+			CommonViewModel.Obj = new QRCodeGeneration();
+			list.Insert(0, new SelectListItem_Custom("", "-- Select --"));
+
+			try
+			{
+				List<OracleParameter> oParams = new List<OracleParameter>();
+
+				oParams.Add(new OracleParameter("P_ID", OracleDbType.Int64) { Value = 0 });
+				oParams.Add(new OracleParameter("P_ISACTIVE", OracleDbType.Varchar2) { Value = "Y" });
+				oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+				oParams.Add(new OracleParameter("P_USER_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
+				oParams.Add(new OracleParameter("P_ROLE_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.ROLE_ID) });
+				oParams.Add(new OracleParameter("P_MENU_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.MENU_ID) });
+
+				var dt = DataContext.ExecuteStoredProcedure_DataTable("PC_PRODUCT_GET", oParams, true);
+
+				if (dt != null && dt.Rows.Count > 0)
+					foreach (DataRow dr in dt.Rows)
+						list.Add(new SelectListItem_Custom(dr["ID"] != DBNull.Value ? Convert.ToString(dr["ID"]) : "", dr["PRD_DESC"] != DBNull.Value ? Convert.ToString(dr["PRD_DESC"]) : "", "P"));
+
+				oParams = new List<OracleParameter>();
+
+				oParams.Add(new OracleParameter("P_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+				oParams.Add(new OracleParameter("P_ISACTIVE", OracleDbType.Varchar2) { Value = "Y" });
+				oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+				oParams.Add(new OracleParameter("P_USER_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
+				oParams.Add(new OracleParameter("P_ROLE_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.ROLE_ID) });
+				oParams.Add(new OracleParameter("P_MENU_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.MENU_ID) });
+
+				dt = new DataTable();
+				dt = DataContext.ExecuteStoredProcedure_DataTable("PC_PLANT_GET", oParams, true);
+				if (dt != null && dt.Rows.Count > 0)
+				{
+					CommonViewModel.Obj.PlantId = Common.Get_Session_Int(SessionKey.PLANT_ID);
+					CommonViewModel.Obj.PlantName = dt.Rows[0]["NAME"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["NAME"]) : "";
+				}
+			}
+			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+			CommonViewModel.SelectListItems = list;
+
+			return View(CommonViewModel);
+		}
+
+		public ActionResult GetData_QrCodeViewSup(JqueryDatatableParam param)
+		{
+			string RequestNo = HttpContext.Request.Query["RequestNo"];
+			string PoNo = HttpContext.Request.Query["PoNo"];
+			//string VendorCode = HttpContext.Request.Query["VendorCode"];
+			//string VendorSiteName = HttpContext.Request.Query["VendorSiteName"];
+			string ProductId = HttpContext.Request.Query["ProductId"];
+			string FromDate = HttpContext.Request.Query["FromDate"];
+			string ToDate = HttpContext.Request.Query["ToDate"];
+			//string ConsignmentNo = HttpContext.Request.Query["ConsignmentNo"];
+			string Type = HttpContext.Request.Query["Type"];
+
+			List<QRCodeGeneration> result = new List<QRCodeGeneration>();
+
+			List<OracleParameter> oParams = new List<OracleParameter>();
+
+			oParams.Add(new OracleParameter("P_ID", OracleDbType.Int64) { Value = 0 });
+			oParams.Add(new OracleParameter("P_REQUEST_NO", OracleDbType.Varchar2) { Value = "" });
+			//oParams.Add(new OracleParameter("P_REQUEST_PLANT", OracleDbType.Int64) { Value = -1 });
+			oParams.Add(new OracleParameter("P_PO_NO", OracleDbType.Varchar2) { Value = "" });
+			oParams.Add(new OracleParameter("P_VENDOR_CODE", OracleDbType.Varchar2) { Value = "" });
+			oParams.Add(new OracleParameter("P_PROD_ID", OracleDbType.Int64) { Value = ProductId == "" ? null : Convert.ToInt32(ProductId) });
+			oParams.Add(new OracleParameter("P_FROM_DATE", OracleDbType.Varchar2) { Value = FromDate });
+			oParams.Add(new OracleParameter("P_TO_DATE", OracleDbType.Varchar2) { Value = ToDate });
+			oParams.Add(new OracleParameter("P_CONSIGNMENT_NO", OracleDbType.Varchar2) { Value = 0 });
+			oParams.Add(new OracleParameter("P_TYPE", OracleDbType.Varchar2) { Value = Type });
+			oParams.Add(new OracleParameter("P_WITH_DTLS", OracleDbType.Varchar2) { Value = "" });
+			oParams.Add(new OracleParameter("P_SEARCH_TERM", OracleDbType.Varchar2) { Value = param.sSearch ?? "" });
+			oParams.Add(new OracleParameter("P_DISPLAY_LENGTH", OracleDbType.Int64) { Value = param.iDisplayLength });
+			oParams.Add(new OracleParameter("P_DISPLAY_START", OracleDbType.Int64) { Value = param.iDisplayStart });
+			oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+			oParams.Add(new OracleParameter("P_USER_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
+			oParams.Add(new OracleParameter("P_ROLE_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.ROLE_ID) });
+			oParams.Add(new OracleParameter("P_MENU_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.MENU_ID) });
+			oParams.Add(new OracleParameter("P_RESULT", OracleDbType.RefCursor) { Direction = ParameterDirection.Output });
+			oParams.Add(new OracleParameter("P_DTLS", OracleDbType.RefCursor) { Direction = ParameterDirection.Output });
+
+			var ds = DataContext.ExecuteStoredProcedure_DataSet("PC_QR_CODE_GET", oParams);
+
+			if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+			{
+				foreach (DataRow dr in ds.Tables[0].Rows)
+					result.Add(new QRCodeGeneration()
+					{
+						SrNo = dr["RNUM"] != DBNull.Value ? Convert.ToInt64(dr["RNUM"]) : 0,
+						Id = dr["ID"] != DBNull.Value ? Convert.ToInt64(dr["ID"]) : 0,
+						PlantId = dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0,
+						PlantName = (dr["PLANT_CODE"] != DBNull.Value ? Convert.ToString(dr["PLANT_CODE"]) + " - " : "") + (dr["PLANT_NAME"] != DBNull.Value ? Convert.ToString(dr["PLANT_NAME"]) : ""),
+						VendorId = dr["VENDOR_ID"] != DBNull.Value ? Convert.ToInt64(dr["VENDOR_ID"]) : 0,
+						VendorCode = dr["VENDOR_CODE"] != DBNull.Value ? Convert.ToInt64(dr["VENDOR_CODE"]) : 0,
+						VendorName = dr["VENDOR_NAME"] != DBNull.Value ? Convert.ToString(dr["VENDOR_NAME"]) : "",
+						VendorSiteName = dr["VENDOR_SITE"] != DBNull.Value ? Convert.ToString(dr["VENDOR_SITE"]) : "",
+						VPO_Id = dr["VPO_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["VPO_SYS_ID"]) : 0,
+						PO_Number = dr["PO_NO"] != DBNull.Value ? Convert.ToString(dr["PO_NO"]) : null,
+						RequestNo = dr["REQUEST_NO"] != DBNull.Value ? Convert.ToString(dr["REQUEST_NO"]) : null,
+						RequestDate_Text = dr["REQUEST_DATE_TEXT"] != DBNull.Value ? Convert.ToString(dr["REQUEST_DATE_TEXT"]) : "",
+						RequestStatus = dr["REQUEST_STATUS_TEXT"] != DBNull.Value ? Convert.ToString(dr["REQUEST_STATUS_TEXT"]) : "",
+						LineItemDesc = dr["LINE_ITEM_DESC"] != DBNull.Value ? Convert.ToString(dr["LINE_ITEM_DESC"]) : "",
+						SkuDesc = dr["SKU_DESC"] != DBNull.Value ? Convert.ToString(dr["SKU_DESC"]) : "",
+						TotalQty = dr["TOTAL_QTY"] != DBNull.Value ? Convert.ToInt64(dr["TOTAL_QTY"]) : 0,
+						RequestQty = dr["REQUEST_QTY"] != DBNull.Value ? Convert.ToInt64(dr["REQUEST_QTY"]) : 0,
+						RemainQty = dr["REMAIN_QTY"] != DBNull.Value ? Convert.ToInt64(dr["REMAIN_QTY"]) : 0,
+						FileEmailSend = dr["FILE_EMAIL_SEND"] != DBNull.Value ? Convert.ToString(dr["FILE_EMAIL_SEND"]) : "",
+						IsFileEmail = dr["IS_FILE_EMAIL"] != DBNull.Value ? Convert.ToInt32(dr["IS_FILE_EMAIL"]) > 0 : false,
+						IsLock = dr["IS_LOCK"] != DBNull.Value ? Convert.ToInt32(dr["IS_LOCK"]) > 0 : false,
+						IsPrintFinish = dr["IS_PRINT_FINISHED"] != DBNull.Value ? Convert.ToInt32(dr["IS_PRINT_FINISHED"]) > 0 : false,
+						Nooffiles = dr["NO_OF_FILES"] != DBNull.Value ? Convert.ToInt64(dr["NO_OF_FILES"]) : 0,
+						ConsignmentNo = dr["CONSIGNMENT_NO"] != DBNull.Value ? Convert.ToString(dr["CONSIGNMENT_NO"]) : null,
+						ConsignmentDate_Text = dr["CONSIGNMENT_DATE_TEXT"] != DBNull.Value ? Convert.ToString(dr["CONSIGNMENT_DATE_TEXT"]) : null,
+						ExpectedDate_Text = dr["EXPECTED_DATE_TEXT"] != DBNull.Value ? Convert.ToString(dr["EXPECTED_DATE_TEXT"]) : null,
+						ModeofDispatch = dr["MODE_OF_DISPATCH"] != DBNull.Value ? Convert.ToString(dr["MODE_OF_DISPATCH"]) : null,
+						EstimateDate_Text = dr["EXPECTED_DATE_TEXT"] != DBNull.Value ? Convert.ToString(dr["EXPECTED_DATE_TEXT"]) : null,
+						Shipmentdetail = dr["SHIPMENT_DETAILS"] != DBNull.Value ? Convert.ToString(dr["SHIPMENT_DETAILS"]) : null,
+						PrintNotes = dr["PRINT_NOTES"] != DBNull.Value ? Convert.ToString(dr["PRINT_NOTES"]) : null
+					});
+			}
+
+			return Json(new
+			{
+				param.sEcho,
+				iTotalRecords = result.Count(),
+				iTotalDisplayRecords = ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0 ? Convert.ToInt32(ds.Tables[0].Rows[0]["COUNT_ROW"]?.ToString()) : 0,
+				aaData = result
+			});
+
+		}
+	}
+}

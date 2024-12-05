@@ -1,0 +1,95 @@
+﻿@using System.Globalization;
+@model (string SearchTerm, List<KnowYourBatch> List, bool isPrint)
+
+@{
+    ViewData["Title"] = "Know Your Bottle";
+}
+
+@if (Model.isPrint == true)
+{
+    Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+@if (Model.isPrint == true)
+{
+    <div class="row col-12 mb-3">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12" style="text-align:center;">
+                    <h2 class="font-weight-bold">@(Model.List != null && Model.List.Count() > 0 && !string.IsNullOrEmpty(Model.List[0].PlantName) ? Model.List[0].PlantName : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+                </div>
+                <br />
+                <div class="col-sm-12" style="text-align:center;">
+                    <h2 class="font-weight-bold" id="lableReportTitle">Bottle QR Code Details : <b>@Model.SearchTerm</b></h2>
+                </div>
+                <br />
+                <div class="col-sm-12" style="text-align:right;">
+                    <h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="form-group row mb-3">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12" style="text-align:center;">
+                    <h2 class="font-weight-bold" id="lableReportTitle">Bottle QR Code Details : <b>@Model.SearchTerm</b></h2>
+                </div>
+                <br />
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_KnowYourBottle","Reports")?searchTerm=@(Model.SearchTerm)&isPrint=true')">Print</button>
+        <button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('BottleQRCode')">Export</button>
+    </div>
+}
+
+<div class="row col-12 mt-5">
+
+    <table id="table_Common_" class="table table-bordered w-100 border-0">
+
+        <thead>
+            <tr class="border-0">
+                <th colspan="10" class="border-0">Detail of Bottle QR Code : @Model.SearchTerm</th>
+            </tr>
+            <tr class="border-0"><td colspan="10" class="border-0">&nbsp;</td></tr>
+            <tr>
+                <th>Batch No.</th>
+                <th>Manufacturing Date</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
+                <th>Product</th>
+                <th>Shipper QR Code</th>
+                <th>MDA No.</th>
+                <th>Dispatch Date</th>
+                <th>Party Name</th>
+                <th>Destination</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.List.OrderByDescending(x => x.Loaded_Shipper).ThenBy(x => x.Mda_No).ToList())
+            {
+                <tr>
+                    <td>@item.Batch_No</td>
+                    <td>@item.Mfg_Date</td>
+                    <td>@item.Exp_Date</td>
+                    <td>@item.Status</td>
+                    <td>@item.Product</td>
+                    <td>@item.Shipper_QrCode</td>
+                    <td>@item.Mda_No</td>
+                    <td>@item.Mda_Date</td>
+                    <td>@item.Party_Name</td>
+                    <td>@item.Desp_Place</td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+
+
+</div>

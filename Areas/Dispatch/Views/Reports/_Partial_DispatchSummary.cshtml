@@ -1,0 +1,198 @@
+﻿@using System.Globalization;
+@model (string Report_Type, string PageTitle, string PlantName, dynamic objFilter, List<MDA_Status> List, bool isPrint)
+
+@if (Model.Report_Type == "DS")
+{
+	ViewData["Title"] = "MDA Dispatch Summary Report";
+}
+else
+{
+	ViewData["Title"] = "MDA Dispatch Summary Count Report";
+}
+
+@if (Model.isPrint == true)
+{
+	Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+@if (Model.isPrint == true)
+{
+	<div class="row col-12 mb-3">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold">@(!string.IsNullOrEmpty(Model.PlantName) ? Model.PlantName : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+				</div>
+				<br />
+				<div class="col-sm-12" style="text-align:center;">
+					@if (Model.Report_Type == "DS")
+					{
+						<h3 class="font-weight-bold">MDA Dispatch Summary Report</h3>
+					}
+					else
+					{
+						<h3 class="font-weight-bold">MDA Dispatch Count Summary Report</h3>
+					}
+				</div>
+				@if (!string.IsNullOrEmpty(Model.PageTitle))
+				{
+					<br />
+					<div class="col-sm-12" style="text-align:center;">
+						<h4>@Model.PageTitle</h4>
+					</div>
+				}
+				<br />
+				<div class="col-sm-12" style="text-align:right;">
+					<h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+else
+{
+	<div class="form-group row mb-3">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-12" style="text-align:center;">
+					@if (Model.Report_Type == "DS")
+					{
+						<h2 class="font-weight-bold" id="lableReportTitle"><b>MDA Dispatch Summary Report</b></h2>
+					}
+					else
+					{
+						<h2 class="font-weight-bold" id="lableReportTitle"><b>MDA Dispatch Count Summary Report</b></h2>
+					}
+				</div>
+				<br />
+			</div>
+		</div>
+	</div>
+
+	<div class="form-group row mt-2">
+		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=@(Model.Report_Type)&MDA_No=@(Model.objFilter.MDA_No)&Truck_No=@(Model.objFilter.Truck_No)&PartyName=@(Model.objFilter.PartyName)&FromDate=@(Model.objFilter.FromDate)&ToDate=@(Model.objFilter.ToDate)&Destination=@(Model.objFilter.Destination)&isPrint=true')">Print</button>
+		<button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('@Model.Report_Type')">Export</button>
+	</div>
+}
+
+<div class="row col-12 mt-3">
+	<table id="table_Common" class="table table-bordered table-striped w-100">
+		@if (Model.Report_Type == "DS")
+		{
+			<thead>
+				<tr>
+					<th>MDA No.</th>
+					<th>Destination</th>
+					@*<th>Transaction Type</th>*@
+					<th>Product Code</th>
+					<th>Product Name</th>
+					<th>Dispatch DateTime</th>
+					<th>Dispatch From Type</th>
+					<th>Dispatch From Code & Name</th>
+					<th>Dispatch To Type</th>
+					<th>Dispatch To Code & Name</th>
+					@* <th>Dispatched Qty (KL)</th> *@
+					<th>Dispatched Qty (Shipper)</th>
+					<th>Dispatched Qty (Bottles)</th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (Model.List != null && Model.List.Count() > 0)
+				{
+					@foreach (var item in Model.List.OrderBy(x => x.MDANo).ToList())
+					{
+						<tr>
+							<td>@item.MDANo</td>
+							<td>@item.Destination</td>
+							@*<td>@item.TransactionType</td>*@
+							<td>@item.ArticleCode</td>
+							<td>@item.ArticleName</td>
+							<td>@item.DispatchDateTime</td>
+							<td>@item.DispatchFromType</td>
+							<td>@item.DispatchFromCodeAndName</td>
+							<td>@item.DispatchToType</td>
+							<td>@item.DispatchToCodeAndName</td>
+							@* <td>@item.DispatchedQtyKL</td> *@
+							<td>@item.DispatchedQtyShipper</td>
+							<td>@item.DispatchedQtyUnits</td>
+						</tr>
+					}
+				}
+			</tbody>
+		}
+		else if (Model.Report_Type == "DS_MDA")
+		{
+			<thead>
+				<tr>
+					<th>MDA No.</th>
+					<th>MDA Date</th>
+					<th>BatchNo(Shipper Qty)</th>
+					<th>MFG Date</th>
+					<th>Truck No</th>
+					<th>Total Shipper Qty</th>
+					<th>Bottle Qty</th>
+					<th>Loading Bay</th>
+					<th>Product</th>
+					<th>Customer Name</th>
+					<th>Destination</th>
+					@* <th>Address</th> *@
+				</tr>
+			</thead>
+			<tbody>
+				@if (Model.List != null && Model.List.Count() > 0)
+				{
+					@foreach (var item in Model.List.OrderBy(x => x.MDANo).ToList())
+					{
+						<tr>
+							<td>@item.MDANo</td>
+							<td>@item.MDAReceiveDate</td>
+							<td>@item.BatchNo</td>
+							<td>@item.ManufacturingDate</td>
+							<td>@item.TruckNo</td>
+							<td>@item.MDAQty</td>
+							<td>@item.DispatchedQtyKL</td>
+							<td>@item.LoadingBayPrintedTo</td>
+							<td>@item.ArticleName</td>
+							<td>@item.CustomerName</td>
+							<td>@item.Destination</td>
+							@* <td>@item.Reason</td> *@
+						</tr>
+					}
+				}
+			</tbody>
+		}
+		else if (Model.Report_Type == "DS_COUNT")
+		{
+			<thead>
+				<tr>
+					<th>MDA No.</th>
+					<th>MDA Date</th>
+					<th>Truck No</th>
+					<th>MDA Qty (Shippers)</th>
+					<th>MDA Qty (Bottle)</th>
+					<th>Product Code</th>
+					<th>Product Name</th>
+					<th>Destination</th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (Model.List != null && Model.List.Count() > 0)
+				{
+					@foreach (var item in Model.List.OrderBy(x => x.MDANo).ToList())
+					{
+						<tr>
+							<td>@item.MDANo</td>
+							<td>@item.MDAReceiveDate</td>
+							<td>@item.TruckNo</td>
+							<td>@item.DispatchedQtyShipper</td>
+							<td>@item.DispatchedQtyUnits</td>
+							<td>@item.ArticleCode</td>
+							<td>@item.ArticleName</td>
+							<td>@item.Destination</td>
+						</tr>
+					}
+				}
+			</tbody>
+		}
+	</table>
+</div>

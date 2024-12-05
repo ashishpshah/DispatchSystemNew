@@ -1,0 +1,308 @@
+﻿@model ResponseModel<VendorLoginViewModel>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Log in | Dispatch System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+
+    <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css">
+
+    <link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
+    <link href="~/plugins/sweetalert2/sweetalert2.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/dist/css/adminlte.min.css">
+
+    <style>
+        body.swal2-height-auto {
+            height: 100vh !important;
+        }
+
+        .login_page {
+            background: url('http://iffco-public-assets.s3.ap-south-1.amazonaws.com/s3fs-public/2020-12/Production%20Unit%20Main%20Image%20%281%29.jpg') center top repeat;
+            background-size: cover;
+            height: 100%;
+        }
+
+        .login_area {
+            background: #EEF0E5;
+            min-height: 400px;
+            max-width: 550px;
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            border-top: 1px solid #007c39;
+            border-radius: 6px;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            right: 0;
+            overflow: hidden;
+            padding: 50px;
+        }
+
+        .login_header {
+            /*padding: 30px 0;*/
+            background-color: transparent;
+            text-align: center;
+            padding: 10px 10px 0 10px;
+        }
+
+            .login_header img {
+                width: 75%;
+                display: block;
+                margin: 0 auto;
+            }
+
+        .login_area_under {
+            padding: 30px 35px 40px 35px;
+        }
+
+            .login_area_under .form-control, .login_area_under .form-control:focus {
+                /*border: none;*/
+                /*border-bottom: 1px solid #414850;*/
+                border: 1px solid #414850;
+                border-radius: 0;
+                /*padding: 12px 0;*/
+                /*height: auto;*/
+                box-shadow: none;
+            }
+
+            .login_area_under .form-group {
+                margin-bottom: 22px;
+            }
+
+            .login_area_under .btn_bottom .btn_login {
+                background: #414850;
+                border-radius: 3px;
+                padding: 12px 0px;
+                width: 100%;
+                border: none;
+                font-size: 20px;
+                color: #fff;
+            }
+
+                .login_area_under .btn_bottom .btn_login.green {
+                    background: #007c39;
+                }
+
+            .login_area_under .btn_bottom .col-6:first-child {
+                padding-right: 5px;
+            }
+
+            .login_area_under .btn_bottom .col-6:last-child {
+                padding-left: 5px;
+            }
+
+            .login_area_under .change_password a {
+                color: #414850;
+                text-decoration: none;
+            }
+
+                .login_area_under .change_password a:hover {
+                    color: #007c39;
+                }
+
+            .login_area_under ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+                color: #414850;
+            }
+
+            .login_area_under ::-moz-placeholder { /* Firefox 19+ */
+                color: #414850;
+            }
+
+            .login_area_under :-ms-input-placeholder { /* IE 10+ */
+                color: #414850;
+            }
+
+            .login_area_under :-moz-placeholder { /* Firefox 18- */
+                color: #414850;
+            }
+
+        .preloader_new {
+            display: -ms-flexbox;
+            display: flex;
+            /*background-color: #f4f6f9;*/
+            /*height: 100vh;*/
+            width: 100%;
+            transition: height 200ms linear;
+            position: fixed;
+            left: 0;
+            top: 50%;
+            z-index: 9999999;
+        }
+
+        .animation_loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #29a349;
+            border-bottom: 16px solid #29a349;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+        }
+
+        @@-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body class="login_page">
+    <div class="preloader_new flex-column justify-content-center align-items-center d-none">
+        @*<img class="animation__wobble" src="~/images/anticicon.png" alt="Logo" height="60" width="60">*@
+        @*<img class="animation__shake" src="https://adminlte.io/themes/v3/dist/img/AdminLTELogo.png" alt="AdminLTELogo" height="60" width="60">*@
+        <div class="animation_loader"></div>
+    </div>
+    <form id="formForgotPass" asp-controller="Home" asp-action="VendorSendEmail" method="post" class="form-horizontal" enctype="multipart/form-data" data_form_isvalidate>
+        <div class="login_area">
+            <div class="login_header">
+                <img src="https://appskalol.iffco.coop/TRS/images/logo.jpg" style="border:solid; border-color:white" alt="" width="400">
+            </div>
+            <div class="login_area_under">
+                <h3 style="text-align:center;" class="pb-4"><strong>Forgot Your Password ? </strong></h3>
+                <br>
+                <div class="form-group row">
+                    <label for="VendorCode" class="col-sm-4 col-form-label">Vendor Code</label>
+                    <div class="col-sm-8">
+                        <input type="text" id="VendorCode" name="VendorCode" class="form-control" placeholder="Vendor Code" data-required data-msg="The VendorCode field is required." autocomplete="off" value="" onblur="getVendorSite()">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="VendorSite" class="col-sm-4 col-form-label">Vendor Site</label>
+                    <div class="col-sm-8">
+                        @*<input type="text" id="VendorSite" name="VendorSite" class="form-control" placeholder="Vendor Site" data-required data-msg="The Vendor Site field is required." autocomplete="off" value="">*@
+                        <select id="SiteId" name="SiteId" class="form-control form-control-sm select2" style="width: 100%;" data-required data-msg="The Vendor Site field is required.">
+                            @if (Model != null && Model.SelectListItems != null)
+                            {
+                                foreach (var item in Model.SelectListItems.Where(x => x.Group == "S"))
+                                {
+                                    if (item.Value == Convert.ToString(@Model.Obj.SiteId))
+                                    {
+                                        <option value="@item.Value" selected>@item.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.Value">@item.Text</option>
+                                    }
+
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row btn_bottom">
+                    <div class="col-6 offset-sm-3">
+                        <button type="button" class="btn_login green" onclick="fnSubmitForm('formForgotPass')">Reset Your Password</button>
+                        <br />
+                        <div class="row">
+                        </div>
+                        <br />
+                        <div class="row btn_bottom">
+                            <div class="col-6 offset-sm-3">
+                                <button type="button" class="btn_login green" onclick="window.location='@Url.Action("VendorLogin", "Home")'">Back</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script src="~/plugins/jquery/jquery.min.js"></script>
+    <script src="~/plugins/bootstrap/js/bootstrap.min.js"></script>
+
+    <script src="~/plugins/select2/js/select2.min.js"></script>
+    <script src="~/plugins/moment/moment.min.js"></script>
+
+    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+
+    <script src="~/common.js"></script>
+    @* <script type="text/javascript">
+
+    function validateform() {
+
+    var UserName = $("#UserName").val();
+    var Password = $("#Password").val();
+
+    if (UserName == "" || UserName == null || UserName == "0") {
+    $("#UserName").focus();
+    alert("Please enter user name");
+    return false;
+    }
+    else if (Password == "" || Password == null || Password == "0") {
+    $("#Password").focus();
+    alert("Please enter password");
+    return false;
+    }
+    else {
+    fnSubmitForm('formLogin');
+    return true;
+    }
+    }
+    </script> *@
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            localStorage.clear();
+
+            $(document).keyup(function (event) {
+                if (event.which === 13) {
+                    event.preventDefault();
+                    fnSubmitForm('formLogin');
+                }
+            });
+        });
+
+
+        function getVendorSite() {
+
+            $("#SiteId").empty();
+
+            var vendor_code = $('#VendorCode').val();
+
+            if (typeof vendor_code != 'undefined' && vendor_code != null && vendor_code.length > 0) {
+
+                $.ajax({
+                    type: 'POST',
+                    url: "@Url.Action("GetVendorSitelist","Home")",
+                    dataType: 'json',
+                    data: { Vendor_Id: $('#VendorCode').val() }
+                }).done(function (state) {
+                    $.each(state, function (i, state) { $("#SiteId").append('<option value="' + state.value + '">' + state.text + '</option>'); });
+                }).fail(function (xhr) {
+                    console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+                });
+            }
+
+            return false;
+        }
+    </script>
+
+</body>
+</html>
+

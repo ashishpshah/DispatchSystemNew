@@ -1,0 +1,428 @@
+﻿@model ResponseModel<Vendor>
+
+@{
+	ViewData["Title"] = "Vendor";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">Merge Vendor details from ERP</h1>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section class="content">
+	<div class="container-fluid">
+		<div class="row no-gutters " style="margin: 5px !important;">
+			<div class="col-12">
+				<form id="formSave" asp-area="Admin" asp-controller="VendorERP" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div class="row no-gutters form-group">
+
+						<label for="VendorCode_Temp" class="col-sm-1 col-form-label" style="align-content:start">Vendor Temp Code</label>
+						<div class="col-sm-2">
+							<div class="input-group input-group-sm">
+								<input type="text" class="form-control form-control-sm isNumberKey" id="VendorCode_Temp" name="VendorCode_Temp">
+								@*<span class="input-group-append">
+								<button type="button" class="btn btn-info btn-flat btn-sm" onclick="fnLoad_Vendor_Dtls(this)">View</button>
+								</span>*@
+							</div>
+						</div>
+						<div class="col-sm-1"> &nbsp;</div>
+						<label for="VendorCode" class="col-sm-1 col-form-label" style="align-content:start">ERP Vendor Code</label>
+						<div class="col-sm-2">
+							<div class="input-group input-group-sm">
+								<input type="text" class="form-control form-control-sm isNumberKey" id="VendorCode" name="VendorCode">
+								@*<span class="input-group-append">
+								<button type="button" class="btn btn-info btn-flat btn-sm" onclick="fnLoad_Vendor_Dtls_ERP(this)">View from ERP</button>
+								</span>*@
+							</div>
+						</div>
+						<div class="col-sm-2 pl-5">
+							<button type="button" class="btn btn-info btn-flat btn-sm ml-5" onclick="fnLoad_Vendor_Data(this)">View Data</button>
+						</div>
+
+					</div>
+					<div class="row no-gutters" id="divformSave">
+						<div class="col-12" id="divformSave_Vendor_DB"></div>
+						<div class="col-6 d-none" id="divformSave_Vendor_ERP"></div>
+						<div class="col-12 text-center d-none" id="btnformSave_Vendor">
+							<button type="submit" class="btn btn-success btnSubmit">Merge</button>
+							<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '.table_Common_SrNo');">Cancel</button>
+						</div>
+					</div>
+					<div class="clearfix"></div>
+					<hr />
+				</form>
+			</div>
+		</div>
+	</div>
+</section>
+
+@section Scripts{
+
+	<script type="text/javascript">
+		var table = {};
+		var $response = {};
+
+		$(function () {
+
+		});
+
+		function fnChange_Site($this) {
+
+			var selectedId = $('#tbl_Vendor_DB input[type="radio"]:checked').attr('data-id');
+			var selectedSiteCode = $('#tbl_Vendor_DB input[type="radio"]:checked').attr('data-sitecode');
+
+			$('input[name="Id"]').val(selectedId);
+			$('input[name="Id"]').trigger('change');
+
+			$('input[name="SiteCode"]').val(selectedSiteCode);
+			$('input[name="SiteCode"]').trigger('change');
+
+			
+
+			if ($($this).attr('id').indexOf("ERP") > -1) {
+
+				$('input[name="VendorCode"]').val($('input[name="VendorCode_ERP"]').val());
+				$('input[name="VendorCode"]').trigger('change');
+
+				$('input[name="Organization_Name"]').val($('input[name="Organization_Name_ERP"]').val());
+				$('input[name="Organization_Name"]').trigger('change');
+
+				$('input[name="First_Name"]').val($('input[name="First_Name_ERP"]').val());
+				$('input[name="First_Name"]').trigger('change');
+
+				$('input[name="Middle_Name"]').val($('input[name="Middle_Name_ERP"]').val());
+				$('input[name="Middle_Name"]').trigger('change');
+
+				$('input[name="Last_Name"]').val($('input[name="Last_Name_ERP"]').val());
+				$('input[name="Last_Name"]').trigger('change');
+
+				$('input[name="MobileNo"]').val($('input[name="MobileNo_ERP"]').val());
+				$('input[name="MobileNo"]').trigger('change');
+
+				$('input[name="Email_Id"]').val($('input[name="Email_Id_ERP"]').val());
+				$('input[name="Email_Id"]').trigger('change');
+
+				$('input[name="SiteName"]').val($('#tbl_Vendor_ERP input[type="radio"]:checked').closest('tr')[0].cells[1].innerText);
+				$('input[name="SiteName"]').trigger('change');
+				$('input[name="Alt_Mobile_No"]').val($('#tbl_Vendor_ERP input[type="radio"]:checked').closest('tr')[0].cells[7].innerText);
+				$('input[name="Alt_Mobile_No"]').trigger('change');
+				$('input[name="Alt_Email_Id"]').val($('#tbl_Vendor_ERP input[type="radio"]:checked').closest('tr')[0].cells[8].innerText);
+				$('input[name="Alt_Email_Id"]').trigger('change');
+				$('input[name="Full_Address"]').val($('#tbl_Vendor_ERP input[type="radio"]:checked').closest('tr')[0].cells[6].innerText);
+				$('input[name="Full_Address"]').trigger('change');
+
+				$('input[name="City"]').val($('#tbl_Vendor_ERP input[type="radio"]:checked').closest('tr')[0].cells[3].innerText);
+				$('input[name="City"]').trigger('change');
+				$('input[name="State_Name"]').val($('#tbl_Vendor_ERP input[type="radio"]:checked').closest('tr')[0].cells[4].innerText);
+				$('input[name="State_Name"]').trigger('change');
+				$('input[name="Country_Name"]').val($('#tbl_Vendor_ERP input[type="radio"]:checked').closest('tr')[0].cells[5].innerText);
+				$('input[name="Country_Name"]').trigger('change');
+			}
+		}
+
+		function fnSubmitForm_Success(response, $id) {
+			$response = response;
+			
+			//fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","VendorERP", new {  area = "Admin" })?vendor_code=' + response.data1)
+			fnLoad_Vendor_Data(null);
+		}
+
+		function fnLoad_Vendor_Data($this) {
+			$('#divformSave_Vendor_DB').html('');
+			$('#divformSave_Vendor_ERP').html('');
+
+			var VendorCode_Temp = $('#formSave').closest('div.row').find('input#VendorCode_Temp').val();
+
+			if (typeof VendorCode_Temp != 'undefined' && VendorCode_Temp != null && VendorCode_Temp != '' && VendorCode_Temp.trim() != '0' && VendorCode_Temp.trim().length > 0)
+				fnLoadParialView('divformSave_Vendor_DB', '@Url.Action("Partial_AddEditForm","VendorERP", new {  area = "Admin" })?vendor_code=' + VendorCode_Temp)
+			else {
+				CommonAlert_Error("Please enter Vendor Code Temp");
+				return false;
+			}
+
+			var VendorCode = $('#formSave').closest('div.row').find('input#VendorCode').val();
+
+			if (typeof VendorCode != 'undefined' && VendorCode != null && VendorCode != '' && VendorCode.trim() != '0' && VendorCode.trim().length > 0)
+				fnLoadParialView('divformSave_Vendor_ERP', '@Url.Action("Partial_AddEditForm_ERP","VendorERP", new {  area = "Admin" })?vendor_code=' + VendorCode)
+			else {
+				CommonAlert_Error("Please enter ERP Vendor Code ");
+				return false;
+			}
+		}
+
+		function fnLoad_Vendor_Dtls($this) {
+			var VendorCode_Temp = $($this).closest('div.row').find('input#VendorCode_Temp').val();
+
+			if (typeof VendorCode_Temp != 'undefined' && VendorCode_Temp != null && VendorCode_Temp != '' && VendorCode_Temp.trim() != '0' && VendorCode_Temp.trim().length > 0)
+				fnLoadParialView('divformSave_Vendor_DB', '@Url.Action("Partial_AddEditForm","VendorERP", new {  area = "Admin" })?vendor_code=' + VendorCode_Temp)
+			else {
+				CommonAlert_Error("Please enter Vendor Code Temp");
+				return false;
+			}
+
+			return false;
+		}
+
+		function fnLoad_Vendor_Dtls_ERP($this) {
+
+			var VendorCode = $($this).closest('div.row').find('input#VendorCode').val();
+
+			if (typeof VendorCode != 'undefined' && VendorCode != null && VendorCode != '' && VendorCode.trim() != '0' && VendorCode.trim().length > 0)
+				fnLoadParialView('divformSave_Vendor_ERP', '@Url.Action("Partial_AddEditForm_ERP","VendorERP", new {  area = "Admin" })?vendor_code=' + VendorCode)
+			else {
+				CommonAlert_Error("Please enter ERP Vendor Code ");
+				return false;
+			}
+
+			return false;
+		}
+
+		function fnParialView_Loaded_Success($id, $IsAlert) {
+
+			if (typeof $response != 'undefined' && $response != null && $response != '' && typeof $id != 'undefined' && $id != null && $id.indexOf('divformSave_Vendor') > -1) {
+
+				$('#divformSave_Vendor_DB').removeClass('col-12');
+				$('#divformSave_Vendor_ERP').removeClass('col-12');
+				$('#divformSave_Vendor_DB').removeClass('col-6');
+				$('#divformSave_Vendor_ERP').removeClass('col-6');
+				if (!$('#divformSave_Vendor_DB').hasClass('d-none'))
+					$('#divformSave_Vendor_DB').addClass('d-none');
+				if (!$('#divformSave_Vendor_ERP').hasClass('d-none'))
+					$('#divformSave_Vendor_ERP').addClass('d-none');
+
+				if (!$('#btnformSave_Vendor').hasClass('d-none'))
+					$('#btnformSave_Vendor').addClass('d-none');
+
+				//if ($id.indexOf('ERP') > -1 || $('#divformSave_Vendor_ERP').innerHtml.length <= 0) {
+				if ($('#divformSave_Vendor_ERP').text().length > 0) {
+					$('#divformSave_Vendor_DB').addClass('col-6');
+					$('#divformSave_Vendor_ERP').addClass('col-6');
+					$('#divformSave_Vendor_DB').removeClass('d-none');
+					$('#divformSave_Vendor_ERP').removeClass('d-none');
+					$('#btnformSave_Vendor').removeClass('d-none');
+				} else {
+					$('#divformSave_Vendor_DB').addClass('col-12');
+					$('#divformSave_Vendor_ERP').addClass('col-6');
+					$('#divformSave_Vendor_DB').removeClass('d-none');
+					if (!$('#divformSave_Vendor_ERP').hasClass('d-none'))
+						$('#divformSave_Vendor_ERP').addClass('d-none');
+				}
+
+			}
+			else if (typeof $response != 'undefined' && $response != null && $response != '' && typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '') {
+
+				$('.nav-tabs a[href="#tab_Site"]').tab('show');
+			}
+		}
+
+		function fnChangeIcon($id) {
+			const togglePassword = document.querySelector('#toggle' + $id);
+			const password = document.querySelector('#' + $id);
+			const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+			password.setAttribute('type', type);
+			togglePassword.classList.toggle('fa-eye-slash');
+		}
+
+		function Get_StateList() {
+
+			$("#State_Id").empty();
+			$("#District_Id").empty();
+			$.ajax({
+				type: 'POST',
+				url: "@Url.Action("GetStateList","VendorERP")",
+				dataType: 'json',
+				data: { Country_Id: $('#Country_Id').val() }
+
+			})
+				.done(function (state) {
+					$.each(state, function (i, state) {
+						$("#State_Id").append('<option value="' + state.value + '">' +
+							state.text + '</option>');
+					});
+				}).fail(function (xhr) {
+					console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+				});
+			return false;
+		}
+
+		function Get_DistrictList() {
+
+			$("#District_Id").empty();
+			$.ajax({
+				type: 'POST',
+				url: "@Url.Action("GetDistrictList","VendorERP")",
+				dataType: 'json',
+				data: { State_Id: $('#State_Id').val() }
+
+			})
+				.done(function (district) {
+
+					$.each(district, function (i, district) {
+
+						$("#District_Id").append('<option value="' + district.value + '">' +
+							district.text + '</option>');
+					});
+				}).fail(function (xhr) {
+					console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+				});
+			return false;
+		}
+
+		function fnChange_Select($id) {
+
+			var selectedValue = $('#select' + $id).val();
+
+			if (typeof selectedValue != 'undefined' && selectedValue != null && selectedValue != '' && selectedValue.length > 0)
+				$('#input' + $id).val(selectedValue.join(','));
+			else
+				$('#input' + $id).val('');
+
+			$('#input' + $id).trigger('change');
+		}
+
+		function fnSearch_Vendor($this) {
+			ShowLoader(true);
+
+			//if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide(); //$('#modal-xl').modal('hide');
+
+			if (typeof $($this).val() != 'undefined' && $($this).val() != null && $($this).val() != '' && $($this).val().trim().length > 0)
+				fnShow_Modal('@Url.Action("Search_Vendor","VendorERP")?searchTerm=' + $($this).val(), 'Search Vendor', true, "html");
+			//$.ajax({
+			//	type: "GET",
+			//	url: '@Url.Action("Search_Vendor","VendorERP")?searchTerm=' + $($this).val(),
+			//	data: null,
+			//	contentType: "application/json; charset=utf-8",
+			//	dataType: "html",
+			//	success: function (response) {
+
+			//		
+
+			//		if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+			//			CommonAlert_Error("No any record(s) found");
+			//			return false;
+			//		}
+
+			//		$('#modal-xl .modal-body').html('');
+			//		$('#modal-xl .modal-body').append(response);
+
+			//		$('#modal-xl .modal-title').html('Search Vendor');
+
+
+			//		setTimeout(function () {
+
+			//			try {
+
+			//				if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
+			//					$('#modal-xl .modal-body #table_Common').DataTable().destroy();
+			//				}
+
+			//				table = $('#modal-xl .modal-body #table_Common').DataTable({
+			//					paging: true,
+			//					lengthChange: true,
+			//					searching: true,
+			//					ordering: true,
+			//					info: true,
+			//					autoWidth: true,
+			//					responsive: true,
+			//					pageLength: 10,
+			//					lengthMenu: [
+			//						[10, 25, 50, -1],
+			//						[10, 25, 50, 'All']
+			//					],
+			//					//columnDefs: [
+			//					//	{ "targets": 0, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false },
+			//					//	{ "targets": -1, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false }
+			//					//],
+			//					fixedColumns: true,
+			//					dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+			//						"<'row'<'col-sm-12'tr>>" +
+			//						"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+			//				});
+
+			//				$('#modal-xl .modal-body #table_Common').css('width', '100%');
+
+			//				table.on('click', 'tbody tr', function (e) {
+
+			//					$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+			//						if (i != (e.currentTarget.rowIndex - 1))
+			//							$(ez).removeClass('bg-info');
+			//					});
+
+			//					//if (e.currentTarget.classList.contains('bg-info')) {
+
+			//					//}
+
+			//					e.currentTarget.classList.toggle('bg-info');
+
+			//				});
+
+
+			//			} catch { }
+
+			//			if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
+			//				$('#modal-xl').show(); //$('#modal-xl').modal('show');
+			//			else
+			//				CommonAlert_Error("No any record(s) found");
+
+			//			ShowLoader(false);
+
+			//		}, 1000);
+
+			//	},
+			//	failure: function (response) {
+			//		CommonAlert_Error(null)
+			//	},
+			//	error: function (response) {
+			//		CommonAlert_Error(null)
+			//	}
+			//});
+		}
+
+		function fnSelect_Record() {
+
+			if ($('#table_Common tbody tr.bg-info').length <= 0) {
+				CommonAlert_Error("Please select atleast one Vendor");
+				return false;
+			}
+			else {
+
+				$('input[name="Organization_Name"]').val('');
+				$('input[name="First_Name"]').val('');
+				$('input[name="Middle_Name"]').val('');
+				$('input[name="Last_Name"]').val('');
+				$('input[name="MobileNo"]').val('');
+				$('input[name="Email_Id"]').val('');
+
+				var selectedData = table.rows('.bg-info').data();
+
+				if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1) {
+
+					$('input[name="Organization_Name"]').val(selectedData[0][1]);
+					$('input[name="First_Name"]').val(selectedData[0][3]);
+					$('input[name="Middle_Name"]').val(selectedData[0][4]);
+					$('input[name="Last_Name"]').val(selectedData[0][5]);
+					$('input[name="MobileNo"]').val(selectedData[0][6]);
+					$('input[name="Email_Id"]').val(selectedData[0][7]);
+				}
+
+
+				$('input[name="Organization_Name"]').trigger('change');
+				$('input[name="First_Name"]').trigger('change');
+				$('input[name="Middle_Name"]').trigger('change');
+				$('input[name="Last_Name"]').trigger('change');
+				$('input[name="MobileNo"]').trigger('change');
+				$('input[name="Email_Id"]').trigger('change');
+
+				fnClose_Modal()
+			}
+		}
+
+	</script>
+}
+

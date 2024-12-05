@@ -1,0 +1,108 @@
+﻿@model WeighmentInSlip
+
+@{
+    ViewData["Title"] = "Weighment Slip";
+    Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+<div style="padding:10px !important">
+    <div class="container-fluid">
+        <div class="col-sm-12" style="text-align:center;outline:solid;outline-color:black">
+            <div class="form-group row">
+                <div class="col-sm-12 mt-2">
+                    <h3 class="font-weight-bold">NANO FERTILIZER PROJECT - IFFCO @(Model != null && !string.IsNullOrEmpty(Model.Plant_Name) ? Model.Plant_Name : "")</h3>
+                    <h5 class="font-weight-bold">@(Model != null && !string.IsNullOrEmpty(Model.Plant_Address) ? Model.Plant_Address : "")</h5>
+                </div>
+            </div>
+            <hr style="border: 1px solid #000">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-12" style="text-align:center;">
+                        <h3 class="font-weight-bold">@(Model != null && !string.IsNullOrEmpty(Model.Report_Title) ? Model.Report_Title : "WEIGHMENT SLIP SCRAP - WEIGH OUT PRINT")</h3>
+                    </div>
+                    <br />
+                    @*<div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">General Form</li>
+                    </ol>
+                    </div>*@
+                </div>
+            </div>
+
+            <input type="hidden" id="input_Mda_No" value="@(Model != null && !string.IsNullOrEmpty(Model.MDA_No) ? Model.MDA_No : "")" class="form-control form-control-sm d-none">
+            <input type="hidden" id="input_Mda_Dt" value="@(Model != null && Model.MDA_dt != null ? Model.MDA_dt.ToString() : "")" class="form-control form-control-sm d-none">
+            <input type="hidden" id="input_Vehicle_No" value="@(Model != null && !string.IsNullOrEmpty(Model.Vehicle_No) ? Model.Vehicle_No : "")" class="form-control form-control-sm d-none">
+            <input type="hidden" id="input_Tare_Wt" value="@(Model != null && !string.IsNullOrEmpty(Model.Tare_Wt) ? Model.Tare_Wt : "")" class="form-control form-control-sm d-none">
+            <input type="hidden" id="input_Transporter_Name" value="@(Model != null && Model.Transporter_Name != null ? Model.Transporter_Name.ToString() : "")" class="form-control form-control-sm d-none">
+            <input type="hidden" id="input_Tare_Wt_Note" value="@(Model != null && Model.Tare_Wt_Note != null ? Model.Tare_Wt_Note.ToString() : "")" class="form-control form-control-sm d-none">
+
+            <div class="form-group row" style="text-align:left !important">
+                <label class="col-sm-2 col-form-label">RFID No. <span class="float-right">:</span> </label>
+                <label class="col-sm-3 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.RFID_No) ? Model.RFID_No : "") </label>
+                <label class="col-sm-3 col-form-label">Weigh Out Date & Time<span class="float-right">:</span> </label>
+                <label class="col-sm-4 col-form-label ml-0"> @(Model != null && Model.Gross_Wt_Dt != null ? Model.Gross_Wt_Dt.ToString() : "") </label>
+            </div>
+
+            <div class="form-group row" style="text-align:left !important">
+                <label class="col-sm-2 col-form-label">Vehicle No <span class="float-right">:</span> </label>
+                <label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Truck_No) ? Model.Truck_No : "") </label>
+                <label class="col-sm-2 col-form-label">In Weight  <span class="float-right">:</span> </label>
+                <label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Tare_Wt) ? Model.Tare_Wt : "") &nbsp; @(Model != null && !string.IsNullOrEmpty(Model.UOM) ? Model.UOM : "")</label>
+            </div>
+            <div class="form-group row" style="text-align:left !important">
+                <label class="col-sm-2 col-form-label">Transporter Name  <span class="float-right">:</span> </label>
+                <label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Transporter_Name) ? Model.Transporter_Name : "") </label>
+                <label class="col-sm-2 col-form-label">Out Weight  <span class="float-right">:</span> </label>
+                <label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Gross_Wt) ? Model.Gross_Wt : "") &nbsp; @(Model != null && !string.IsNullOrEmpty(Model.UOM) ? Model.UOM : "")</label>
+
+            </div>
+            <div class="form-group row" style="text-align:left !important">
+                <label class="col-sm-2 col-form-label">SO No  <span class="float-right">:</span> </label>
+                <label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.MDA_No) ? Model.MDA_No : "") </label>
+                <label class="col-sm-2 col-form-label">Net Weight  <span class="float-right">:</span> </label>
+                <label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Net_Wt) ? Model.Net_Wt : "") &nbsp; @(Model != null && !string.IsNullOrEmpty(Model.UOM) ? Model.UOM : "")</label>
+            </div>
+            <div class="row col-12 mt-5">
+                <table id="table_Common_dtls" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Line No.</th>
+                            <th>Description</th>
+                            <th>UoM</th>
+                            <th>SO Qty</th>
+                            <th>Loading Qty</th>
+                            <th>UoM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.listDtls != null && Model.listDtls.Count() > 0)
+                        {
+                            foreach (var item in Model.listDtls)
+                            {
+                                <tr>
+
+                                    <td>@item.SrNo</td>
+                                    <td>@item.prd_desc</td>
+                                    <td>@item.desp_place</td>
+                                    <td>@item.no_of_bottle</td>
+                                    <td>@item.no_of_Box</td>
+                                    <td>@item.prd_cd</td>
+                                </tr>
+                            }
+
+                            @*<tr>
+                        <td colspan="2" class="text-bold text-right"> Total </td>
+                        <td colspan="2" class="text-bold">@Model.listDtls.Sum(x=>x.no_of_bottle)</td>
+                        </tr>*@
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row col-12 mt-5">
+                <label class="col-sm-6 col-form-label" style="text-align:left !important">Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt").Replace("-", "/")</label>
+                <label class="col-sm-6 col-form-label ml-0" style="text-align:right !important"> Operator's Signature </label>
+            </div>
+        </div>
+    </div>
+</div>

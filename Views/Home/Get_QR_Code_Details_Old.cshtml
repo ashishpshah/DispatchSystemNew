@@ -1,0 +1,658 @@
+﻿@model ResponseModel<LoginViewModel>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Dispatch System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+
+    <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css">
+
+    <link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
+    <link href="~/plugins/sweetalert2/sweetalert2.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/dist/css/adminlte.min.css">
+
+    <style>
+        body.swal2-height-auto {
+            height: 100vh !important;
+        }
+
+        .login_page {
+            background: url('http://iffco-public-assets.s3.ap-south-1.amazonaws.com/s3fs-public/2020-12/Production%20Unit%20Main%20Image%20%281%29.jpg') center top repeat;
+            background-size: cover;
+            height: 100%;
+        }
+
+        .login_area {
+            background: #EEF0E5;
+            min-height: 400px;
+            max-width: 550px;
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            border-top: 1px solid #007c39;
+            border-radius: 6px;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            right: 0;
+            overflow: hidden;
+            padding: 50px;
+        }
+
+        .login_header {
+            /*padding: 30px 0;*/
+            background-color: transparent;
+            text-align: center;
+            padding: 10px 10px 0 10px;
+        }
+
+            .login_header img {
+                width: 75%;
+                display: block;
+                margin: 0 auto;
+            }
+
+        .login_area_under {
+            padding: 30px 35px 40px 35px;
+        }
+
+            .login_area_under .form-control, .login_area_under .form-control:focus {
+                /*border: none;*/
+                /*border-bottom: 1px solid #414850;*/
+                border: 1px solid #414850;
+                border-radius: 0;
+                /*padding: 12px 0;*/
+                /*height: auto;*/
+                box-shadow: none;
+            }
+
+            .login_area_under .form-group {
+                margin-bottom: 22px;
+            }
+
+            .login_area_under .btn_bottom .btn_login {
+                background: #414850;
+                border-radius: 3px;
+                padding: 12px 0px;
+                width: 100%;
+                border: none;
+                font-size: 20px;
+                color: #fff;
+            }
+
+                .login_area_under .btn_bottom .btn_login.green {
+                    background: #007c39;
+                }
+
+            .login_area_under .btn_bottom .col-6:first-child {
+                padding-right: 5px;
+            }
+
+            .login_area_under .btn_bottom .col-6:last-child {
+                padding-left: 5px;
+            }
+
+            .login_area_under .change_password a {
+                color: #414850;
+                text-decoration: none;
+            }
+
+                .login_area_under .change_password a:hover {
+                    color: #007c39;
+                }
+
+            .login_area_under ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+                color: #414850;
+            }
+
+            .login_area_under ::-moz-placeholder { /* Firefox 19+ */
+                color: #414850;
+            }
+
+            .login_area_under :-ms-input-placeholder { /* IE 10+ */
+                color: #414850;
+            }
+
+            .login_area_under :-moz-placeholder { /* Firefox 18- */
+                color: #414850;
+            }
+
+        .preloader_new {
+            display: -ms-flexbox;
+            display: flex;
+            /*background-color: #f4f6f9;*/
+            /*height: 100vh;*/
+            width: 100%;
+            transition: height 200ms linear;
+            position: fixed;
+            left: 0;
+            top: 50%;
+            z-index: 9999999;
+        }
+
+        .animation_loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #29a349;
+            border-bottom: 16px solid #29a349;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+        }
+
+        @@-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .table-bordered-new td, .table-bordered-new th {
+            border: 1px solid #9fc7a8;
+        }
+
+        .product-image-thumb.videoicon {
+            position: relative
+        }
+
+            .product-image-thumb.videoicon:before {
+                content: " ►";
+                position: absolute;
+                left: 15px;
+                top: 15px;
+                width: 28px;
+                height: 28px;
+                font-size: 20px;
+                line-height: 1;
+                display: -webkit-flex;
+                display: flex;
+                -webkit-align-items: center;
+                align-items: center;
+                -webkit-justify-content: center;
+                justify-content: center;
+                text-align: center;
+                background-color: rgba(0,0,0,.4);
+                text-shadow: 0 1px 2px #000;
+                color: #fff;
+                border-radius: 20px;
+                -webkit-border-radius: 20px;
+                -moz-border-radius: 20px;
+                -o-border-radius: 20px;
+                -ms-border-radius: 20px;
+                border: 1px solid #fff;
+                -webkit-border: 1px solid #fff;
+                -moz-border-border: 1px solid #fff;
+                -o-border-border: 1px solid #fff;
+                -ms-border-border: 1px solid #fff
+            }
+
+    </style>
+</head>
+<body style="background-color:#dcf2db">
+    <div class="preloader_new flex-column justify-content-center align-items-center d-none">
+        <div class="animation_loader"></div>
+    </div>
+    <section class="content">
+        <div class="row p-3">
+            <div class="col-2">
+            </div>
+            <div class="col-5">
+                <img src="~/images/iffco-logo.png" alt="Indian Farmers Fertiliser Cooperative Limited" width="50%" />
+            </div>
+            <div class="row col-5">
+                <label for="Parent_Id" class="col-2 text-right">Languages</label>
+                <div class="col-4">
+                    <select id="languageSelect" class="form-control form-control-sm select2 w-100">
+                        <option>Choose</option>
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="gu">Gujarati</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row" id="divList">
+                <div class="col-12">
+                    <div class="card card-green card-outline">
+                        <div class="card-header" style="background-color:#1d8134">
+                            <span class="text-center text-white"><h3>Product Information</h3></span>
+                        </div>
+                        <div class="card-body" style="background-color:#dcf2db">
+                            <div class="row no-gooters">
+                                <div class="col-md-12 my-1">
+                                    <table id="table_Common_SrNo" class="table table-bordered-new">
+                                        <thead>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td id="QRCode">QR Code</td>
+                                                <td>@Model.Data1.QrCode</td>
+                                            </tr>
+                                            <tr>
+                                                <td id="BatchNo">Batch No</td>
+                                                <td>@Model.Data1.BatchDesc</td>
+                                            </tr>
+                                            <tr>
+                                                <td id="RegnNo">Regn. No.</td>
+                                                <td>@Model.Data1.RegnNo</td>
+                                            </tr>
+                                            <tr>
+                                                <td id="MfgDate">Mfg. Date</td>
+                                                <td>@Model.Data1.MfgDateTxt</td>
+                                            </tr>
+                                            <tr>
+                                                <td id="ExpDate">Exp. Date</td>
+                                                <td>@Model.Data1.ExpDateTxt</td>
+                                            </tr>
+                                            <tr>
+                                                <td id="ManufacturedBy">Manufactured By</td>
+                                                <td>@Model.Data1.MfgBy</td>
+                                            </tr>
+                                            <tr>
+                                                <td id="MarketedBy">Marketed By</td>
+                                                <td>@Model.Data1.MarketedBy</td>
+                                            </tr>
+                                            <tr>
+                                                <td id="ProductName">Product Name</td>
+                                                <td>@Model.Data1.PrdDesc</td>
+                                            </tr>
+                                            <tr>
+                                                <td id="CustomerCareContacts">Customer Care Contacts</td>
+                                                <td>@Model.Data1.CustomerCareNo</td>
+                                            </tr>
+                                            <tr>
+                                                <td id="ChemicalComposition">Chemical Composition</td>
+                                                <td>
+                                                    @if (Model.Data2 != null && Model.Data2.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.Data2)
+                                                        {
+                                                            if (@item.FileType == "Chemical composition")
+                                                            {
+                                                                @item.FileDisplayname <br />
+                                                            }
+                                                        }
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td id="UsageDirections">Usage Directions</td>
+                                                <td>
+                                                    @if (Model.Data2 != null && Model.Data2.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.Data2)
+                                                        {
+                                                            if (@item.FileType == "Usage directions")
+                                                            {
+                                                                @item.FileDisplayname <br />
+                                                            }
+                                                        }
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td id="WarningStatements">Warning Statements</td>
+                                                <td>
+                                                    @if (Model.Data2 != null && Model.Data2.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.Data2)
+                                                        {
+                                                            if (@item.FileType == "Warning Statements")
+                                                            {
+                                                                @item.FileDisplayname <br />
+                                                            }
+                                                        }
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td id="Recommendations">Recommendations </td>
+                                                <td>
+                                                    @if (Model.Data2 != null && Model.Data2.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.Data2)
+                                                        {
+                                                            if (@item.FileType == "Recommendations")
+                                                            {
+                                                                @item.FileDisplayname <br />
+                                                            }
+                                                        }
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td id="StandardInstructions">Standard Instructions </td>
+                                                <td>
+                                                    @if (Model.Data2 != null && Model.Data2.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.Data2)
+                                                        {
+                                                            if (@item.FileType == "Standard Instructions")
+                                                            {
+                                                                @item.FileDisplayname <br />
+                                                            }
+                                                        }
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td id="LeafletDetails">Leaflet Details</td>
+                                                <td>
+                                                    @if (Model.Data2 != null && Model.Data2.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.Data2)
+                                                        {
+                                                            if (@item.FileType == "Leaflet Details")
+                                                            {
+                                                                @item.FileDisplayname <br />
+                                                            }
+                                                        }
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td id="UserManuals">User Manuals</td>
+                                                <td>
+                                                    @if (Model.Data2 != null && Model.Data2.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.Data2)
+                                                        {
+                                                            if (@item.FileType == "User Manuals")
+                                                            {
+                                                                @item.FileDisplayname <br />
+                                                            }
+                                                        }
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td id="TrialResults">Trial Results</td>
+                                                <td>
+                                                    <div class="text-left">
+                                                        @if (Model.Data2 != null && Model.Data2.Count > 0)
+                                                        {
+                                                            foreach (var item in Model.Data2)
+                                                            {
+                                                                if (@item.FileType == "Trial Results")
+                                                                {
+                                                                    <p><a href="@Url.Action("DownloadFile", "Home", new { id = item.Id })">@item.FileDisplayname</a></p>
+                                                                }
+                                                            }
+                                                        }
+                                                        @*<p><a href="/en/state-wise-nano-urea">1. State Wise Trial Results - Nano Urea</a></p>
+
+                                                        <p><a href="/en/state-wise-nano-dap">2. State Wise Trial Results - Nano DAP</a></p>
+
+                                                        <p><a href="/en/crop-wise-nano-urea">3. Crop Wise Trial Results - Nano Urea</a></p>
+
+                                                        <p><a href="/en/crop-wise-nano-dap">4. Crop Wise Trial Results - Nano DAP</a></p>
+
+                                                        <p><a href="/en/nano-fertiliser-results">5. Detail Data of Trial Results</a></p>*@
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td id="UsefulLinks">Useful Links</td>
+                                                <td>
+                                                    <div class="text-left">
+                                                        @if (Model.Data2 != null && Model.Data2.Count > 0)
+                                                        {
+                                                            foreach (var item in Model.Data2)
+                                                            {
+                                                                if (@item.FileType == "Useful Links")
+                                                                {
+                                                                    <p><a href="@item.FileName">@item.FileDisplayname</a></p>
+                                                                }
+                                                            }
+                                                        }
+                                                        @*<p><a href="https://www.iffco.in/">IFFCO</a></p>
+                                                        <p><a href="https://www.iffcobazar.in/">IFFCO Bazar</a></p>*@
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    @if (Model.Data1.QrCode != null && Model.Data1.QrCode != "")
+                    {
+                        <div class="col-12">
+                            <img src="https://cdn-prodapi.iffcobazar.in/pub/media/catalog/product/h/o/how_to_use_nano_urea_english_1.jpg" class="image-preview product-image" alt="Product Image">
+                            <div class="video-player embed-responsive embed-responsive-16by9 d-none">
+                                <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/tMWkeBIohBs" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                    }
+                    <div class="col-12 product-image-thumbs">
+                        @if (Model.Data2 != null && Model.Data2.Count > 0)
+                        {
+                            foreach (var item in Model.Data2)
+                            {
+                                if (@item.FileType == "Media")
+                                {
+                                    <div class="product-image-thumb @(item.Id == 12 ? "active" : "") @(item.FileDisplayname != "" ? "videoicon" : "")">
+                                        <img src="@item.FileName" @(item.FileDisplayname != "" ? "src-video="+ item.FileDisplayname +"" : "") alt="Product Image">
+                                    </div>
+                                }
+                            }
+                        }
+                        @* <div class="product-image-thumb ">
+                        <img src="https://cdn-prodapi.iffcobazar.in/pub/media/catalog/product/p/r/precaution.jpg" alt="Product Image">
+                        </div>
+                        <div class="product-image-thumb"><img src="https://cdn-prodapi.iffcobazar.in/pub/media/catalog/product/1/s/1st_spray.jpg" alt="Product Image"></div>
+                        <div class="product-image-thumb"><img src="https://cdn-prodapi.iffcobazar.in/pub/media/catalog/product/n/a/nano_urea_-_how_to_use.jpg" alt="Product Image"></div>
+                        <div class="product-image-thumb active"><img src="https://cdn-prodapi.iffcobazar.in/pub/media/catalog/product/h/o/how_to_use_nano_urea_english_1.jpg" alt="Product Image"></div>
+                        <div class="product-image-thumb"><img src="https://cdn-prodapi.iffcobazar.in/pub/media/catalog/product/cache/5f3447475aa96bb6c8cc6886bb71b2b4/3/0/3000894104.jpg" alt="Product Image"></div>
+                        <div class="product-image-thumb videoicon"><img src="https://cdn-prodapi.iffcobazar.in/pub/media/catalog/product/h/q/hqdefault_1_3.jpg" src-video="https://www.youtube.com/embed/SyoE1QIQkMM?rel=0" alt="Product Image"></div>
+                        <div class="product-image-thumb videoicon"><img src="https://cdn-prodapi.iffcobazar.in/pub/media/catalog/product/h/q/hqdefault_7_4.jpg" src-video="https://www.youtube.com/embed/VbkmG7w1Tj4?rel=0" alt="Product Image"></div>*@
+                    </div>
+                </div>
+            </div>
+            <div class="row text-center pt-5">
+                <div class="col-12">
+                    <p>© Copyright IFFCO @DateTime.Now.Year v 2.0.0 • All Rights Reserved.</p>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="~/plugins/jquery/jquery.min.js"></script>
+    <script src="~/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/plugins/select2/js/select2.min.js"></script>
+    <script src="~/plugins/moment/moment.min.js"></script>
+
+    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+
+    <script src="~/common.js"></script>
+    @* <script type="text/javascript">
+
+    function validateform() {
+
+    var UserName = $("#UserName").val();
+    var Password = $("#Password").val();
+
+    if (UserName == "" || UserName == null || UserName == "0") {
+    $("#UserName").focus();
+    alert("Please enter user name");
+    return false;
+    }
+    else if (Password == "" || Password == null || Password == "0") {
+    $("#Password").focus();
+    alert("Please enter password");
+    return false;
+    }
+    else {
+    fnSubmitForm('formLogin');
+    return true;
+    }
+    }
+    </script> *@
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            localStorage.clear();
+
+            $(document).keyup(function (event) {
+                if (event.which === 13) {
+                    event.preventDefault();
+                    fnSubmitForm('formLogin');
+                }
+            });
+
+            $('.product-image-thumb').on('click', function () {
+                if (!$(this).hasClass('videoicon')) {
+                    $('.image-preview').removeClass('d-none')
+                    if (!$('.video-player').hasClass('d-none'))
+                        $('.video-player').addClass('d-none')
+                    var $image_element = $(this).find('img')
+                    $('.product-image').prop('src', $image_element.attr('src'))
+                    $('.product-image-thumb.active').removeClass('active')
+                    $(this).addClass('active')
+                    $('.video-player iframe').prop('src', null)
+                } else {
+                    $('.video-player').removeClass('d-none')
+                    if (!$('.image-preview').hasClass('d-none'))
+                        $('.image-preview').addClass('d-none')
+                    var $image_element = $(this).find('img')
+                    $('.video-player iframe').prop('src', $image_element.attr('src-video'))
+                    $('.product-image-thumb.active').removeClass('active')
+                    $(this).addClass('active')
+                }
+            })
+
+            $('#languageSelect').change(function () {
+
+                var selectedLanguage = $(this).val();
+
+                switch (selectedLanguage) {
+                    case 'en':
+                        $('#QRCode').text('QR Code');
+                        $('#BatchNo').text('Batch No');
+                        $('#RegnNo').text('Regn. No.');
+                        $('#MfgDate').text('Mfg. Date');
+                        $('#ExpDate').text('Exp. Date');
+                        $('#ManufacturedBy').text('Manufactured By');
+                        $('#MarketedBy').text('Marketed By');
+                        $('#ProductName').text('Product Name');
+                        $('#CustomerCareContacts').text('Customer Care Contacts');
+                        $('#ChemicalComposition').text('Chemical Composition');
+                        $('#UsageDirections').text('Usage Directions');
+                        $('#WarningStatements').text('Warning Statements');
+                        $('#Recommendations').text('Recommendations');
+                        $('#StandardInstructions').text('Standard Instructions');
+                        $('#LeafletDetails').text('Leaflet Details');
+                        $('#UserManuals').text('User Manuals');
+                        $('#TrialResults').text('Trial Results');
+                        $('#UsefulLinks').text('Useful Links');
+
+                        break;
+                    case 'hi':
+                        $('#QRCode').text('क्यूआर कोड');
+                        $('#BatchNo').text('बैच नंबर');
+                        $('#RegnNo').text('पंजीकरण संख्या');
+                        $('#MfgDate').text('निर्माण तिथि');
+                        $('#ExpDate').text('समाप्ति तिथि');
+                        $('#ManufacturedBy').text('निर्माता');
+                        $('#MarketedBy').text('विपणित');
+                        $('#ProductName').text('उत्पाद का नाम');
+                        $('#CustomerCareContacts').text('ग्राहक सेवा संपर्क');
+                        $('#ChemicalComposition').text('रासायनिक संरचना');
+                        $('#UsageDirections').text('प्रयोग दिशानिर्देश');
+                        $('#WarningStatements').text('चेतावनी वाक्य');
+                        $('#Recommendations').text('सिफारिशें');
+                        $('#StandardInstructions').text('मानक निर्देश');
+                        $('#LeafletDetails').text('लीफलेट विवरण');
+                        $('#UserManuals').text('उपयोगकर्ता मैनुअल्स');
+                        $('#TrialResults').text('परीक्षण परिणाम');
+                        $('#UsefulLinks').text('उपयोगी लिंक्स');
+                        $('#choose').text('भाषा चुनें');
+
+                        break;
+                    case 'gu':
+                        $('#QRCode').text('ક્યૂઆર કોડ');
+                        $('#BatchNo').text('બેચ નંબર');
+                        $('#RegnNo').text('પંજીકરણ નંબર');
+                        $('#MfgDate').text('ઉત્પાદન તારીખ');
+                        $('#ExpDate').text('સમાપ્તિ તારીખ');
+                        $('#ManufacturedBy').text('ઉત્પાદન કર્તા');
+                        $('#MarketedBy').text('વિપણન કર્તા');
+                        $('#ProductName').text('ઉત્પાદનનું નામ');
+                        $('#CustomerCareContacts').text('ગ્રાહક સંપર્ક');
+                        $('#ChemicalComposition').text('રાસાયણિક સંયોજન');
+                        $('#UsageDirections').text('ઉપયોગ દિશાનિર્દેશ');
+                        $('#WarningStatements').text('ચેતવણી વાક્યો');
+                        $('#Recommendations').text('ભલાઇની સૂચનાઓ');
+                        $('#StandardInstructions').text('માનક નિર્દેશો');
+                        $('#LeafletDetails').text('પર્ચા વિગતો');
+                        $('#UserManuals').text('વપરાશકર્તા માર્ગદર્શિકા');
+                        $('#TrialResults').text('પરીક્ષણ પરિણામો');
+                        $('#UsefulLinks').text('ઉપયોગી લિંકો');
+                        $('#choose').text('ભાષા પસંદ કરો');
+                        break;
+                }
+            });
+        });
+
+       
+
+
+        function getVendorSite() {
+
+            $("#SiteId").empty();
+
+            var vendor_code = $('#VendorCode').val();
+
+            if (typeof vendor_code != 'undefined' && vendor_code != null && vendor_code.length > 0) {
+
+                $.ajax({
+                    type: 'POST',
+                    url: "@Url.Action("GetVendorSitelist","Home")",
+                    dataType: 'json',
+                    data: { Vendor_Id: $('#VendorCode').val() }
+                }).done(function (state) {
+                    $.each(state, function (i, state) { $("#SiteId").append('<option value="' + state.value + '">' + state.text + '</option>'); });
+                }).fail(function (xhr) {
+                    console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+                });
+            }
+
+            return false;
+        }
+       
+    </script>
+
+</body>
+</html>
+

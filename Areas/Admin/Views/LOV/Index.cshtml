@@ -1,0 +1,115 @@
+﻿@model ResponseModel<LOV>
+@{
+    ViewData["Title"] = "LOV";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">LOV</h1>
+            </div>
+            <div class="col-sm-6">
+                <div class="float-sm-right">
+                    <button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","LOV", new {  area = "Admin" })');">
+                        <i class="fas fa-plus"></i> &nbsp; Add LOV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<section class="content">
+    <div class="container-fluid">
+        <div class="row no-gutters divformSave_Display d-none" style="margin: 5px !important;">
+            <div class="col-12">
+                <form id="formSave" asp-area="Admin" asp-controller="LOV" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+                    <div class="row no-gutters" id="divformSave"></div>
+                    <div class="clearfix"></div>
+                    <hr />
+                </form>
+            </div>
+        </div>
+        <div class="row" id="divList">
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+
+                    <div class="card-body">
+                        <div class="row no-gooters">
+                            <div class="col-md-12 my-1">
+                                <table id="table_Common_SrNo" class="table table-bordered table-striped table_Common_SrNo">
+                                    <thead>
+                                        <tr>
+                                            <th width="5%">#</th>
+                                            <th>LOV Column</th>
+                                            <th>LOV Code</th>
+                                            <th>LOV Desc</th>
+                                            <th width="5%">Status</th>
+                                            <th width="5%">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.ListObj)
+                                        {
+                                            <tr>
+                                                <td></td>
+                                                <td>@item.Lov_Column</td>
+                                                <td>@item.Lov_Code</td>
+                                                <td>@item.Lov_Desc</td>
+                                                <td class="text-center"><span class="badge bg-@(item.IsActive == true ? "success" : "danger")">@(item.IsActive == true ? "Active" : "Inactive")</span></td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
+                                                            onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","LOV", new {  area = "Admin" })?Lov_Column=@item.Lov_Column');">
+                                                            <i class="far fa-edit"></i>
+                                                        </button>
+                                                        @*<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+                                                    onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed","LOV", new {  area = "Admin" })?Lov_Column=@item.Lov_Column', '#table_Common_SrNo');">
+                                                    <i class="far fa-trash-alt"></i>
+                                                    </button>*@
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script>
+
+    function fnAddRow() {
+
+        //$("#table_VendorPOSite > tbody > tr.odd").remove();
+        var table = document.getElementById("table_Lov").getElementsByTagName('tbody')[0];
+        var rowNum = table.rows.length;
+        //var newRow = table.insertRow(table.rows.length);
+
+        //rowNum = rowNum + 1;
+
+        
+        
+        var newRow = $("<tr id='" + rowNum + "'>");
+        var columns = "";
+        columns += "<td hidden><input type='text' class='form-control form-control-sm' value='" + rowNum + "' readonly></td>";
+        columns += "<td hidden><input type='text' class='form-control form-control-sm d-none' id='listLov_" + rowNum + "_Lov_Column' name='listLov[" + rowNum + "].Lov_Column'></td>";
+        columns += "<td><input type='text' class='form-control form-control-sm' id='listLov_" + rowNum + "_Lov_Code' name='listLov[" + rowNum + "].Lov_Code' ></td>";
+        columns += "<td><input type='text' class='form-control form-control-sm' id='listLov_" + rowNum + "_Lov_Desc' name='listLov[" + rowNum + "].Lov_Desc' ></td>";
+        columns += "<td><div class='custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0'> <input type='checkbox' class='custom-control-input' id='switch_Status_" + rowNum + "' name='listLov[" + rowNum + "].IsActive' onchange='fnChange_Switch(this, 'label_Switch_Status_" + rowNum + "')'> <label class='custom-control-label' for='switch_Status' id='label_Switch_Status_" + rowNum + "' data-true='Active' data-false='Inactive'>Inactive</label> </div></td>";
+        columns += "<td class='text-center'><div class='btn-group'><button type='button' class='btn btn-danger btn-sm btn-flat ml-2' data-toggle='tooltip' data-placement='top' title='Delete' onclick='fnRemove_Row(this)'><i class='far fa-trash-alt'></i></button> </td>";
+        // Add more columns as needed
+        newRow.append(columns);
+        $("#table_Lov tbody").append(newRow);
+    }
+</script>

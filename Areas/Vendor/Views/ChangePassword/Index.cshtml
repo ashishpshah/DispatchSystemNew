@@ -1,0 +1,94 @@
+﻿@model ResponseModel<ChangePassword>
+@{
+    ViewData["Title"] = "Change Password";
+}
+
+
+
+@section Styles{
+    <link rel="stylesheet" href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <style>
+        .eye-pass {
+            position: absolute;
+            margin-top: 15px;
+            top: -4px;
+            right: 0;
+            margin-right: 35px;
+            cursor: pointer;
+        }
+
+        input[type=password]::-ms-reveal,
+        input[type=password]::-ms-clear {
+            display: none;
+        }
+    </style>
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Change Password</h1>
+            </div>           
+        </div>
+    </div>
+</div>
+<section class="content">
+    <div class="container-fluid">
+        <div class="col-12">
+            <form id="formSave" asp-area="Vendor" asp-controller="ChangePassword" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+                <div class="card card-primary card-outline">
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <label for="CurrentPassword" class="col-sm-2 col-form-label">Old Password<span style="color:red">*</span></label>
+                            <div class="col-sm-4">
+                                <input class="form-control" id="CurrentPassword" type="password" maxlength="50" name="CurrentPassword">
+                                <i class="fa fa-eye eye-pass fa-eye-slash" onclick="fnChangeIcon('CurrentPassword','togglePassword1')" id="togglePassword1"></i>
+                            </div>
+                            <div class="col-sm-4">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="NewPassword" class="col-sm-2 col-form-label">New Password<span style="color:red">*</span></label>
+                            <div class="col-sm-4">
+                                <input class="form-control" id="NewPassword" type="password" maxlength="50" name="NewPassword">
+                                <i class="fa fa-eye eye-pass fa-eye-slash" onclick="fnChangeIcon('NewPassword','togglePassword2')" id="togglePassword2"></i>
+                            </div>
+                            <label for="ConfirmPassword" class="col-sm-2 col-form-label">Confirm Password<span style="color:red">*</span></label>
+                            <div class="col-sm-4">
+                                <input class="form-control" id="ConfirmPassword" type="password" maxlength="50" name="ConfirmPassword">
+                                <i class="fa fa-eye eye-pass fa-eye-slash" onclick="fnChangeIcon('ConfirmPassword','togglePassword3')" id="togglePassword"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <button type="submit" class="btn btn-success btnSubmit">Save</button>
+                        <button type="button" class="btn btn-danger">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</section>
+
+@section Scripts{
+
+    <script type="text/javascript">
+        $(function () {
+
+        });
+
+        function fnChangeIcon($inputid, $fid) {
+
+            const togglePassword = document.querySelector('#' + $fid);
+            const password = document.querySelector('#' + $inputid);
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            togglePassword.classList.toggle('fa-eye-slash');
+
+        }
+
+    </script>
+}

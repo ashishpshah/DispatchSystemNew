@@ -1,0 +1,225 @@
+﻿@model ResponseModel<WeighmentInSlip>
+
+@{
+}
+
+
+@section Styles{
+    <style type="text/css">
+        th, td {
+            white-space: nowrap;
+        }
+    </style>
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12" style="text-align:center;">
+                <h3 class="font-weight-bold">@(Model != null && !string.IsNullOrEmpty(Model.Obj.Report_Title) ? Model.Obj.Report_Title : "Weighment Slip - Weigh Out")</h3>
+            </div>
+            @*<div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">General Form</li>
+            </ol>
+            </div>*@
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content p-0">
+    <div class="container-fluid p-0">
+        <div class="row no-gutters">
+            <div class="col-12 card">
+                <div class="card-body pb-0">
+                    <div class="panel-divider">
+                        <span>Search Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="form-horizontal">
+                                    <div class="card-body py-1 px-0">
+                                        <div class="form-group row">
+                                            <label for="Inward_Sys_Id" class="col-sm-1 col-form-label">Inward Type <span class="text-danger">*</span></label>
+                                            <div class="col-sm-3">
+                                                <select id="Inward_Sys_Id" name="Inward_Sys_Id" class="form-control form-control-sm" style="width: 100%;"
+                                                        onchange="fnChange_Select()" data-required data-msg="The Inward Type field is required.">
+                                                    <option value="2" data-type="">Raw Material</option>
+                                                    <option value="3" data-type="">Scrap</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="inputSearch" class="col-sm-1 col-form-label text-right">Vehicle No.</label>
+                                            <div class="col-sm-3">
+                                                <input type="text" id="inputSearch" class="form-control form-control-sm" />
+                                            </div>
+                                            <div class="col-sm-2 ml-2">
+                                                <button type="button" class="btn btn-info btn-flat mr-2" onclick="fnLoad_MDA_Dtls()">Search</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-divider">
+                        <span>Report </span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="card-body py-1 px-0" id="div_DataTable"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear()">Clear</button>
+                    <span class="float-right mr-3"><span class="text-danger">*</span> Mandatory Fields</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts{
+    <script type="text/javascript">
+        //var table = {};
+        //var tableDtls = {};
+
+        var divToPrint_HTML = '';
+
+        $(document).ready(function () {
+
+            fnLoad_MDA_Dtls();
+        });
+
+
+        function fnChange_Select() {
+
+            var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+
+            $('#inputSearch').val('');
+            $('#div_DataTable').html('');
+        }
+
+        function printDiv($selector) {
+
+            var divToPrint = $($selector);
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+
+            let tagToAdd_html = document.createElement('html');
+
+            let tagToAdd_body = document.createElement('body');
+
+            tagToAdd_body.appendChild(divToPrint_HTML);
+
+            tagToAdd_html.appendChild(tagToAdd_body);
+
+            newWin.document.appendChild(tagToAdd_html);
+
+            //tagToAdd = document.createElement('body');
+            //newWin.document.appendChild(tagToAdd);
+
+            //let linkToAdd = document.createElement('link');
+
+            //// Link to water.css stylesheet
+            //linkToAdd.href = '~/dist/css/alt/adminlte.min.css';
+
+            //linkToAdd.rel = 'stylesheet';
+
+            //// Get the head element of the document
+            //// and append the link
+            //newWin.document.head.appendChild(linkToAdd);
+
+
+            newWin.document.close();
+
+            //setTimeout(function () { newWin.close(); }, 10);
+
+        }
+
+        function fnLoad_MDA_Dtls(/*MDA_No, prd_cd*/) {
+            ShowLoader(true);
+
+            $('#div_DataTable').html('');
+
+            var Vehicle_No = $('#inputSearch').val();
+            var dtl = $('#ViewDetail_Id').val();
+            var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
+            var URL = "";
+
+            if (Inward_Sys_Id == "2") {
+                URL = '@Url.Action("Load_PO_Dtls","RmSpWeighmentOutSlip")?Vehicle_No=' + Vehicle_No + '&IsPrint=0&Inward_Sys_Id=' + Inward_Sys_Id;
+            } else {
+                URL = '@Url.Action("Load_SO_Dtls","RmSpWeighmentOutSlip")?Vehicle_No=' + Vehicle_No + '&IsPrint=0&Inward_Sys_Id=' + Inward_Sys_Id;
+            }
+            //alert(dtl);
+            if (typeof Vehicle_No != 'undefined' && Vehicle_No != null && Vehicle_No.length > 0) {
+
+                $.ajax({
+                    type: "GET",
+                    //url: '@Url.Action("Load_PO_Dtls","RmSpWeighmentOutSlip")?Vehicle_No=' + Vehicle_No, //+ '&prd_cd=' + prd_cd,
+                    url: URL,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "html",
+                    success: function (response) {
+
+                        setTimeout(function () {
+
+                            $('#div_DataTable').html(response);
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) {
+                        CommonAlert_Error(null)
+                    },
+                    error: function (response) {
+                        CommonAlert_Error(null)
+                    }
+                });
+
+            }
+            else {
+                ShowLoader(false);
+            }
+        }
+
+        function fnClear() {
+
+            $('#inputSearch').val('');
+            $('#div_DataTable').html('');
+
+        }
+
+
+        function getBase64FromImageUrl(url) {
+            var img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = function () {
+                var canvas = document.createElement("canvas");
+                canvas.width = this.width;
+                canvas.height = this.height;
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(this, 0, 0);
+                var dataURL = canvas.toDataURL("image/png");
+                return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+            };
+            img.src = url;
+        }
+        function fnPrint_Report($url) {
+            window.open($url, '_blank');
+        }
+
+    </script>
+}

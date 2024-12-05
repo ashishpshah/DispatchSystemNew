@@ -1,0 +1,61 @@
+﻿@model ResponseModel<LoginViewModel>
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-12">
+				<h1 class="font-weight-bold">Load New Batch Data</h1>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="content p-0">
+	<div class="container-fluid p-0">
+		<div class="row no-gutters">
+			<div class="col-12 card">
+				<div class="card-body">
+
+					<div class="alert alert-info alert-dismissible">
+						<h5><i class="icon fas fa-check"></i> Info!</h5>
+						<br />
+						For Checking the Shared Folder JSON File.
+
+						<br />
+						<br />
+						<p>
+							Source Folder Path : @Convert.ToString(Model.Data1 ?? "")
+						</p>
+					</div>
+
+					<button type="button" class="btn btn-flat bg-gradient-success btn-lg" onclick="ajaxPost('@Url.Action("GetUpdate", "LoadBatch", new { area = "Dispatch"})', null)">Sync Data</button>
+				</div>
+			</div>
+		</div>
+		@*<div class="row no-gutters">
+			<div class="col-12 card">
+				<div class="card-body">
+
+					<div class="alert alert-info alert-dismissible">
+						<h5><i class="icon fas fa-check"></i> Info!</h5>
+						<br />
+						For Checking the Shared Folder QR Code string File.
+
+						<br />
+						<br />
+						<p>
+							Source Folder Path : @Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Source_Folder_Path_QRCode").Value ?? "")
+						</p>
+					</div>
+
+					<button type="button" class="btn btn-flat bg-gradient-success btn-lg" onclick="ajaxPost('@Url.Action("GenerateQRCode", "LoadBatch", new { area = "Dispatch"})', null)">Generate QR Code</button>
+				</div>
+			</div>
+		</div>*@
+	</div>
+</section>

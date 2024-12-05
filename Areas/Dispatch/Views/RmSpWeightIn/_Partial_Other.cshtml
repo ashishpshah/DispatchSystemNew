@@ -1,0 +1,116 @@
+﻿@model List<GateIn>
+
+@{
+	Layout = null;
+}
+
+<div class="row col-12 mb-3">
+	<button type="button" class="btn btn-info btn-flat px-3 mr-3" onclick="fnSelect_PO()">Select</button>
+	<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear_PO()">Clear</button>
+	<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClose_Modal()">Close</button>
+</div>
+
+<div class="row col-12 w-100">
+	<table id="table_Common" class="table table-bordered table-striped w-100">
+
+
+		@if ((Model != null && Model.Count > 0 && Model.Select(x => x.Inward_Sys_Id == "1").FirstOrDefault()))
+		{
+			<thead>
+				<tr>
+					<th width="5%">Vehicle Number</th>
+					<th width="5%">MDA Number</th>
+					<th width="10%">Gate In Dt</th>
+					<th>Driver Name</th>
+					<th>Driver Contact</th>
+					<th>Transporter Name</th>
+					<th>Plant Code</th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+				</tr>
+			</thead>
+			<tbody>
+
+				@if (Model != null && Model.Count > 0)
+				{
+					foreach (var item in Model)
+					{
+						<tr>
+							<td>@item.Truck_No</td>
+							<td>@item.Common_No</td>
+							<td>@item.Gate_In_Dt</td>
+							<td>@item.Driver_Name</td>
+							<td>@item.Driver_Contact</td>
+							<td>@item.Transporter_Name</td>
+							<td>@item.Plant_CD</td>
+							<td hidden width="0%">@item.Id</td>
+							<td hidden width="0%">@item.Plant_Id</td>
+							<td hidden width="0%">@item.Verified_Officer_Id</td>
+							<td hidden width="0%">@item.Verified_Officer_Name</td>
+							<td hidden width="0%">@item.Verified_Documents</td>
+							<td hidden width="0%">@item.Driver_Id_Type</td>
+							<td hidden width="0%">@item.Driver_Id_Number</td>
+							<td hidden width="0%">@item.Inward_Sys_Id</td>
+						</tr>
+					}
+				}
+			</tbody>
+		}
+		else if ((Model != null && Model.Count > 0 && Model.Select(x => x.Inward_Sys_Id == "4").FirstOrDefault()))
+		{
+			<thead>
+				<tr>
+					<th width="5%">Vehicle Number</th>
+					<th width="5%">MDA Number</th>
+					<th width="10%">Gate In Dt</th>
+					<th width="5%">Transaction Type</th>
+					<th>Driver Name</th>
+					<th>Driver Contact</th>
+					<th>Transporter Name</th>
+					<th>Plant Code</th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+					<th hidden width="0%"></th>
+				</tr>
+			</thead>
+			<tbody>
+
+				@if (Model != null && Model.Count > 0)
+				{
+					foreach (var item in Model)
+					{
+						<tr>
+							<td>@item.Truck_No</td>
+							<td>@item.Common_No</td>
+							<td>@item.Gate_In_Dt</td>
+							<td>@item.TransactionType</td>
+							<td>@item.Driver_Name</td>
+							<td>@item.Driver_Contact</td>
+							<td>@item.Transporter_Name</td>
+							<td>@item.Plant_CD</td>
+							<td hidden width="0%">@item.Id</td>
+							<td hidden width="0%">@item.Plant_Id</td>
+							<td hidden width="0%">@item.Verified_Officer_Id</td>
+							<td hidden width="0%">@item.Verified_Officer_Name</td>
+							<td hidden width="0%">@item.Verified_Documents</td>
+							<td hidden width="0%">@item.Driver_Id_Type</td>
+							<td hidden width="0%">@item.Driver_Id_Number</td>
+							<td hidden width="0%">@item.Inward_Sys_Id</td>
+						</tr>
+					}
+				}
+			</tbody>
+		}
+	</table>
+</div>

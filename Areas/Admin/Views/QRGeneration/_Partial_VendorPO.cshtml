@@ -1,0 +1,49 @@
+﻿@model List<VendorPO>
+
+<div class="row col-12 mb-3">
+    <button type="button" class="btn btn-info btn-flat px-3 mr-3" onclick="fnSelect_Record()">Select</button>
+    <button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear_Record()">Clear</button>
+    <button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClose_Modal()">Close</button>
+</div>
+
+<div class="row col-12 w-100">
+    <table id="table_PO" class="table table-bordered table-striped w-100 table_Common">
+        <thead>
+            <tr>
+                <th hidden>PO Id</th>
+                <th>PO No.</th>
+                <th>PO Date</th>
+                <th>Vendor Code</th>
+                <th>Vendor Name</th>
+                <th>Site Name</th>
+                <th hidden></th>
+                <th hidden></th>
+                <th>Remaining Qty</th>
+                <th>Lock Status</th>
+                <th>PO Status </th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Count > 0)
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td hidden>@item.Id</td>
+                        <td>@item.PoNo</td>
+                        <td>@item.PoDate_Text</td>
+                        <td>@item.VendorId</td>
+                        <td>@item.VendorName</td>
+                        <td>@item.VendorSite</td>
+                        <td hidden>@item.SiteId</td>
+                        <td hidden>@item.PlantId</td>
+                        <td>@item.Remaining_Qty</td>
+                        <td>@item.IsLock</td>
+                        <td>@item.IsActive</td>
+                    </tr>
+                }
+
+            }
+        </tbody>
+    </table>
+</div>

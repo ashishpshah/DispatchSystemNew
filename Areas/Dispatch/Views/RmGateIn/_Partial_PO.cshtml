@@ -1,0 +1,47 @@
+﻿@model List<PO>
+
+<div class="row col-12 mb-3">
+    <button type="button" class="btn btn-info btn-flat px-3 mr-3" onclick="fnSelect_MDA()">Select</button>
+    <button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear_MDA()">Clear</button>
+    <button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClose_Modal()">Close</button>
+</div>
+
+<div class="row col-12 w-100">
+    <table id="table_Common" class="table table-bordered table-striped w-100">
+        @*@if (((long)ViewBag.Inward_Sys_Id) == 126)*@
+        @*{*@
+        <thead>
+            <tr>
+                <th width="5%">Vehicle Number</th>
+                <th width="5%">PO/Invoice Number</th>
+                <th width="3%">Plant Code</th>
+                <th width="10%">PO/Invoice Date</th>
+                <th width="10%">Cost Center</th>
+                <th>TPTR Code</th>
+                <th>TPTR Name</th>
+                <th>Vendor Name</th>
+                <th>Site Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Count > 0)
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.TruckNo</td>
+                        <td>@item.PoNo</td>
+                        <td>@item.Plant_CD</td>
+                        <td>@item.PoDate_Text</td>
+                        <td>@item.CostCenter</td>
+                        <td>@item.Transporter_Code</td>
+                        <td>@item.Transporter_Name</td>
+                        <td>@item.VendorName</td>
+                        <td>@item.SiteName</td>
+                    </tr>
+                }
+            }
+        </tbody>
+        @*}*@
+    </table>
+</div>

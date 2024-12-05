@@ -1,0 +1,104 @@
+﻿@using System.Globalization;
+@model MDA_Dtls
+
+@{
+    ViewData["Title"] = "Rejected Shipper QR Code By MDA";
+    Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+@* <div class="form-group row mb-3">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-12" style="text-align:center;">
+				<h2 class="font-weight-bold">IFFCO NANO FERTILIZER PLANT - KALOL</h2>
+				<h3 class="font-weight-bold">Rejected Shipper QR Code List</h3>
+			</div>
+			<br />
+		</div>
+	</div>
+</div> *@
+
+<div class="row col-12 mb-3">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12" style="text-align:center;">
+                <h2 class="font-weight-bold"><b>@(Model != null && !string.IsNullOrEmpty(Model.PlantName) ? Model.PlantName : "")</b></h2>
+            </div>
+            <br />
+            <div class="col-sm-12" style="text-align:center;">
+                <h2 class="font-weight-bold">Rejected Shipper QR Code List</h2>
+            </div>
+            <br />
+            <div class="col-sm-12" style="text-align:right;">
+                <h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">MDA No. <span class="float-right">:</span> </label>
+    <label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Mda_No) ? Model.Mda_No : "") </label>
+    <label class="col-sm-2 col-form-label">MDA Date <span class="float-right">:</span> </label>
+    <label class="col-sm-4 col-form-label ml-0"> @(Model != null && Model.Mda_Dt != null ? Model.Mda_Dt?.ToString("dd/MM/yyyy").Replace("-", "/") : "") </label>
+</div>
+
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">Vehicle No <span class="float-right">:</span> </label>
+    <label class="col-sm-4 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Vehicle_No) ? Model.Vehicle_No : "") </label>
+</div>
+
+<br />
+
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">Party Name  <span class="float-right">:</span> </label>
+    <label class="col-sm-8 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.Party_Name) ? Model.Party_Name : "") &nbsp; @(Model != null && !string.IsNullOrEmpty(Model.Wh_Cd) ? "(" + Model.Wh_Cd + ")" : "") </label>
+</div>
+
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">Product  <span class="float-right">:</span> </label>
+    <label class="col-sm-8 col-form-label ml-0"> @(Model != null && !string.IsNullOrEmpty(Model.prd_desc) ? Model.prd_desc : "") &nbsp; @(Model != null && !string.IsNullOrEmpty(Model.prd_cd) ? "(" + Model.prd_cd + ")" : "") </label>
+</div>
+
+<br />
+
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">No. of Bottle  <span class="float-right">:</span> </label>
+    <label class="col-sm-8 col-form-label ml-0"> @(Model != null ? Model.Bag_Nos.ToString("F0", CultureInfo.InvariantCulture) : "0")</label>
+</div>
+
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">No. of Box in MDA <span class="float-right">:</span> </label>
+    <label class="col-sm-4 col-form-label ml-0"> @(Model != null ? Model.Required_Shipper.ToString("F0", CultureInfo.InvariantCulture) : "0")</label>
+    <label class="col-sm-2 col-form-label">No. of Box in Loaded <span class="float-right">:</span> </label>
+    <label class="col-sm-4 col-form-label ml-0"> @(Model != null ? Model.Loaded_Shipper.ToString("F0", CultureInfo.InvariantCulture) : "0")</label>
+</div>
+
+<br />
+
+<div class="row col-12 mt-5">
+    <table id="table_Common_dtls" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+
+                <th width="5%">Sr. No.</th>
+                <th>Shipper QR Code</th>
+                <th>Reject Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.listShipperBatch != null && Model.listShipperBatch.Count() > 0)
+            {
+                @foreach (var item in Model.listShipperBatch)
+                {
+                    <tr>
+
+                        <td>@item.SrNo</td>
+                        <td>@item.ShipperQRCode</td>
+                        <td>@item.Reject_Reason</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

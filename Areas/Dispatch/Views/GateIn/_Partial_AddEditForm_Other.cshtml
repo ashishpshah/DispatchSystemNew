@@ -1,0 +1,137 @@
+﻿@model ResponseModel<OtherMaterial>
+@{
+	Layout = null;
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+	<form id="formSave_Other" asp-area="Dispatch" asp-controller="GateIn" asp-action="Save_Other" method="post" class="form-horizontal" enctype="multipart/form-data">
+		<div class="card card-primary card-outline">
+			<div class="card-body @(Model.Obj.Id > 0 ? " pt-0 mt-0":"")">
+				<input type="text" class="form-control d-none" name="Id" value="@Model.Obj.Id">
+
+				<div class="row p-0 m-0 d-flex">
+					<div class="col-12 tab-content p-0 m-0">
+
+						<div id="tab_Other" class="tab-pane active row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+								<div class="form-group row">
+									<label for="OrderNo" class="col-sm-2 col-form-label text-right">Order No <span style="color:red">*</span></label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" name="OrderNo" maxlength="50"
+											   data-required data-msg="The Order No field is required." autocomplete="off">
+									</div>
+									<label for="OrderDate_Text" class="col-sm-2 col-form-label text-right">Order Date <span style="color:red">*</span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control form-control-sm datepicker" id="OrderDate_Text" name="OrderDate_Text"
+											   data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" value="@(DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/"))"
+											   data-required data-msg="The Order Date field is required." autocomplete="off">
+									</div>
+								</div>
+								<hr />
+								<div class="form-group row">
+									<label for="Transporter_Code" class="col-sm-2 col-form-label text-right" style="align-content:start">Party/Supplier <span style="color:red">*</span></label>
+									<div class="col-sm-3">
+										<input type="text" id="Transporter_Code" name="Transporter_Code" class="form-control form-control-sm d-none"
+											   autocomplete="off" />
+										<select class="form-control form-control-sm select2_tag" data-tagid="Transporter_Code" style="width: 100%;" data-placeholder="Select or enter Party/Supplier">
+											@if (Model != null && Model.SelectListItems != null)
+											{
+												foreach (var item in Model.SelectListItems.Where(x => x.Group == "T"))
+												{
+													<option value="@item.Value" data-vendorcode="@item.Value2">@item.Text</option>
+												}
+											}
+										</select>
+									</div>
+									<label for="Truck_No" class="col-sm-2 col-form-label text-right">Truck No <span style="color:red">*</span></label>
+									<div class="col-sm-3">
+										<input type="text" class="form-control form-control-sm" name="Truck_No"  maxlength="50"
+											   data-required data-msg="The Truck No field is required." autocomplete="off">
+									</div>
+								</div>
+
+								<hr />
+
+								<div class="row mb-2">
+									<div class="col-sm-6">
+										<h5 class="m-0 text-left">Material Details</h5>
+									</div>
+									<div class="col-sm-6">
+										<div class="float-sm-right">
+											<button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnAddRow('form#formSave_Other #table_OtherDtls tbody tr')">
+												<i class="fas fa-plus"></i> &nbsp; Add Material Item
+											</button>
+										</div>
+									</div>
+								</div>
+
+
+								<div class="row no-gooters">
+									<div class="col-md-12 my-1">
+										<table id="table_OtherDtls" class="table table-bordered table-striped w-100">
+											<thead>
+												<tr>
+													<th width="5%">Sr. No.</th>
+													<th>Material</th>
+													<th>Material Description</th>
+													<th width="15%">Quantity</th>
+													<th width="15%">UOM</th>
+													<th width="5%">Action</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr id="tr_ZX" class="d-none">
+													<td><input type="text" class="form-control form-control-sm text-center" name="listOtherMaterialDtls[ZX].SrNo" autocomplete="off" readonly></td>
+													<td><input type="text" class="form-control form-control-sm" name="listOtherMaterialDtls[ZX].Material" autocomplete="off"></td>
+													<td><input type="text" class="form-control form-control-sm" name="listOtherMaterialDtls[ZX].MaterialDesc" autocomplete="off"></td>
+													<td><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listOtherMaterialDtls[ZX].Qty" maxlength="50" autocomplete="off"></td>
+													<td>
+														<input type="text" class="form-control form-control-sm d-none" id="listOtherMaterialDtls[ZX]_UOM" name="listOtherMaterialDtls[ZX].UOM" autocomplete="off">
+
+														<select class="form-control form-control-sm ddlUOM" onchange="fnChange_Select(this,'form#formSave_Other #table_OtherDtls tbody tr#tr_ZX input[name*=\'UOM\']')">
+															@if (Model != null && Model.SelectListItems.Where(x => x.Group == "U") != null)
+															{
+																foreach (var item in Model.SelectListItems.Where(x => x.Group == "U").OrderBy(x => x.OrderBy).ToList())
+																{
+																	<option value="@item.Value" data-type="">@item.Text</option>
+																}
+															}
+														</select>
+													</td>
+													<td>
+														<div class="btn-group">
+															<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+																	onclick="fnDelete_Row('ZX','form#formSave_Other #table_OtherDtls tbody tr');">
+																<i class="far fa-trash-alt"></i>
+															</button>
+														</div>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+
+									<div class="clearfix"></div>
+								</div>
+
+								<div class="form-group row">
+									<div class="col-12 card-footer text-center">
+										<button type="button" class="btn btn-success" onclick="fnSubmitForm('formSave_Other');">Save</button>
+										<button type="button" class="btn btn-danger" onclick="fnClose_Modal()">Cancel</button>
+									</div>
+								</div>
+
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+		<hr />
+	</form>
+</div>

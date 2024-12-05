@@ -1,0 +1,393 @@
+﻿@using Newtonsoft.Json;
+@model ResponseModel<VendorPO>
+
+@{
+    ViewData["Title"] = "VendorPO";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Vendor PO</h1>
+            </div>
+            <div class="col-sm-6">
+                <div class="float-sm-right">
+                    @* @if (Common.IsAdmin())
+                    { *@
+                    <button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2 divformSave_Hide" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","VendorPO", new {  area = "Admin" })');">
+                        <i class="fas fa-plus"></i> &nbsp; Add Vendor PO
+                    </button>
+                    @* } *@
+                    <button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2 divformSave_Display d-none" onclick="fnBackToList();">
+                        <i class="fas fa-arrow-left"></i> &nbsp; Back To List
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row no-gutters divformSave_Display d-none" style="margin: 5px !important;">
+            <div class="col-12">
+                <form id="formSave" asp-area="Admin" asp-controller="VendorPO" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+                    <div class="row no-gutters" id="divformSave"></div>
+                    <div class="clearfix"></div>
+                    <hr />
+                </form>
+            </div>
+        </div>
+
+        <div class="row" id="divList">
+            <div class="col-12">
+                <div class="card card-primary">
+
+                    <div class="card-body">
+
+                        <div class="panel-divider divformSave_Hide">
+                            <span>Search</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-12 row no-gutters">
+                                    <div class="form-group col-md-3 mx-3">
+                                        <label class="col-form-label" style="align-content:start">PO Number</label>
+                                        <input type="text" class="form-control form-control-sm isNumberKey" id="PoNo" autocomplete="off">
+                                    </div>
+                                    <div class="form-group col-md-2 mx-3">
+                                        <label class="col-form-label" style="align-content:start">Vendor Code</label>
+                                        <input type="text" class="form-control form-control-sm isNumberKey" id="VendorCode" autocomplete="off">
+                                    </div>
+                                    <div class="form-group col-md-1 mx-3">
+                                        <label class="col-form-label text-right" style="align-content:start">Year</label>
+                                        <input type="text" class="form-control form-control-sm isNumberKey" id="Year" value="@(Model != null && Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.PoDate_Text)?Model.Obj.PoDate_Text:"")" autocomplete="off">
+                                    </div>
+                                    <div class="form-group col-md-1 mx-3 d-flex align-items-end">
+                                        <label class="col-form-label text-right" style="align-content:start">&nbsp;</label>
+
+                                        <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnLoadTableData()"> Search </button>
+                                        <button type="button" class="btn btn-danger btn-md pull-right mr-2" onclick="fnClear()"> Clear </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="row no-gooters">
+                            <div class="col-md-12 my-1">
+
+                                <table class="table table-bordered table-striped table-hover" id="dataTable_VendorPO"></table>
+
+                            </div>
+
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts{
+
+    <script type="text/javascript">
+
+        var dataTableMain = null;
+
+        $(document).ready(function () {
+
+            setTimeout(function () {
+
+                fnLoadTableData();
+
+            }, 1000);
+
+        });
+
+        function fnClear() {
+            $('#PoNo').val('');
+            $('#VendorCode').val('');
+            $('#Year').val(new Date().getFullYear());
+
+            $('input[type="text"]').trigger('change');
+            fnLoadTableData();
+        }
+
+        function fnLoadTableData() {
+            if ($.fn.DataTable.isDataTable('#dataTable_VendorPO')) {
+                $('#dataTable_VendorPO').DataTable().destroy();
+            }
+
+            dataTableMain = $("#dataTable_VendorPO")
+                .DataTable({
+                    "destroy": true,
+                    "pageLength": 50,
+                    "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                    "sAjaxSource": "@Url_RootToController/GetData_VendorPO",
+                    "bServerSide": true,
+                    "bProcessing": true,
+                    "bSearchable": true,
+                    "order": [[0, 'asc']],
+                    "language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+                    "fnServerParams": function (aoData) {
+                        aoData.push({ "name": "PoNo", "value": "" + $('#PoNo').val() });
+                        aoData.push({ "name": "VendorCode", "value": "" + $('#VendorCode').val() });
+                        aoData.push({ "name": "Year", "value": "" + $('#Year').val() });
+                    },
+                    "columns": [
+                        { "title": "Sr. No.", "data": "srNo", "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
+                        { "title": "PO NO", "data": "poNo", "autoWidth": true, "searchable": true },
+                        { "title": "PO Date", "data": "poDate_Text", "autoWidth": true, "searchable": true },
+                        { "title": "PO Description", "data": "poDesc", "autoWidth": true, "searchable": true },
+                        { "title": "Vendor Code", "data": "vendorCode", "autoWidth": true, "searchable": true },
+                        { "title": "Vendor Name", "data": "vendorName", "autoWidth": true, "searchable": true },
+                        { "title": "Vendor Site", "data": "vendorSite", "autoWidth": true, "searchable": true },
+                        {
+                            "title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
+                            "render": function (data, type, row, meta) {
+                                return '<div class="btn-group"><a class="btn btn-info btn-sm btn-flat" href="javascript:void(0);" onclick="fnLoadParialView(\'divformSave\', \'@Url.Action("Partial_AddEditForm","VendorPO", new {  area = "Admin" })?Id=' + data.id + '\')"><span class="nme"><i class="far fa-edit"></i></span></a>' +
+                                    //'<a class="btn btn-danger btn-sm btn-flat ml-2" href="javascript:void(0);" onclick="divShow(\'@Url_RootToController/DeleteConfirmed?Id=' + data.id + '\');"><span class="nme"><i class="far fa-trash-alt"></i></span></a>' +
+                                    '</div>';
+                            }
+                        }
+                    ],
+                    //"columnDefs": [
+                    //    { "visible": false, "targets": 9 }
+                    //]
+                });
+
+        }
+    </script>
+
+    <script type="text/javascript">
+        var table = {};
+
+        $(function () {
+
+        });
+
+        function fnChange_Select($this, $selecter) {
+
+            var selectedValue = $($this).find('option:selected').val();
+
+            if (typeof selectedValue != 'undefined' && selectedValue != null && selectedValue != '' && selectedValue.length > 0)
+                $($selecter).val(selectedValue);
+            else
+                $($selecter).val('');
+
+            $($selecter).trigger('change');
+        }
+
+        function fnSelect_Record() {
+
+            if ($('#table_Common tbody tr.bg-info').length <= 0) {
+                CommonAlert_Error("Please select one MDA Number");
+                return false;
+            }
+            else {
+
+
+
+                $('input[name="Organization_Name"]').val('');
+                $('input[name="First_Name"]').val('');
+                $('input[name="Middle_Name"]').val('');
+                $('input[name="Last_Name"]').val('');
+                $('input[name="MobileNo"]').val('');
+                $('input[name="Email_Id"]').val('');
+
+                var selectedData = table.rows('.bg-info').data();
+
+                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1) {
+
+                    $('input[name="Organization_Name"]').val(selectedData[0][1]);
+                    $('input[name="First_Name"]').val(selectedData[0][3]);
+                    $('input[name="Middle_Name"]').val(selectedData[0][4]);
+                    $('input[name="Last_Name"]').val(selectedData[0][5]);
+                    $('input[name="MobileNo"]').val(selectedData[0][6]);
+                    $('input[name="Email_Id"]').val(selectedData[0][7]);
+                }
+
+
+                $('input[name="Organization_Name"]').trigger('change');
+                $('input[name="First_Name"]').trigger('change');
+                $('input[name="Middle_Name"]').trigger('change');
+                $('input[name="Last_Name"]').trigger('change');
+                $('input[name="MobileNo"]').trigger('change');
+                $('input[name="Email_Id"]').trigger('change');
+
+            }
+        }
+
+        function fnAddRow() {
+
+            var rowNum = $('#table_VendorPOSite tbody tr:not(#tr_ZX)').length;
+
+            var newRow = $('#table_VendorPOSite tbody tr#tr_ZX')[0].innerHTML;
+
+            newRow = '<tr id="tr_' + rowNum + '">' + newRow.replaceAll('ZX', rowNum) + '</tr>';
+
+            $("#table_VendorPOSite tbody").append(newRow);
+
+            $("#table_VendorPOSite tbody tr#tr_" + rowNum + ' select').addClass('select2');
+            $("#table_VendorPOSite tbody tr#tr_" + rowNum + ' select.select2').select2();
+            $("#table_VendorPOSite tbody tr#tr_" + rowNum + ' input[name="listVendorPoDtls[' + rowNum + '].LineNo"]').val((rowNum + 1));
+        }
+
+        var delete_$rowNum = null;
+
+        function fnDelete_Row($rowNum) {
+
+            var po_id = $('input[name="Id"]').val();
+            var po_dtls_id = $("#table_VendorPOSite tbody tr#tr_" + $rowNum).find('input[name="listVendorPoDtls[' + $rowNum + '].Id"]').val();
+
+            if (typeof po_id != 'undefined' && po_id != null && po_id.length > 0 && !isNaN(parseFloat(po_id)) && parseFloat(po_id) > 0
+                && typeof po_dtls_id != 'undefined' && po_dtls_id != null && po_dtls_id.length > 0 && !isNaN(parseFloat(po_dtls_id)) && parseFloat(po_dtls_id) > 0) {
+                delete_$rowNum = $rowNum;
+                fnDelete_Confirm('@Url.Action("DeleteConfirmed","VendorPO", new {  area = "Admin" })?id=' + po_id + '&id_dtls=' + po_dtls_id);
+            }
+            else {
+                delete_$rowNum = null;
+                $("#table_VendorPOSite tbody tr#tr_" + $rowNum).remove();
+            }
+        }
+
+        function fnDelete_Success(response) {
+
+            if (response.statusCode === 1 && delete_$rowNum != null && delete_$rowNum > -1) {
+                $("#table_VendorPOSite tbody tr#tr_" + delete_$rowNum).remove();
+            }
+
+            delete_$rowNum = null;
+        }
+
+        function fnGet_PO_Details() {
+
+            var PoNo = $('input[name="PoNo"]').val();
+
+            if (typeof PoNo != 'undefined' && PoNo != null && PoNo.length > 0) {
+
+                $.ajax({
+                    url: '@Url.Action("Get_PO_Details", "VendorPo")?PoNo=' + PoNo,
+                    type: 'POST',
+                    dataType: 'json',
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    data: null,
+                    contentType: 'application/json; charset=utf-8',
+                    success: function (response) {
+
+                        try {
+                            ShowLoader(false);
+                            if (response.statusCode === 1 && response.obj != null) {
+
+
+                                $('form#formSave select[name="VendorId"]').removeAttr('onchange');
+                                if (typeof response.obj.vendorId == 'undefined' || response.obj.vendorId == null || (response.obj.vendorId + "").trim() == '' || (response.obj.vendorId + "").trim() == '0')
+                                    response.obj.vendorId = $('form#formSave select[name="VendorId"] option[data-vendorcode="' + response.obj.vendorCode + '"]').attr("value");
+
+                                $('form#formSave select[name="VendorId"]').val(response.obj.vendorId);
+                                $('form#formSave select[name="VendorId"]').trigger('change');
+
+                                $('form#formSave select[name="SiteId"]').empty();
+
+                                $.each(response.selectListItems, function (i, state) {
+                                    //if (response.obj.siteId > 0 && state.value == (response.obj.siteId + ""))
+                                    //	$('form#formSave select[name="SiteId"]').append('<option selected value="' + state.value + '">' + state.text + '</option>');
+                                    //else if (response.obj.vendorSite != null && state.text == (response.obj.vendorSite + ""))
+                                    //	$('form#formSave select[name="SiteId"]').append('<option selected value="' + state.value + '">' + state.text + '</option>');
+                                    //else
+                                    $('form#formSave select[name="SiteId"]').append('<option value="' + state.value + '">' + state.text + '</option>');
+                                });
+
+                                if (typeof response.obj.siteId == 'undefined' || response.obj.siteId == null || (response.obj.siteId + "").trim() == '' || (response.obj.siteId + "").trim() == '0')
+                                    response.obj.siteId = $('form#formSave select[name="SiteId"] option').filter(function () { return $(this).html().indexOf((response.obj.vendorSite + "")) > -1; }).val();
+
+                                $('form#formSave select[name="SiteId"]').val(response.obj.siteId);
+                                $('form#formSave select[name="SiteId"]').trigger('change');
+
+
+                                $('form#formSave select[name="VendorId"]').attr('onchange', 'getVendorSite()');
+
+                                $('form#formSave input[name="Id"]').val(response.obj.id);
+                                $('form#formSave input[name="PoDate"]').val(response.obj.poDate_Text);
+                                $('form#formSave input[name="PoDesc"]').val(response.obj.poDesc);
+
+                                if (response.obj.listVendorPoDtls != null && response.obj.listVendorPoDtls.length > 0) {
+
+                                    $('#table_VendorPOSite tbody tr:not(#tr_ZX)').remove();
+
+                                    for (var rowNum = 0; rowNum < response.obj.listVendorPoDtls.length; rowNum++) {
+
+                                        //var rowNum = $('#table_VendorPOSite tbody tr:not(#tr_ZX)').length;
+
+                                        var newRow = $('form#formSave #table_VendorPOSite tbody tr#tr_ZX')[0].innerHTML;
+
+                                        newRow = '<tr id="tr_' + rowNum + '">' + newRow.replaceAll('ZX', rowNum) + '</tr>';
+
+                                        $("form#formSave #table_VendorPOSite tbody").append(newRow);
+
+
+
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' input[name="listVendorPoDtls[' + rowNum + '].Id"]').val(response.obj.listVendorPoDtls[rowNum].id);
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' input[name="listVendorPoDtls[' + rowNum + '].VPO_Id"]').val(response.obj.listVendorPoDtls[rowNum].vpO_Id);
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' input[name="listVendorPoDtls[' + rowNum + '].LineNo"]').val(response.obj.listVendorPoDtls[rowNum].lineNo);
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' input[name="listVendorPoDtls[' + rowNum + '].LineDesc"]').val(response.obj.listVendorPoDtls[rowNum].lineDesc);
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' input[name="listVendorPoDtls[' + rowNum + '].UOM"]').val(response.obj.listVendorPoDtls[rowNum].uom);
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' select.ddlUOM').val(response.obj.listVendorPoDtls[rowNum].uom);
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' input[name="listVendorPoDtls[' + rowNum + '].LineQty"]').val(response.obj.listVendorPoDtls[rowNum].lineQty);
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' input[name="listVendorPoDtls[' + rowNum + '].Adjusted_Qty"]').val(response.obj.listVendorPoDtls[rowNum].adjusted_Qty);
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' input[name="listVendorPoDtls[' + rowNum + '].Amendment_Qty"]').val(response.obj.listVendorPoDtls[rowNum].amendment_Qty);
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' input[name="listVendorPoDtls[' + rowNum + '].Remark"]').val(response.obj.listVendorPoDtls[rowNum].remark);
+
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' select').addClass('select2');
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' select.select2').select2();
+                                        $("form#formSave #table_VendorPOSite tbody tr#tr_" + rowNum + ' select.select2').trigger('change');
+
+                                    }
+
+                                }
+                            }
+                            else {
+                                CommonAlert_Error(response.message, null)
+                            }
+                        } catch { }
+                    },
+                    failure: function (response) {
+                        ShowLoader(false);
+                        Swal.fire({ icon: 'error', title: 'Oops...! Something went wrong!' })
+                    },
+                    error: function (response) {
+                        ShowLoader(false);
+                        Swal.fire({ icon: 'error', title: 'Oops...! Something went wrong!' })
+                    }
+                });
+            }
+        }
+
+        function getVendorSite() {
+
+            $("#SiteId").empty();
+
+            $.ajax({
+                type: 'POST',
+                url: "@Url.Action("GetVendorSitelist","VendorPo")",
+                dataType: 'json',
+                data: { Vendor_Id: $('#VendorId').val() }
+            }).done(function (state) {
+
+                $.each(state, function (i, state) {
+                    $("#SiteId").append('<option value="' + state.value + '">' +
+                        state.text + '</option>');
+                });
+            }).fail(function (xhr) {
+                console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+            });
+            return false;
+        }
+    </script>
+}
+

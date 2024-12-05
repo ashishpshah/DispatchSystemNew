@@ -1,0 +1,210 @@
+﻿@model ResponseModel<QRCodeGeneration>
+
+@{
+    ViewData["Title"] = "QR Codes View";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Qr Code Generation Report</h1>
+            </div>
+
+        </div>
+    </div>
+</div>
+<section class="content">
+    <div class="container-fluid">
+        <div class="card card-primary card-outline">
+
+            <div class="card-body">
+
+                <div class="panel-divider">
+                    <span>Search QR Code Requests</span>
+                    <div class="row no-gutters p-0 m-0">
+                        <div class="col-12 row no-gutters">
+                            <div class="form-group col-md-3 mx-3">
+                                <label class="col-form-label" style="align-content:start">Plant</label>
+                                <input type="hidden" class="form-control form-control-sm" id="PlantId" value="@Model.Obj.PlantId">
+                                <input type="text" class="form-control form-control-sm" id="PlantName" value="@Model.Obj.PlantName" autocomplete="off" readonly>
+                            </div>
+                            @*<div class="form-group col-md-2 mx-3">
+                            <label class="col-form-label" style="align-content:start">PO Number</label>
+                            <input type="text" class="form-control form-control-sm isNumberKey" id="PoNo" autocomplete="off">
+                            </div>*@
+                            @*<div class="form-group col-md-2 mx-3">
+                            <label class="col-form-label" style="align-content:start">Vendor Code</label>
+                            <input type="text" class="form-control form-control-sm isNumberKey" id="VendorCode" autocomplete="off">
+                            </div>*@
+                            <div class="form-group col-md-3 mx-3">
+                                <label class="col-form-label text-right" style="align-content:start">SKU Name</label>
+                                <select class="form-control form-control-sm select2" id="SKU">
+                                    @if (Model != null && Model.SelectListItems != null)
+                                    {
+                                        foreach (var item in Model.SelectListItems)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Request Date From</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-2 mx-3">
+                                <label class="col-form-label" style="align-content:start">Request Date To</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="col-12 no-gutters">
+                            <div class="form-group mx-3 text-center">
+                                <label class="col-form-label text-right" style="align-content:start">&nbsp;</label>
+
+                                <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnLoadTableData()"> Search </button>
+                                <button type="button" class="btn btn-danger btn-md pull-right mr-2" onclick="fnClear()"> Clear </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="panel-divider">
+                    <span>Details</span>
+                    <div class="row no-gooters">
+                        <div class="col-md-12 my-1">
+                            <table class="table table-bordered table-striped table-hover" id="dataTable_PoDetails"></table>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+@section Scripts{
+
+    <script type="text/javascript">
+
+
+        function fnClear() {
+            $('#FromDate').val("");
+            $('#ToDate').val("");
+            $('#SKU option:selected').val("");
+        }
+
+        $(function () { });
+
+        function fnLoadTableData() {
+            if ($.fn.DataTable.isDataTable('#dataTable_PoDetails')) {
+                $('#dataTable_PoDetails').DataTable().destroy();
+            }
+
+
+            var subHeading = "";
+
+            if ($('#SKU option:selected').val() != null && $('#SKU option:selected').val() != '') {
+                subHeading = 'SKU: ' + $('#SKU option:selected').text();
+            }
+
+            if ($('#FromDate').val() != null && $('#FromDate').val() != '') {
+                subHeading = 'Form Date: ' + $('#FromDate').val() + ' To Date: ' + $('#ToDate').val();
+            }
+
+            dataTableMain = $("#dataTable_PoDetails")
+                .DataTable({
+                    "destroy": true,
+                    "pageLength": "All", "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                    "sAjaxSource": "@Url_RootToController/GetData_QrCodeViewSup",
+                    "bServerSide": true,
+                    "bProcessing": true,
+                    "bSearchable": true,
+                    "order": [[0, 'asc']],
+                    "language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+                    "fnServerParams": function (aoData) {
+                        aoData.push({ "name": "RequestNo", "value": "" + $('#RequestNo').val() });
+                        //aoData.push({ "name": "PO_Number", "value": "" + $('#PO_Number').val() });
+                        aoData.push({ "name": "VendorCode", "value": "" + $('#VendorCode').val() });
+                        aoData.push({ "name": "ProductId", "value": "" + $('#SKU option:selected').val() });
+                        aoData.push({ "name": "FromDate", "value": "" + $('#FromDate').val() });
+                        aoData.push({ "name": "ToDate", "value": "" + $('#ToDate').val() });
+                        aoData.push({ "name": "Type", "value": "" });
+                    },
+                    "columns": [
+                        //{ "title": "Generation Status", "data": "requestStatus", "autoWidth": false, "searchable": true },
+                        { "title": "Generated Date", "data": "requestDate_Text", "autoWidth": true, "searchable": true },
+                        { "title": "Last Downloaded By", "data": "lastDownloadBy", "autoWidth": true, "searchable": true },
+                        { "title": "Last Downloaded Date", "data": "lastDownloadDate_Text", "autoWidth": true, "searchable": true },
+                        { "title": "Request No", "data": "requestNo", "autoWidth": true, "searchable": true },
+                        { "title": "Plant", "data": "plantName", "autoWidth": true, "searchable": true },
+                        { "title": "Generated By", "data": "created_By", "autoWidth": true, "searchable": true },
+                        { "title": "SKU", "data": "skuDesc", "autoWidth": true, "searchable": true },
+                        { "title": "QR Code QTY", "data": "totalQty", "autoWidth": true, "searchable": true },
+                        //{ "title": "Sr No: Printed From", "data": "serial_No_From", "autoWidth": true, "searchable": true },
+                        // "title": "Sr No: Printed To ", "data": "serial_No_To", "autoWidth": true, "searchable": true },
+                        //{
+                        //    "title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
+                        //    "render": function (data, type, row, meta) {
+                        //        return '<div class="btn-group"><a class="btn btn-info btn-sm btn-flat" href="javascript:void(0);" onclick="fnShow_Modal(\'@Url.Action("Partial_AddEditForm","QRCode", new {  area = "Admin" })?Id=' + data.id + '\', \'View QR Code Requests\', false, \'html\', false)"><span><i class="far fa-edit"></i></span></a></div>';
+                        //    }
+                        //}
+                    ],
+                    "dom": "<'row'<'col-sm-6 mb-3'B>>" +
+                        "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                    "buttons": [
+                        //     {
+                        //     extend: "csv",
+                        //     className: "btn-flat btn-info mx-2 px-3",
+                        //     titleAttr: 'Export in CSV',
+                        //     text: 'CSV',
+                        //     filename: 'QR Code Requests List',
+                        //     init: function (api, node, config) { $(node).removeClass('btn-default') }
+                        // },
+                        // {
+                        //     extend: "excel",
+                        //     className: "btn-flat btn-success mx-2 px-3",
+                        //     titleAttr: 'Export in Excel',
+                        //     text: 'Excel',
+                        //     filename: 'QR Code Requests List',
+                        //     init: function (api, node, config) { $(node).removeClass('btn-default') }
+                        // },
+                        {
+                            extend: "pdfHtml5",
+                            className: "btn-flat btn-danger mx-2 px-3",
+                            titleAttr: 'Export in PDF',
+                            text: 'PDF',
+                            pageSize: 'LEGAL',
+                            filename: 'QR Code Requests List',
+                            init: function (api, node, config) { $(node).removeClass('btn-default') },
+                            customize: function (doc) {
+                                doc.defaultStyle.fontSize = 10;
+                                doc.pageMargins = [5, 10, 5, 10]; // Adjust margins
+                                doc.pageOrientation = 'landscape'; // Set orientation
+                                doc.content.splice(1, 0, {
+                                    text: subHeading,
+                                    style: 'subheader'
+                                });
+                                doc.styles.subheader = {
+                                    fontSize: 12,
+                                    italics: true,
+                                    margin: [10, 0, 0, 10]
+                                };
+                                // Add more customization options as needed
+                            }
+                        }]
+                });
+
+        }
+    </script>
+}
+

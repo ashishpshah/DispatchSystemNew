@@ -1,0 +1,92 @@
+﻿@model ResponseModel<AssignUserRole>
+@{
+	Layout = null;
+	var IndexPageUrl = "/" + ViewContext.RouteData.Values["Area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString() + "/Index";
+}
+
+<div class="col-12">
+	<div class="card card-primary card-outline">
+		<div class="card-header">
+			<h3 class="card-title">@(Model.Obj.Id > 0 ? "Edit " : "Create") Assign Role To User</h3>
+
+			<div class="card-tools">
+				<button type="button" class="btn btn-primary btn-sm" title="Back To List" onclick="fnBackToList('@IndexPageUrl')">
+					<i class="fas fa-arrow-left"></i> Back To List
+				</button>
+			</div>
+		</div>
+
+		<div class="card-body">
+			<input type="text" class="form-control d-none" name="Id" value="@Model.Obj.Id">
+
+
+				
+				<div class="row no-gutters p-0 m-0">
+					<div class="col-12 card card-primary p-0 m-0 shadow-none mt-3">
+					
+						<div class="form-group row">
+							<div class="col-6">
+								<div class="input-group input-group-sm ">
+									<label for="User_Id" class="col-sm-4 col-form-label pl-0">User</label>
+									<span class="input-group-append col-sm-6 ml-0">
+										<select id="User_Id" name="User_Id" class="form-control form-control-sm select2" style="width: 100%;">
+											@if (Model != null && Model.SelectList != null)
+											{
+												foreach (var item in Model.SelectList)
+												{
+													if (item.Value == Convert.ToString(@Model.Obj.User_Id))
+													{
+														<option value="@item.Value" selected>@item.Text</option>
+													}
+													else
+													{
+														<option value="@item.Value">@item.Text</option>
+													}
+
+												}
+											}
+										</select>
+
+									</span>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="input-group input-group-sm ">
+									<label for="Role_Id" class="col-sm-4 col-form-label pl-0">Role</label>
+									<span class="input-group-append col-sm-6 ml-0">
+										<select id="Role_Id" name="Role_Id" class="form-control form-control-sm select2" style="width: 100%;">
+											@if (Model != null && ViewBag.Rolelist != null)
+											{
+												foreach (var item in ViewBag.Rolelist)
+												{
+													if (item.Value == Convert.ToString(@Model.Obj.Role_Id))
+													{
+														<option value="@item.Value" selected>@item.Text</option>
+													}
+													else
+													{
+														<option value="@item.Value">@item.Text</option>
+													}
+												}
+											}
+										</select>
+
+									</span>
+								</div>
+							</div>
+						</div>
+						
+						
+					</div>
+				</div>
+	
+
+		</div>
+
+		<div class="card-footer" style="text-align:center">
+			<button type="submit" class="btn btn-success btnSubmit">Save</button>
+			<button type="button" class="btn btn-danger" onclick="fnCloseParialView('divformSave', '#table_Common_SrNo');">Cancel</button>
+		</div>
+	</div>
+</div>
+

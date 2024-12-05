@@ -1,0 +1,178 @@
+﻿@model ResponseModel<LOV>
+
+@{
+	ViewData["Title"] = "LOV";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles{
+	<link rel="stylesheet" href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+	<link rel="stylesheet" href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+	<style>
+		.eye-pass {
+			position: absolute;
+			margin-top: 15px;
+			top: -4px;
+			right: 0;
+			margin-right: 35px;
+			cursor: pointer;
+		}
+
+		input[type=password]::-ms-reveal,
+		input[type=password]::-ms-clear {
+			display: none;
+		}
+
+		.col-form-label, .isNumberKey {
+			text-align: right !important;
+		}
+	</style>
+}
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">LOV</h1>
+			</div>
+			<div class="col-sm-6">
+				<div class="float-sm-right">
+					@*@if (Model.IsCreate == true)
+					{*@
+					<button type="button" id="btnAddNewItem" class="btn btn-primary btn-md pull-right mr-2" onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","LOV", new {  area = "Admin" })');">
+						<i class="fas fa-plus"></i> &nbsp; Add new item
+					</button>
+					@*}*@
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section class="content">
+	<div class="container-fluid">
+		<div class="row no-gutters divformSave_Display d-none" style="margin: 5px !important;">
+			<div class="col-12">
+				@*<form id="formSave" action="@Url.Action("Save","LOV", new {  area = "Admin"})" method="post">*@
+				<form id="formSave" asp-area="Admin" asp-controller="LOV" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data">
+					<div class="row no-gutters" id="divformSave"></div>
+					<div class="clearfix"></div>
+					<hr />
+				</form>
+			</div>
+		</div>
+		<div class="row" id="divList">
+			<div class="col-12">
+				<div class="card card-primary card-outline">
+
+					<div class="card-body">
+						<div class="row no-gooters">
+							<div class="col-md-12 my-1">
+								<table id="table_Common_SrNo" class="table table-bordered table-striped">
+									<thead>
+										<tr>
+											<th>#</th>
+											<th>Column Name</th>
+											<th>Display Text</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in Model.ListObj)
+										{
+											<tr>
+												<td></td>
+												<td>@item.Lov_Column</td>
+												<td>@item.Column_For</td>
+												<td>
+													<div class="btn-group">
+
+														<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
+																onclick="fnLoadParialView('divformSave', '@Url.Action("Partial_AddEditForm","LOV", new {  area = "Admin" })?Lov_Column=@item.Lov_Column&Column_For=@item.Column_For');">
+															<i class="far fa-edit"></i>
+														</button>
+														<button type="button" class="btn btn-info btn-sm ml-1" onclick="location.href='@Url.Action("IndexLovDtl","Lov", new { Area = "Admin" })?Lov_Column=@item.Lov_Column&Column_For=@item.Column_For'">
+															View
+														</button>
+														<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
+																onclick="fnDelete_Confirm('@Url.Action("DeleteConfirmed","LOV", new {  area = "Admin" })?Lov_Column=@item.Lov_Column&Column_For=@item.Column_For', '#table_Common_SrNo');">
+															<i class="far fa-trash-alt"></i>
+														</button>
+													</div>
+												</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+@section Scripts{
+
+	<script type="text/javascript">
+		$(function () {
+
+		});
+
+		function fnChangeIcon() {
+			const togglePassword = document.querySelector('#togglePassword');
+			const password = document.querySelector('#password');
+			const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+			password.setAttribute('type', type);
+			togglePassword.classList.toggle('fa-eye-slash');
+		}
+		function getstatelist() {
+			
+			$("#State_Id").empty();
+			$("#District_Id").empty();
+			$.ajax({
+				type: 'POST',
+				url: "@Url.Action("GetStateList","LOV")",
+				dataType: 'json',
+				data: { Country_Id: $('#Country_Id').val() }
+
+			})
+				.done(function (state) {
+					$.each(state, function (i, state) {
+						$("#State_Id").append('<option value="' + state.value + '">' +
+							state.text + '</option>');
+					});
+				}).fail(function (xhr) {
+					console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+				});
+			return false;
+		}
+		function GetDistrictList() {
+			
+			$("#District_Id").empty();
+			$.ajax({
+				type: 'POST',
+				url: "@Url.Action("GetDistrictList","LOV")",
+				dataType: 'json',
+				data: { State_Id: $('#State_Id').val() }
+
+			})
+				.done(function (district) {
+
+					$.each(district, function (i, district) {
+
+						$("#District_Id").append('<option value="' + district.value + '">' +
+							district.text + '</option>');
+					});
+				}).fail(function (xhr) {
+					console.log('error : ' + xhr.status + ' - ' + xhr.statusText + ' - ' + xhr.responseText);
+				});
+			return false;
+		}
+	</script>
+}
+

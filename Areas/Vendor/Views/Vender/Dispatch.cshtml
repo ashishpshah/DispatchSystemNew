@@ -1,0 +1,145 @@
+﻿@model ResponseModel<QRCodeGeneration>
+
+@{
+	ViewData["Title"] = "QR Code";
+	//Layout = "~/Views/Shared/_Layout.cshtml";
+	var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+
+<div class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1 class="m-0">QR Code Print Dispatch</h1>
+			</div>
+
+		</div>
+	</div>
+</div>
+<section class="content">
+	<div class="container-fluid">
+		<div class="card card-primary card-outline">
+
+			<div class="card-body">
+
+				<div class="panel-divider">
+					<span>Search Requests</span>
+					<div class="row no-gutters p-0 m-0">
+						<div class="col-12 row no-gutters">
+							<div class="form-group col-md-2 mx-3">
+								<label class="col-form-label" style="align-content:start">Request Number</label>
+								<input type="text" class="form-control form-control-sm" id="RequestNo" autocomplete="off">
+							</div>
+							<div class="form-group col-md-2 mx-3">
+								<label class="col-form-label" style="align-content:start">PO Number</label>
+								<input type="text" class="form-control form-control-sm isNumberKey" id="PoNo" autocomplete="off">
+							</div>
+							<div class="form-group col-md-3 mx-3">
+								<label class="col-form-label text-right" style="align-content:start">SKU Name</label>
+								<select class="form-control form-control-sm select2" id="SKU">
+									@if (Model != null && Model.SelectListItems != null)
+									{
+										foreach (var item in Model.SelectListItems)
+										{
+											<option value="@item.Value">@item.Text</option>
+										}
+									}
+								</select>
+							</div>
+						</div>
+
+						<div class="col-12 row no-gutters">
+							<div class="form-group col-md-2 mx-3">
+								<label class="col-form-label" style="align-content:start">Request Date From</label>
+								<input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+							</div>
+							<div class="form-group col-md-2 mx-3">
+								<label class="col-form-label" style="align-content:start">Request Date To</label>
+								<input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+							</div>
+							<div class="form-group col-md-1 mx-3 d-flex align-items-end">
+								<label class="col-form-label text-right" style="align-content:start">&nbsp;</label>
+
+								<button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnLoadTableData()"> Search </button>
+								<button type="button" class="btn btn-danger btn-md pull-right mr-2" onclick="fnClear()"> Clear </button>
+							</div>
+						</div>
+					</div>
+					<div class="clearfix"></div>
+				</div>
+
+				<div class="panel-divider">
+					<span>Request List</span>
+					<div class="row no-gooters">
+						<div class="col-md-12 my-1">
+							<table class="table table-bordered table-striped table-hover" id="dataTable_PoDetails"></table>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+
+@section Scripts{
+
+	<script type="text/javascript">
+
+		$(function () { });
+
+		function fnLoadTableData() {
+			if ($.fn.DataTable.isDataTable('#dataTable_PoDetails')) {
+				$('#dataTable_PoDetails').DataTable().destroy();
+			}
+
+			dataTableMain = $("#dataTable_PoDetails")
+				.DataTable({
+					"destroy": true,
+					"pageLength": "All","lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+					"sAjaxSource": "@Url_RootToController/GetData_PoDetails",
+					"bServerSide": true,
+					"bProcessing": true,
+					"bSearchable": true,
+					"order": [[0, 'asc']],
+					"language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+					"fnServerParams": function (aoData) {
+						aoData.push({ "name": "RequestNo", "value": "" + $('#RequestNo').val() });
+						aoData.push({ "name": "PoNo", "value": "" + $('#PoNo').val() });
+						aoData.push({ "name": "VendorCode", "value": "" });
+						aoData.push({ "name": "ProductId", "value": "" + $('#SKU option:selected').val() });
+						aoData.push({ "name": "FromDate", "value": "" + $('#FromDate').val() });
+						aoData.push({ "name": "ToDate", "value": "" + $('#ToDate').val() });
+						aoData.push({ "name": "Type", "value": "DISPATCH" });
+					},
+					"columns": [
+						{ "title": "No.", "data": "srNo", "autoWidth": false, "searchable": true, "width": "5%", "class": "text-center" },
+						{ "title": "Request No.", "data": "requestNo", "autoWidth": true, "searchable": true },
+						{ "title": "Plant", "data": "plantName", "autoWidth": true, "searchable": true },
+						{ "title": "PO No.", "data": "pO_Number", "autoWidth": true, "searchable": true },
+						{ "title": "SKU Description ", "data": "skuDesc", "autoWidth": true, "searchable": true },
+						{ "title": "Request Date", "data": "requestDate_Text", "autoWidth": true, "searchable": true },
+						//{ "title": "Total Quantity ", "data": "totalQty", "autoWidth": true, "searchable": true },
+						{ "title": "Required Quantity", "data": "requestQty", "autoWidth": true, "searchable": true },
+						{ "title": "No Of Files", "data": "nooffiles", "autoWidth": true, "searchable": true },
+						//{ "title": "Remaining Quantity", "data": "remainQty", "autoWidth": true, "searchable": true },
+						//{ "title": "Email Send", "data": "fileEmailSend", "autoWidth": true, "searchable": true },
+						//{ "title": "Status", "data": "requestStatus", "autoWidth": true, "searchable": true },
+						{
+							"title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
+							"render": function (data, type, row, meta) {
+								return '<div class="btn-group"><a class="btn btn-info btn-sm btn-flat" href="javascript:void(0);" '
+									+ 'onclick="fnShow_Modal(\'@Url.Action("Partial_AddEditForm_Dispatch","Vender", new {  area = "Vendor" })?Id=' + data.id
+									+ '\', \'Dispatch Details\', false, \'html\', false)"><span><i class="far fa-edit"></i></span></a></div>';
+							}
+						}
+					],
+				});
+
+		}
+	</script>
+}
+
