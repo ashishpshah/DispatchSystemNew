@@ -222,7 +222,7 @@
 
 			$.ajax({
 				type: "GET",
-				url: '@Url.Action("GetMDA","CancleGateIn")?type=' + $type + '&searchTerm=' + $('#inputSearch').val() + '&Inward_Sys_Id=' + $('#ddlInward_Sys_Id option:selected').val(),
+				url: '@Url.Action("GetMDA","CancleGateIn", new { area = "Dispatch" })?type=' + $type + '&searchTerm=' + $('#inputSearch').val() + '&Inward_Sys_Id=' + $('#ddlInward_Sys_Id option:selected').val(),
 				data: null,
 				contentType: "application/json; charset=utf-8",
 				dataType: "html",

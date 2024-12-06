@@ -45,7 +45,7 @@ namespace Dispatch_System.Controllers
 				string sourceFolderPath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch").GetSection("Source_Folder_Path").Value ?? "");
 				string destinationFolderPath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch").GetSection("Destination_Folder_Path").Value ?? "");
 
-				string[] sourceFilePaths = sourceFilePaths = Directory.GetFiles(sourceFolderPath, "*.json", SearchOption.AllDirectories);
+				string[] sourceFilePaths =  Directory.GetFiles(sourceFolderPath, "*.json", SearchOption.AllDirectories);
 				string[] destinationFilePaths = Directory.GetFiles(destinationFolderPath, "*.json", SearchOption.AllDirectories);
 
 				if (destinationFilePaths == null)

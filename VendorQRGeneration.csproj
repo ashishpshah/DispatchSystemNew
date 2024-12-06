@@ -80,6 +80,7 @@
 		<Content Remove="Areas\Admin\Views\VendorPo\_Partial_AddEditForm - Copy.cshtml" />
 		<Content Remove="Areas\Dispatch\Views\Reports\Index_Print.cshtml" />
 		<Content Remove="Areas\Dispatch\Views\WeighmentOutSlip\_Partial_ShipperQRList_Detail.cshtml" />
+		<Content Remove="Areas\Export\Views\CancleGateIn\_Partial_MDA_.cshtml" />
 	</ItemGroup>
 
 
@@ -111,6 +112,7 @@
 		<None Include="Areas\Dispatch\Views\WeightIn\_Partial_MDA.cshtml" />
 		<None Include="Areas\Dispatch\Views\WeightOut\Index.cshtml" />
 		<None Include="Areas\Dispatch\Views\WeightOut\_Partial_MDA.cshtml" />
+		<None Include="Areas\Export\Views\CancleGateIn\_Partial_MDA_.cshtml" />
 		<None Include="Areas\Export\Views\GateIn\Index.cshtml" />
 		<None Include="Areas\Export\Views\GateIn\_Partial_MDA.cshtml" />
 		<None Include="Areas\Export\Views\GateOut\Index.cshtml" />

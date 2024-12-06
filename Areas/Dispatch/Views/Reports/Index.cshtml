@@ -1,813 +1,822 @@
 ﻿@model ResponseModel<GateIn>
 
 @{
-	ViewData["Title"] = "Report";
+    ViewData["Title"] = "Report";
 }
 @section Styles {
-	<style type="text/css">
-		th, td {
-			white-space: nowrap;
-		}
-	</style>
+    <style type="text/css">
+        th, td {
+            white-space: break-spaces;
+        }
+    </style>
 }
 
 <section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
-	<div class="container-fluid">
-		<div class="row mb-2">
-			<div class="col-sm-12" style="text-align:center;">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12" style="text-align:center;">
 
-				@if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "S")
-				{
-					<h3 class="font-weight-bold">Shipper QR Code By MDA</h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "R")
-				{
-					<h3 class="font-weight-bold">Reject Shipper QR Code By MDA</h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "KB")
-				{
-					<h3 class="font-weight-bold">Know Your Batch Data</h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "KBMW")
-				{
-					<h3 class="font-weight-bold">Monthly Production & Dispatch Report</h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "KS")
-				{
-					<h3 class="font-weight-bold">Know Your Shipper Data</h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "IQR")
-				{
-					<h3 class="font-weight-bold">Know Your Invoice No. </h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "B")
-				{
-					<h3 class="font-weight-bold">Know Your Bottle </h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "DS")
-				{
-					<h3 class="font-weight-bold">MDA Dispatch Summary Report</h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "DS_COUNT")
-				{
-					<h3 class="font-weight-bold">MDA Dispatch Summary Count Report</h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "DS_MDA")
-				{
-					<h3 class="font-weight-bold">MDA Wise Dispatch Summary Report</h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "BL")
-				{
-					<h3 class="font-weight-bold">Batch File Log</h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "BL_LIVE")
-				{
-					<h3 class="font-weight-bold">Batch File Log Live</h3>
-				}
-				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "BL_ISSUE")
-				{
-					<h3 class="font-weight-bold">Batch File(s) - Issue</h3>
-				}
+                @if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "S")
+                {
+                    <h3 class="font-weight-bold">Shipper QR Code By MDA</h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "R")
+                {
+                    <h3 class="font-weight-bold">Reject Shipper QR Code By MDA</h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "KB")
+                {
+                    <h3 class="font-weight-bold">Know Your Batch Data</h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "KBMW")
+                {
+                    <h3 class="font-weight-bold">Monthly Production & Dispatch Report</h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "KS")
+                {
+                    <h3 class="font-weight-bold">Know Your Shipper Data</h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "IQR")
+                {
+                    <h3 class="font-weight-bold">Know Your Invoice No. </h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "B")
+                {
+                    <h3 class="font-weight-bold">Know Your Bottle </h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "DS")
+                {
+                    <h3 class="font-weight-bold">MDA Dispatch Summary Report</h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "DS_COUNT")
+                {
+                    <h3 class="font-weight-bold">MDA Dispatch Summary Count Report</h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "DS_MDA")
+                {
+                    <h3 class="font-weight-bold">MDA Wise Dispatch Summary Report</h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "BL")
+                {
+                    <h3 class="font-weight-bold">Batch File Log</h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "BL_LIVE")
+                {
+                    <h3 class="font-weight-bold">Batch File Log Live</h3>
+                }
+                else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "BL_ISSUE")
+                {
+                    <h3 class="font-weight-bold">Batch File(s) - Issue</h3>
+                }
 
-				<input type="text" class="form-control d-none" id="inputReportType" value="@Model.Status">
-			</div>
-		</div>
-	</div>
+                <input type="text" class="form-control d-none" id="inputReportType" value="@Model.Status">
+            </div>
+        </div>
+    </div>
 </section>
 
 <section class="content p-0">
-	<div class="container-fluid p-0">
-		<div class="row no-gutters">
-			<div class="col-12 card">
-				<div class="card-body pb-0">
-					<div class="panel-divider">
-						<span>Search Details</span>
-						<div class="row no-gutters p-0 m-0">
-							<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
-								<div class="form-horizontal">
-									<div class="card-body py-1 px-0">
+    <div class="container-fluid p-0">
+        <div class="row no-gutters">
+            <div class="col-12 card">
+                <div class="card-body pb-0">
+                    <div class="panel-divider">
+                        <span>Search Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="form-horizontal">
+                                    <div class="card-body py-1 px-0">
 
-										@if (!string.IsNullOrEmpty(Model.Status) && (Model.Status == "KB" || Model.Status == "KBMW"))
-										{
-											if (Model.Status == "KBMW")
-											{
-												<div class="form-group row">
-													<label for="inputSearch" class="col-sm-2 col-form-label text-right">Batch No.</label>
-													<div class="col-sm-3">
-														<input type="text" id="inputSearch" class="form-control" autocomplete="off" />
-													</div>
-												</div>
+                                        @if (!string.IsNullOrEmpty(Model.Status) && (Model.Status == "KB" || Model.Status == "KBMW"))
+                                        {
+                                            if (Model.Status == "KBMW")
+                                            {
+                                                <div class="form-group row">
+                                                    <label for="inputSearch" class="col-sm-2 col-form-label text-right">Batch No.</label>
+                                                    <div class="col-sm-3">
+                                                        <input type="text" id="inputSearch" class="form-control" autocomplete="off" />
+                                                    </div>
+                                                </div>
 
-												<div class="form-group row">
-													<label class="col-sm-2 col-form-label text-right">Select Month & Year </label>
-													<div class="col-sm-2">
-														<select id="ddlMonth" class="form-control form-control-sm select2" style="width: 100%;">
-															@for (int month = 1; month <= 12; month++)
-															{
-																if (DateTime.Now.Month == month)
-																{
-																	<option value="@month" selected>@(new DateTime(DateTime.Now.Year, month, 1).ToString("MMMM"))</option>
-																}
-																else
-																{
-																	<option value="@month">@(new DateTime(DateTime.Now.Year, month, 1).ToString("MMMM"))</option>
-																}
-															}
-														</select>
-													</div>
-													<div class="col-sm-1">
-														<input type="text" class="form-control form-control-sm text-center isNumberKey" id="inputYear" value="@DateTime.Now.Year" maxlength="4" autocomplete="off">
-													</div>
-												</div>
-												<div class="form-group row col-sm-12 text-center ml-5 pl-5">
-													<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-												</div>
-											}
-											else
-											{
-												<div class="form-group row">
-													<label for="inputSearch" class="col-sm-2 col-form-label text-right">Batch No.</label>
-													<div class="col-sm-3">
-														<div class="input-group input-group-sm">
-															<input type="text" id="inputSearch" class="form-control" autocomplete="off" />
-															<span class="input-group-append">
-																<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-															</span>
-														</div>
-													</div>
-												</div>
+                                                <div class="form-group row">
+                                                    <label class="col-sm-2 col-form-label text-right">Select Month & Year </label>
+                                                    <div class="col-sm-2">
+                                                        <select id="ddlMonth" class="form-control form-control-sm select2" style="width: 100%;">
+                                                            @for (int month = 1; month <= 12; month++)
+                                                            {
+                                                                if (DateTime.Now.Month == month)
+                                                                {
+                                                                    <option value="@month" selected>@(new DateTime(DateTime.Now.Year, month, 1).ToString("MMMM"))</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@month">@(new DateTime(DateTime.Now.Year, month, 1).ToString("MMMM"))</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-1">
+                                                        <input type="text" class="form-control form-control-sm text-center isNumberKey" id="inputYear" value="@DateTime.Now.Year" maxlength="4" autocomplete="off">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row col-sm-12 text-center ml-5 pl-5">
+                                                    <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="form-group row">
+                                                    <label for="inputSearch" class="col-sm-2 col-form-label text-right">Batch No.</label>
+                                                    <div class="col-sm-3">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" id="inputSearch" class="form-control" autocomplete="off" />
+                                                            <span class="input-group-append">
+                                                                <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-												<div class="form-group row">
-													<label class="col-sm-2 col-form-label text-right">With Detail </label>
-													<div class="col-sm-4">
-														<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
-															<input type="checkbox" class="custom-control-input" id="switch_Status" onchange="fnChange_Switch(this, 'label_Switch_Status')">
-															<label class="custom-control-label pt-2" for="switch_Status" id="label_Switch_Status" data-true="Yes" data-false="No">No</label>
-														</div>
-													</div>
-												</div>
-											}
-										}
-										@* @if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "KB")
-										{
-										<div class="form-group row">
-										<label for="inputSearch" class="col-sm-2 col-form-label text-right">Batch No.</label>
-										<div class="col-sm-3">
-										<div class="input-group input-group-sm">
-										<input type="text" id="inputSearch" class="form-control" autocomplete="off" />
-										<span class="input-group-append">
-										<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-										</span>
-										</div>
-										</div>
-										</div>
-										<div class="form-group row">
-										<label class="col-sm-2 col-form-label text-right">With Detail </label>
-										<div class="col-sm-4">
-										<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
-										<input type="checkbox" class="custom-control-input" id="switch_Status" onchange="fnChange_Switch(this, 'label_Switch_Status')">
-										<label class="custom-control-label pt-2" for="switch_Status" id="label_Switch_Status" data-true="Yes" data-false="No">No</label>
-										</div>
-										</div>
-										</div>
-										} *@
-										else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "KS")
-										{
-											<div class="form-group row">
-												<label for="inputSearch" class="col-sm-2 col-form-label text-right">Shipper QR Code</label>
-												<div class="col-sm-3">
-													<div class="input-group input-group-sm">
-														<input type="text" id="inputSearch" class="form-control" autocomplete="off" />
-														<span class="input-group-append">
-															<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-														</span>
-													</div>
-												</div>
-											</div>
-										}
-										else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "B")
-										{
-											<div class="form-group row">
-												<label for="inputSearch" class="col-sm-2 col-form-label text-right">Bottle QR Code</label>
-												<div class="col-sm-3">
-													<div class="input-group input-group-sm">
-														<input type="text" id="inputSearch" class="form-control" autocomplete="off" />
-														<span class="input-group-append">
-															<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-														</span>
-													</div>
-												</div>
-											</div>
-										}
-										else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "IQR")
-										{
-											<div class="form-group row">
-												<label for="inputSearch" class="col-sm-2 col-form-label text-right">Invoice No.</label>
-												<div class="col-sm-3">
-													<div class="input-group input-group-sm">
-														<input type="text" id="inputSearch" class="form-control" autocomplete="off" />
-														<span class="input-group-append">
-															<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-														</span>
-													</div>
-												</div>
-											</div>
-											<div class="form-group row">
-												<label class="col-sm-2 col-form-label text-right">With Detail </label>
-												<div class="col-sm-4">
-													<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
-														<input type="checkbox" class="custom-control-input" id="switch_Status" onchange="fnChange_Switch(this, 'label_Switch_Status')">
-														<label class="custom-control-label pt-2" for="switch_Status" id="label_Switch_Status" data-true="Yes" data-false="No">No</label>
-													</div>
-												</div>
-											</div>
-										}
-										else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "BL")
-										{
-											<div class="row no-gutters p-0 m-0">
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">File Name / Batch No.</label>
-													<input type="text" class="form-control form-control-sm" id="inputSearch" autocomplete="off">
-												</div>
-											</div>
-											<div class="row no-gutters p-0 m-0">
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">From Date</label>
-													<input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-value="@DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
-												</div>
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">To Date</label>
-													<input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
-												</div>
-											</div>
-											<div class="form-group row col-sm-12 text-center ml-5 pl-5">
-												<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-											</div>
-										}
-										else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "BL_LIVE")
-										{
-											<div class="row no-gutters p-0 m-0">
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">File Name / Batch No.</label>
-													<input type="text" class="form-control form-control-sm" id="inputSearch" autocomplete="off">
-												</div>
-											</div>
-											<div class="row no-gutters p-0 m-0">
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">From Date</label>
-													<input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-value="@DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
-												</div>
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">To Date</label>
-													<input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
-												</div>
-											</div>
-											<div class="form-group row col-sm-12 text-center ml-5 pl-5">
-												<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-											</div>
-										}
-										else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "BL_ISSUE")
-										{
-											<div class="form-group row">
-												<label class="col-sm-2 col-form-label text-right">Select File </label>
-												<div class="col-sm-2">
-													<select id="ddlFileName" class="form-control form-control-sm select2" style="width: 100%;">
-														@if (Model != null && Model.SelectListItems != null)
-														{
-															foreach (var item in Model.SelectListItems.ToList())
-															{
-																	<option value="@item.Value" data-type="">@item.Text</option>
-															}
-														}
-													</select>
-												</div>
-											</div>
-											<div class="form-group row ml-5 pl-5">
-												<label class="col-sm-2 col-form-label text-right">&nbsp; </label>
-												<div class="col-sm-1">
-												<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-												</div>
-											</div>
-										}
-										else if (!string.IsNullOrEmpty(Model.Status) && !Convert.ToString(Model.Status).Contains("DS"))
-										{
-											<div class="form-group row">
-												<label for="inputSearch" class="col-sm-2 col-form-label text-right">MDA No.</label>
-												<div class="col-sm-3">
-													<div class="input-group input-group-sm">
-														<input type="text" id="inputSearch" class="form-control" autocomplete="off" />
-														<span class="input-group-append">
-															<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-														</span>
-													</div>
-												</div>
-											</div>
-										}
-										else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status).IndexOf("DS") == 0)
-										{
-											<div class="row no-gutters p-0 m-0">
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">MDA No</label>
-													<input type="text" class="form-control form-control-sm" id="MDA_No" autocomplete="off">
-												</div>
-												@if (!Convert.ToString(Model.Status).Contains("DS_COUNT"))
-												{
-													<div class="form-group col-md-3 mx-3">
-														<label class="col-form-label" style="align-content:start">Truck No</label>
-														<input type="text" class="form-control form-control-sm" id="Truck_No" autocomplete="off">
-													</div>
-													<div class="form-group col-md-3 mx-3">
-														<label class="col-form-label" style="align-content:start">Party Name</label>
-														<input type="text" class="form-control form-control-sm" id="PartyName" autocomplete="off">
-													</div>
-												}
+                                                <div class="form-group row">
+                                                    <label class="col-sm-2 col-form-label text-right">With Detail </label>
+                                                    <div class="col-sm-4">
+                                                        <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+                                                            <input type="checkbox" class="custom-control-input" id="switch_Status" onchange="fnChange_Switch(this, 'label_Switch_Status')">
+                                                            <label class="custom-control-label pt-2" for="switch_Status" id="label_Switch_Status" data-true="Yes" data-false="No">No</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        @* @if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "KB")
+                                        {
+                                        <div class="form-group row">
+                                        <label for="inputSearch" class="col-sm-2 col-form-label text-right">Batch No.</label>
+                                        <div class="col-sm-3">
+                                        <div class="input-group input-group-sm">
+                                        <input type="text" id="inputSearch" class="form-control" autocomplete="off" />
+                                        <span class="input-group-append">
+                                        <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                        </span>
+                                        </div>
+                                        </div>
+                                        </div>
+                                        <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label text-right">With Detail </label>
+                                        <div class="col-sm-4">
+                                        <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+                                        <input type="checkbox" class="custom-control-input" id="switch_Status" onchange="fnChange_Switch(this, 'label_Switch_Status')">
+                                        <label class="custom-control-label pt-2" for="switch_Status" id="label_Switch_Status" data-true="Yes" data-false="No">No</label>
+                                        </div>
+                                        </div>
+                                        </div>
+                                        } *@
+                                        else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "KS")
+                                        {
+                                            <div class="form-group row">
+                                                <label for="inputSearch" class="col-sm-2 col-form-label text-right">Shipper QR Code</label>
+                                                <div class="col-sm-3">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="inputSearch" class="form-control" autocomplete="off" />
+                                                        <span class="input-group-append">
+                                                            <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "B")
+                                        {
+                                            <div class="form-group row">
+                                                <label for="inputSearch" class="col-sm-2 col-form-label text-right">Bottle QR Code</label>
+                                                <div class="col-sm-3">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="inputSearch" class="form-control" autocomplete="off" />
+                                                        <span class="input-group-append">
+                                                            <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "IQR")
+                                        {
+                                            <div class="form-group row">
+                                                <label for="inputSearch" class="col-sm-2 col-form-label text-right">Invoice No.</label>
+                                                <div class="col-sm-3">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="inputSearch" class="form-control" autocomplete="off" />
+                                                        <span class="input-group-append">
+                                                            <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label class="col-sm-2 col-form-label text-right">With Detail </label>
+                                                <div class="col-sm-4">
+                                                    <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+                                                        <input type="checkbox" class="custom-control-input" id="switch_Status" onchange="fnChange_Switch(this, 'label_Switch_Status')">
+                                                        <label class="custom-control-label pt-2" for="switch_Status" id="label_Switch_Status" data-true="Yes" data-false="No">No</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "BL")
+                                        {
+                                            <div class="row no-gutters p-0 m-0">
+                                                <div class="form-group col-md-3 mx-3">
+                                                    <label class="col-form-label" style="align-content:start">File Name / Batch No.</label>
+                                                    <input type="text" class="form-control form-control-sm" id="inputSearch" autocomplete="off">
+                                                </div>
+                                            </div>
+                                            <div class="row no-gutters p-0 m-0">
+                                                <div class="form-group col-md-3 mx-3">
+                                                    <label class="col-form-label" style="align-content:start">From Date</label>
+                                                    <input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-value="@DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                                                </div>
+                                                <div class="form-group col-md-3 mx-3">
+                                                    <label class="col-form-label" style="align-content:start">To Date</label>
+                                                    <input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row col-sm-12 text-center ml-5 pl-5">
+                                                <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                            </div>
+                                        }
+                                        else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "BL_LIVE")
+                                        {
+                                            <div class="row no-gutters p-0 m-0">
+                                                <div class="form-group col-md-3 mx-3">
+                                                    <label class="col-form-label" style="align-content:start">File Name / Batch No.</label>
+                                                    <input type="text" class="form-control form-control-sm" id="inputSearch" autocomplete="off">
+                                                </div>
+                                            </div>
+                                            <div class="row no-gutters p-0 m-0">
+                                                <div class="form-group col-md-3 mx-3">
+                                                    <label class="col-form-label" style="align-content:start">From Date</label>
+                                                    <input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-value="@DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                                                </div>
+                                                <div class="form-group col-md-3 mx-3">
+                                                    <label class="col-form-label" style="align-content:start">To Date</label>
+                                                    <input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row col-sm-12 text-center ml-5 pl-5">
+                                                <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                            </div>
+                                        }
+                                        else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status) == "BL_ISSUE")
+                                        {
+                                            <div class="form-group row">
+                                                <label class="col-sm-2 col-form-label text-right">Select File </label>
+                                                <div class="col-sm-2">
+                                                    <select id="ddlFileName" class="form-control form-control-sm select2" style="width: 100%;">
+                                                        @if (Model != null && Model.SelectListItems != null)
+                                                        {
+                                                            foreach (var item in Model.SelectListItems.ToList())
+                                                            {
+                                                                <option value="@item.Value" data-type="">@item.Text</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row ml-5 pl-5">
+                                                <label class="col-sm-2 col-form-label text-right">&nbsp; </label>
+                                                <div class="col-sm-1">
+                                                    <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (!string.IsNullOrEmpty(Model.Status) && !Convert.ToString(Model.Status).Contains("DS"))
+                                        {
+                                            <div class="form-group row">
+                                                <label for="inputSearch" class="col-sm-2 col-form-label text-right">MDA No.</label>
+                                                <div class="col-sm-3">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="inputSearch" class="form-control" autocomplete="off" />
+                                                        <span class="input-group-append">
+                                                            <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status).IndexOf("DS") == 0)
+                                        {
+                                            <div class="row no-gutters p-0 m-0">
+                                                <div class="form-group col-md-3 mx-3">
+                                                    <label class="col-form-label" style="align-content:start">MDA No</label>
+                                                    <input type="text" class="form-control form-control-sm" id="MDA_No" autocomplete="off">
+                                                </div>
+                                                @if (!Convert.ToString(Model.Status).Contains("DS_COUNT"))
+                                                {
+                                                    <div class="form-group col-md-3 mx-3">
+                                                        <label class="col-form-label" style="align-content:start">Truck No</label>
+                                                        <input type="text" class="form-control form-control-sm" id="Truck_No" autocomplete="off">
+                                                    </div>
+                                                    <div class="form-group col-md-3 mx-3">
+                                                        <label class="col-form-label" style="align-content:start">Party Name</label>
+                                                        <input type="text" class="form-control form-control-sm" id="PartyName" autocomplete="off">
+                                                    </div>
+                                                }
 
-											</div>
-											<div class="row no-gutters p-0 m-0">
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">MDA Date From</label>
-													<input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-value="@DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
-												</div>
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">MDA Date To</label>
-													<input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
-												</div>
-												@if (!Convert.ToString(Model.Status).Contains("DS_COUNT"))
-												{
-													<div class="form-group col-md-3 mx-3">
-														<label class="col-form-label" style="align-content:start">Destination On</label>
-														<input type="text" class="form-control form-control-sm" id="Destination" autocomplete="off">
-													</div>
-												}
+                                            </div>
+                                            <div class="row no-gutters p-0 m-0">
+                                                <div class="form-group col-md-3 mx-3">
+                                                    <label class="col-form-label" style="align-content:start">MDA Date From</label>
+                                                    <input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-value="@DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                                                </div>
+                                                <div class="form-group col-md-3 mx-3">
+                                                    <label class="col-form-label" style="align-content:start">MDA Date To</label>
+                                                    <input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                                                </div>
+                                                @if (!Convert.ToString(Model.Status).Contains("DS_COUNT"))
+                                                {
+                                                    <div class="form-group col-md-3 mx-3">
+                                                        <label class="col-form-label" style="align-content:start">Destination On</label>
+                                                        <input type="text" class="form-control form-control-sm" id="Destination" autocomplete="off">
+                                                    </div>
+                                                }
 
-											</div>
-											<div class="form-group row col-sm-12 text-center ml-5 pl-5">
-												<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-											</div>
-										}
+                                            </div>
+                                            <div class="form-group row col-sm-12 text-center ml-5 pl-5">
+                                                <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                            </div>
+                                        }
 
 
 
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-					<div class="panel-divider">
-						<span>Report </span>
-						<div class="row no-gutters p-0 m-0">
-							<div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
-								<div class="card-body py-1 px-0" id="div_DataTable"></div>
-							</div>
-						</div>
-					</div>
+                    <div class="panel-divider">
 
-				</div>
-				<div class="card-footer">
-					<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear()">Clear</button>
-					<span class="float-right mr-3"><span class="text-danger">*</span> Mandatory Fields</span>
-				</div>
-			</div>
-		</div>
-	</div>
+                        @if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "BL_ISSUE")
+                        {
+                            <span>Batch File Details </span>
+                        }
+                        else
+                        {
+                            <span>Report </span>
+                        }
+
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="card-body py-1 px-0" id="div_DataTable"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear()">Clear</button>
+                    <span class="float-right mr-3"><span class="text-danger">*</span> Mandatory Fields</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
 
 
 @section Scripts {
 
 
-	<script type="text/javascript">
-		//var table = {};
-		//var tableDtls = {};
+    <script type="text/javascript">
+        //var table = {};
+        //var tableDtls = {};
 
-		var divToPrint_HTML = '';
+        var divToPrint_HTML = '';
 
-		$(document).ready(function () {
+        $(document).ready(function () {
 
-		});
+        });
 
-		function fnChange_Switch_Success($this, $labelId) {
+        function fnChange_Switch_Success($this, $labelId) {
 
-			if ($this.checked) {
-				$(".divDetail").removeClass('d-none');
-				$(".divDetail_Z").addClass('d-none');
-				$("#lableReportTitle").text($("#lableReportTitle").text().replace("Summary", "Detail"));
-			}
-			else {
-				$(".divDetail").addClass('d-none');
-				$(".divDetail_Z").removeClass('d-none');
-				$("#lableReportTitle").text($("#lableReportTitle").text().replace("Detail", "Summary"));
-			}
-		}
+            if ($this.checked) {
+                $(".divDetail").removeClass('d-none');
+                $(".divDetail_Z").addClass('d-none');
+                $("#lableReportTitle").text($("#lableReportTitle").text().replace("Summary", "Detail"));
+            }
+            else {
+                $(".divDetail").addClass('d-none');
+                $(".divDetail_Z").removeClass('d-none');
+                $("#lableReportTitle").text($("#lableReportTitle").text().replace("Detail", "Summary"));
+            }
+        }
 
-		function printDiv($selector) {
+        function printDiv($selector) {
 
-			var divToPrint = $($selector);
+            var divToPrint = $($selector);
 
-			var newWin = window.open('', 'Print-Window');
+            var newWin = window.open('', 'Print-Window');
 
-			newWin.document.open();
+            newWin.document.open();
 
-			let tagToAdd_html = document.createElement('html');
+            let tagToAdd_html = document.createElement('html');
 
-			let tagToAdd_body = document.createElement('body');
+            let tagToAdd_body = document.createElement('body');
 
-			tagToAdd_body.appendChild(divToPrint_HTML);
+            tagToAdd_body.appendChild(divToPrint_HTML);
 
-			tagToAdd_html.appendChild(tagToAdd_body);
+            tagToAdd_html.appendChild(tagToAdd_body);
 
-			newWin.document.appendChild(tagToAdd_html);
+            newWin.document.appendChild(tagToAdd_html);
 
-			newWin.document.close();
+            newWin.document.close();
 
-		}
+        }
 
-		function fnLoad_DataTable() {
-			debugger
-			ShowLoader(true);
+        function fnLoad_DataTable() {
+            debugger
+            ShowLoader(true);
 
-			$('#div_DataTable').html('');
+            $('#div_DataTable').html('');
 
-			var inputReportType = $('#inputReportType').val();
+            var inputReportType = $('#inputReportType').val();
 
-			if (typeof inputReportType != 'undefined' && inputReportType != null && inputReportType.length > 0
-				&& (inputReportType.indexOf('KB') == 0 || inputReportType.indexOf('KBMW') == 0 || inputReportType.indexOf('KS') == 0 || inputReportType.indexOf('IQR') == 0
-					|| inputReportType.indexOf('B') == 0 || inputReportType.indexOf('BL') >= 0 || inputReportType.indexOf('BL_ISSUE') >= 0)) {
+            if (typeof inputReportType != 'undefined' && inputReportType != null && inputReportType.length > 0
+                && (inputReportType.indexOf('KB') == 0 || inputReportType.indexOf('KBMW') == 0 || inputReportType.indexOf('KS') == 0 || inputReportType.indexOf('IQR') == 0
+                    || inputReportType.indexOf('B') == 0 || inputReportType.indexOf('BL') >= 0 || inputReportType.indexOf('BL_ISSUE') >= 0)) {
 
-				var url = '';
+                var url = '';
 
-				var searchTerm = $('#inputSearch').val();
+                var searchTerm = $('#inputSearch').val();
 
-				if (inputReportType.indexOf('BL_ISSUE') >= 0) searchTerm = $('#ddlFileName option:selected').val();
+                if (inputReportType.indexOf('BL_ISSUE') >= 0) searchTerm = $('#ddlFileName option:selected').val();
 
-				debugger;
+                debugger;
 
-				if ((typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) || inputReportType.indexOf('B') == 0 || inputReportType.indexOf('KBMW') == 0 || inputReportType.indexOf('BL') >= 0) {
+                if ((typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) || inputReportType.indexOf('B') == 0 || inputReportType.indexOf('KBMW') == 0 || inputReportType.indexOf('BL') >= 0) {
 
-					// if (inputReportType == "B") url = '@Url.Action("GetData_KnowYourBottle", "Reports")?searchTerm=' + searchTerm;
-					// else if (inputReportType == "KB") url = '@Url.Action("GetData_KnowYourBatch", "Reports")?searchTerm=' + searchTerm;
-					// else if (inputReportType == "KS") url = '@Url.Action("GetData_KnowYourShipper", "Reports")?searchTerm=' + searchTerm;
-					// else if (inputReportType == "IQR") url = '@Url.Action("GetData_KnowYourInvoice", "Reports")?invoice_qr_code=' + searchTerm;
+                    // if (inputReportType == "B") url = '@Url.Action("GetData_KnowYourBottle", "Reports")?searchTerm=' + searchTerm;
+                    // else if (inputReportType == "KB") url = '@Url.Action("GetData_KnowYourBatch", "Reports")?searchTerm=' + searchTerm;
+                    // else if (inputReportType == "KS") url = '@Url.Action("GetData_KnowYourShipper", "Reports")?searchTerm=' + searchTerm;
+                    // else if (inputReportType == "IQR") url = '@Url.Action("GetData_KnowYourInvoice", "Reports")?invoice_qr_code=' + searchTerm;
 
-					if (inputReportType == "B") url = '@Url.Action("GetData_KnowYourBottle", "Reports")?searchTerm=' + searchTerm;
-					else if (inputReportType == "KB") url = '@Url.Action("GetData_KnowYourBatch", "Reports")?searchTerm=' + searchTerm;
-					else if (inputReportType == "KBMW") url = '@Url.Action("GetData_KnowYourBatch_MonthWise", "Reports")?searchTerm=' + searchTerm + "&Month=" + $('#ddlMonth option:selected').val() + "&Year=" + $('#inputYear').val();
-					else if (inputReportType == "KS") url = '@Url.Action("GetData_KnowYourShipper", "Reports")?searchTerm=' + searchTerm;
-					else if (inputReportType == "IQR") url = '@Url.Action("GetData_KnowYourInvoice", "Reports")?invoice_qr_code=' + searchTerm;
-					else if (inputReportType == "BL") {
+                    if (inputReportType == "B") url = '@Url.Action("GetData_KnowYourBottle", "Reports")?searchTerm=' + searchTerm;
+                    else if (inputReportType == "KB") url = '@Url.Action("GetData_KnowYourBatch", "Reports")?searchTerm=' + searchTerm;
+                    else if (inputReportType == "KBMW") url = '@Url.Action("GetData_KnowYourBatch_MonthWise", "Reports")?searchTerm=' + searchTerm + "&Month=" + $('#ddlMonth option:selected').val() + "&Year=" + $('#inputYear').val();
+                    else if (inputReportType == "KS") url = '@Url.Action("GetData_KnowYourShipper", "Reports")?searchTerm=' + searchTerm;
+                    else if (inputReportType == "IQR") url = '@Url.Action("GetData_KnowYourInvoice", "Reports")?invoice_qr_code=' + searchTerm;
+                    else if (inputReportType == "BL") {
 
-						var FromDate = $('#FromDate').val();
-						var ToDate = $('#ToDate').val();
+                        var FromDate = $('#FromDate').val();
+                        var ToDate = $('#ToDate').val();
 
-						url = '@Url.Action("GetData_BatchLogFile", "Reports")?searchTerm=' + searchTerm + '&FromDate=' + FromDate + '&ToDate=' + ToDate;
-					}
-					else if (inputReportType == "BL_LIVE") {
-						debugger
-						var FromDate = $('#FromDate').val();
-						var ToDate = $('#ToDate').val();
+                        url = '@Url.Action("GetData_BatchLogFile", "Reports")?searchTerm=' + searchTerm + '&FromDate=' + FromDate + '&ToDate=' + ToDate;
+                    }
+                    else if (inputReportType == "BL_LIVE") {
+                        debugger
+                        var FromDate = $('#FromDate').val();
+                        var ToDate = $('#ToDate').val();
 
-						url = '@Url.Action("GetData_BatchLogFileLive", "Reports")?searchTerm=' + searchTerm + '&FromDate=' + FromDate + '&ToDate=' + ToDate;
-					}
-					else if (inputReportType == "BL_ISSUE") url = '@Url.Action("GetData_KnowYourBatch_Issue", "Reports")?searchTerm=' + searchTerm;
+                        url = '@Url.Action("GetData_BatchLogFileLive", "Reports")?searchTerm=' + searchTerm + '&FromDate=' + FromDate + '&ToDate=' + ToDate;
+                    }
+                    else if (inputReportType == "BL_ISSUE") url = '@Url.Action("GetData_KnowYourBatch_Issue", "Reports")?searchTerm=' + searchTerm;
 
-					if (url.indexOf('GetData_KnowYourInvoice') > -1 || url.indexOf('GetData_KnowYourBatch') > -1)
-						url = url + '&withDetail=' + $('#switch_Status').is(':checked');
+                    if (url.indexOf('GetData_KnowYourInvoice') > -1 || url.indexOf('GetData_KnowYourBatch') > -1)
+                        url = url + '&withDetail=' + $('#switch_Status').is(':checked');
 
-					debugger;
+                    debugger;
 
-					$.ajax({
-						type: "GET",
-						url: url,
-						data: null,
-						contentType: "application/json; charset=utf-8",
-						dataType: "html",
-						success: function (response) {
+                    $.ajax({
+                        type: "GET",
+                        url: url,
+                        data: null,
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "html",
+                        success: function (response) {
 
-							setTimeout(function () {
+                            setTimeout(function () {
 
-								$('#div_DataTable').html(response);
+                                $('#div_DataTable').html(response);
 
-								// $('#switch_Status').prop('checked', false);
-								// $('#switch_Status').trigger('change');
+                                // $('#switch_Status').prop('checked', false);
+                                // $('#switch_Status').trigger('change');
 
-								try { fnLoadCommonTable('#div_DataTable #table_Common'); } catch { }
-								try { fnLoadCommonTable('#div_DataTable .table_Common'); } catch { }
+                                try { fnLoadCommonTable('#div_DataTable #table_Common'); } catch { }
+                                try { fnLoadCommonTable('#div_DataTable .table_Common'); } catch { }
 
-								ShowLoader(false);
+                                ShowLoader(false);
 
-							}, 1000);
+                            }, 1000);
 
-						},
-						failure: function (response) {
-							CommonAlert_Error(null)
-						},
-						error: function (response) {
-							CommonAlert_Error(null)
-						}
-					});
+                        },
+                        failure: function (response) {
+                            CommonAlert_Error(null)
+                        },
+                        error: function (response) {
+                            CommonAlert_Error(null)
+                        }
+                    });
 
-				}
-				else {
-					ShowLoader(false);
-				}
-			}
-			else if (typeof inputReportType != 'undefined' && inputReportType != null && inputReportType.length > 0 && inputReportType.indexOf('DS') < 0) {
+                }
+                else {
+                    ShowLoader(false);
+                }
+            }
+            else if (typeof inputReportType != 'undefined' && inputReportType != null && inputReportType.length > 0 && inputReportType.indexOf('DS') < 0) {
 
-				var searchTerm = $('#inputSearch').val();
+                var searchTerm = $('#inputSearch').val();
 
-				if (typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) {
+                if (typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) {
 
-					var url = "";
+                    var url = "";
 
-					$.ajax({
-						type: "GET",
-						url: '@(!string.IsNullOrEmpty(Model.Status) && Model.Status == "S" ? Url.Action("GetData_ShipperQRCodeList", "Reports") : Url.Action("GetData_ShipperQRCodeList_Rejected", "Reports"))?searchTerm=' + searchTerm,
-						data: null,
-						contentType: "application/json; charset=utf-8",
-						dataType: "html",
-						success: function (response) {
+                    $.ajax({
+                        type: "GET",
+                        url: '@(!string.IsNullOrEmpty(Model.Status) && Model.Status == "S" ? Url.Action("GetData_ShipperQRCodeList", "Reports") : Url.Action("GetData_ShipperQRCodeList_Rejected", "Reports"))?searchTerm=' + searchTerm,
+                        data: null,
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "html",
+                        success: function (response) {
 
-							setTimeout(function () {
+                            setTimeout(function () {
 
-								$('#div_DataTable').html(response);
+                                $('#div_DataTable').html(response);
 
-								ShowLoader(false);
+                                ShowLoader(false);
 
-							}, 1000);
+                            }, 1000);
 
-						},
-						failure: function (response) {
-							CommonAlert_Error(null)
-						},
-						error: function (response) {
-							CommonAlert_Error(null)
-						}
-					});
+                        },
+                        failure: function (response) {
+                            CommonAlert_Error(null)
+                        },
+                        error: function (response) {
+                            CommonAlert_Error(null)
+                        }
+                    });
 
-				}
-				else {
-					ShowLoader(false);
-				}
-			}
-			else if (typeof inputReportType != 'undefined' && inputReportType != null && inputReportType.length > 0 && inputReportType.indexOf('DS') >= 0) {
+                }
+                else {
+                    ShowLoader(false);
+                }
+            }
+            else if (typeof inputReportType != 'undefined' && inputReportType != null && inputReportType.length > 0 && inputReportType.indexOf('DS') >= 0) {
 
-				var FromDate = $('#FromDate').val();
-				var ToDate = $('#ToDate').val();
-				var MDA_No = $('#MDA_No').val();
+                var FromDate = $('#FromDate').val();
+                var ToDate = $('#ToDate').val();
+                var MDA_No = $('#MDA_No').val();
 
-				var url = '';
+                var url = '';
 
-				if (inputReportType != "DS_COUNT") {
+                if (inputReportType != "DS_COUNT") {
 
-					var Truck_No = $('#Truck_No').val();
-					var PartyName = $('#PartyName').val();
-					var Destination = $('#Destination').val();
+                    var Truck_No = $('#Truck_No').val();
+                    var PartyName = $('#PartyName').val();
+                    var Destination = $('#Destination').val();
 
-					url = '@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=@(Convert.ToString(Model.Status))&MDA_No=' + MDA_No + '&Truck_No=' + Truck_No + '&PartyName=' + PartyName + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&Destination=' + Destination;
-				}
-				else { url = '@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=@(Convert.ToString(Model.Status))&MDA_No=' + MDA_No + '&FromDate=' + FromDate + '&ToDate=' + ToDate; }
+                    url = '@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=@(Convert.ToString(Model.Status))&MDA_No=' + MDA_No + '&Truck_No=' + Truck_No + '&PartyName=' + PartyName + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&Destination=' + Destination;
+                }
+                else { url = '@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=@(Convert.ToString(Model.Status))&MDA_No=' + MDA_No + '&FromDate=' + FromDate + '&ToDate=' + ToDate; }
 
 
-				$.ajax({
-					type: "GET",
-					url: url,
-					data: null,
-					contentType: "application/json; charset=utf-8",
-					dataType: "html",
-					success: function (response) {
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "html",
+                    success: function (response) {
 
-						setTimeout(function () {
+                        setTimeout(function () {
 
-							$('#div_DataTable').html(response);
+                            $('#div_DataTable').html(response);
 
-							try { fnLoadCommonTable('#div_DataTable #table_Common'); } catch { }
+                            try { fnLoadCommonTable('#div_DataTable #table_Common'); } catch { }
 
-							ShowLoader(false);
+                            ShowLoader(false);
 
-						}, 1000);
+                        }, 1000);
 
-					},
-					failure: function (response) {
-						CommonAlert_Error(null)
-					},
-					error: function (response) {
-						CommonAlert_Error(null)
-					}
-				});
+                    },
+                    failure: function (response) {
+                        CommonAlert_Error(null)
+                    },
+                    error: function (response) {
+                        CommonAlert_Error(null)
+                    }
+                });
 
-				// }
-				// else {
-				//     ShowLoader(false);
-				// }
-			}
+                // }
+                // else {
+                //     ShowLoader(false);
+                // }
+            }
 
-		}
+        }
 
-		function fnClear() {
+        function fnClear() {
 
-			$('#inputSearch').val('');
-			$('#div_DataTable').html('');
+            $('#inputSearch').val('');
+            $('#div_DataTable').html('');
 
-		}
+        }
 
-		function fnPrint_DS_Report() {
+        function fnPrint_DS_Report() {
 
-			var inputReportType = $('#inputReportType').val();
+            var inputReportType = $('#inputReportType').val();
 
-			var FromDate = $('#FromDate').val();
-			var ToDate = $('#ToDate').val();
+            var FromDate = $('#FromDate').val();
+            var ToDate = $('#ToDate').val();
 
-			// if (typeof FromDate != 'undefined' && FromDate != null && FromDate.length > 0 && typeof ToDate != 'undefined' && ToDate != null && ToDate.length > 0
-			//     && (typeof inputReportType != 'undefined' && inputReportType != null && inputReportType.length > 0 && inputReportType.indexOf('DS') >= 0)) {
+            // if (typeof FromDate != 'undefined' && FromDate != null && FromDate.length > 0 && typeof ToDate != 'undefined' && ToDate != null && ToDate.length > 0
+            //     && (typeof inputReportType != 'undefined' && inputReportType != null && inputReportType.length > 0 && inputReportType.indexOf('DS') >= 0)) {
 
-			if (typeof inputReportType != 'undefined' && inputReportType != null && inputReportType.length > 0 && inputReportType.indexOf('DS') >= 0) {
+            if (typeof inputReportType != 'undefined' && inputReportType != null && inputReportType.length > 0 && inputReportType.indexOf('DS') >= 0) {
 
-				var MDA_No = $('#MDA_No').val();
-				var Truck_No = $('#Truck_No').val();
-				var PartyName = $('#PartyName').val();
-				var Destination = $('#Destination').val();
+                var MDA_No = $('#MDA_No').val();
+                var Truck_No = $('#Truck_No').val();
+                var PartyName = $('#PartyName').val();
+                var Destination = $('#Destination').val();
 
-				var $url = '@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=' + inputReportType + '&MDA_No=' + MDA_No + '&Truck_No=' + Truck_No + '&PartyName=' + PartyName + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&Destination=' + Destination + '&isPrint=true';
-				fnPrint_Report($url);
-			}
-			else {
-				ShowLoader(false);
-			}
+                var $url = '@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=' + inputReportType + '&MDA_No=' + MDA_No + '&Truck_No=' + Truck_No + '&PartyName=' + PartyName + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&Destination=' + Destination + '&isPrint=true';
+                fnPrint_Report($url);
+            }
+            else {
+                ShowLoader(false);
+            }
 
-		}
+        }
 
-		function fnPrint_Report($url) {
+        function fnPrint_Report($url) {
 
-			if ($url.indexOf('GetData_KnowYourInvoice') > -1 || $url.indexOf('GetData_KnowYourBatch') > -1) $url = $url + '&withDetail=' + $('#switch_Status').is(':checked');
+            if ($url.indexOf('GetData_KnowYourInvoice') > -1 || $url.indexOf('GetData_KnowYourBatch') > -1) $url = $url + '&withDetail=' + $('#switch_Status').is(':checked');
 
-			var printWindow = window.open($url, '_blank');
+            var printWindow = window.open($url, '_blank');
 
-			if (printWindow) {
-				printWindow.onload = function () {
-					printWindow.print();
-				};
-			}
-		}
+            if (printWindow) {
+                printWindow.onload = function () {
+                    printWindow.print();
+                };
+            }
+        }
 
 
-		function combineTables() {
+        function combineTables() {
 
-			let combinedTable = $('<table></table>');
+            let combinedTable = $('<table></table>');
 
-			let headers1 = $("#tblDispatchQRCode thead").html();
-			let headers2 = $("#table_Common_Batch thead").html();
-			let rows1 = $("#tblDispatchQRCode tbody").html();
-			let rows2 = $("#table_Common_Batch tbody").html();
+            let headers1 = $("#tblDispatchQRCode thead").html();
+            let headers2 = $("#table_Common_Batch thead").html();
+            let rows1 = $("#tblDispatchQRCode tbody").html();
+            let rows2 = $("#table_Common_Batch tbody").html();
 
-			combinedTable.append('<thead>' + headers1 + '</thead>');
-			combinedTable.append('<tbody>' + rows1 + '</tbody>');
+            combinedTable.append('<thead>' + headers1 + '</thead>');
+            combinedTable.append('<tbody>' + rows1 + '</tbody>');
 
-			let secondTable = $('<table></table>');
-			secondTable.append('<thead>' + headers2 + '</thead>');
-			secondTable.append('<tbody>' + rows2 + '</tbody>');
+            let secondTable = $('<table></table>');
+            secondTable.append('<thead>' + headers2 + '</thead>');
+            secondTable.append('<tbody>' + rows2 + '</tbody>');
 
-			combinedTable.append(secondTable);
+            combinedTable.append(secondTable);
 
-			$("#combinedTableContainer").html(combinedTable);
+            $("#combinedTableContainer").html(combinedTable);
 
-			return combinedTable;
-		}
+            return combinedTable;
+        }
 
-		function combineBatchTables() {
+        function combineBatchTables() {
 
-			let isChecked = $('#switch_Status').is(':checked');
-			let combinedBatchTable = $('<table></table>');
+            let isChecked = $('#switch_Status').is(':checked');
+            let combinedBatchTable = $('<table></table>');
 
-			let rows1 = $("#table_Common_Main tbody").html();
-			let rows2 = $("#table_Common tbody").html();
-			let rows3 = $("#table_Common_ tbody").html();
-			let rows4 = $("#table_Common_0 tbody").html();
+            let rows1 = $("#table_Common_Main tbody").html();
+            let rows2 = $("#table_Common tbody").html();
+            let rows3 = $("#table_Common_ tbody").html();
+            let rows4 = $("#table_Common_0 tbody").html();
 
-			combinedBatchTable.append('<tbody>' + rows1 + '</tbody>');
+            combinedBatchTable.append('<tbody>' + rows1 + '</tbody>');
 
-			if (isChecked == true) {
-				let secondTable = $('<table></table>');
-				secondTable.append('<tbody>' + rows2 + '</tbody>');
+            if (isChecked == true) {
+                let secondTable = $('<table></table>');
+                secondTable.append('<tbody>' + rows2 + '</tbody>');
 
-				combinedBatchTable.append(secondTable);
-			} else {
-				let thirdTable = $('<table></table>');
-				thirdTable.append('<tbody>' + rows3 + '</tbody>');
+                combinedBatchTable.append(secondTable);
+            } else {
+                let thirdTable = $('<table></table>');
+                thirdTable.append('<tbody>' + rows3 + '</tbody>');
 
-				combinedBatchTable.append(thirdTable);
-			}
+                combinedBatchTable.append(thirdTable);
+            }
 
-			let fourthTable = $('<table></table>');
-			fourthTable.append('<tbody>' + rows4 + '</tbody>');
+            let fourthTable = $('<table></table>');
+            fourthTable.append('<tbody>' + rows4 + '</tbody>');
 
-			combinedBatchTable.append(fourthTable);
+            combinedBatchTable.append(fourthTable);
 
-			$("#combinedTableContainer").html(combinedBatchTable);
+            $("#combinedTableContainer").html(combinedBatchTable);
 
-			return combinedBatchTable;
-		}
+            return combinedBatchTable;
+        }
 
-		function combineInvoiceTables() {
+        function combineInvoiceTables() {
 
-			let isChecked = $('#switch_Status').is(':checked');
-			let combinedInvoiceTable = $('<table></table>');
+            let isChecked = $('#switch_Status').is(':checked');
+            let combinedInvoiceTable = $('<table></table>');
 
 
-			let headers1 = $("#table_Common thead").html();
-			let headers2 = $("#table_Common_dtls thead").html();
-			let headers3 = $("#table_Common_Batch thead").html();
-			let rows1 = $("#table_Common tbody").html();
-			let rows2 = $("#table_Common_dtls tbody").html();
-			let rows3 = $("#table_Common_Batch tbody").html();
+            let headers1 = $("#table_Common thead").html();
+            let headers2 = $("#table_Common_dtls thead").html();
+            let headers3 = $("#table_Common_Batch thead").html();
+            let rows1 = $("#table_Common tbody").html();
+            let rows2 = $("#table_Common_dtls tbody").html();
+            let rows3 = $("#table_Common_Batch tbody").html();
 
-			combinedInvoiceTable.append('<thead>' + headers1 + '</thead>');
-			combinedInvoiceTable.append('<tbody>' + rows1 + '</tbody>');
+            combinedInvoiceTable.append('<thead>' + headers1 + '</thead>');
+            combinedInvoiceTable.append('<tbody>' + rows1 + '</tbody>');
 
-			if (isChecked == true) {
-				let secondTable = $('<table></table>');
-				secondTable.append('<thead>' + headers2 + '</thead>');
-				secondTable.append('<tbody>' + rows2 + '</tbody>');
+            if (isChecked == true) {
+                let secondTable = $('<table></table>');
+                secondTable.append('<thead>' + headers2 + '</thead>');
+                secondTable.append('<tbody>' + rows2 + '</tbody>');
 
-				combinedInvoiceTable.append(secondTable);
-			}
+                combinedInvoiceTable.append(secondTable);
+            }
 
-			let thirdTable = $('<table></table>');
-			thirdTable.append('<thead>' + headers3 + '</thead>');
-			thirdTable.append('<tbody>' + rows3 + '</tbody>');
+            let thirdTable = $('<table></table>');
+            thirdTable.append('<thead>' + headers3 + '</thead>');
+            thirdTable.append('<tbody>' + rows3 + '</tbody>');
 
-			combinedInvoiceTable.append(thirdTable);
+            combinedInvoiceTable.append(thirdTable);
 
-			$("#combinedTableContainer").html(combinedInvoiceTable);
+            $("#combinedTableContainer").html(combinedInvoiceTable);
 
-			return combinedInvoiceTable;
-		}
+            return combinedInvoiceTable;
+        }
 
 
-		function fnExport_Excel(flag) {
+        function fnExport_Excel(flag) {
 
-			if (flag === 'DispatchQRCodeByMDA' && flag != '') {
-				let combinedTable = combineTables();
+            if (flag === 'DispatchQRCodeByMDA' && flag != '') {
+                let combinedTable = combineTables();
 
-				combinedTable.table2excel({
-					filename: "DispatchQRCodeByMDA.xls"
-				});
-			}
+                combinedTable.table2excel({
+                    filename: "DispatchQRCodeByMDA.xls"
+                });
+            }
 
-			if (flag === 'DS' && flag != '') {
-				$("#table_Common").table2excel({
-					filename: "DispatchSummary.xls"
-				});
-			}
+            if (flag === 'DS' && flag != '') {
+                $("#table_Common").table2excel({
+                    filename: "DispatchSummary.xls"
+                });
+            }
 
-			if (flag === 'DS_MDA' && flag != '') {
-				$("#table_Common").table2excel({
-					filename: "MDAWiseDispatchSummaryReport.xls"
-				});
-			}
+            if (flag === 'DS_MDA' && flag != '') {
+                $("#table_Common").table2excel({
+                    filename: "MDAWiseDispatchSummaryReport.xls"
+                });
+            }
 
-			if (flag === 'DS_COUNT' && flag != '') {
-				$("#table_Common").table2excel({
-					filename: "DispatchCountSummaryReport.xls"
-				});
-			}
+            if (flag === 'DS_COUNT' && flag != '') {
+                $("#table_Common").table2excel({
+                    filename: "DispatchCountSummaryReport.xls"
+                });
+            }
 
-			if (flag === 'BatchNo' && flag != '') {
-				let combinedTable = combineBatchTables();
+            if (flag === 'BatchNo' && flag != '') {
+                let combinedTable = combineBatchTables();
 
-				combinedTable.table2excel({
-					filename: "KnowYourBatchData.xls"
-				});
-			}
+                combinedTable.table2excel({
+                    filename: "KnowYourBatchData.xls"
+                });
+            }
 
-			if (flag === 'ShipperData' && flag != '') {
-				$("#table_Common_").table2excel({
-					filename: "ShipperData.xls"
-				});
-			}
+            if (flag === 'ShipperData' && flag != '') {
+                $("#table_Common_").table2excel({
+                    filename: "ShipperData.xls"
+                });
+            }
 
-			if (flag === 'InvoiceNo' && flag != '') {
-				let combinedTable = combineInvoiceTables();
+            if (flag === 'InvoiceNo' && flag != '') {
+                let combinedTable = combineInvoiceTables();
 
-				combinedTable.table2excel({
-					filename: "KnowYourInvoiceData.xls"
-				});
-			}
+                combinedTable.table2excel({
+                    filename: "KnowYourInvoiceData.xls"
+                });
+            }
 
-			if (flag === 'BottleQRCode' && flag != '') {
-				$("#table_Common_").table2excel({
-					filename: "KnowYourBottle.xls"
-				});
-			}
+            if (flag === 'BottleQRCode' && flag != '') {
+                $("#table_Common_").table2excel({
+                    filename: "KnowYourBottle.xls"
+                });
+            }
 
-			if (flag === 'BatchLogFile' && flag != '') {
-				$("#table_Common").table2excel({
-					filename: "BatchFileLog.xls"
-				});
-			}
+            if (flag === 'BatchLogFile' && flag != '') {
+                $("#table_Common").table2excel({
+                    filename: "BatchFileLog.xls"
+                });
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-	</script>
+    </script>
 }

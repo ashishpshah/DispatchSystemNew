@@ -1,0 +1,75 @@
+﻿@model ResponseModel<ShipperData>
+
+@{
+    ViewData["Title"] = "Know Your Batch - Issue";
+}
+
+<div class="row no-gooters">
+    <div class="col-md-12 my-1">
+
+        @if (Model != null && Model.Data3 != null && string.IsNullOrEmpty(Convert.ToString(Model.Message)) && !string.IsNullOrEmpty(Convert.ToString(Model.Status)))
+        {
+            <button type="button" class="btn btn-info btn-flat my-2"
+                    onclick="ajaxGet('@Url.Action("SyncBatch_New", "Home", new { area = "" })?searchTerm=@Model.Status', false, '@Model.RedirectURL')">
+                Process this file
+            </button>
+
+        }
+
+        <table class="table table-bordered w-100 ">
+
+            <tbody>
+                <tr>
+                    <th class="text-center">Batch No.</th>
+                    <th>Manufacture Date</th>
+                    <th>Expiry Date</th>
+                    <th>Manufactured By</th>
+                    <th>Marketed By</th>
+                </tr>
+                @if (Model != null && Model.Obj != null)
+                {
+                    <tr>
+                        <td class="text-center">@Model.Obj.Batch_no</td>
+                        <td>@Model.Obj.Mfg_Date</td>
+                        <td>@Model.Obj.Expiry_Date</td>
+                        <td>@Model.Obj.ManufacturedBy</td>
+                        <td>@Model.Obj.MarketedBy</td>
+                    </tr>
+                }
+
+                <tr><th colspan="5">&nbsp;</th></tr>
+                <tr><th class="text-center">Error</th><th colspan="4">@Model.Message</th></tr>
+
+                @if (Model != null && Model.Data3 != null)
+                {
+                    <tr><th colspan="5">&nbsp;</th></tr>
+                    <tr><th class="text-center">Count</th><th colspan="4">Shipper : @Model.Data3 &nbsp;&nbsp; Bottle : @Model.Data4</th></tr>
+                }
+
+                @if (Model != null && Model.Data1 != null)
+                {
+                    <tr><th colspan="5">&nbsp;</th></tr>
+                    <tr>
+                        <td class="text-center" style="vertical-align: top !important;">Duplicate Shipper QR Code</td>
+                        <td colspan="4">
+                            <span style="display: block; max-height: 300px; overflow-y: auto; white-space: break-spaces; width: 100% !important;">@Model.Data1.ToString()</span>
+                        </td>
+                    </tr>
+                }
+
+                @if (Model != null && Model.Data2 != null)
+                {
+                    <tr><th colspan="5">&nbsp;</th></tr>
+                    <tr>
+                        <td class="text-center" style="vertical-align: top !important;">Duplicate Bottle QR Code</td>
+                        <td colspan="4">
+                            <span style="display: block; max-height: 300px; overflow-y: auto; white-space: break-spaces; width: 100% !important;">@Model.Data2.ToString()</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    </div>
+</div>
