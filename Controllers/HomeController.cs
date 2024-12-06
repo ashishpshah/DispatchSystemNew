@@ -3608,7 +3608,8 @@ namespace Dispatch_System.Controllers
 			}
 			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
 
-			CommonViewModel.IsSuccess = true;
+            CommonViewModel.IsConfirm = true;
+            CommonViewModel.IsSuccess = true;
 			CommonViewModel.StatusCode = ResponseStatusCode.Success;
 			CommonViewModel.Message = "Batch file(s) update soon.";
 
