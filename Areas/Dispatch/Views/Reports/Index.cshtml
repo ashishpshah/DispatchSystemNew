@@ -450,7 +450,7 @@
 
                 if (inputReportType.indexOf('BL_ISSUE') >= 0) searchTerm = $('#ddlFileName option:selected').val();
 
-                debugger;
+                
 
                 if ((typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) || inputReportType.indexOf('B') == 0 || inputReportType.indexOf('KBMW') == 0 || inputReportType.indexOf('BL') >= 0) {
 
@@ -483,7 +483,7 @@
                     if (url.indexOf('GetData_KnowYourInvoice') > -1 || url.indexOf('GetData_KnowYourBatch') > -1)
                         url = url + '&withDetail=' + $('#switch_Status').is(':checked');
 
-                    debugger;
+                    
 
                     $.ajax({
                         type: "GET",

@@ -148,7 +148,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Areas\Export\Data\" />
-	  <Folder Include="Areas\Export\Models\" />
 	  <Folder Include="Areas\LineMaster\Data\" />
 	  <Folder Include="Areas\MDA_Automation\Data\" />
 	  <Folder Include="wwwroot\ErrorLogFiles\" />

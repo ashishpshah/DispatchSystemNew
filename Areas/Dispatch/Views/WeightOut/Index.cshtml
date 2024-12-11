@@ -546,7 +546,7 @@
 										}
 										else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 4) {
 
-											debugger;
+											
 
 											$('#Id').val(selectedData[0][8]);
 											$('#Gate_In_Id').val(selectedData[0][13]);
@@ -705,7 +705,7 @@
 
 		function fnCalc_Net_Wt() {
 
-			debugger;
+			
 
 			var Gross_Wt = $('#Gross_Wt').val();
 			var Tare_Wt = $('#Tare_Wt').val();
@@ -733,7 +733,7 @@
 			$($selector).val('');
 			$($selector).trigger('change');
 
-			debugger;
+			
 			var strEntries = '@Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Weighbridge_Interface_IPs_Ports").Value ?? "")';
 
 			var listWeighbridge = [];
@@ -750,7 +750,7 @@
 				}
 			});
 
-			debugger;
+			
 			if (typeof listWeighbridge != 'undefined' && listWeighbridge != null && listWeighbridge.length > 1) {
 
 				var strHTML = '';
@@ -760,7 +760,7 @@
 					strHTML += radioButton;
 				});
 
-				debugger;
+				
 
 				Swal.fire({
 					icon: 'warning',
@@ -773,7 +773,7 @@
 					cancelButtonColor: '#d33',
 					html: strHTML,
 				}).then((result) => {
-					debugger;
+					
 					if (result != null && result.isConfirmed == true
 						&& typeof $('input[name="weighbridge"]:checked').val() != 'undefined'
 						&& $('input[name="weighbridge"]:checked').val() != null

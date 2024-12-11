@@ -1,0 +1,806 @@
+﻿@model Dispatch_System.ResponseModel<Dispatch_System.MDA>
+
+@{
+    ViewData["Title"] = "Pallate";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12">
+                <h1 class="font-weight-bold">Load Pallate</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content p-0">
+    <div class="container-fluid p-0">
+        <div class="row no-gutters">
+            <div class="col-12 card">
+                @* <form id="formSave" asp-controller="Load_DI" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data" data_form_isvalidate> *@
+                <div class="card-body pb-0">
+                    <div class="panel-divider">
+                        <span>Search Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="form-horizontal">
+                                    <div class="card-body py-1 px-0">
+                                        <div class="form-group row">
+                                            <label for="inputSearch" class="col-sm-2 col-form-label">DI Number</label>
+                                            <div class="col-sm-4">
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" id="inputSearch" class="form-control form-control-sm">
+                                                    <span class="input-group-append ml-2">
+                                                        <button type="button" class="btn btn-info btn-flat mr-2" onclick="GetDI(this, 'S')">Search</button>
+                                                        <button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetDI(this, 'V')">View DI</button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-divider">
+                        <span>Indent Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="form-horizontal">
+                                    <div class="card-body py-1 px-0">
+                                        <div class="form-group row">
+                                            <label for="DI_No" class="col-sm-2 col-form-label">DI Number</label>
+                                            <div class="col-sm-2">
+                                                <input type="text" class="form-control form-control-sm" id="DI_No" name="DI_No" autocomplete="off" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="bag_nos" class="col-sm-2 col-form-label">No. of Bottle</label>
+                                            <div class="col-sm-2">
+                                                <input type="text" class="form-control form-control-sm" id="Bag_Nos" name="bag_nos" autocomplete="off" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-divider">
+                        <span>Pallate Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="card-body py-1 px-0" id="divDI_Dtls">
+
+                                    <div class="row col-12 w-100 d-flex d-none" id="divAddEditPallate">
+                                    </div>
+
+                                    <div class="row col-12 w-100 d-flex flex-row-reverse">
+                                        <button id="btnAdd_Pallate" type="button" class="btn btn-info btn-flat col-2" onclick="fnClick_AddEditPallate(0)"> Add Pallate</button>
+                                    </div>
+
+                                    <div class="row col-12 w-100">
+                                        <table id="table_Pallate_Dtls" class="table table-bordered table-striped w-100">
+                                            <thead>
+                                                <tr>
+                                                    <th width="5%">Sr.No.</th>
+                                                    <th hidden>Id</th>
+                                                    <th>Pallate Number</th>
+                                                    <th>Pallate Type</th>
+                                                    <th width="10%">Shipper Qty</th>
+                                                    <th>Dispatch Mode</th>
+                                                    <th width="5%">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-divider d-none" id="divShipperQRCode">
+                        <span>Shipper QR Code Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="card-body py-1 px-0">
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label text-right pr-2">DI No. : </label>
+                                        <label class="col-sm-2 col-form-label ml-0" id="span_DI_No"> </label>
+                                        <label class="col-sm-2 col-form-label ml-0 d-none" id="span_Pallate_Id"> </label>
+                                        <label class="col-sm-1 col-form-label text-right pr-2">Pallate No. : </label>
+                                        <label class="col-sm-4 col-form-label ml-0" id="span_Pallate_No"></label>
+                                    </div>
+                                    <div class="row no-gutters p-0 m-0 mb-3">
+                                        <label for="input_Scan_QR_Code" class="col-sm-2 col-form-label text-right pr-2">Enter QR Code </label>
+                                        <div class="col-sm-6">
+                                            <input type="text" id="input_Scan_QR_Code" class="form-control form-control-sm">
+                                        </div>
+                                        <div class="col-sm-4 d-none">
+                                            <input type="text" id="input_temp_Scan_QR_Code" class="form-control form-control-sm">
+                                        </div>
+                                    </div>
+                                    <div class="row no-gutters p-0 m-0" id="div_Scan_QR_Code">
+                                        <div class="col-4">
+                                            <div class="card direct-chat direct-chat-warning">
+                                                <div class="card-header">
+                                                    <h3 class="card-title text-bold">Total Scan QR Code</h3>
+                                                    <div class="card-tools mt-2">
+                                                        <button type="button" class="btn btn-tool text-primary d-none btnViewQR" id="btnViewAll">
+                                                            <i class="fas fa-eye"></i> &nbsp; View All
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card-body">
+                                                    <div class="direct-chat-messages">
+                                                        <ul class="nav flex-column" id="ul_Scan_QR_Code"></ul>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <div class="d-flex flex-row justify-content-between">
+                                                        <h5 class="card-title text-bold">Count : <span id="span_Total_Scan_QR_Code" data-cntReq="" data-cnt="" data-last=""></span></h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="card direct-chat direct-chat-warning">
+                                                <div class="card-header">
+                                                    <h3 class="card-title text-bold">Accepted</h3>
+                                                </div>
+
+                                                <div class="card-body">
+                                                    <div class="direct-chat-messages">
+                                                        <ul class="nav flex-column" id="ul_Accepted_QR_Code"></ul>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <div class="d-flex flex-row justify-content-between">
+                                                        <h5 class="card-title text-bold">Count : <span id="span_Total_Accepted_QR_Code" data-cnt="" style="font-size: 1.2rem !important;"></span></h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="card direct-chat direct-chat-warning">
+                                                <div class="card-header">
+                                                    <h3 class="card-title text-bold">Rejected</h3>
+                                                    <div class="card-tools mt-2">
+                                                        <button type="button" class="btn btn-tool text-primary d-none btnViewQR" id="btnViewReason">
+                                                            <i class="fas fa-eye"></i> &nbsp; View Reason
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card-body">
+                                                    <div class="direct-chat-messages">
+                                                        <ul class="nav flex-column" id="ul_Rejected_QR_Code"></ul>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <div class="d-flex flex-row justify-content-between">
+                                                        <h5 class="card-title text-bold">Count : <span id="span_Total_Rejected_QR_Code" data-cnt=""></span></h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                @* </form> *@
+            </div>
+        </div>
+    </div>
+</section>
+
+
+@section Scripts{
+
+    <script type="text/javascript">
+
+        var tablePallateDtls = {};
+
+        $(document).ready(function () { Load_Pallate(); });
+
+        function GetDI($this, $type) {
+            ShowLoader(true);
+
+            fnCancel();
+
+            if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
+
+            $.ajax({
+                type: "GET",
+                url: '@Url_RootToController/GetDI?type=' + $type + '&searchTerm=' + $('#inputSearch').val(),
+                data: null,
+                contentType: "application/json; charset=utf-8",
+                dataType: "html",
+                success: function (response) {
+
+                    fnClear_DI();
+                    ShowLoader(true);
+
+                    if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+                        ShowLoader(false);
+                        CommonAlert_Error("No any record(s) found");
+                        return false;
+                    }
+
+                    if (response.indexOf('{') == 0 || response.indexOf('[') == 0) {
+
+                        setTimeout(function () {
+
+                            try {
+                                ShowLoader(false);
+
+                                if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+                                    var selectedData = JSON.parse(response);
+
+                                    if (response.indexOf('[') == 0)
+                                        selectedData = JSON.parse(response)[0];
+
+                                    if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
+                                        $('#DI_No').val(selectedData['di_no']).trigger('change');
+                                        $('#Bag_Nos').val(selectedData['bag_nos']).trigger('change');
+
+                                        Load_Pallate();
+                                    }
+
+                                } else
+                                    CommonAlert_Error("No any DI record(s) found");
+
+                            } catch { ShowLoader(false); }
+
+
+                        }, 1000);
+
+                    }
+                    else {
+
+                        $('#modal-xl .modal-body').html('');
+                        $('#modal-xl .modal-body').append(response);
+
+                        if ($type == 'S')
+                            $('#modal-xl .modal-title').html('Search DI');
+                        else
+                            $('#modal-xl .modal-title').html('View DI');
+
+                        setTimeout(function () {
+
+                            try {
+
+                                if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
+                                    $('#modal-xl .modal-body #table_Common').DataTable().destroy();
+                                }
+
+                                table = $('#modal-xl .modal-body #table_Common').DataTable({
+                                    paging: true,
+                                    lengthChange: true,
+                                    searching: true,
+                                    ordering: true,
+                                    info: true,
+                                    autoWidth: true,
+                                    responsive: true,
+                                    pageLength: 10,
+                                    lengthMenu: [
+                                        [10, 25, 50, -1],
+                                        [10, 25, 50, 'All']
+                                    ],
+                                    fixedColumns: true,
+                                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                                        "<'row'<'col-sm-12'tr>>" +
+                                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+                                });
+
+                                $('#modal-xl .modal-body #table_Common').css('width', '100%');
+
+                                table.on('click', 'tbody tr', function (e) {
+
+                                    $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+                                        if (i != (e.currentTarget.rowIndex - 1))
+                                            $(ez).removeClass('bg-info');
+                                    });
+
+                                    fnClear_DI();
+
+                                    e.currentTarget.classList.toggle('bg-info');
+
+                                });
+
+                            } catch { }
+
+                            if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
+                                $('#modal-xl').show();
+                            else
+                                CommonAlert_Error("No any DI record(s) found");
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    }
+                },
+                failure: function (response) { fnClear_DI(); CommonAlert_Error(null); },
+                error: function (response) { fnClear_DI(); CommonAlert_Error(null); }
+            });
+        }
+
+        function fnSelect_DI() {
+
+            fnCancel();
+
+            if ($('#table_Common tbody tr.bg-info').length <= 0) {
+                CommonAlert_Error("Please select one DI Number");
+                return false;
+            }
+            else {
+                var selectedData = table.rows('.bg-info').data();
+
+                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
+                    $('#DI_No').val(selectedData[0][0]).trigger('change');
+                    $('#Bag_Nos').val(selectedData[0][2]).trigger('change');
+
+                    Load_Pallate();
+                }
+
+                fnClose_Modal();
+            }
+
+        }
+
+        function fnClear_DI() {
+
+            $('#table_Common tbody tr.bg-info').each(function (i, ez) {
+                $(ez).removeClass('bg-info');
+            });
+
+            $('#DI_No').val('').trigger('change');
+            $('#Bag_Nos').val('').trigger('change');
+
+            $('#table_Pallate_Dtls tbody tr').remove();
+
+            fnCancel();
+
+        }
+
+        function fnCancel() {
+
+            $('#divAddEditPallate').html('');
+            $('#divAddEditPallate').removeClass('d-none');
+            $('#divAddEditPallate').addClass('d-none');
+
+        }
+
+        function Load_Pallate() {
+            ShowLoader(true);
+
+            fnCancel();
+
+            try {
+                if ($.fn.DataTable.isDataTable('#table_Pallate_Dtls')) {
+                    $('#table_Pallate_Dtls').DataTable().destroy();
+                }
+
+                tablePallateDtls = $('#table_Pallate_Dtls').DataTable({
+                    paging: true,
+                    lengthChange: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    autoWidth: true,
+                    responsive: true,
+                    order: [[0, 'desc']],
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+                    columnDefs: [
+                        { "targets": 0, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false },
+                        { "targets": 1, "className": "text-center", "width": "0%", "autoWidth": false, "searchable": false, "orderable": false, "visible": false },
+                        { "targets": -1, "className": "text-center", "width": "0%", "autoWidth": false, "searchable": false, "orderable": false }
+                    ],
+                    fixedColumns: true,
+                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+                });
+
+                $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting');
+                $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting_asc');
+                $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting_desc');
+
+            } catch { }
+
+            var DI_No = $('#DI_No').val();
+
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
+                ShowLoader(true);
+                $.ajax({
+                    type: "GET",
+                    url: '@Url_RootToController/Load_Pallate?Id=-1&DI_No=' + DI_No,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+
+                        setTimeout(function () {
+
+                            if (typeof response != 'undefined' && response != null && response.length <= 0)
+                                CommonAlert_Error("No any Pallate record(s) found");
+                            else if (typeof response != 'undefined' && response != null && response.length > 0) {
+                                $.each(response, function (i, item) {
+                                    var btnRow = '<div class="btn-group"><button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit" ' +
+                                        'onclick="fnClick_AddEditPallate(' + item['id'] + ');"><i class="far fa-edit"></i></button> ' +
+                                        '<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete" ' +
+                                        'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['id'] + '\'); "><i class="far fa-trash-alt"></i></button></div>';
+
+                                    tablePallateDtls.row.add([item['sr_No'], item['id'], item['pallate_No'], item['pallate_Type_Text'], item['shipper_Qty'], item['dispatch_Mode_Text'], btnRow]).draw();
+
+                                    $(tablePallateDtls.rows(i).nodes().to$()).attr('id', 'tr_' + item['id']);
+                                });
+
+                                tablePallateDtls.on('click', 'tbody tr', function (e) {
+                                    fnCancel();
+                                    fnSelectPallate(null);
+
+                                    $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+                                        if (i != (e.currentTarget.rowIndex - 1))
+                                            $(ez).removeClass('bg-info');
+                                    });
+
+                                    e.currentTarget.classList.toggle('bg-info');
+                                    // if (e.currentTarget.classList.contains('bg-info') == true)
+                                    //     e.currentTarget.classList.removeClass('bg-info');
+                                    // else
+                                    //     e.currentTarget.classList.addClass('bg-info');
+
+                                    if (e.currentTarget.classList.contains('bg-info') == true) {
+                                        var selectedData = tablePallateDtls.rows('.bg-info').data();
+                                        if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) fnSelectPallate(selectedData[0]);
+                                    }
+
+                                    return false;
+                                });
+
+                            }
+                            else {
+                                tablePallateDtls.clear().draw();
+                            }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) { CommonAlert_Error(null) },
+                    error: function (response) { CommonAlert_Error(null) }
+                });
+
+            }
+            else { ShowLoader(false); }
+        }
+
+        function fnSelectPallate($obj) {
+
+            if (!$('#divShipperQRCode').is('.d-none'))
+                $('#divShipperQRCode').addClass('d-none');
+
+            $('#divShipperQRCode card ul').html('');
+            $('#divShipperQRCode card span').html('');
+            $('#divShipperQRCode card button').addClass('d-none');
+
+            var DI_No = $('#DI_No').val();
+
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0 && typeof $obj != 'undefined' && $obj != null) {
+
+                $('#span_Pallate_Id').html($obj[1]);
+                $('#span_DI_No').html(DI_No);
+                $('#span_Pallate_No').html($obj[2]);
+
+                ShowLoader(true);
+                $.ajax({
+                    type: "GET",
+                    url: '@Url_RootToController/Load_Pallate?Id=' + $obj[1] + '&DI_No=' + DI_No + '&GetShipper=true',
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+
+                        $('#ul_Scan_QR_Code').html('');
+                        $('#ul_Rejected_QR_Code').html('');
+
+                        setTimeout(function () {
+                            debugger;
+                            if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+                                if ($('#divShipperQRCode').is('.d-none'))
+                                    $('#divShipperQRCode').removeClass('d-none');
+
+                                if (typeof response[0]['shipper_QR_Code'] != 'undefined' && response[0]['shipper_QR_Code'] != null && response[0]['shipper_QR_Code'].length > 0) {
+                                    response[0]['shipper_QR_Code'] = response[0]['shipper_QR_Code'].sort((a, b) => b['sr_No'] - a['sr_No']);
+
+                                    $.each(response[0]['shipper_QR_Code'], function (i, item) {
+                                        if (item['status'] === 'S') {
+                                            var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + item['id'] + '" data-type="S" class="float-left text-success text-bold">'
+                                                + item['qR_Code'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                            $('#ul_Scan_QR_Code').prepend(html);
+                                            $('#ul_Accepted_QR_Code').prepend(html);
+
+                                            $('#input_Scan_QR_Code').val('');
+                                            $('#input_temp_Scan_QR_Code').val('');
+
+                                        }
+                                        else {
+                                            var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + item['id'] + '" data-type="R" class="float-left text-danger text-bold">'
+                                                + item['qR_Code'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                            $('#ul_Scan_QR_Code').prepend(html);
+                                            $('#ul_Rejected_QR_Code').prepend(html);
+
+                                            $('#input_Scan_QR_Code').val('');
+                                            $('#input_temp_Scan_QR_Code').val('');
+                                        }
+                                    });
+
+
+                                    //$('#span_Total_Scan_QR_Code').attr('data-last', $response.data1['id']);
+                                    $('#span_Total_Scan_QR_Code').attr('data-cntReq', response[0]['shipper_Qty']);
+                                    $('#span_Total_Scan_QR_Code').attr('data-cnt', response[0]['shipper_QR_Code'].length);
+                                    $('#span_Total_Accepted_QR_Code').attr('data-cnt', response[0]['shipper_QR_Code'].filter(x => x['status'] === 'S').length);
+                                    $('#span_Total_Rejected_QR_Code').attr('data-cnt', response[0]['shipper_QR_Code'].filter(x => x['status'] !== 'S').length);
+
+                                    fnCalculate_QR_Code();
+                                }
+
+                            }
+                            else CommonAlert_Error("No any Shipper QR Code(s) found");
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) { CommonAlert_Error(null) },
+                    error: function (response) { CommonAlert_Error(null) }
+                });
+
+            }
+        }
+
+        function fnClick_AddEditPallate($id) {
+
+            ShowLoader(true);
+
+            fnCancel();
+
+            var DI_No = $('#DI_No').val();
+
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
+
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Partial_AddEditForm", "Pallate", new { area = "Export" })?id=' + $id + '&DI_No=' + DI_No,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'html',
+                    success: function (response) {
+
+                        if (typeof response == 'undefined' || response == null || response == '' || response.length <= 0) {
+
+                            if ($noAlert == false)
+                                CommonAlert_Error("No any record(s) found");
+                            return false;
+                        }
+
+                        setTimeout(function () {
+
+                            ShowLoader(false);
+
+                            $('#divAddEditPallate').append(response);
+                            $('#divAddEditPallate').removeClass('d-none');
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) { ShowLoader(false); CommonAlert_Error(null) },
+                    error: function (response) { ShowLoader(false); CommonAlert_Error(null) }
+                });
+
+            }
+            else {
+                CommonAlert_Error("Please select DI.");
+            }
+        }
+
+        function fnSubmitForm_Success(response, $id) {
+
+            if (response.statusCode === 1) {
+
+                $('#divAddEditPallate').append('');
+                $('#divAddEditPallate').removeClass('d-none');
+                $('#divAddEditPallate').addClass('d-none');
+
+                Load_Pallate();
+            }
+
+        }
+
+
+        $(document).on('blur', '#input_temp_Scan_QR_Code', function (e) {
+            e.preventDefault();
+
+            try {
+                var input_Scanner = $(this).val();
+
+                if (typeof input_Scanner != 'undefined' && input_Scanner != null && input_Scanner.length > 0) {
+
+                    var arrayStr = input_Scanner.split('/');
+
+                    if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0 && input_Scanner.indexOf('/') > -1) {
+
+                        var qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
+
+                        if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length > 0) {
+
+                            $('#input_Scan_QR_Code').val(qr_code);
+                            $('#input_Scan_QR_Code').trigger('change');
+                            $('#input_Scan_QR_Code').trigger('input');
+
+                        }
+                    } else {
+                        $('#input_Scan_QR_Code').val(input_Scanner);
+                        $('#input_Scan_QR_Code').trigger('change');
+                        $('#input_Scan_QR_Code').trigger('input');
+                    }
+                }
+            } catch { }
+
+            return false;
+        });
+
+
+        $(document).on('change', '#input_Scan_QR_Code', function (e) {
+            e.preventDefault();
+
+            ShowLoader(true);
+
+            var DI_No = $('#DI_No').val();
+            var Pallate_Id = $('#span_Pallate_Id').html();
+
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.trim() != ''
+                && typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.trim() != '') {
+
+                var arrayStr = $(this).val().indexOf('/') > -1 ? $(this).val().split('/') : [];
+
+                var qr_code = "";
+
+                if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0)
+                    qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
+
+                if (qr_code.length >= 30 && qr_code.length <= 50) {
+
+                    $.ajax({
+                        type: "GET",
+                        url: '@Url_RootToController/Check_QR_Code?QR_Code=' + qr_code + '&Pallate_Id=' + Pallate_Id + '&DI_No=' + DI_No,
+                        data: null,
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function ($response) {
+
+                            setTimeout(function () {
+
+                                try {
+
+                                    if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
+
+                                        if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK'))
+                                            if ($response.data1['success'] === 'OK') {
+                                                var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="S" class="float-left text-success text-bold">'
+                                                    + $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                                $('#ul_Scan_QR_Code').prepend(html);
+                                                $('#ul_Accepted_QR_Code').prepend(html);
+
+                                                $('#input_Scan_QR_Code').val('');
+                                                $('#input_temp_Scan_QR_Code').val('');
+
+                                            }
+                                            else {
+                                                var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="R" class="float-left text-danger text-bold">'
+                                                    + $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+                                                $('#ul_Scan_QR_Code').prepend(html);
+                                                $('#ul_Rejected_QR_Code').prepend(html);
+
+                                                $('#input_Scan_QR_Code').val('');
+                                                $('#input_temp_Scan_QR_Code').val('');
+                                            }
+
+
+                                        //$('#span_Total_Scan_QR_Code').attr('data-last', $response.data1['id']);
+                                        $('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
+                                        $('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+                                        $('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+                                        $('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
+
+                                        fnCalculate_QR_Code();
+
+                                        $('#input_Scan_QR_Code').focus();
+
+                                    }
+
+                                    if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '')
+                                        CommonAlert_Error($response.data2);
+
+                                } catch { }
+
+                                ShowLoader(false);
+
+                            }, 1000);
+
+                        },
+                        failure: function (response) { ShowLoader(false); CommonAlert_Error(null); },
+                        error: function (response) { ShowLoader(false); CommonAlert_Error(null); }
+                    });
+
+                    return false;
+                }
+            }
+
+            ShowLoader(false);
+
+            return false;
+        });
+
+        function fnCalculate_QR_Code() {
+
+            var RequiredShipper = $('#span_Total_Scan_QR_Code').attr('data-cntReq');
+            var LoaddedShipper = $('#span_Total_Accepted_QR_Code').attr('data-cnt');
+            var RejectShipper = $('#span_Total_Rejected_QR_Code').attr('data-cnt');
+
+            if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0) { }
+            else { RequiredShipper = $('#table_MDA_Dtls tbody tr#tr_MDA_' + $('#input_MDA_Id').val() + ' td.Required_Shipper').text(); }
+
+            if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0)
+                RequiredShipper = parseInt(RequiredShipper.trim());
+            else RequiredShipper = 0;
+
+            if (typeof LoaddedShipper != 'undefined' && LoaddedShipper != null && LoaddedShipper.trim().length > 0 && parseInt(LoaddedShipper.trim()) > 0)
+                LoaddedShipper = parseInt(LoaddedShipper.trim());
+            else LoaddedShipper = 0;
+
+            if (typeof RejectShipper != 'undefined' && RejectShipper != null && RejectShipper.trim().length > 0 && parseInt(RejectShipper.trim()) > 0)
+                RejectShipper = parseInt(RejectShipper.trim());
+            else RejectShipper = 0;
+
+            $('#span_Total_Scan_QR_Code').html((LoaddedShipper + RejectShipper));
+
+            $('#span_Total_Accepted_QR_Code').html(LoaddedShipper + ' / ' + RequiredShipper);
+
+            $('#span_Total_Rejected_QR_Code').html(RejectShipper);
+
+            if ((LoaddedShipper + RejectShipper) <= 0) $('#btnViewAll').css('display', 'none');
+            else $('#btnViewAll').css('display', 'block');
+
+            if (RejectShipper <= 0) $('#btnViewReason').css('display', 'none');
+            else $('#btnViewReason').css('display', 'block');
+
+        }
+
+    </script>
+
+}
+

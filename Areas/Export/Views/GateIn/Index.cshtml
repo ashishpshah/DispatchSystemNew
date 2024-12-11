@@ -151,7 +151,7 @@
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-6 d-none">
                                                     <div class="input-group input-group-sm ">
                                                         <label class="col-sm-4 col-form-label pl-0">No of Shippers </label>
                                                         <span class="col-sm-6 ml-0">
@@ -244,13 +244,13 @@
                                                     <div class="form-group row">
                                                         <div class="col-12">
                                                             <div class="input-group input-group-sm py-1 px-0">
-                                                                <label class="col-sm-4 col-form-label pl-0">Expected Shipper Qty <span class="text-danger">*</span></label>
+                                                                <label class="col-sm-4 col-form-label pl-0">Expected Bottle Qty <span class="text-danger">*</span></label>
                                                                 <div class="col-sm-6 ml-0">
                                                                     <input type="text" class="form-control form-control-sm text-right isNumberKey" id="input_Expected_Qty" name="Expected_Shipper">
                                                                 </div>
                                                             </div>
 
-                                                            <div class="input-group input-group-sm py-1 px-0">
+                                                            <div class="input-group input-group-sm py-1 px-0 d-none">
                                                                 <label class="col-sm-4 col-form-label pl-0">Loaded Shipper Qty</label>
                                                                 <div class="col-sm-6 ml-0">
                                                                     <input type="text" class="form-control form-control-sm text-right isNumberKey" id="input_Loaded_Qty" readonly>
@@ -425,7 +425,7 @@
                                     $('#input_Expected_Qty').val((Required_Shipper - Loaded_Shipper));
                                     $('#input_Loaded_Qty').val(Loaded_Shipper);
 
-                                    debugger;
+                                    
 
                                     var Vehicle_Shippers = selectedData['vehicle_Shippers'];
 
@@ -448,7 +448,7 @@
                                             parsedArray.push(recordObject);
                                         });
 
-                                        debugger;
+                                        
 
                                         if (typeof parsedArray != 'undefined' && parsedArray != null && parsedArray.length > 0) {
 
@@ -635,7 +635,7 @@
                 $('#input_Expected_Qty').val((Required_Shipper - Loaded_Shipper));
                 $('#input_Loaded_Qty').val(Loaded_Shipper);
 
-                debugger;
+                
 
                 var Vehicle_Shippers = selectedData[14];
 
@@ -658,7 +658,7 @@
                         parsedArray.push(recordObject);
                     });
 
-                    debugger;
+                    
 
                     if (typeof parsedArray != 'undefined' && parsedArray != null && parsedArray.length > 0) {
 
@@ -842,7 +842,7 @@
         function fnSubmitForm_Success(response, $id) {
 
             if (typeof $id != 'undefined' && $id != null && $id == 'AJAX') {
-                debugger;
+                
 
                 if (response.statusCode === 1 && typeof response.data1 != 'undefined' && response.data1 != null && response.data1.trim() != '') {
                     // Set the value, creating a new option if necessary
@@ -879,7 +879,7 @@
         }
 
         $(document).on("change", 'input#Transporter_Changed', function (e) {
-            debugger;
+            
 
             $('input#Transporter_Code_New').val('');
             $('input#Transporter_Code_New').trigger('change');
@@ -890,7 +890,7 @@
         });
 
         function btnClick_AddTransporter() {
-            debugger;
+            
 
             $('#Transporter_Code_New').val('').trigger('change');
 
@@ -909,7 +909,7 @@
                     '<label class="col-form-label" style="align-content:start">Transporter Name <span style="color:red">*</span></label>' +
                     '<input type="text" class="swal2-input mb-1" name="Swal_Input_Transporter_Name" autocomplete="off">',
                 preConfirm: () => {
-                    debugger;
+                    
                     var enteredValue = $('input[name="Swal_Input_Transporter_Code"]').val();
 
                     if (typeof enteredValue == 'undefined' || enteredValue == null || enteredValue.trim() == "") {
@@ -927,7 +927,7 @@
             }).then((result) => {
 
                 if (result.isConfirmed === true) {
-                    debugger;
+                    
                     let formData = new FormData();
 
                     formData.append("tptr_cd", $('input[name="Swal_Input_Transporter_Code"]').val());

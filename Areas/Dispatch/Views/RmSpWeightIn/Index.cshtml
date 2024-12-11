@@ -398,7 +398,7 @@
 									}
 									else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 4) {
 
-										debugger;
+										
 
 										$('#Truck_No').val(selectedData['truck_No']);
 										$('#input_Common_No').val(selectedData['common_No']);
@@ -524,7 +524,7 @@
 
 									var selectedData = table.rows('.bg-info').data();
 
-									debugger;
+									
 
 									$('.divVendor_dtls input').val('');
 									$('.divVendor_dtls input').trigger('change');
@@ -597,7 +597,7 @@
 									}
 									else if (typeof Inward_Sys_Id != 'undefined' && Inward_Sys_Id != null && Inward_Sys_Id == 4) {
 
-										debugger;
+										
 
 										$('#Tare_Wt').val('');
 										$('#Tare_Wt_Dt').val('');
@@ -750,7 +750,7 @@
 				$('#Tare_Wt').trigger('change');
 			}
 
-			debugger;
+			
 			var strEntries = '@Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Weighbridge_Interface_IPs_Ports").Value ?? "")';
 
 			var listWeighbridge = [];
@@ -767,7 +767,7 @@
 				}
 			});
 
-			debugger;
+			
 			if (typeof listWeighbridge != 'undefined' && listWeighbridge != null && listWeighbridge.length > 1) {
 
 				var strHTML = '';
@@ -777,7 +777,7 @@
 					strHTML += radioButton;
 				});
 
-				debugger;
+				
 
 				Swal.fire({
 					icon: 'warning',
@@ -790,7 +790,7 @@
 					cancelButtonColor: '#d33',
 					html: strHTML,
 				}).then((result) => {
-					debugger;
+					
 					if (result != null && result.isConfirmed == true
 						&& typeof $('input[name="weighbridge"]:checked').val() != 'undefined'
 						&& $('input[name="weighbridge"]:checked').val() != null

@@ -94,7 +94,7 @@ $(document).ready(function () {
 
 
         $('.datepicker').on('cancel.daterangepicker', function (ev, picker) {
-            debugger;
+            
             $(this).val('');
             $(this).trigger('change');
         });
@@ -1046,7 +1046,7 @@ function CommonConfirmed_Success_Print(msg, $url_print, functionName, functionPa
         denyButtonText: `Print Slip`
     }).then((result) => {
 
-        debugger;
+        
 
         if (result.isConfirmed && typeof functionName != 'undefined' && functionName != null && functionName != '')
             if (typeof functionParams != 'undefined' && functionParams != null)

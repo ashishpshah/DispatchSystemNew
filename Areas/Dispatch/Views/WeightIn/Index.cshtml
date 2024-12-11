@@ -511,7 +511,7 @@
 
 									var selectedData = table.rows('.bg-info').data();
 
-									debugger;
+									
 
 									var Inward_Sys_Id = $('#Inward_Sys_Id option:selected').val();
 
@@ -707,7 +707,7 @@
 			$($selector).val('');
 			$($selector).trigger('change');
 
-			debugger;
+			
 			var strEntries = '@Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Weighbridge_Interface_IPs_Ports").Value ?? "")';
 
 			var listWeighbridge = [];
@@ -724,7 +724,7 @@
 				}
 			});
 
-			debugger;
+			
 			if (typeof listWeighbridge != 'undefined' && listWeighbridge != null && listWeighbridge.length > 1) {
 
 				var strHTML = '';
@@ -734,7 +734,7 @@
 					strHTML += radioButton;
 				});
 
-				debugger;
+				
 
 				Swal.fire({
 					icon: 'warning',
@@ -747,7 +747,7 @@
 					cancelButtonColor: '#d33',
 					html: strHTML,
 				}).then((result) => {
-					debugger;
+					
 					if (result != null && result.isConfirmed == true
 						&& typeof $('input[name="weighbridge"]:checked').val() != 'undefined'
 						&& $('input[name="weighbridge"]:checked').val() != null
@@ -786,7 +786,7 @@
 
 			}
 			else {
-				debugger;
+				
 				$.ajax({
 					type: "GET",
 					url: '@Url.Action("GetWeighbridge_Interface_Data","WeightIn")?Weighbridge_Id=',

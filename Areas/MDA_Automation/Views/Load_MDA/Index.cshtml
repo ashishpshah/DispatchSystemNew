@@ -1108,7 +1108,7 @@
 
                             if (ele['success'] === 'COMPLETED') {
 
-                                debugger;
+                                
 
                                 setTimeout(function () {
 
@@ -1189,7 +1189,7 @@
 
             $.post('@Url.Action("StopProgress", "Load_MDA", new { area = "MDA_Automation" })?IsStop=' + $isStop, function ($response) {
 
-                debugger;
+                
                 if ($response.statusCode === 1) {
 
                     $('#btnRequisitionWMS').prop('disabled', true);
@@ -1463,7 +1463,7 @@
         }
 
         function Scan_QR_Code() {
-            debugger;
+            
             $('#input_temp_Scan_QR_Code').val('');
             $('#input_temp_Scan_QR_Code').trigger('change');
             $('#input_temp_Scan_QR_Code').prop('disabled', false);
@@ -1615,7 +1615,7 @@
 
             ShowLoader(true);
 
-            debugger;
+            
             var selectedData = tableDtls.rows('.bg-info').data();
 
             if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
@@ -1637,7 +1637,7 @@
                 var prod_id = $('#input_Prod_Sys_Id').val();
                 var gatein_id = $('#input_GateInOut_Id').val();
 
-                debugger;
+                
 
                 if (qr_code.length >= 30 && qr_code.length <= 50) {
 
@@ -1652,7 +1652,7 @@
                             setTimeout(function () {
 
                                 try {
-                                    debugger;
+                                    
 
                                     if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
 
@@ -1706,7 +1706,7 @@
 
                                             if ($response.data1['success'] === 'COMPLETED') {
 
-                                                debugger;
+                                                
 
                                                 stopProgress(true, false);
 
@@ -1775,7 +1775,7 @@
 
                                     //	if(ele['success'] === 'COMPLETED') {
 
-                                    //		debugger;
+                                    //		
 
                                     //		stopProgress(true, false);
 
