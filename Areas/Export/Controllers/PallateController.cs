@@ -259,6 +259,7 @@ namespace Dispatch_System.Areas.Export.Controllers
                 oParams.Add(new MySqlParameter("P_Shipper_Qty", MySqlDbType.Int64) { Value = viewModel.Shipper_Qty });
                 oParams.Add(new MySqlParameter("P_Dispatch_Mode", MySqlDbType.VarString) { Value = viewModel.Dispatch_Mode });
                 oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+                oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
 
                 (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_PALLATE_SAVE", oParams, true);
 
@@ -297,6 +298,7 @@ namespace Dispatch_System.Areas.Export.Controllers
                     oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = Pallate_Id });
                     oParams.Add(new MySqlParameter("P_DI_NO", MySqlDbType.VarString) { Value = DI_No });
                     oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = PLANT_ID });
+                    oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
 
                     var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_PALLATE_SHIPPER_QRCODE_CHECK", oParams, true);
 
