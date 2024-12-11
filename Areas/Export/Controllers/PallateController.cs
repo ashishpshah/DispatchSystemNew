@@ -83,6 +83,8 @@ namespace Dispatch_System.Areas.Export.Controllers
                             Dispatch_Mode_Text = dr["Dispatch_Mode_Text"] != DBNull.Value ? Convert.ToString(dr["Dispatch_Mode_Text"]) : ""
                         });
 
+                list = list.Distinct().ToList();
+
                 if (GetShipper == true && ds != null && ds.Tables.Count > 2 && ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
                     foreach (DataRow dr in ds.Tables[2].Rows)
                     {
@@ -334,5 +336,70 @@ namespace Dispatch_System.Areas.Export.Controllers
             return Json(CommonViewModel);
         }
 
+
+
+        [HttpPost]
+        public JsonResult ClosePallate(Int64 Pallate_Id, string DI_No = "")
+        {
+            try
+            {
+                var (IsSuccess, response, Id) = (false, ResponseStatusMessage.Error, 0M);
+
+                List<MySqlParameter> oParams = new List<MySqlParameter>();
+
+                oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = Pallate_Id });
+                oParams.Add(new MySqlParameter("P_DI_NO", MySqlDbType.VarString) { Value = DI_No });
+                oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+
+                (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_PALLATE_CLOSE", oParams, true);
+
+                CommonViewModel.IsConfirm = true;
+                CommonViewModel.IsSuccess = IsSuccess;
+                CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
+                CommonViewModel.Message = response;
+
+            }
+            catch (Exception ex)
+            {
+                LogService.LogInsert(GetCurrentAction(), "", ex);
+                CommonViewModel.IsSuccess = false;
+                CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
+            }
+
+            return Json(CommonViewModel);
+        }
+
+        [HttpPost]
+        public JsonResult DeleteConfirmed(long id = 0)
+        {
+            try
+            {
+                var (IsSuccess, response, Id) = (false, ResponseStatusMessage.Error, 0M);
+
+                List<MySqlParameter> oParams = new List<MySqlParameter>();
+
+                oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = id });
+                oParams.Add(new MySqlParameter("P_ISACTIVE", MySqlDbType.VarString) { Value = "" });
+                oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+
+                (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_PALLATE_DELETE", oParams, true);
+
+                CommonViewModel.IsConfirm = true;
+                CommonViewModel.IsSuccess = IsSuccess;
+                CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
+                CommonViewModel.Message = response;
+
+            }
+            catch (Exception ex)
+            {
+                LogService.LogInsert(GetCurrentAction(), "", ex);
+                CommonViewModel.IsSuccess = false;
+                CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
+            }
+
+            return Json(CommonViewModel);
+        }
     }
 }

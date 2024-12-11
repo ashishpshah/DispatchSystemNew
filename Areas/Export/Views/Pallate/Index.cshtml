@@ -118,6 +118,7 @@
                                         <label class="col-sm-2 col-form-label ml-0 d-none" id="span_Pallate_Id"> </label>
                                         <label class="col-sm-1 col-form-label text-right pr-2">Pallate No. : </label>
                                         <label class="col-sm-4 col-form-label ml-0" id="span_Pallate_No"></label>
+                                        <button id="btnClose_Pallate" type="button" class="btn btn-danger btn-flat col-1" onclick="fnClick_ClosePallate()"> Close Pallate</button>
                                     </div>
                                     <div class="row no-gutters p-0 m-0 mb-3">
                                         <label for="input_Scan_QR_Code" class="col-sm-2 col-form-label text-right pr-2">Enter QR Code </label>
@@ -352,7 +353,7 @@
 
                 if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
                     $('#DI_No').val(selectedData[0][0]).trigger('change');
-                    $('#Bag_Nos').val(selectedData[0][2]).trigger('change');
+                    $('#Bag_Nos').val(selectedData[0][1]).trigger('change');
 
                     Load_Pallate();
                 }
@@ -383,10 +384,19 @@
             $('#divAddEditPallate').removeClass('d-none');
             $('#divAddEditPallate').addClass('d-none');
 
+            if (!$('#divShipperQRCode').is('.d-none'))
+                $('#divShipperQRCode').addClass('d-none');
+
+            $('#divShipperQRCode card ul').html('');
+            $('#divShipperQRCode card span').html('');
+            $('#divShipperQRCode card button').addClass('d-none');
+
         }
 
         function Load_Pallate() {
             ShowLoader(true);
+
+            tablePallateDtls = null;
 
             fnCancel();
 
@@ -421,6 +431,7 @@
                 $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting_asc');
                 $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting_desc');
 
+                tablePallateDtls.clear().draw();
             } catch { }
 
             var DI_No = $('#DI_No').val();
@@ -460,6 +471,7 @@
                                             $(ez).removeClass('bg-info');
                                     });
 
+                                    debugger;
                                     e.currentTarget.classList.toggle('bg-info');
                                     // if (e.currentTarget.classList.contains('bg-info') == true)
                                     //     e.currentTarget.classList.removeClass('bg-info');
@@ -474,9 +486,6 @@
                                     return false;
                                 });
 
-                            }
-                            else {
-                                tablePallateDtls.clear().draw();
                             }
 
                             ShowLoader(false);
@@ -518,11 +527,16 @@
                     dataType: "json",
                     success: function (response) {
 
+                        $('#divShipperQRCode card ul').html('');
+                        $('#divShipperQRCode card span').html('');
+                        $('#divShipperQRCode card button').addClass('d-none');
+
                         $('#ul_Scan_QR_Code').html('');
+                        $('#ul_Accepted_QR_Code').html('');
                         $('#ul_Rejected_QR_Code').html('');
 
                         setTimeout(function () {
-                            debugger;
+
                             if (typeof response != 'undefined' && response != null && response.length > 0) {
 
                                 if ($('#divShipperQRCode').is('.d-none'))
@@ -532,6 +546,7 @@
                                     response[0]['shipper_QR_Code'] = response[0]['shipper_QR_Code'].sort((a, b) => b['sr_No'] - a['sr_No']);
 
                                     $.each(response[0]['shipper_QR_Code'], function (i, item) {
+
                                         if (item['status'] === 'S') {
                                             var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + item['id'] + '" data-type="S" class="float-left text-success text-bold">'
                                                 + item['qR_Code'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
@@ -706,7 +721,8 @@
 
                                     if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
 
-                                        if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK'))
+                                        if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK')) {
+                                            debugger;
                                             if ($response.data1['success'] === 'OK') {
                                                 var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="S" class="float-left text-success text-bold">'
                                                     + $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
@@ -728,7 +744,7 @@
                                                 $('#input_Scan_QR_Code').val('');
                                                 $('#input_temp_Scan_QR_Code').val('');
                                             }
-
+                                        }
 
                                         //$('#span_Total_Scan_QR_Code').attr('data-last', $response.data1['id']);
                                         $('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
@@ -800,6 +816,52 @@
 
         }
 
+
+        function fnClick_ClosePallate() {
+
+            var DI_No = $('#DI_No').val();
+            var Pallate_Id = $('#span_Pallate_Id').html();
+
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.trim() != ''
+                && typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.trim() != '') {
+
+                Swal.fire({
+                    icon: "warning",
+                    title: "Are you sure to close this pallate?",
+                    //type: "error",
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes!',
+                    //closeOnConfirm: false
+                }).then((result) => {
+
+                    try {
+
+                        if (result != null && result.isConfirmed == true) {
+                            ShowLoader(true);
+
+                            $.ajax({
+                                type: "POST",
+                                url: '@Url_RootToController/ClosePallate?Pallate_Id=' + Pallate_Id + '&DI_No=' + DI_No,
+                                data: null,
+                                success: function (response) {
+                                    ShowLoader(false);
+
+                                    try {
+                                        if (response.statusCode === 1) CommonConfirmed_Success(response.message, Load_Pallate, []);
+                                        else CommonAlert_Error(response.message, null);
+                                    } catch { window.location.reload(); }
+                                },
+                                failure: function (response) { ShowLoader(false); CommonAlert_Error(null) },
+                                error: function (response) { ShowLoader(false); CommonAlert_Error(null) }
+                            });
+                        }
+
+                    } catch { }
+                });
+            }
+        }
     </script>
 
 }
