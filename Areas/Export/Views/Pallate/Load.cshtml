@@ -54,12 +54,12 @@
 										<table id="table_MDA_Dtls" class="table table-bordered table-striped w-100">
 											<thead>
 												<tr>
+													<th hidden width="0%">Gate Id</th>
 													<th hidden width="0%">MDA Id</th>
-													<th width="3%">Vehicle Number</th>
-													<th width="3%">MDA Number</th>
-													<th width="3%">DI No.</th>
-													<th width="3%">Plant Code</th>
-													<th width="3%">MDA Date</th>
+													<th hidden width="0%">DI No</th>
+													<th width="5%">Vehicle Number</th>
+													<th width="5%">MDA Number</th>
+													<th width="5%">MDA Date</th>
 													<th width="30%">Transporter</th>
 													<th width="30%">Product</th>
 													<th width="20%">Driver Name</th>
@@ -84,168 +84,249 @@
 
 @section Scripts {
 
-    <script type="text/javascript">
+	<script type="text/javascript">
 
-        var tablePallateDtls = {};
+		var tableMDADtls = {};
 
-        $(document).ready(function () { });
+		$(document).ready(function () { Load_MDA(null); });
 
-        function GetDI($this, $type) {
-            ShowLoader(true);
+		function GetDI($this, $type) {
+			ShowLoader(true);
 
-            fnCancel();
+			fnCancel();
 
-            if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
+			if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
 
-            $.ajax({
-                type: "GET",
-                url: '@Url_RootToController/GetDI?type=' + $type + '&searchTerm=' + $('#inputSearch').val(),
-                data: null,
-                contentType: "application/json; charset=utf-8",
-                dataType: "html",
-                success: function (response) {
+			$.ajax({
+				type: "GET",
+				url: '@Url_RootToController/GetDI?type=' + $type + '&searchTerm=' + $('#inputSearch').val(),
+				data: null,
+				contentType: "application/json; charset=utf-8",
+				dataType: "html",
+				success: function (response) {
 
-                    ShowLoader(true);
+					ShowLoader(true);
 
-                    if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
-                        ShowLoader(false);
-                        CommonAlert_Error("No any record(s) found");
-                        return false;
-                    }
+					if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+						ShowLoader(false);
+						CommonAlert_Error("No any record(s) found");
+						return false;
+					}
 
-                    if (response.indexOf('{') == 0 || response.indexOf('[') == 0) {
+					if (response.indexOf('{') == 0 || response.indexOf('[') == 0) {
 
-                        setTimeout(function () {
+						setTimeout(function () {
 
-                            try {
-                                ShowLoader(false);
+							try {
+								ShowLoader(false);
 
-                                if (typeof response != 'undefined' && response != null && response.length > 0) {
+								if (typeof response != 'undefined' && response != null && response.length > 0) {
 
-                                    var selectedData = JSON.parse(response);
+									var selectedData = JSON.parse(response);
 
-                                    if (response.indexOf('[') == 0)
-                                        selectedData = JSON.parse(response)[0];
+									if (response.indexOf('[') == 0)
+										selectedData = JSON.parse(response)[0];
 
-                                    if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) 
-                                        Load_MDA(selectedData['di_no']);
+									if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0)
+										Load_MDA(selectedData['di_no']);
 
-                                } else
-                                    CommonAlert_Error("No any DI record(s) found");
+								} else
+									CommonAlert_Error("No any DI record(s) found");
 
-                            } catch { ShowLoader(false); }
+							} catch { ShowLoader(false); }
 
 
-                        }, 1000);
+						}, 1000);
 
-                    }
-                    else {
+					}
+					else {
 
-                        $('#modal-xl .modal-body').html('');
-                        $('#modal-xl .modal-body').append(response);
+						$('#modal-xl .modal-body').html('');
+						$('#modal-xl .modal-body').append(response);
 
-                        if ($type == 'S')
-                            $('#modal-xl .modal-title').html('Search DI');
-                        else
-                            $('#modal-xl .modal-title').html('View DI');
+						if ($type == 'S')
+							$('#modal-xl .modal-title').html('Search DI');
+						else
+							$('#modal-xl .modal-title').html('View DI');
 
-                        setTimeout(function () {
+						setTimeout(function () {
 
-                            try {
+							try {
 
-                                if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
-                                    $('#modal-xl .modal-body #table_Common').DataTable().destroy();
-                                }
+								if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
+									$('#modal-xl .modal-body #table_Common').DataTable().destroy();
+								}
 
-                                table = $('#modal-xl .modal-body #table_Common').DataTable({
-                                    paging: true,
-                                    lengthChange: true,
-                                    searching: true,
-                                    ordering: true,
-                                    info: true,
-                                    autoWidth: true,
-                                    responsive: true,
-                                    pageLength: 10,
-                                    lengthMenu: [
-                                        [10, 25, 50, -1],
-                                        [10, 25, 50, 'All']
-                                    ],
-                                    fixedColumns: true,
-                                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                                        "<'row'<'col-sm-12'tr>>" +
-                                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-                                });
+								table = $('#modal-xl .modal-body #table_Common').DataTable({
+									paging: true,
+									lengthChange: true,
+									searching: true,
+									ordering: true,
+									info: true,
+									autoWidth: true,
+									responsive: true,
+									pageLength: 10,
+									lengthMenu: [
+										[10, 25, 50, -1],
+										[10, 25, 50, 'All']
+									],
+									fixedColumns: true,
+									dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+										"<'row'<'col-sm-12'tr>>" +
+										"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+								});
 
-                                $('#modal-xl .modal-body #table_Common').css('width', '100%');
+								$('#modal-xl .modal-body #table_Common').css('width', '100%');
 
-                                table.on('click', 'tbody tr', function (e) {
+								table.on('click', 'tbody tr', function (e) {
 
-                                    $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
-                                        if (i != (e.currentTarget.rowIndex - 1))
-                                            $(ez).removeClass('bg-info');
-                                    });
+									$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+										if (i != (e.currentTarget.rowIndex - 1))
+											$(ez).removeClass('bg-info');
+									});
 
-                                    fnClear_DI();
+									fnCancel();
 
-                                    e.currentTarget.classList.toggle('bg-info');
+									e.currentTarget.classList.toggle('bg-info');
 
-                                });
+								});
 
-                            } catch { }
+							} catch { }
 
-                            if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
-                                $('#modal-xl').show();
-                            else
-                                CommonAlert_Error("No any DI record(s) found");
+							if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
+								$('#modal-xl').show();
+							else
+								CommonAlert_Error("No any DI record(s) found");
 
-                            ShowLoader(false);
+							ShowLoader(false);
 
-                        }, 1000);
+						}, 1000);
 
-                    }
-                },
-                failure: function (response) { fnClear_DI(); CommonAlert_Error(null); },
-                error: function (response) { fnClear_DI(); CommonAlert_Error(null); }
-            });
-        }
+					}
+				},
+				failure: function (response) { fnClear_DI(); CommonAlert_Error(null); },
+				error: function (response) { fnClear_DI(); CommonAlert_Error(null); }
+			});
+		}
 
-        function fnSelect_DI() {
+		function fnSelect_DI() {
 
-            fnCancel();
+			fnCancel();
 
-            if ($('#table_Common tbody tr.bg-info').length <= 0) {
-                CommonAlert_Error("Please select one DI Number");
-                return false;
-            }
-            else {
-                var selectedData = table.rows('.bg-info').data();
+			if ($('#table_Common tbody tr.bg-info').length <= 0) {
+				CommonAlert_Error("Please select one DI Number");
+				return false;
+			}
+			else {
+				var selectedData = table.rows('.bg-info').data();
 
-                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
-                    $('#DI_No').val(selectedData[0][0]).trigger('change');
-                    $('#Bag_Nos').val(selectedData[0][1]).trigger('change');
+				if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0)
+					Load_MDA(selectedData[0][0]);
 
-                    Load_MDA();
+				fnClose_Modal();
+			}
+
+		}
+
+		function fnClear_DI() {
+			$('#table_Common tbody tr.bg-info').each(function (i, ez) { $(ez).removeClass('bg-info'); });
+		}
+
+		function fnCancel() {
+
+			$('#table_MDA_Dtls tbody tr').remove();
+
+		}
+
+		function Load_MDA($DI_No) {
+
+			fnCancel();
+						
+            try {
+                if ($.fn.DataTable.isDataTable('#table_MDA_Dtls')) {
+                    $('#table_MDA_Dtls').DataTable().destroy();
                 }
 
-                fnClose_Modal();
-            }
+                tableMDADtls = $('#table_MDA_Dtls').DataTable({
+                    paging: true,
+                    lengthChange: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    autoWidth: true,
+                    responsive: true,
+					order: [[3, 'asc'], [2, 'asc']],
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+                    columnDefs: [],
+                    fixedColumns: true,
+                    dom: "<'row mt-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row mb-2'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+                });
 
-        }
+                $('#table_MDA_Dtls' + " thead th.no_sorting").removeClass('sorting');
+                $('#table_MDA_Dtls' + " thead th.no_sorting").removeClass('sorting_asc');
+                $('#table_MDA_Dtls' + " thead th.no_sorting").removeClass('sorting_desc');
 
-        function fnClear_DI() {
+                tableMDADtls.clear().draw();
 
-            $('#table_Common tbody tr.bg-info').each(function (i, ez) {
-                $(ez).removeClass('bg-info');
-            });
+            } catch { }
 
-        }
+			if (typeof $DI_No != 'undefined' && $DI_No != null && $DI_No.length > 0) {
 
-        function fnCancel() {
+				$.ajax({
+					type: "GET",
+					url: '@Url_RootToController/GetMDA?DI_No=' + $DI_No,
+					data: null,
+					contentType: "application/json; charset=utf-8",
+					dataType: "html",
+					success: function (response) {
+						debugger;
+						if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+							CommonAlert_Error("No any MDA found");
+							return false;
+						}
 
-            $('#table_MDA_Dtls tbody tr').remove();
+						setTimeout(function () {
 
-        }
+							try {
 
-    </script>
+							} catch { }
+
+							ShowLoader(false);
+
+						}, 1000);
+					},
+					failure: function (response) { CommonAlert_Error(null); },
+					error: function (response) { CommonAlert_Error(null); }
+				});
+			}
+		}
+
+		$(document).on('click', '#table_MDA_Dtls tbody tr', function (e) {
+
+			fnSelectMDA(null);
+
+			$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+				if (i != (e.currentTarget.rowIndex - 1))
+					$(ez).removeClass('bg-info');
+			});
+
+			e.currentTarget.classList.toggle('bg-info');
+			// if (e.currentTarget.classList.contains('bg-info') == true)
+			//     e.currentTarget.classList.removeClass('bg-info');
+			// else
+			//     e.currentTarget.classList.addClass('bg-info');
+
+			if (e.currentTarget.classList.contains('bg-info') == true) {
+				var selectedData = tablePallateDtls.rows('.bg-info').data();
+				if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) fnSelectMDA(selectedData[0], selectedData[1]);
+			}
+
+			return false;
+		});
+
+	</script>
 
 }
