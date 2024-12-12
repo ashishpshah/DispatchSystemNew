@@ -11,7 +11,7 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-12">
-                <h1 class="font-weight-bold">Load Pallate</h1>
+                <h1 class="font-weight-bold">Pallate</h1>
             </div>
         </div>
     </div>
@@ -478,7 +478,6 @@
             else { ShowLoader(false); }
         }
 
-
         $(document).on('click', '#table_Pallate_Dtls tbody tr', function (e) {
             fnCancel();
             fnSelectPallate(null);
@@ -502,7 +501,6 @@
 
             return false;
         });
-
 
         function fnSelectPallate($obj) {
 
@@ -656,7 +654,6 @@
 
         }
 
-
         $(document).on('blur', '#input_temp_Scan_QR_Code', function (e) {
             e.preventDefault();
 
@@ -688,7 +685,6 @@
 
             return false;
         });
-
 
         $(document).on('change', '#input_Scan_QR_Code', function (e) {
             e.preventDefault();
@@ -819,7 +815,6 @@
 
         }
 
-
         function fnClick_ClosePallate() {
 
             var DI_No = $('#DI_No').val();
@@ -865,6 +860,7 @@
                 });
             }
         }
+
     </script>
 
 }

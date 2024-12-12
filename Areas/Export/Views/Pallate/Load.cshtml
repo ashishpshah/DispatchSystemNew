@@ -1,247 +1,296 @@
 ﻿@{
-	ViewData["Title"] = "Pallate";
-	Layout = "~/Views/Shared/_Layout.cshtml";
-	var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+    ViewData["Title"] = "Pallate";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
 }
 
 
 <section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
-	<div class="container-fluid">
-		<div class="row mb-2">
-			<div class="col-sm-12">
-				<h1 class="font-weight-bold">Pallate Load</h1>
-			</div>
-		</div>
-	</div>
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12">
+                <h1 class="font-weight-bold">Pallate Load</h1>
+            </div>
+        </div>
+    </div>
 </section>
 
 <section class="content p-0">
-	<div class="container-fluid p-0">
-		<div class="row no-gutters">
-			<div class="col-12 card">
-				<div class="card-body pb-0">
-					<div class="panel-divider">
-						<span>Search Details</span>
-						<div class="row no-gutters p-0 m-0">
-							<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
-								<div class="form-horizontal">
-									<div class="card-body py-1 px-0">
-										<div class="form-group row">
-											<label for="inputSearch" class="col-sm-2 col-form-label">DI Number</label>
-											<div class="col-sm-4">
-												<div class="input-group input-group-sm">
-													<input type="text" id="inputSearch" class="form-control form-control-sm">
-													<span class="input-group-append ml-2">
-														<button type="button" class="btn btn-info btn-flat mr-2" onclick="GetDI(this, 'S')">Search</button>
-														<button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetDI(this, 'V')">View DI</button>
-													</span>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
+    <div class="container-fluid p-0">
+        <div class="row no-gutters">
+            <div class="col-12 card">
+                <div class="card-body pb-0">
+                    <div class="panel-divider">
+                        <span>Search Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="form-horizontal">
+                                    <div class="card-body py-1 px-0">
+                                        <div class="form-group row">
+                                            <label for="inputSearch" class="col-sm-2 col-form-label">DI Number</label>
+                                            <div class="col-sm-4">
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" id="inputSearch" class="form-control form-control-sm">
+                                                    <span class="input-group-append ml-2">
+                                                        <button type="button" class="btn btn-info btn-flat mr-2" onclick="GetDI(this, 'S')">Search</button>
+                                                        <button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetDI(this, 'V')">View DI</button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-					<div class="panel-divider">
-						<span>MDA Details</span>
-						<div class="row no-gutters p-0 m-0">
-							<div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
-								<div class="card-body py-1 px-0">
+                    <div class="panel-divider">
+                        <span>MDA Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="card-body py-1 px-0">
 
-									<div class="row col-12 w-100">
-										<table id="table_MDA_Dtls" class="table table-bordered table-striped w-100">
-											<thead>
-												<tr>
-													<th hidden width="0%">Gate Id</th>
-													<th hidden width="0%">MDA Id</th>
-													<th hidden width="0%">DI No</th>
-													<th width="5%">Vehicle Number</th>
-													<th width="5%">MDA Number</th>
-													<th width="5%">MDA Date</th>
-													<th width="30%">Transporter</th>
-													<th width="30%">Product</th>
-													<th width="20%">Driver Name</th>
-													<th width="5%">Contact No.</th>
-												</tr>
-											</thead>
-											<tbody></tbody>
-										</table>
-									</div>
+                                    <div class="row col-12 w-100 mt-1 mb-2">
+                                        <h4>DI Number : <label class="col-form-label" id="DI_No"></label></h4>
+                                    </div>
 
-								</div>
-							</div>
-						</div>
-					</div>
+                                    <div class="row col-12 w-100">
+                                        <table id="table_MDA_Dtls" class="table table-bordered table-striped w-100">
+                                            <thead>
+                                                <tr>
+                                                    <th hidden width="0%">Gate Id</th>
+                                                    <th hidden width="0%">MDA Id</th>
+                                                    <th hidden width="0%">DI No</th>
+                                                    <th>Vehicle Number</th>
+                                                    <th>MDA Number</th>
+                                                    <th>MDA Date</th>
+                                                    <th>Transporter</th>
+                                                    <th>Driver Name</th>
+                                                    <th>Contact No.</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
 
-				</div>
-			</div>
-		</div>
-	</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="panel-divider d-none" id="divPallate">
+                        <span>Pallate Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="card-body py-1 px-0">
+
+                                    <div class="row w-100 mt-1 mb-2">
+                                        <h5 class="col-3">DI Number : <label class="col-form-label" id="Pallate_DI_No"></label></h5>
+                                        <h5 class="col-3">MDA Number : <label class="col-form-label" id="Pallate_MDA_No"></label></h5>
+                                        <h5 class="col-3">Vehicle Number : <label class="col-form-label" id="Pallate_Vehicle_No"></label></h5>
+                                        <h5 class="col-3">No. of Pallate : <label class="col-form-label" id="Pallate_Count"></label></h5>
+                                    </div>
+
+                                    <div class="row col-12 w-100 d-flex flex-row-reverse">
+                                        <button id="btnAdd_Pallate" type="button" class="btn btn-info btn-flat col-2" onclick="fnClick_AddEditPallate()"> Add Pallate</button>
+                                    </div>
+
+                                    <div class="row col-12 w-100">
+                                        <table id="table_Pallate_Dtls" class="table table-bordered table-striped w-100">
+                                            <thead>
+                                                <tr>
+                                                    <th width="5%">Sr.No.</th>
+                                                    <th hidden>Id</th>
+                                                    <th>Pallate Number</th>
+                                                    <th>Pallate Type</th>
+                                                    <th width="10%">Shipper Qty</th>
+                                                    <th>Dispatch Mode</th>
+                                                    <th width="5%">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
 
 
 @section Scripts {
 
-	<script type="text/javascript">
+    <script type="text/javascript">
 
-		var tableMDADtls = {};
+        var tableMDADtls = {};
 
-		$(document).ready(function () { Load_MDA(null); });
+        var tablePallateDtls = {};
 
-		function GetDI($this, $type) {
-			ShowLoader(true);
+        $(document).ready(function () { Load_MDA(null); });
 
-			fnCancel();
+        function GetDI($this, $type) {
+            ShowLoader(true);
 
-			if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
+            fnCancel();
 
-			$.ajax({
-				type: "GET",
-				url: '@Url_RootToController/GetDI?type=' + $type + '&searchTerm=' + $('#inputSearch').val(),
-				data: null,
-				contentType: "application/json; charset=utf-8",
-				dataType: "html",
-				success: function (response) {
+            if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
 
-					ShowLoader(true);
+            $.ajax({
+                type: "GET",
+                url: '@Url_RootToController/GetDI?type=' + $type + '&searchTerm=' + $('#inputSearch').val() + '&id=-2',
+                data: null,
+                contentType: "application/json; charset=utf-8",
+                dataType: "html",
+                success: function (response) {
 
-					if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
-						ShowLoader(false);
-						CommonAlert_Error("No any record(s) found");
-						return false;
-					}
+                    ShowLoader(true);
 
-					if (response.indexOf('{') == 0 || response.indexOf('[') == 0) {
+                    if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+                        ShowLoader(false);
+                        CommonAlert_Error("No any record(s) found");
+                        return false;
+                    }
 
-						setTimeout(function () {
+                    if (response.indexOf('{') == 0 || response.indexOf('[') == 0) {
 
-							try {
-								ShowLoader(false);
+                        setTimeout(function () {
 
-								if (typeof response != 'undefined' && response != null && response.length > 0) {
+                            try {
+                                ShowLoader(false);
 
-									var selectedData = JSON.parse(response);
+                                if (typeof response != 'undefined' && response != null && response.length > 0) {
 
-									if (response.indexOf('[') == 0)
-										selectedData = JSON.parse(response)[0];
+                                    var selectedData = JSON.parse(response);
 
-									if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0)
-										Load_MDA(selectedData['di_no']);
+                                    if (response.indexOf('[') == 0)
+                                        selectedData = JSON.parse(response)[0];
 
-								} else
-									CommonAlert_Error("No any DI record(s) found");
+                                    if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0)
+                                        Load_MDA(selectedData['di_no']);
 
-							} catch { ShowLoader(false); }
+                                } else
+                                    CommonAlert_Error("No any DI record(s) found");
+
+                            } catch { ShowLoader(false); }
 
 
-						}, 1000);
+                        }, 1000);
 
-					}
-					else {
+                    }
+                    else {
 
-						$('#modal-xl .modal-body').html('');
-						$('#modal-xl .modal-body').append(response);
+                        $('#modal-xl .modal-body').html('');
+                        $('#modal-xl .modal-body').append(response);
 
-						if ($type == 'S')
-							$('#modal-xl .modal-title').html('Search DI');
-						else
-							$('#modal-xl .modal-title').html('View DI');
+                        if ($type == 'S')
+                            $('#modal-xl .modal-title').html('Search DI');
+                        else
+                            $('#modal-xl .modal-title').html('View DI');
 
-						setTimeout(function () {
+                        setTimeout(function () {
 
-							try {
+                            try {
 
-								if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
-									$('#modal-xl .modal-body #table_Common').DataTable().destroy();
-								}
+                                if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
+                                    $('#modal-xl .modal-body #table_Common').DataTable().destroy();
+                                }
 
-								table = $('#modal-xl .modal-body #table_Common').DataTable({
-									paging: true,
-									lengthChange: true,
-									searching: true,
-									ordering: true,
-									info: true,
-									autoWidth: true,
-									responsive: true,
-									pageLength: 10,
-									lengthMenu: [
-										[10, 25, 50, -1],
-										[10, 25, 50, 'All']
-									],
-									fixedColumns: true,
-									dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-										"<'row'<'col-sm-12'tr>>" +
-										"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-								});
+                                table = $('#modal-xl .modal-body #table_Common').DataTable({
+                                    paging: true,
+                                    lengthChange: true,
+                                    searching: true,
+                                    ordering: true,
+                                    info: true,
+                                    autoWidth: true,
+                                    responsive: true,
+                                    pageLength: 10,
+                                    lengthMenu: [
+                                        [10, 25, 50, -1],
+                                        [10, 25, 50, 'All']
+                                    ],
+                                    fixedColumns: true,
+                                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                                        "<'row'<'col-sm-12'tr>>" +
+                                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+                                });
 
-								$('#modal-xl .modal-body #table_Common').css('width', '100%');
+                                $('#modal-xl .modal-body #table_Common').css('width', '100%');
 
-								table.on('click', 'tbody tr', function (e) {
+                                table.on('click', 'tbody tr', function (e) {
 
-									$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
-										if (i != (e.currentTarget.rowIndex - 1))
-											$(ez).removeClass('bg-info');
-									});
+                                    $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+                                        if (i != (e.currentTarget.rowIndex - 1))
+                                            $(ez).removeClass('bg-info');
+                                    });
 
-									fnCancel();
+                                    fnCancel();
 
-									e.currentTarget.classList.toggle('bg-info');
+                                    e.currentTarget.classList.toggle('bg-info');
 
-								});
+                                });
 
-							} catch { }
+                            } catch { }
 
-							if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
-								$('#modal-xl').show();
-							else
-								CommonAlert_Error("No any DI record(s) found");
+                            if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
+                                $('#modal-xl').show();
+                            else
+                                CommonAlert_Error("No any DI record(s) found");
 
-							ShowLoader(false);
+                            ShowLoader(false);
 
-						}, 1000);
+                        }, 1000);
 
-					}
-				},
-				failure: function (response) { fnClear_DI(); CommonAlert_Error(null); },
-				error: function (response) { fnClear_DI(); CommonAlert_Error(null); }
-			});
-		}
+                    }
+                },
+                failure: function (response) { fnClear_DI(); CommonAlert_Error(null); },
+                error: function (response) { fnClear_DI(); CommonAlert_Error(null); }
+            });
+        }
 
-		function fnSelect_DI() {
+        function fnSelect_DI() {
 
-			fnCancel();
+            fnCancel();
 
-			if ($('#table_Common tbody tr.bg-info').length <= 0) {
-				CommonAlert_Error("Please select one DI Number");
-				return false;
-			}
-			else {
-				var selectedData = table.rows('.bg-info').data();
+            if ($('#table_Common tbody tr.bg-info').length <= 0) {
+                CommonAlert_Error("Please select one DI Number");
+                return false;
+            }
+            else {
+                var selectedData = table.rows('.bg-info').data();
 
-				if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0)
-					Load_MDA(selectedData[0][0]);
+                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0)
+                    Load_MDA(selectedData[0][0]);
 
-				fnClose_Modal();
-			}
+                fnClose_Modal();
+            }
 
-		}
+        }
 
-		function fnClear_DI() {
-			$('#table_Common tbody tr.bg-info').each(function (i, ez) { $(ez).removeClass('bg-info'); });
-		}
+        function fnClear_DI() {
+            $('#table_Common tbody tr.bg-info').each(function (i, ez) { $(ez).removeClass('bg-info'); });
+        }
 
-		function fnCancel() {
+        function fnCancel() {
 
-			$('#table_MDA_Dtls tbody tr').remove();
+            $('#table_MDA_Dtls tbody tr').remove();
 
-		}
+            $('#table_Pallate_Dtls tbody tr').remove();
 
-		function Load_MDA($DI_No) {
+        }
 
-			fnCancel();
-						
+        function Load_MDA($DI_No) {
+
+            fnCancel();
+
+            $('#DI_No').html('');
+
             try {
                 if ($.fn.DataTable.isDataTable('#table_MDA_Dtls')) {
                     $('#table_MDA_Dtls').DataTable().destroy();
@@ -255,10 +304,10 @@
                     info: true,
                     autoWidth: true,
                     responsive: true,
-					order: [[3, 'asc'], [2, 'asc']],
+                    order: [[3, 'asc'], [2, 'asc']],
                     pageLength: 25,
                     lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
-                    columnDefs: [],
+                    columnDefs: [{ "targets": 0, "visible": false }, { "targets": 1, "visible": false }, { "targets": 2, "visible": false }],
                     fixedColumns: true,
                     dom: "<'row mt-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
                         "<'row'<'col-sm-12'tr>>" +
@@ -273,60 +322,164 @@
 
             } catch { }
 
-			if (typeof $DI_No != 'undefined' && $DI_No != null && $DI_No.length > 0) {
+            if (typeof $DI_No != 'undefined' && $DI_No != null && $DI_No.length > 0) {
 
-				$.ajax({
-					type: "GET",
-					url: '@Url_RootToController/GetMDA?DI_No=' + $DI_No,
-					data: null,
-					contentType: "application/json; charset=utf-8",
-					dataType: "html",
-					success: function (response) {
-						debugger;
-						if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
-							CommonAlert_Error("No any MDA found");
-							return false;
-						}
+                $('#DI_No').html($DI_No);
 
-						setTimeout(function () {
+                $.ajax({
+                    type: "GET",
+                    url: '@Url_RootToController/GetMDAPallate?GateInId=0&MDAId=0&DI_No=' + $DI_No,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "html",
+                    success: function (response) {
+                        debugger;
+                        if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+                            CommonAlert_Error("No any MDA found");
+                            return false;
+                        }
 
-							try {
+                        setTimeout(function () {
 
-							} catch { }
+                            try {
 
-							ShowLoader(false);
+                                if (typeof response != 'undefined' && response != null && response.length <= 0)
+                                    CommonAlert_Error("No any MDA found");
+                                else if (typeof response != 'undefined' && response != null && response.length > 0) {
+                                    response = JSON.parse(response);
+                                    $.each(response, function (i, item) {
+                                        tableMDADtls.row.add([item['gateInOut_Id'], item['id'], item['di_no'], item['vehicle_no'], item['mda_no'], item['mda_dt'], item['tptr_name'], item['driver'], item['mobile_no']]).draw();
+                                        $(tableMDADtls.rows(i).nodes().to$()).attr('id', 'tr_' + item['gateInOut_Id'] + '_' + item['id'] + '_' + item['di_no']);
+                                    });
+                                }
 
-						}, 1000);
-					},
-					failure: function (response) { CommonAlert_Error(null); },
-					error: function (response) { CommonAlert_Error(null); }
-				});
-			}
-		}
+                            } catch { }
 
-		$(document).on('click', '#table_MDA_Dtls tbody tr', function (e) {
+                            ShowLoader(false);
 
-			fnSelectMDA(null);
+                        }, 1000);
+                    },
+                    failure: function (response) { CommonAlert_Error(null); },
+                    error: function (response) { CommonAlert_Error(null); }
+                });
+            }
+        }
 
-			$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
-				if (i != (e.currentTarget.rowIndex - 1))
-					$(ez).removeClass('bg-info');
-			});
+        $(document).on('click', '#table_MDA_Dtls tbody tr', function (e) {
+            fnSelectMDA(null, null, null);
 
-			e.currentTarget.classList.toggle('bg-info');
-			// if (e.currentTarget.classList.contains('bg-info') == true)
-			//     e.currentTarget.classList.removeClass('bg-info');
-			// else
-			//     e.currentTarget.classList.addClass('bg-info');
+            $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+                if (i != (e.currentTarget.rowIndex - 1))
+                    $(ez).removeClass('bg-info');
+            });
 
-			if (e.currentTarget.classList.contains('bg-info') == true) {
-				var selectedData = tablePallateDtls.rows('.bg-info').data();
-				if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) fnSelectMDA(selectedData[0], selectedData[1]);
-			}
+            e.currentTarget.classList.toggle('bg-info');
+            // if (e.currentTarget.classList.contains('bg-info') == true)
+            //     e.currentTarget.classList.removeClass('bg-info');
+            // else
+            //     e.currentTarget.classList.addClass('bg-info');
 
-			return false;
-		});
+            if (e.currentTarget.classList.contains('bg-info') == true) {
+                var selectedData = tableMDADtls.rows('.bg-info').data();
+                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0)
+                    fnSelectMDA(selectedData[0][0], selectedData[0][1], selectedData[0][2]);
+            }
 
-	</script>
+            return false;
+        });
+
+        function fnSelectMDA($GateInId, $MDAId, $DINo) {
+
+            $('#table_Pallate_Dtls tbody tr').remove();
+
+            $('#divPallate').removeClass('d-none');
+            $('#divPallate').addClass('d-none');
+
+            try {
+                if ($.fn.DataTable.isDataTable('#table_Pallate_Dtls')) {
+                    $('#table_Pallate_Dtls').DataTable().destroy();
+                }
+
+                tablePallateDtls = $('#table_Pallate_Dtls').DataTable({
+                    paging: true,
+                    lengthChange: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    autoWidth: true,
+                    responsive: true,
+                    order: [[0, 'asc']],
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+                    columnDefs: [],
+                    fixedColumns: true,
+                    dom: "<'row mt-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row mb-2'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+                });
+
+                $('#table_MDA_Dtls' + " thead th.no_sorting").removeClass('sorting');
+                $('#table_MDA_Dtls' + " thead th.no_sorting").removeClass('sorting_asc');
+                $('#table_MDA_Dtls' + " thead th.no_sorting").removeClass('sorting_desc');
+
+                tablePallateDtls.clear().draw();
+
+            } catch { }
+
+
+            if (typeof $GateInId != 'undefined' && $GateInId != null && $GateInId > 0
+                && typeof $MDAId != 'undefined' && $MDAId != null && $MDAId > 0
+                && typeof $DINo != 'undefined' && $DINo != null && $DINo.trim().length > 0) {
+
+                $.ajax({
+                    type: "GET",
+                    url: '@Url_RootToController/GetMDAPallate?GateInId=' + $GateInId + '&MDAId=' + $MDAId + '&DI_No=' + $DINo,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "html",
+                    success: function (response) {
+                        debugger;
+                        setTimeout(function () {
+                            debugger;
+                            try {
+
+                                $('#divPallate').removeClass('d-none');
+
+                                if (typeof response != 'undefined' && response != null && response.length > 0) {
+                                    response = JSON.parse(response);
+                                    $.each(response, function (i, item) {
+                                        var btnRow = '<div class="btn-group">' +
+                                            '<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete" ' +
+                                            'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['pallate_Id'] + '&mda_load_id=' + item['id'] + '\'); "><i class="far fa-trash-alt"></i></button></div>';
+
+                                        tablePallateDtls.row.add([item['sr_No'], item['pallate_Id'], item['pallate_No'], item['pallate_Type'], item['shipper_Qty'], item['dispatch_Mode'], btnRow]).draw();
+                                    });
+                                }
+
+                            } catch { }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+                    },
+                    failure: function (response) { CommonAlert_Error(null); },
+                    error: function (response) { CommonAlert_Error(null); }
+                });
+            }
+        }
+
+
+
+        function fnDelete_Success(response) {
+            debugger;
+            if (typeof response != 'undefined' && response != null && response.length > 0
+                && typeof response.data1 != 'undefined' && response.data1 != null && response.data1 > 0) {
+                var selectedData = tableMDADtls.rows('.bg-info').data();
+                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0)
+                    fnSelectMDA(selectedData[0][0], selectedData[0][1], selectedData[0][2]);
+            }
+
+        }
+    </script>
 
 }
