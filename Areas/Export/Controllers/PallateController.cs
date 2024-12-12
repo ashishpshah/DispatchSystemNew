@@ -13,11 +13,12 @@ namespace Dispatch_System.Areas.Export.Controllers
     [Area("Export")]
     public class PallateController : BaseController<ResponseModel<Pallate>>
     {
+        #region Pallate
+
         public IActionResult Index()
         {
             return View();
         }
-
 
         [HttpGet]
         public IActionResult GetDI(string type, string searchTerm)
@@ -336,8 +337,6 @@ namespace Dispatch_System.Areas.Export.Controllers
             return Json(CommonViewModel);
         }
 
-
-
         [HttpPost]
         public JsonResult ClosePallate(Int64 Pallate_Id, string DI_No = "")
         {
@@ -401,5 +400,16 @@ namespace Dispatch_System.Areas.Export.Controllers
 
             return Json(CommonViewModel);
         }
+
+        #endregion
+
+        #region Pallate-Load
+
+        public IActionResult Load()
+        {
+            return View();
+        }
+
+        #endregion
     }
 }

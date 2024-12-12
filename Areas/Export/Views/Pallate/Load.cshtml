@@ -1,0 +1,251 @@
+﻿@{
+	ViewData["Title"] = "Pallate";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-12">
+				<h1 class="font-weight-bold">Pallate Load</h1>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="content p-0">
+	<div class="container-fluid p-0">
+		<div class="row no-gutters">
+			<div class="col-12 card">
+				<div class="card-body pb-0">
+					<div class="panel-divider">
+						<span>Search Details</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+								<div class="form-horizontal">
+									<div class="card-body py-1 px-0">
+										<div class="form-group row">
+											<label for="inputSearch" class="col-sm-2 col-form-label">DI Number</label>
+											<div class="col-sm-4">
+												<div class="input-group input-group-sm">
+													<input type="text" id="inputSearch" class="form-control form-control-sm">
+													<span class="input-group-append ml-2">
+														<button type="button" class="btn btn-info btn-flat mr-2" onclick="GetDI(this, 'S')">Search</button>
+														<button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetDI(this, 'V')">View DI</button>
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="panel-divider">
+						<span>MDA Details</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+								<div class="card-body py-1 px-0">
+
+									<div class="row col-12 w-100">
+										<table id="table_MDA_Dtls" class="table table-bordered table-striped w-100">
+											<thead>
+												<tr>
+													<th hidden width="0%">MDA Id</th>
+													<th width="3%">Vehicle Number</th>
+													<th width="3%">MDA Number</th>
+													<th width="3%">DI No.</th>
+													<th width="3%">Plant Code</th>
+													<th width="3%">MDA Date</th>
+													<th width="30%">Transporter</th>
+													<th width="30%">Product</th>
+													<th width="20%">Driver Name</th>
+													<th width="5%">Contact No.</th>
+												</tr>
+											</thead>
+											<tbody></tbody>
+										</table>
+									</div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        var tablePallateDtls = {};
+
+        $(document).ready(function () { });
+
+        function GetDI($this, $type) {
+            ShowLoader(true);
+
+            fnCancel();
+
+            if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
+
+            $.ajax({
+                type: "GET",
+                url: '@Url_RootToController/GetDI?type=' + $type + '&searchTerm=' + $('#inputSearch').val(),
+                data: null,
+                contentType: "application/json; charset=utf-8",
+                dataType: "html",
+                success: function (response) {
+
+                    ShowLoader(true);
+
+                    if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+                        ShowLoader(false);
+                        CommonAlert_Error("No any record(s) found");
+                        return false;
+                    }
+
+                    if (response.indexOf('{') == 0 || response.indexOf('[') == 0) {
+
+                        setTimeout(function () {
+
+                            try {
+                                ShowLoader(false);
+
+                                if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+                                    var selectedData = JSON.parse(response);
+
+                                    if (response.indexOf('[') == 0)
+                                        selectedData = JSON.parse(response)[0];
+
+                                    if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) 
+                                        Load_MDA(selectedData['di_no']);
+
+                                } else
+                                    CommonAlert_Error("No any DI record(s) found");
+
+                            } catch { ShowLoader(false); }
+
+
+                        }, 1000);
+
+                    }
+                    else {
+
+                        $('#modal-xl .modal-body').html('');
+                        $('#modal-xl .modal-body').append(response);
+
+                        if ($type == 'S')
+                            $('#modal-xl .modal-title').html('Search DI');
+                        else
+                            $('#modal-xl .modal-title').html('View DI');
+
+                        setTimeout(function () {
+
+                            try {
+
+                                if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
+                                    $('#modal-xl .modal-body #table_Common').DataTable().destroy();
+                                }
+
+                                table = $('#modal-xl .modal-body #table_Common').DataTable({
+                                    paging: true,
+                                    lengthChange: true,
+                                    searching: true,
+                                    ordering: true,
+                                    info: true,
+                                    autoWidth: true,
+                                    responsive: true,
+                                    pageLength: 10,
+                                    lengthMenu: [
+                                        [10, 25, 50, -1],
+                                        [10, 25, 50, 'All']
+                                    ],
+                                    fixedColumns: true,
+                                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                                        "<'row'<'col-sm-12'tr>>" +
+                                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+                                });
+
+                                $('#modal-xl .modal-body #table_Common').css('width', '100%');
+
+                                table.on('click', 'tbody tr', function (e) {
+
+                                    $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+                                        if (i != (e.currentTarget.rowIndex - 1))
+                                            $(ez).removeClass('bg-info');
+                                    });
+
+                                    fnClear_DI();
+
+                                    e.currentTarget.classList.toggle('bg-info');
+
+                                });
+
+                            } catch { }
+
+                            if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
+                                $('#modal-xl').show();
+                            else
+                                CommonAlert_Error("No any DI record(s) found");
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    }
+                },
+                failure: function (response) { fnClear_DI(); CommonAlert_Error(null); },
+                error: function (response) { fnClear_DI(); CommonAlert_Error(null); }
+            });
+        }
+
+        function fnSelect_DI() {
+
+            fnCancel();
+
+            if ($('#table_Common tbody tr.bg-info').length <= 0) {
+                CommonAlert_Error("Please select one DI Number");
+                return false;
+            }
+            else {
+                var selectedData = table.rows('.bg-info').data();
+
+                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
+                    $('#DI_No').val(selectedData[0][0]).trigger('change');
+                    $('#Bag_Nos').val(selectedData[0][1]).trigger('change');
+
+                    Load_MDA();
+                }
+
+                fnClose_Modal();
+            }
+
+        }
+
+        function fnClear_DI() {
+
+            $('#table_Common tbody tr.bg-info').each(function (i, ez) {
+                $(ez).removeClass('bg-info');
+            });
+
+        }
+
+        function fnCancel() {
+
+            $('#table_MDA_Dtls tbody tr').remove();
+
+        }
+
+    </script>
+
+}
