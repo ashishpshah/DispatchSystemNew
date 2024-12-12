@@ -413,7 +413,7 @@
                     info: true,
                     autoWidth: true,
                     responsive: true,
-                    order: [[0, 'desc']],
+                    order: [[0, 'asc']],
                     pageLength: 25,
                     lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
                     columnDefs: [
@@ -452,38 +452,15 @@
                                 CommonAlert_Error("No any Pallate record(s) found");
                             else if (typeof response != 'undefined' && response != null && response.length > 0) {
                                 $.each(response, function (i, item) {
-                                    var btnRow = '<div class="btn-group"><button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit" ' +
-                                        'onclick="fnClick_AddEditPallate(' + item['id'] + ');"><i class="far fa-edit"></i></button> ' +
+                                    var btnRow = '<div class="btn-group">' + 
+                                        // '<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit" ' +
+                                        // 'onclick="fnClick_AddEditPallate(' + item['id'] + ');"><i class="far fa-edit"></i></button> ' +
                                         '<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete" ' +
                                         'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['id'] + '\'); "><i class="far fa-trash-alt"></i></button></div>';
 
                                     tablePallateDtls.row.add([item['sr_No'], item['id'], item['pallate_No'], item['pallate_Type_Text'], item['shipper_Qty'], item['dispatch_Mode_Text'], btnRow]).draw();
 
                                     $(tablePallateDtls.rows(i).nodes().to$()).attr('id', 'tr_' + item['id']);
-                                });
-
-                                tablePallateDtls.on('click', 'tbody tr', function (e) {
-                                    fnCancel();
-                                    fnSelectPallate(null);
-
-                                    $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
-                                        if (i != (e.currentTarget.rowIndex - 1))
-                                            $(ez).removeClass('bg-info');
-                                    });
-
-                                    debugger;
-                                    e.currentTarget.classList.toggle('bg-info');
-                                    // if (e.currentTarget.classList.contains('bg-info') == true)
-                                    //     e.currentTarget.classList.removeClass('bg-info');
-                                    // else
-                                    //     e.currentTarget.classList.addClass('bg-info');
-
-                                    if (e.currentTarget.classList.contains('bg-info') == true) {
-                                        var selectedData = tablePallateDtls.rows('.bg-info').data();
-                                        if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) fnSelectPallate(selectedData[0]);
-                                    }
-
-                                    return false;
                                 });
 
                             }
@@ -500,6 +477,32 @@
             }
             else { ShowLoader(false); }
         }
+
+
+        $(document).on('click', '#table_Pallate_Dtls tbody tr', function (e) {
+            fnCancel();
+            fnSelectPallate(null);
+
+            $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+                if (i != (e.currentTarget.rowIndex - 1))
+                    $(ez).removeClass('bg-info');
+            });
+
+            debugger;
+            e.currentTarget.classList.toggle('bg-info');
+            // if (e.currentTarget.classList.contains('bg-info') == true)
+            //     e.currentTarget.classList.removeClass('bg-info');
+            // else
+            //     e.currentTarget.classList.addClass('bg-info');
+
+            if (e.currentTarget.classList.contains('bg-info') == true) {
+                var selectedData = tablePallateDtls.rows('.bg-info').data();
+                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) fnSelectPallate(selectedData[0]);
+            }
+
+            return false;
+        });
+
 
         function fnSelectPallate($obj) {
 
