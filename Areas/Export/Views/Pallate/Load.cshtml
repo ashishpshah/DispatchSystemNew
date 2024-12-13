@@ -89,7 +89,11 @@
                                         <h5 class="col-3">DI Number : <label class="col-form-label" id="Pallate_DI_No"></label></h5>
                                         <h5 class="col-3">MDA Number : <label class="col-form-label" id="Pallate_MDA_No"></label></h5>
                                         <h5 class="col-3">Vehicle Number : <label class="col-form-label" id="Pallate_Vehicle_No"></label></h5>
-                                        <h5 class="col-3">No. of Pallate : <label class="col-form-label" id="Pallate_Count"></label></h5>
+                                    </div>
+
+                                    <div class="row w-100 mt-1 mb-2">
+                                        <h5 class="col-3">Expected Qty : <label class="col-form-label" id="Expected_Qty"></label></h5>
+                                        <h5 class="col-3">Loaded Qty : <label class="col-form-label" id="Loaded_Qty"></label></h5>
                                     </div>
 
                                     <div class="row col-12 w-100 d-flex flex-row-reverse">
@@ -347,7 +351,7 @@
                                     CommonAlert_Error("No any MDA found");
                                 else if (typeof response != 'undefined' && response != null && response.length > 0) {
                                     response = JSON.parse(response);
-                                    $.each(response, function (i, item) {
+                                    $.each(response["dI_Details"], function (i, item) {
                                         tableMDADtls.row.add([item['gateInOut_Id'], item['id'], item['di_no'], item['vehicle_no'], item['mda_no'], item['mda_dt'], item['tptr_name'], item['driver'], item['mobile_no']]).draw();
                                         $(tableMDADtls.rows(i).nodes().to$()).attr('id', 'tr_' + item['gateInOut_Id'] + '_' + item['id'] + '_' + item['di_no']);
                                     });
@@ -394,6 +398,8 @@
 
             $('#divPallate').removeClass('d-none');
             $('#divPallate').addClass('d-none');
+
+            $('html, body').animate({ scrollTop: $("#table_Pallate_Dtls").offset().top - 50 }, 1000);
 
             try {
                 if ($.fn.DataTable.isDataTable('#table_Pallate_Dtls')) {
@@ -447,7 +453,16 @@
 
                                 if (typeof response != 'undefined' && response != null && response.length > 0) {
                                     response = JSON.parse(response);
-                                    $.each(response, function (i, item) {
+
+                                    if (typeof response["dI_Details"] != 'undefined' && response["dI_Details"] != null && response["dI_Details"].length > 0){
+                                        $('#Pallate_DI_No').html(response["dI_Details"][0]['di_no']);
+                                        $('#Pallate_MDA_No').html(response["dI_Details"][0]['mda_no']);
+                                        $('#Pallate_Vehicle_No').html(response["dI_Details"][0]['vehicle_no']);
+                                        $('#Expected_Qty').html(response["dI_Details"][0]['expected_Shipper']);
+                                        $('#Loaded_Qty').html(response["dI_Details"][0]['loaded_Shipper']);
+                                    }
+
+                                    $.each(response["pallate_Details"], function (i, item) {
                                         var btnRow = '<div class="btn-group">' +
                                             '<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete" ' +
                                             'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['pallate_Id'] + '&mda_load_id=' + item['id'] + '\'); "><i class="far fa-trash-alt"></i></button></div>';
@@ -468,8 +483,6 @@
             }
         }
 
-
-
         function fnDelete_Success(response) {
             debugger;
             if (typeof response != 'undefined' && response != null && response.length > 0
@@ -480,6 +493,171 @@
             }
 
         }
+
+
+
+        function Load_Pallate() {
+            ShowLoader(true);
+
+            tablePallateDtls = null;
+
+            fnCancel();
+
+            try {
+                if ($.fn.DataTable.isDataTable('#table_Pallate_Dtls')) {
+                    $('#table_Pallate_Dtls').DataTable().destroy();
+                }
+
+                tablePallateDtls = $('#table_Pallate_Dtls').DataTable({
+                    paging: true,
+                    lengthChange: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    autoWidth: true,
+                    responsive: true,
+                    order: [[0, 'asc']],
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+                    columnDefs: [
+                        { "targets": 0, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false },
+                        { "targets": 1, "className": "text-center", "width": "0%", "autoWidth": false, "searchable": false, "orderable": false, "visible": false },
+                        { "targets": -1, "className": "text-center", "width": "0%", "autoWidth": false, "searchable": false, "orderable": false }
+                    ],
+                    fixedColumns: true,
+                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+                });
+
+                $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting');
+                $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting_asc');
+                $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting_desc');
+
+                tablePallateDtls.clear().draw();
+            } catch { }
+
+            var DI_No = $('#DI_No').val();
+
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
+                ShowLoader(true);
+                $.ajax({
+                    type: "GET",
+                    url: '@Url_RootToController/Load_Pallate?Id=-1&DI_No=' + DI_No,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+
+                        setTimeout(function () {
+
+                            if (typeof response != 'undefined' && response != null && response.length <= 0)
+                                CommonAlert_Error("No any Pallate record(s) found");
+                            else if (typeof response != 'undefined' && response != null && response.length > 0) {
+                                $.each(response, function (i, item) {
+                                    var btnRow = '<div class="btn-group">' +
+                                        // '<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit" ' +
+                                        // 'onclick="fnClick_AddEditPallate(' + item['id'] + ');"><i class="far fa-edit"></i></button> ' +
+                                        '<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete" ' +
+                                        'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['id'] + '\'); "><i class="far fa-trash-alt"></i></button></div>';
+
+                                    tablePallateDtls.row.add([item['sr_No'], item['id'], item['pallate_No'], item['pallate_Type_Text'], item['shipper_Qty'], item['dispatch_Mode_Text'], btnRow]).draw();
+
+                                    $(tablePallateDtls.rows(i).nodes().to$()).attr('id', 'tr_' + item['id']);
+                                });
+
+                            }
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) { CommonAlert_Error(null) },
+                    error: function (response) { CommonAlert_Error(null) }
+                });
+
+            }
+            else { ShowLoader(false); }
+        }
+
+        $(document).on('click', '#table_Pallate_Dtls tbody tr', function (e) {
+            fnCancel();
+            fnSelectPallate(null);
+
+            $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+                if (i != (e.currentTarget.rowIndex - 1))
+                    $(ez).removeClass('bg-info');
+            });
+
+            debugger;
+            e.currentTarget.classList.toggle('bg-info');
+            // if (e.currentTarget.classList.contains('bg-info') == true)
+            //     e.currentTarget.classList.removeClass('bg-info');
+            // else
+            //     e.currentTarget.classList.addClass('bg-info');
+
+            if (e.currentTarget.classList.contains('bg-info') == true) {
+                var selectedData = tablePallateDtls.rows('.bg-info').data();
+                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) fnSelectPallate(selectedData[0]);
+            }
+
+            return false;
+        });
+
+        function fnSelectPallate($obj) {
+
+            if (!$('#divShipperQRCode').is('.d-none'))
+                $('#divShipperQRCode').addClass('d-none');
+
+            $('#divShipperQRCode card ul').html('');
+            $('#divShipperQRCode card span').html('');
+            $('#divShipperQRCode card button').addClass('d-none');
+
+            var DI_No = $('#DI_No').val();
+
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0 && typeof $obj != 'undefined' && $obj != null) {
+
+                $('#span_Pallate_Id').html($obj[1]);
+                $('#span_DI_No').html(DI_No);
+                $('#span_Pallate_No').html($obj[2]);
+
+                ShowLoader(true);
+                $.ajax({
+                    type: "GET",
+                    url: '@Url_RootToController/Load_Pallate?Id=' + $obj[1] + '&DI_No=' + DI_No + '&GetShipper=true',
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+
+                        $('#divShipperQRCode card ul').html('');
+                        $('#divShipperQRCode card span').html('');
+                        $('#divShipperQRCode card button').addClass('d-none');
+
+                        $('#ul_Scan_QR_Code').html('');
+                        $('#ul_Accepted_QR_Code').html('');
+                        $('#ul_Rejected_QR_Code').html('');
+
+                        setTimeout(function () {
+
+                            if (typeof response != 'undefined' && response != null && response.length > 0) {
+
+                            }
+                            else CommonAlert_Error("No any Shipper QR Code(s) found");
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) { CommonAlert_Error(null) },
+                    error: function (response) { CommonAlert_Error(null) }
+                });
+
+            }
+        }
+
     </script>
 
 }

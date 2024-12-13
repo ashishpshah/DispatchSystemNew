@@ -465,11 +465,12 @@ namespace Dispatch_System.Areas.Export.Controllers
         [HttpGet]
         public JsonResult GetMDAPallate(Int64 GateInId, Int64 MDAId, string DI_No)
         {
-            var list = new List<MDA>();
+            var list = new List<dynamic>();
+            var listPallate = new List<dynamic>();
 
             try
             {
-                DataTable dt = new DataTable();
+                DataSet ds = new DataSet();
 
                 List<MySqlParameter> oParams = new List<MySqlParameter>();
 
@@ -478,12 +479,12 @@ namespace Dispatch_System.Areas.Export.Controllers
                 oParams.Add(new MySqlParameter("P_DI_No", MySqlDbType.VarString) { Value = DI_No ?? "" });
                 oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
 
-                dt = DataContext.ExecuteStoredProcedure_DataTable_SQL("PC_EXP_MDA_PALLATE_GET", oParams);
+                ds = DataContext.ExecuteStoredProcedure_DataSet_SQL("PC_EXP_MDA_PALLATE_GET", oParams);
 
-                if (dt != null && dt.Rows.Count > 0 && GateInId == 0 && MDAId == 0)
+                if (ds != null && ds.Tables.Count > 0 && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
                 {
-                    foreach (DataRow dr in dt.Rows)
-                        list.Add(new MDA()
+                    foreach (DataRow dr in ds.Tables[0].Rows)
+                        list.Add(new
                         {
                             sr_no = dr["SR_NO"] != DBNull.Value ? Convert.ToInt64(dr["SR_NO"]) : 0,
                             Id = dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0,
@@ -508,13 +509,11 @@ namespace Dispatch_System.Areas.Export.Controllers
                             Expected_Shipper = dr["Expected_Shipper"] != DBNull.Value ? Convert.ToDecimal(dr["Expected_Shipper"]) : 0
                         });
 
-                    return Json(list);
                 }
-                else if (dt != null && dt.Rows.Count > 0 && GateInId > 0 && MDAId > 0)
-                {
-                    var listPallate = new List<dynamic>();
 
-                    foreach (DataRow dr in dt.Rows)
+                if (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0 && GateInId > 0 && MDAId > 0)
+                {
+                    foreach (DataRow dr in ds.Tables[1].Rows)
                         listPallate.Add(new
                         {
                             Sr_No = dr["SR_NO"] != DBNull.Value ? Convert.ToInt64(dr["SR_NO"]) : 0,
@@ -528,12 +527,11 @@ namespace Dispatch_System.Areas.Export.Controllers
                             Dispatch_Mode = dr["Dispatch_Mode_Text"] != DBNull.Value ? Convert.ToInt64(dr["Dispatch_Mode_Text"]) : 0
                         });
 
-                    return Json(listPallate);
                 }
             }
             catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
 
-            return Json(null);
+            return Json(new { DI_Details = list, Pallate_Details = listPallate });
         }
 
         #endregion
