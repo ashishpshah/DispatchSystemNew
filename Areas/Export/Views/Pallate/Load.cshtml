@@ -105,7 +105,6 @@
                                             <thead>
                                                 <tr>
                                                     <th width="5%">Sr.No.</th>
-                                                    <th hidden>Id</th>
                                                     <th>Pallate Number</th>
                                                     <th>Pallate Type</th>
                                                     <th width="10%">Shipper Qty</th>
@@ -424,7 +423,6 @@
                     order: [[0, 'asc']],
                     pageLength: 25,
                     lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
-                    columnDefs: [],
                     fixedColumns: true,
                     dom: "<'row mt-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
                         "<'row'<'col-sm-12'tr>>" +
@@ -474,7 +472,7 @@
                                             '<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete" ' +
                                             'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['pallate_Id'] + '&mda_load_id=' + item['id'] + '\'); "><i class="far fa-trash-alt"></i></button></div>';
 
-                                        tablePallateDtls.row.add([item['sr_No'], item['pallate_Id'], item['pallate_No'], item['pallate_Type'], item['shipper_Qty'], item['dispatch_Mode'], btnRow]).draw();
+                                        tablePallateDtls.row.add([item['sr_No'], item['pallate_No'], item['pallate_Type'], item['shipper_Qty'], item['dispatch_Mode'], btnRow]).draw();
                                     });
                                 }
 
@@ -505,7 +503,7 @@
 
         function Load_Pallate() {
 
-            if ($('#modal-default').hasClass('show')) $('#modal-default').hide();
+            if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
 
             var selectedData = tableMDADtls.rows('.bg-info').data();
 
@@ -520,7 +518,6 @@
                     '<table id="table_Pallate_Select" class="table table-bordered table-striped w-100">';
                 '<thead> <tr><th><input class="dt-select-checkbox dt-select-checkbox-all" type="checkbox"></th>' +
                     '<th width="5%">Sr.No.</th>' +
-                    //'<th hidden>Id</th>' +
                     '<th>Pallate Number</th>' +
                     '<th>Pallate Type</th>' +
                     '<th width="10%">Shipper Qty</th>' +
@@ -538,20 +535,20 @@
 
                 html = html + '</table></div>';
 
-                $('#modal-default .modal-body').html('');
-                $('#modal-default .modal-body').append(html);
+                $('#modal-xl .modal-body').html('');
+                $('#modal-xl .modal-body').append(html);
 
-                $('#modal-default .modal-title').html('Select Pallate');
+                $('#modal-xl .modal-title').html('Select Pallate');
 
-                $('#modal-default').show();
+                $('#modal-xl').show();
 
-                if ($.fn.DataTable.isDataTable('#modal-default .modal-body table#table_Pallate_Select')) {
-                    $('#modal-default .modal-body table#table_Pallate_Select').DataTable().destroy();
+                if ($.fn.DataTable.isDataTable('#modal-xl .modal-body table#table_Pallate_Select')) {
+                    $('#modal-xl .modal-body table#table_Pallate_Select').DataTable().destroy();
                 }
 
                 ShowLoader(true);
 
-                tablePallateSelect = $('#modal-default .modal-body table#table_Pallate_Select').DataTable({
+                tablePallateSelect = $('#modal-xl .modal-body table#table_Pallate_Select').DataTable({
                     destroy: true,
                     sAjaxSource: '@Url_RootToController/Load_Pallate?IsDataTable=true&Id=-2&DI_No=' + selectedData[0][2],
                     bServerSide: true,
@@ -602,11 +599,11 @@
                     }
                 });
 
-                $('#modal-default .modal-body table thead th.no_sorting').removeClass('sorting');
-                $('#modal-default .modal-body table thead th.no_sorting').removeClass('sorting_asc');
-                $('#modal-default .modal-body table thead th.no_sorting').removeClass('sorting_desc');
+                $('#modal-xl .modal-body table thead th.no_sorting').removeClass('sorting');
+                $('#modal-xl .modal-body table thead th.no_sorting').removeClass('sorting_asc');
+                $('#modal-xl .modal-body table thead th.no_sorting').removeClass('sorting_desc');
 
-                $('#modal-default .modal-body table').css('width', '100%');
+                $('#modal-xl .modal-body table').css('width', '100%');
 
             }
             else CommonAlert_Error("Please select MDA Details");
@@ -614,14 +611,14 @@
         }
 
 
-        $(document).on('click', '#modal-default .modal-body table#table_Pallate_Select tbody tr', function (e) {
+        $(document).on('click', '#modal-xl .modal-body table#table_Pallate_Select tbody tr', function (e) {
             e.currentTarget.classList.toggle('bg-info');
             $(e.currentTarget).closest('input[type=checkbox]').prop('checked', e.currentTarget.classList.contains('bg-info'));
-            $('#modal-default .modal-body table#table_Pallate_Select thead tr input[type=checkbox]').prop('checked', false);
+            $('#modal-xl .modal-body table#table_Pallate_Select thead tr input[type=checkbox]').prop('checked', false);
         });
 
-        $(document).on('click', '#modal-default .modal-body table#table_Pallate_Select thead tr input[type=checkbox]', function (e) {
-            $('#modal-default .modal-body table#table_Pallate_Select tbody tr').each(function (i, ez) {
+        $(document).on('click', '#modal-xl .modal-body table#table_Pallate_Select thead tr input[type=checkbox]', function (e) {
+            $('#modal-xl .modal-body table#table_Pallate_Select tbody tr').each(function (i, ez) {
                 $(ez).find('input[type=checkbox]').prop('checked', e.currentTarget.checked);
                 if (e.currentTarget.checked && !$(ez).hasClass('bg-info'))
                     $(ez).addClass('bg-info');
@@ -638,28 +635,39 @@
 
                 let formData = new FormData();
 
-                $('#modal-default .modal-body table#table_Pallate_Select tbody tr').each(function () {
-                    console.log($(this).find('td:eq(0) input[type=checkbox]').prop('checked'));  // true or false
-                });
+                var selectedPallateId = [];
 
                 debugger;
-                //formData.append("GateInId", selectedData[0][0]);
-                
+                $('#modal-xl .modal-body table#table_Pallate_Select tbody tr').each(function () {
+                    if ($(this).find('td:eq(0) input[type=checkbox]').prop('checked'))
+                        selectedPallateId.push($(this).find('td:eq(0) input[type=checkbox]').attr('data-id'));
+                });
+
+                formData.append("PallateId", selectedPallateId.join());
+
                 selectedData = tableMDADtls.rows('.bg-info').data();
 
                 if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
 
                     formData.append("GateInId", selectedData[0][0]);
                     formData.append("MDAId", selectedData[0][1]);
-                    formData.append("DINo", selectedData[0][2]);
+                    formData.append("DI_No", selectedData[0][2]);
 
                     ajaxPost('@Url.Action("Save_Pallate", "Pallate", new { area = "Export" })', formData);
 
                 }
-                    
+
             } else CommonAlert_Error("Please select Pallate(s).");
         }
 
+        function fnSubmitForm_Success(response, type) {
+            debugger;            
+            fnClose_Modal();
+
+            var selectedData = tableMDADtls.rows('.bg-info').data();
+            if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0)
+                fnSelectMDA(selectedData[0][0], selectedData[0][1], selectedData[0][2]);
+        }
     </script>
 
 }

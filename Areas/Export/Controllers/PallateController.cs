@@ -76,7 +76,7 @@ namespace Dispatch_System.Areas.Export.Controllers
                 if (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                     foreach (DataRow dr in ds.Tables[1].Rows)
                         list.Add(new Pallate()
-                        {                            
+                        {
                             Id = dr["ID"] != DBNull.Value ? Convert.ToInt64(dr["ID"]) : 0,
                             Sr_No = dr["Sr_No"] != DBNull.Value ? Convert.ToInt32(dr["Sr_No"]) : 0,
                             DI_No = dr["DI_No"] != DBNull.Value ? Convert.ToString(dr["DI_No"]) : "",
@@ -549,7 +549,7 @@ namespace Dispatch_System.Areas.Export.Controllers
                             Pallate_No = dr["PALLATE_NO"] != DBNull.Value ? Convert.ToString(dr["PALLATE_NO"]) : "",
                             Pallate_Type = dr["Pallate_Type_Text"] != DBNull.Value ? Convert.ToString(dr["Pallate_Type_Text"]) : "",
                             Shipper_Qty = dr["Shipper_Qty"] != DBNull.Value ? Convert.ToInt64(dr["Shipper_Qty"]) : 0,
-                            Dispatch_Mode = dr["Dispatch_Mode_Text"] != DBNull.Value ? Convert.ToInt64(dr["Dispatch_Mode_Text"]) : 0
+                            Dispatch_Mode = dr["Dispatch_Mode_Text"] != DBNull.Value ? Convert.ToString(dr["Dispatch_Mode_Text"]) : ""
                         });
 
                 }
@@ -560,92 +560,55 @@ namespace Dispatch_System.Areas.Export.Controllers
         }
 
         [HttpPost]
-        public IActionResult Save_Pallate(Int64 GateInId, Int64 MDAId, string DI_No)
+        public IActionResult Save_Pallate(Int64 GateInId, Int64 MDAId, string DI_No, string PallateId)
         {
-            //try
-            //{
-            //    if (viewModel == null)
-            //    {
-            //        CommonViewModel.IsSuccess = false;
-            //        CommonViewModel.Message = "Please enter valid Pallate details";
-            //        CommonViewModel.StatusCode = ResponseStatusCode.Error;
+            try
+            {
+                if (GateInId <=0 || MDAId <= 0 || string.IsNullOrEmpty(DI_No))
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.Message = "Please enter valid MDA details";
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
 
-            //        return Json(CommonViewModel);
-            //    }
+                    return Json(CommonViewModel);
+                }
 
-            //    if (string.IsNullOrEmpty(viewModel.DI_No))
-            //    {
-            //        CommonViewModel.IsSuccess = false;
-            //        CommonViewModel.Message = "Please enter valid DI details.";
-            //        CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                if (string.IsNullOrEmpty(PallateId))
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.Message = "Please select Pallate(s).";
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
 
-            //        return Json(CommonViewModel);
-            //    }
+                    return Json(CommonViewModel);
+                }
 
-            //    if (string.IsNullOrEmpty(viewModel.Pallate_No))
-            //    {
-            //        CommonViewModel.IsSuccess = false;
-            //        CommonViewModel.Message = "Please enter Pallate Number";
-            //        CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                List<MySqlParameter> oParams = new List<MySqlParameter>();
 
-            //        return Json(CommonViewModel);
-            //    }
+                var (IsSuccess, response, Id) = (false, ResponseStatusMessage.Error, 0M);
 
-            //    if (string.IsNullOrEmpty(viewModel.Pallate_Type))
-            //    {
-            //        CommonViewModel.IsSuccess = false;
-            //        CommonViewModel.Message = "Please select Pallate Type";
-            //        CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                oParams.Add(new MySqlParameter("P_MDA_ID", MySqlDbType.Int64) { Value = MDAId });
+                oParams.Add(new MySqlParameter("P_GATEIN_ID", MySqlDbType.Int64) { Value = GateInId});
+                oParams.Add(new MySqlParameter("P_DI_No", MySqlDbType.VarString) { Value = DI_No });
+                oParams.Add(new MySqlParameter("P_Pallate_Id", MySqlDbType.VarString) { Value = PallateId });
+                oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+                oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
 
-            //        return Json(CommonViewModel);
-            //    }
+                (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_PALLATE_MDA_SAVE", oParams, true);
 
-            //    if (viewModel.Shipper_Qty <= 0)
-            //    {
-            //        CommonViewModel.IsSuccess = false;
-            //        CommonViewModel.Message = "Please enter Shipper Qty";
-            //        CommonViewModel.StatusCode = ResponseStatusCode.Error;
-            //        return Json(CommonViewModel);
-            //    }
+                CommonViewModel.IsConfirm = true;
+                CommonViewModel.IsSuccess = IsSuccess;
+                CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
+                CommonViewModel.Message = response;
+                //CommonViewModel.RedirectURL = Url.Content("~/") + GetCurrentControllerUrl() + "/Index";
+            }
+            catch (Exception ex)
+            {
+                LogService.LogInsert(GetCurrentAction(), "", ex);
 
-            //    if (string.IsNullOrEmpty(viewModel.Dispatch_Mode))
-            //    {
-            //        CommonViewModel.IsSuccess = false;
-            //        CommonViewModel.Message = "Please select Dispatch Mode";
-            //        CommonViewModel.StatusCode = ResponseStatusCode.Error;
-
-            //        return Json(CommonViewModel);
-            //    }
-
-            //    List<MySqlParameter> oParams = new List<MySqlParameter>();
-
-            //    var (IsSuccess, response, Id) = (false, ResponseStatusMessage.Error, 0M);
-
-            //    oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = viewModel.Id });
-            //    oParams.Add(new MySqlParameter("P_DI_No", MySqlDbType.VarString) { Value = viewModel.DI_No });
-            //    oParams.Add(new MySqlParameter("P_Pallate_No", MySqlDbType.VarString) { Value = viewModel.Pallate_No });
-            //    oParams.Add(new MySqlParameter("P_Pallate_Type", MySqlDbType.VarString) { Value = viewModel.Pallate_Type });
-            //    oParams.Add(new MySqlParameter("P_Shipper_Qty", MySqlDbType.Int64) { Value = viewModel.Shipper_Qty });
-            //    oParams.Add(new MySqlParameter("P_Dispatch_Mode", MySqlDbType.VarString) { Value = viewModel.Dispatch_Mode });
-            //    oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
-            //    oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
-
-            //    (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_PALLATE_SAVE", oParams, true);
-
-            //    CommonViewModel.IsConfirm = true;
-            //    CommonViewModel.IsSuccess = IsSuccess;
-            //    CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
-            //    CommonViewModel.Message = response;
-            //    //CommonViewModel.RedirectURL = Url.Content("~/") + GetCurrentControllerUrl() + "/Index";
-            //}
-            //catch (Exception ex)
-            //{
-            //    LogService.LogInsert(GetCurrentAction(), "", ex);
-
-            //    CommonViewModel.IsSuccess = false;
-            //    CommonViewModel.StatusCode = ResponseStatusCode.Error;
-            //    CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
-            //}
+                CommonViewModel.IsSuccess = false;
+                CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
+            }
 
             return Json(CommonViewModel);
         }
