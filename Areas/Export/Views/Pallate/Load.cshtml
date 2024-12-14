@@ -505,129 +505,108 @@
 
         function Load_Pallate() {
 
-            if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
+            if ($('#modal-default').hasClass('show')) $('#modal-default').hide();
 
             var selectedData = tableMDADtls.rows('.bg-info').data();
 
             if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
 
+                var html = '<div class="row col-12 mb-3">' +
+                    '<button type="button" class="btn btn-info btn-flat px-3 mr-3" onclick="fnSelect_Pallate()">Select</button>' +
+                    '<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear_DI()">Clear</button>' +
+                    '<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClose_Modal()">Close</button>' +
+                    '</div><hr />' +
+                    '<div class="row col-12 w-100">' +
+                    '<table id="table_Pallate_Select" class="table table-bordered table-striped w-100">';
+                '<thead> <tr><th><input class="dt-select-checkbox dt-select-checkbox-all" type="checkbox"></th>' +
+                    '<th width="5%">Sr.No.</th>' +
+                    //'<th hidden>Id</th>' +
+                    '<th>Pallate Number</th>' +
+                    '<th>Pallate Type</th>' +
+                    '<th width="10%">Shipper Qty</th>' +
+                    '<th>Dispatch Mode</th>' +
+                    '</tr></thead>';
+
+                // html = html + '<tbody>';
+                // try {
+                //     $.each(response, function (i, item) {
+                //         var chbHtml = '<input class="dt-select-checkbox" type="checkbox">';
+                //         html = html + '<tr id="tr_' + item['id'] + '"><td>' + chbHtml + '</td><td>' + item['sr_No'] + '</td><td>' + item['pallate_No'] + '</td><td>' + item['pallate_Type_Text'] + '</td><td>' + item['shipper_Qty'] + '</td><td>' + item['dispatch_Mode_Text'] + '</td></tr>';
+                //     });
+                // } catch { }
+                // html = html + '</tbody>';
+
+                html = html + '</table></div>';
+
+                $('#modal-default .modal-body').html('');
+                $('#modal-default .modal-body').append(html);
+
+                $('#modal-default .modal-title').html('Select Pallate');
+
+                $('#modal-default').show();
+
+                if ($.fn.DataTable.isDataTable('#modal-default .modal-body table#table_Pallate_Select')) {
+                    $('#modal-default .modal-body table#table_Pallate_Select').DataTable().destroy();
+                }
+
                 ShowLoader(true);
 
-                $.ajax({
-                    type: "GET",
-                    url: '@Url_RootToController/Load_Pallate?Id=-2&DI_No=' + selectedData[0][2],
-                    data: null,
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "json",
-                    success: function (response) {
-                        debugger;
-                        setTimeout(function () {
-
-                            if (typeof response != 'undefined' && response != null && response.length > 0) {
-
-                                var html = '<div class="row col-12 mb-3">' +
-                                    '<button type="button" class="btn btn-info btn-flat px-3 mr-3" onclick="fnSelect_Pallate()">Select</button>' +
-                                    '<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear_DI()">Clear</button>' +
-                                    '<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClose_Modal()">Close</button>' +
-                                    '</div><hr />' +
-                                    '<div class="row col-12 w-100">' +
-                                    '<table id="table_Pallate_Select" class="table table-bordered table-striped w-100">' +
-                                    '<thead> <tr><th><input class="dt-select-checkbox dt-select-checkbox-all" type="checkbox"></th>' +
-                                    '<th width="5%">Sr.No.</th>' +
-                                    //'<th hidden>Id</th>' +
-                                    '<th>Pallate Number</th>' +
-                                    '<th>Pallate Type</th>' +
-                                    '<th width="10%">Shipper Qty</th>' +
-                                    '<th>Dispatch Mode</th>' +
-                                    '</tr></thead><tbody>';
-
-
-                                try {
-                                    $.each(response, function (i, item) {
-                                        var chbHtml = '<input class="dt-select-checkbox" type="checkbox">';
-                                        html = html + '<tr id="tr_' + item['id'] + '"><td>' + chbHtml + '</td><td>' + item['sr_No'] + '</td><td>' + item['pallate_No'] + '</td><td>' + item['pallate_Type_Text'] + '</td><td>' + item['shipper_Qty'] + '</td><td>' + item['dispatch_Mode_Text'] + '</td></tr>';
-                                    });
-                                } catch { }
-
-                                html = html + '</tbody></table></div>';
-
-                                debugger;
-                                $('#modal-xl .modal-body').html('');
-                                $('#modal-xl .modal-body').append(html);
-
-                                $('#modal-xl .modal-title').html('Select Pallate');
-
-                                $('#modal-xl').show();
-
-                                if ($.fn.DataTable.isDataTable('#modal-xl .modal-body table#table_Pallate_Select')) {
-                                    $('#modal-xl .modal-body table#table_Pallate_Select').DataTable().destroy();
-                                }
-
-                                tablePallateSelect = $('#modal-xl .modal-body table#table_Pallate_Select').DataTable({
-                                    paging: true,
-                                    lengthChange: true,
-                                    searching: true,
-                                    ordering: true,
-                                    info: true,
-                                    autoWidth: true,
-                                    responsive: true,
-                                    order: [[1, 'asc']],
-                                    pageLength: 50,
-                                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
-                                    columnDefs: [
-                                        {
-                                            "targets": 0, "className": "text-center select-checkbox", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false
-                                            //, render: DataTable.render.select()
-                                        },
-                                        // { "targets": 1, "className": "text-center", "width": "0%", "autoWidth": false, "searchable": false, "orderable": false, "visible": false },
-                                        // { "targets": -1, "className": "text-center", "width": "0%", "autoWidth": false, "searchable": false, "orderable": false }
-                                    ],
-                                    fixedColumns: true,
-                                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                                        "<'row'<'col-sm-12'tr>>" +
-                                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-                                    select: {
-                                        style: 'multi',
-                                        selector: 'td:first-child'
-                                    }
-                                });
-
-                                $('#modal-xl .modal-body table thead th.no_sorting').removeClass('sorting');
-                                $('#modal-xl .modal-body table thead th.no_sorting').removeClass('sorting_asc');
-                                $('#modal-xl .modal-body table thead th.no_sorting').removeClass('sorting_desc');
-
-                                $('#modal-xl .modal-body table').css('width', '100%');
-
-                                // tablePallateSelect.on("click", "th.select-checkbox", function () {
-                                //     if ($("th.select-checkbox").hasClass("selected")) {
-                                //         tablePallateSelect.rows().deselect();
-                                //         $("th.select-checkbox").removeClass("selected");
-                                //         $("td input.dt-select-checkbox").prop('checked', false)
-                                //     } else {
-                                //         tablePallateSelect.rows().select();
-                                //         $("th.select-checkbox").addClass("selected");
-                                //         $("td input.dt-select-checkbox").prop('checked', true)
-                                //     }
-                                // }).on("click", "td.select-checkbox", function () {
-                                //     debugger;
-                                //     if (tablePallateSelect.rows({ selected: true }).count() !== tablePallateSelect.rows().count()) {
-                                //         $("th.select-checkbox").removeClass("selected");
-                                //     } else {
-                                //         $("th.select-checkbox").addClass("selected");
-                                //     }
-                                // });
-                            }
-                            else CommonAlert_Error("No any Pallate(s) found");
-
-                            ShowLoader(false);
-
-                        }, 1000);
-
+                tablePallateSelect = $('#modal-default .modal-body table#table_Pallate_Select').DataTable({
+                    destroy: true,
+                    sAjaxSource: '@Url_RootToController/Load_Pallate?IsDataTable=true&Id=-2&DI_No=' + selectedData[0][2],
+                    bServerSide: true,
+                    bProcessing: true,
+                    bSearchable: true,
+                    bSort: false,
+                    paging: true,
+                    lengthChange: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    autoWidth: true,
+                    responsive: true,
+                    order: [[1, 'asc']],
+                    pageLength: 50,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+                    language: { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+                    initComplete: function (settings, json) { ShowLoader(false); },
+                    fnServerParams: function (aoData) { },
+                    //columnDefs: [{ targets: 0, data: null, defaultContent: '<input class="dt-select-checkbox" type="checkbox">' }],
+                    columns: [{
+                        "title": '<input class="dt-select-checkbox dt-select-checkbox-all" type="checkbox">', "className": 'text-center',
+                        "data": null, "autoWidth": false, "searchable": false, "orderable": false, "width": "5%",
+                        "render": function (data, type, row, meta) { return '<input class="dt-select-checkbox" type="checkbox" data-id="' + data['id'] + '">'; }
                     },
-                    failure: function (response) { CommonAlert_Error(null) },
-                    error: function (response) { CommonAlert_Error(null) }
+                    { "title": "Sr.No.", "data": "sr_No", "autoWidth": true, "searchable": true },
+                    { "title": "Pallate Number", "data": "pallate_No", "autoWidth": true, "searchable": true },
+                    { "title": "Pallate Type", "data": "pallate_Type_Text", "autoWidth": true, "searchable": true },
+                    { "title": "Shipper Qty", "data": "shipper_Qty", "autoWidth": true, "searchable": true }
+                    ],
+                    // fnCreatedRow: function (nRow, aData, iDataIndex) {
+                    //     debugger;
+                    //     $('td:eq(0)', nRow).html('<input class="dt-select-checkbox" type="checkbox">');
+                    //     $('td:eq(1)', nRow).html('' + aData['sr_No'] == null ? "" : aData['sr_No']);
+                    //     $('td:eq(2)', nRow).html('' + aData['pallate_No'] == null ? "" : aData['pallate_No']);
+                    //     $('td:eq(3)', nRow).html('' + aData['pallate_Type_Text'] == null ? "" : aData['pallate_Type_Text']);
+                    //     $('td:eq(4)', nRow).html('' + aData['shipper_Qty'] == null ? "" : aData['shipper_Qty']);
+
+                    //     $(nRow).attr('id', aData['requestNo']);
+                    // },
+                    fixedColumns: true,
+                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                    select: {
+                        style: 'multi',
+                        selector: 'td:first-child'
+                    }
                 });
 
+                $('#modal-default .modal-body table thead th.no_sorting').removeClass('sorting');
+                $('#modal-default .modal-body table thead th.no_sorting').removeClass('sorting_asc');
+                $('#modal-default .modal-body table thead th.no_sorting').removeClass('sorting_desc');
+
+                $('#modal-default .modal-body table').css('width', '100%');
 
             }
             else CommonAlert_Error("Please select MDA Details");
@@ -635,16 +614,18 @@
         }
 
 
-        $(document).on('click', '#modal-xl .modal-body table#table_Pallate_Select tbody tr', function (e) {
-            debugger;
+        $(document).on('click', '#modal-default .modal-body table#table_Pallate_Select tbody tr', function (e) {
             e.currentTarget.classList.toggle('bg-info');
             $(e.currentTarget).closest('input[type=checkbox]').prop('checked', e.currentTarget.classList.contains('bg-info'));
+            $('#modal-default .modal-body table#table_Pallate_Select thead tr input[type=checkbox]').prop('checked', false);
         });
 
-        $(document).on('click', '#modal-xl .modal-body table#table_Pallate_Select thead tr input[type=checkbox]', function (e) {
-            debugger;
-            $('#modal-xl .modal-body table#table_Pallate_Select tbody tr').each(function (i, ez) {
-                $(ez).find('input[type=checkbox]').prop('checked', $(e.currentTarget).find('input[type=checkbox]').is('checked'));
+        $(document).on('click', '#modal-default .modal-body table#table_Pallate_Select thead tr input[type=checkbox]', function (e) {
+            $('#modal-default .modal-body table#table_Pallate_Select tbody tr').each(function (i, ez) {
+                $(ez).find('input[type=checkbox]').prop('checked', e.currentTarget.checked);
+                if (e.currentTarget.checked && !$(ez).hasClass('bg-info'))
+                    $(ez).addClass('bg-info');
+                else $(ez).removeClass('bg-info');
             });
         });
 
@@ -655,6 +636,27 @@
 
             if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
 
+                let formData = new FormData();
+
+                $('#modal-default .modal-body table#table_Pallate_Select tbody tr').each(function () {
+                    console.log($(this).find('td:eq(0) input[type=checkbox]').prop('checked'));  // true or false
+                });
+
+                debugger;
+                //formData.append("GateInId", selectedData[0][0]);
+                
+                selectedData = tableMDADtls.rows('.bg-info').data();
+
+                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
+
+                    formData.append("GateInId", selectedData[0][0]);
+                    formData.append("MDAId", selectedData[0][1]);
+                    formData.append("DINo", selectedData[0][2]);
+
+                    ajaxPost('@Url.Action("Save_Pallate", "Pallate", new { area = "Export" })', formData);
+
+                }
+                    
             } else CommonAlert_Error("Please select Pallate(s).");
         }
 
