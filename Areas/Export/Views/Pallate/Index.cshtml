@@ -94,6 +94,7 @@
                                                     <th>Pallate Number</th>
                                                     <th>Pallate Type</th>
                                                     <th width="10%">Shipper Qty</th>
+                                                    <th width="10%">Bottle Qty</th>
                                                     <th>Dispatch Mode</th>
                                                     <th width="5%">Action</th>
                                                 </tr>
@@ -458,11 +459,10 @@
                                         '<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete" ' +
                                         'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['id'] + '\'); "><i class="far fa-trash-alt"></i></button></div>';
 
-                                    tablePallateDtls.row.add([item['sr_No'], item['id'], item['pallate_No'], item['pallate_Type_Text'], item['shipper_Qty'], item['dispatch_Mode_Text'], btnRow]).draw();
+                                    tablePallateDtls.row.add([item['sr_No'], item['id'], item['pallate_No'], item['pallate_Type_Text'], item['shipper_Qty'], item['bottle_Qty'], item['dispatch_Mode_Text'], btnRow]).draw();
 
                                     $(tablePallateDtls.rows(i).nodes().to$()).attr('id', 'tr_' + item['id']);
                                 });
-
                             }
 
                             ShowLoader(false);

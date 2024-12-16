@@ -78,9 +78,8 @@
                         </div>
                     </div>
 
-
                     <div class="panel-divider d-none" id="divPallate">
-                        <span>Pallate Details</span>
+                        <span>Loaded Pallate Details</span>
                         <div class="row no-gutters p-0 m-0">
                             <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
                                 <div class="card-body py-1 px-0">
@@ -90,24 +89,30 @@
                                         <h5 class="col-3">MDA Number : <label class="col-form-label" id="Pallate_MDA_No"></label></h5>
                                         <h5 class="col-3">Vehicle Number : <label class="col-form-label" id="Pallate_Vehicle_No"></label></h5>
                                     </div>
+                                    
+                                    <div class="row w-100 mt-1 mb-2">
+                                        <h5 class="col-3">Expected Qty (Shipper): <label class="col-form-label" id="Expected_Qty_Shipper"></label></h5>
+                                        <h5 class="col-3">Loaded Qty (Shipper): <label class="col-form-label" id="Loaded_Qty_Shipper"></label></h5>
+                                    </div>
 
                                     <div class="row w-100 mt-1 mb-2">
-                                        <h5 class="col-3">Expected Qty : <label class="col-form-label" id="Expected_Qty"></label></h5>
-                                        <h5 class="col-3">Loaded Qty : <label class="col-form-label" id="Loaded_Qty"></label></h5>
+                                        <h5 class="col-3">Expected Qty (Bottle): <label class="col-form-label" id="Expected_Qty_Bottle"></label></h5>
+                                        <h5 class="col-3">Loaded Qty (Bottle): <label class="col-form-label" id="Loaded_Qty_Bottle"></label></h5>
                                     </div>
 
                                     <div class="row col-12 w-100 d-flex flex-row-reverse">
-                                        <button id="btnAdd_Pallate" type="button" class="btn btn-info btn-flat col-2" onclick="Load_Pallate()"> Add Pallate</button>
+                                        <button id="btnAdd_Pallate" type="button" class="btn btn-info btn-flat col-2" onclick="Load_Pallate()"> View Unload Pallate(s)</button>
                                     </div>
 
                                     <div class="row col-12 w-100">
-                                        <table id="table_Pallate_Dtls" class="table table-bordered table-striped w-100">
+                                        <table id="table_Pallate_Loaded" class="table table-bordered table-striped w-100">
                                             <thead>
                                                 <tr>
                                                     <th width="5%">Sr.No.</th>
                                                     <th>Pallate Number</th>
                                                     <th>Pallate Type</th>
                                                     <th width="10%">Shipper Qty</th>
+                                                    <th width="10%">Bottle Qty</th>
                                                     <th>Dispatch Mode</th>
                                                     <th width="5%">Action</th>
                                                 </tr>
@@ -291,7 +296,7 @@
 
             $('#table_MDA_Dtls tbody tr').remove();
 
-            $('#table_Pallate_Dtls tbody tr').remove();
+            $('#table_Pallate_Loaded tbody tr').remove();
 
         }
 
@@ -400,19 +405,27 @@
 
         function fnSelectMDA($GateInId, $MDAId, $DINo) {
 
-            $('#table_Pallate_Dtls tbody tr').remove();
+            $('#table_Pallate_Loaded tbody tr').remove();
 
             $('#divPallate').removeClass('d-none');
             $('#divPallate').addClass('d-none');
 
-            $('html, body').animate({ scrollTop: $("#table_Pallate_Dtls").offset().top - 50 }, 1000);
+            $('#Pallate_DI_No').html('');
+            $('#Pallate_MDA_No').html('');
+            $('#Pallate_Vehicle_No').html('');
+            $('#Expected_Qty_Shipper').html('');
+            $('#Loaded_Qty_Shipper').html('');
+            $('#Expected_Qty_Bottle').html('');
+            $('#Loaded_Qty_Bottle').html('');
+
+            $('html, body').animate({ scrollTop: $("#table_Pallate_Loaded").offset().top - 50 }, 1000);
 
             try {
-                if ($.fn.DataTable.isDataTable('#table_Pallate_Dtls')) {
-                    $('#table_Pallate_Dtls').DataTable().destroy();
+                if ($.fn.DataTable.isDataTable('#table_Pallate_Loaded')) {
+                    $('#table_Pallate_Loaded').DataTable().destroy();
                 }
 
-                tablePallateDtls = $('#table_Pallate_Dtls').DataTable({
+                tablePallateDtls = $('#table_Pallate_Loaded').DataTable({
                     paging: true,
                     lengthChange: true,
                     searching: true,
@@ -442,6 +455,8 @@
                 && typeof $MDAId != 'undefined' && $MDAId != null && $MDAId > 0
                 && typeof $DINo != 'undefined' && $DINo != null && $DINo.trim().length > 0) {
 
+                ShowLoader(true);
+
                 $.ajax({
                     type: "GET",
                     url: '@Url_RootToController/GetMDAPallate?GateInId=' + $GateInId + '&MDAId=' + $MDAId + '&DI_No=' + $DINo,
@@ -458,21 +473,23 @@
 
                                 if (typeof response != 'undefined' && response != null && response.length > 0) {
                                     response = JSON.parse(response);
-
+                                    debugger;
                                     if (typeof response["dI_Details"] != 'undefined' && response["dI_Details"] != null && response["dI_Details"].length > 0) {
                                         $('#Pallate_DI_No').html(response["dI_Details"][0]['di_no']);
                                         $('#Pallate_MDA_No').html(response["dI_Details"][0]['mda_no']);
                                         $('#Pallate_Vehicle_No').html(response["dI_Details"][0]['vehicle_no']);
-                                        $('#Expected_Qty').html(response["dI_Details"][0]['expected_Shipper']);
-                                        $('#Loaded_Qty').html(response["dI_Details"][0]['loaded_Shipper']);
+                                        $('#Expected_Qty_Shipper').html(response["dI_Details"][0]['expected_Shipper']);
+                                        $('#Loaded_Qty_Shipper').html(response["dI_Details"][0]['loaded_Shipper']);
+                                        $('#Expected_Qty_Bottle').html(response["dI_Details"][0]['expected_Bottle']);
+                                        $('#Loaded_Qty_Bottle').html(response["dI_Details"][0]['loaded_Bottle']);
                                     }
 
                                     $.each(response["pallate_Details"], function (i, item) {
                                         var btnRow = '<div class="btn-group">' +
                                             '<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete" ' +
-                                            'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['pallate_Id'] + '&mda_load_id=' + item['id'] + '\'); "><i class="far fa-trash-alt"></i></button></div>';
+                                            'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['pallate_Id'] + '&mda_load_id=' + item['id'] + '\'); ">Unload</button></div>';
 
-                                        tablePallateDtls.row.add([item['sr_No'], item['pallate_No'], item['pallate_Type'], item['shipper_Qty'], item['dispatch_Mode'], btnRow]).draw();
+                                        tablePallateDtls.row.add([item['sr_No'], item['pallate_No'], item['pallate_Type'], item['shipper_Qty'], item['bottle_Qty'], item['dispatch_Mode'], btnRow]).draw();
                                     });
                                 }
 
@@ -482,16 +499,16 @@
 
                         }, 1000);
                     },
-                    failure: function (response) { CommonAlert_Error(null); },
-                    error: function (response) { CommonAlert_Error(null); }
+                    failure: function (response) { ShowLoader(false); CommonAlert_Error(null); },
+                    error: function (response) { ShowLoader(false); CommonAlert_Error(null); }
                 });
             }
         }
 
         function fnDelete_Success(response) {
-
-            if (typeof response != 'undefined' && response != null && response.length > 0
-                && typeof response.data1 != 'undefined' && response.data1 != null && response.data1 > 0) {
+            
+            if (typeof response != 'undefined' && response != null && response.statusCode === 1) {
+                
                 var selectedData = tableMDADtls.rows('.bg-info').data();
                 if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0)
                     fnSelectMDA(selectedData[0][0], selectedData[0][1], selectedData[0][2]);
@@ -521,6 +538,7 @@
                     '<th>Pallate Number</th>' +
                     '<th>Pallate Type</th>' +
                     '<th width="10%">Shipper Qty</th>' +
+                    '<th width="10%">Bottle Qty</th>' +
                     '<th>Dispatch Mode</th>' +
                     '</tr></thead>';
 
@@ -577,10 +595,11 @@
                     { "title": "Sr.No.", "data": "sr_No", "autoWidth": true, "searchable": true },
                     { "title": "Pallate Number", "data": "pallate_No", "autoWidth": true, "searchable": true },
                     { "title": "Pallate Type", "data": "pallate_Type_Text", "autoWidth": true, "searchable": true },
-                    { "title": "Shipper Qty", "data": "shipper_Qty", "autoWidth": true, "searchable": true }
+                    { "title": "Shipper Qty", "data": "shipper_Qty", "autoWidth": true, "searchable": true },
+                    { "title": "Bottle Qty", "data": "bottle_Qty", "autoWidth": true, "searchable": true }
                     ],
                     // fnCreatedRow: function (nRow, aData, iDataIndex) {
-                    //     debugger;
+                    //     
                     //     $('td:eq(0)', nRow).html('<input class="dt-select-checkbox" type="checkbox">');
                     //     $('td:eq(1)', nRow).html('' + aData['sr_No'] == null ? "" : aData['sr_No']);
                     //     $('td:eq(2)', nRow).html('' + aData['pallate_No'] == null ? "" : aData['pallate_No']);
@@ -637,7 +656,7 @@
 
                 var selectedPallateId = [];
 
-                debugger;
+                
                 $('#modal-xl .modal-body table#table_Pallate_Select tbody tr').each(function () {
                     if ($(this).find('td:eq(0) input[type=checkbox]').prop('checked'))
                         selectedPallateId.push($(this).find('td:eq(0) input[type=checkbox]').attr('data-id'));
@@ -661,7 +680,7 @@
         }
 
         function fnSubmitForm_Success(response, type) {
-            debugger;            
+                        
             fnClose_Modal();
 
             var selectedData = tableMDADtls.rows('.bg-info').data();

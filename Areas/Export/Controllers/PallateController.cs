@@ -58,7 +58,7 @@ namespace Dispatch_System.Areas.Export.Controllers
         {
             var iTotalRecords = 0;
 
-            var list = new List<Pallate>();
+            var list = new List<dynamic>();
 
             try
             {
@@ -75,7 +75,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 
                 if (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                     foreach (DataRow dr in ds.Tables[1].Rows)
-                        list.Add(new Pallate()
+                        list.Add(new
                         {
                             Id = dr["ID"] != DBNull.Value ? Convert.ToInt64(dr["ID"]) : 0,
                             Sr_No = dr["Sr_No"] != DBNull.Value ? Convert.ToInt32(dr["Sr_No"]) : 0,
@@ -83,10 +83,12 @@ namespace Dispatch_System.Areas.Export.Controllers
                             Pallate_No = dr["Pallate_No"] != DBNull.Value ? Convert.ToString(dr["Pallate_No"]) : "",
                             Pallate_Type = dr["Pallate_Type"] != DBNull.Value ? Convert.ToString(dr["Pallate_Type"]) : "",
                             Shipper_Qty = dr["Shipper_Qty"] != DBNull.Value ? Convert.ToInt64(dr["Shipper_Qty"]) : 0,
+                            Bottle_Qty = dr["Bottle_Qty"] != DBNull.Value ? Convert.ToInt64(dr["Bottle_Qty"]) : 0,
                             //Shipper_QR_Code = dr["Shipper_QR_Code"] != DBNull.Value ? Convert.ToString(dr["Shipper_QR_Code"]) : "",
                             Dispatch_Mode = dr["Dispatch_Mode"] != DBNull.Value ? Convert.ToString(dr["Dispatch_Mode"]) : "",
                             Pallate_Type_Text = dr["Pallate_Type_Text"] != DBNull.Value ? Convert.ToString(dr["Pallate_Type_Text"]) : "",
-                            Dispatch_Mode_Text = dr["Dispatch_Mode_Text"] != DBNull.Value ? Convert.ToString(dr["Dispatch_Mode_Text"]) : ""
+                            Dispatch_Mode_Text = dr["Dispatch_Mode_Text"] != DBNull.Value ? Convert.ToString(dr["Dispatch_Mode_Text"]) : "",
+                            Shipper_QR_Code = new List<Pallate_Shipper>()
                         });
 
                 if (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
@@ -531,7 +533,9 @@ namespace Dispatch_System.Areas.Export.Controllers
                             bag_nos = dr["bag_nos"] != DBNull.Value ? Convert.ToInt64(dr["bag_nos"]) : 0,
                             Required_Shipper = dr["Required_Shipper"] != DBNull.Value ? Convert.ToDecimal(dr["Required_Shipper"]) : 0,
                             Loaded_Shipper = dr["Loaded_Shipper"] != DBNull.Value ? Convert.ToDecimal(dr["Loaded_Shipper"]) : 0,
-                            Expected_Shipper = dr["Expected_Shipper"] != DBNull.Value ? Convert.ToDecimal(dr["Expected_Shipper"]) : 0
+                            Expected_Shipper = dr["Expected_Shipper"] != DBNull.Value ? Convert.ToDecimal(dr["Expected_Shipper"]) : 0,
+                            Loaded_Bottle = dr["Loaded_Bottle"] != DBNull.Value ? Convert.ToDecimal(dr["Loaded_Bottle"]) : 0,
+                            Expected_Bottle = dr["Expected_Bottle"] != DBNull.Value ? Convert.ToDecimal(dr["Expected_Bottle"]) : 0
                         });
 
                 }
@@ -542,6 +546,7 @@ namespace Dispatch_System.Areas.Export.Controllers
                         listPallate.Add(new
                         {
                             Sr_No = dr["SR_NO"] != DBNull.Value ? Convert.ToInt64(dr["SR_NO"]) : 0,
+                            Id = dr["MDA_LOD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_LOD_SYS_ID"]) : 0,
                             Pallate_Id = dr["Pallate_Id"] != DBNull.Value ? Convert.ToInt64(dr["Pallate_Id"]) : 0,
                             MDA_Id = dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0,
                             GateInOut_Id = dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0,
@@ -549,6 +554,7 @@ namespace Dispatch_System.Areas.Export.Controllers
                             Pallate_No = dr["PALLATE_NO"] != DBNull.Value ? Convert.ToString(dr["PALLATE_NO"]) : "",
                             Pallate_Type = dr["Pallate_Type_Text"] != DBNull.Value ? Convert.ToString(dr["Pallate_Type_Text"]) : "",
                             Shipper_Qty = dr["Shipper_Qty"] != DBNull.Value ? Convert.ToInt64(dr["Shipper_Qty"]) : 0,
+                            Bottle_Qty = dr["Bottle_Qty"] != DBNull.Value ? Convert.ToInt64(dr["Bottle_Qty"]) : 0,
                             Dispatch_Mode = dr["Dispatch_Mode_Text"] != DBNull.Value ? Convert.ToString(dr["Dispatch_Mode_Text"]) : ""
                         });
 
@@ -564,7 +570,7 @@ namespace Dispatch_System.Areas.Export.Controllers
         {
             try
             {
-                if (GateInId <=0 || MDAId <= 0 || string.IsNullOrEmpty(DI_No))
+                if (GateInId <= 0 || MDAId <= 0 || string.IsNullOrEmpty(DI_No))
                 {
                     CommonViewModel.IsSuccess = false;
                     CommonViewModel.Message = "Please enter valid MDA details";
@@ -587,7 +593,7 @@ namespace Dispatch_System.Areas.Export.Controllers
                 var (IsSuccess, response, Id) = (false, ResponseStatusMessage.Error, 0M);
 
                 oParams.Add(new MySqlParameter("P_MDA_ID", MySqlDbType.Int64) { Value = MDAId });
-                oParams.Add(new MySqlParameter("P_GATEIN_ID", MySqlDbType.Int64) { Value = GateInId});
+                oParams.Add(new MySqlParameter("P_GATEIN_ID", MySqlDbType.Int64) { Value = GateInId });
                 oParams.Add(new MySqlParameter("P_DI_No", MySqlDbType.VarString) { Value = DI_No });
                 oParams.Add(new MySqlParameter("P_Pallate_Id", MySqlDbType.VarString) { Value = PallateId });
                 oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
