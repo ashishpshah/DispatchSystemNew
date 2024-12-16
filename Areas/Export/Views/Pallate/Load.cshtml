@@ -149,6 +149,18 @@
 
             fnCancel();
 
+            $('#DI_No').html('');
+
+            $('#divPallate').addClass('d-none');
+
+            $('#Pallate_DI_No').html('');
+            $('#Pallate_MDA_No').html('');
+            $('#Pallate_Vehicle_No').html('');
+            $('#Expected_Qty_Shipper').html('');
+            $('#Loaded_Qty_Shipper').html('');
+            $('#Expected_Qty_Bottle').html('');
+            $('#Loaded_Qty_Bottle').html('');
+
             if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
 
             $.ajax({
@@ -305,6 +317,16 @@
             fnCancel();
 
             $('#DI_No').html('');
+
+            $('#divPallate').addClass('d-none');
+
+            $('#Pallate_DI_No').html('');
+            $('#Pallate_MDA_No').html('');
+            $('#Pallate_Vehicle_No').html('');
+            $('#Expected_Qty_Shipper').html('');
+            $('#Loaded_Qty_Shipper').html('');
+            $('#Expected_Qty_Bottle').html('');
+            $('#Loaded_Qty_Bottle').html('');
 
             try {
                 if ($.fn.DataTable.isDataTable('#table_MDA_Dtls')) {
