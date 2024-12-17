@@ -299,12 +299,12 @@ function ajaxPost($url, $data) {
                 ShowLoader(false);
                 if (response.statusCode === 1) {
                     if (typeof response.isConfirm != 'undefined' && response.isConfirm != '' && response.isConfirm != null && response.isConfirm == true)
-                        if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+                        if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                             CommonConfirmed_Success(response.message, response.redirectURL, null);
                         else
                             CommonConfirmed_Success(response.message, fnSubmitForm_Success, [response, 'AJAX']);
                     else
-                        if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+                        if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                             window.location = response.redirectURL;
                         else
                             fnSubmitForm_Success(response, 'AJAX');
@@ -350,24 +350,24 @@ function ajaxGet($url, $isReturnToForm, $redirectUrl) {
                 ShowLoader(false);
                 if (response.statusCode === 1) {
                     if (typeof response.isConfirm != 'undefined' && response.isConfirm != '' && response.isConfirm != null && response.isConfirm == true)
-                        if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+                        if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                             CommonConfirmed_Success(response.message, response.redirectURL, null);
                         else
-                            if (typeof $isReturnToForm != 'undefined' && $isReturnToForm != '' && $isReturnToForm != null && $isReturnToForm == true)
+                            if (typeof $isReturnToForm != 'undefined'  && $isReturnToForm != null && $isReturnToForm != '' && $isReturnToForm == true)
                                 CommonConfirmed_Success(response.message, fnSubmitForm_Success, [response, 'AJAX']);
                             else
-                                if (typeof $redirectUrl != 'undefined' && $redirectUrl != '' && $redirectUrl != null && $redirectUrl.length > 0)
+                                if (typeof $redirectUrl != 'undefined' && $redirectUrl != null && $redirectUrl != '' && $redirectUrl.length > 0)
                                     CommonConfirmed_Success(response.message, $redirectUrl, null);
                                 else
                                     CommonConfirmed_Success(response.message, response.redirectURL, null);
                     else
-                        if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+                        if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                             window.location = response.redirectURL;
                         else
-                            if (typeof $isReturnToForm != 'undefined' && $isReturnToForm != '' && $isReturnToForm != null && $isReturnToForm == true)
+                            if (typeof $isReturnToForm != 'undefined'  && $isReturnToForm != null && $isReturnToForm != '' && $isReturnToForm == true)
                                 fnSubmitForm_Success(response, 'AJAX');
                             else
-                                if (typeof $redirectUrl != 'undefined' && $redirectUrl != '' && $redirectUrl != null && $redirectUrl.length > 0)
+                                if (typeof $redirectUrl != 'undefined' && $redirectUrl != null && $redirectUrl != '' && $redirectUrl.length > 0)
                                     window.location = $redirectUrl;
                                 else
                                     window.location = response.redirectURL;
@@ -739,19 +739,19 @@ function fnSubmitForm($id) {
                 try {
                     ShowLoader(false);
                     if (response.statusCode === 1) {
-                        if (typeof response.isConfirm != 'undefined' && response.isConfirm != '' && response.isConfirm != null && response.isConfirm == true)
-                            if (typeof response.data5 != 'undefined' && response.data5 != '' && response.data5 != null)
-                                if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+                        if (typeof response.isConfirm != 'undefined' && response.isConfirm != null && response.isConfirm != '' && response.isConfirm == true)
+                            if (typeof response.data5 != 'undefined' && response.data5 != null && response.data5 != '')
+                                if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                                     CommonConfirmed_Success_Print(response.message, response.data5, response.redirectURL, null);
                                 else
                                     CommonConfirmed_Success_Print(response.message, response.data5, fnSubmitForm_Success, [response]);
                             else
-                                if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+                                if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                                     CommonConfirmed_Success(response.message, response.redirectURL, null);
                                 else
                                     CommonConfirmed_Success(response.message, fnSubmitForm_Success, [response, $id]);
                         else
-                            if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+                            if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                                 window.location = response.redirectURL;
                             else
                                 fnSubmitForm_Success(response, $id);
@@ -856,7 +856,7 @@ function fnSubmitForm_WithoutAlert($id) {
                 try {
                     ShowLoader(false);
                     if (response.statusCode === 1)
-                        if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+                        if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                             window.location = response.redirectURL;
                         else
                             fnSubmitForm_Success(response, $id);
@@ -890,11 +890,14 @@ function fnSubmitForm_Confirm($id) {
     });
 }
 
-function fnDelete_Confirm(url) {
+function fnDelete_Confirm(url, msg = null) {
+
+    if (typeof msg == 'undefined' || msg == null || msg == '')
+        msg = "Are you sure to delete this data?";
 
     Swal.fire({
         icon: "warning",
-        title: "Are you sure to delete this data?",
+        title: msg,
         //type: "error",
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -917,13 +920,13 @@ function fnDelete_Confirm(url) {
 
                         try {
                             if (response.statusCode === 1) {
-                                if (typeof response.isConfirm != 'undefined' && response.isConfirm != '' && response.isConfirm != null && response.isConfirm == true)
-                                    if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+                                if (typeof response.isConfirm != 'undefined' && response.isConfirm != null && response.isConfirm != '' && response.isConfirm == true)
+                                    if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                                         CommonConfirmed_Success(response.message, response.redirectURL, null);
                                     else
                                         CommonConfirmed_Success(response.message, fnDelete_Success, [response]);
                                 else
-                                    if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+                                    if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                                         window.location = response.redirectURL;
                                     else fnDelete_Success(response);
                             }

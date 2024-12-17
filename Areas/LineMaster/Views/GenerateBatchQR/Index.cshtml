@@ -111,6 +111,8 @@
                                             <div class="col-sm-1">
                                                 <input type="text" class="form-control form-control-sm isNumberKey" id="Serial_No" name="Serial_No" autocomplete="off" readonly
                                                        value="@(Model.Obj.Serial_No > 0 ? Model.Obj.Serial_No.ToString() : "")">
+                                                <input type="text" class="form-control form-control-sm d-none" id="APID1_Val" autocomplete="off" readonly />
+                                                <input type="text" class="form-control form-control-sm d-none" id="APID2_Val" autocomplete="off" readonly />
                                             </div>
                                         </div>
 
@@ -166,6 +168,8 @@
 
             $("#Julian_Day").val('').trigger('change');
             $("#Serial_No").val('').trigger('change');
+            $("#APID1_Val").val('').trigger('change');
+            $("#APID2_Val").val('').trigger('change');
 
             var date = $("#MFG_Date").val();
             if (typeof date != 'undefined' && date != null && date != '') {
@@ -185,11 +189,13 @@
                     success: function (response) {
 
                         setTimeout(function () {
-                            
+
                             try {
                                 if (response.statusCode === 1) {
 
                                     $("#Serial_No").val(response.obj.serial_No).trigger('change');
+                                    $("#APID1_Val").val(response.obj.apiD1_Val).trigger('change');
+                                    $("#APID2_Val").val(response.obj.apiD2_Val).trigger('change');
 
                                     fnChange_GenerateBatchQR();
                                 }
@@ -217,27 +223,30 @@
             $("#lableQRCodeImage").text('');
 
             var Batch_No = $("#Batch_No").val();
+            var APID1_Val = $("#APID1_Val").val();
+            var APID2_Val = $("#APID2_Val").val();
 
-            if (typeof Batch_No != 'undefined' && Batch_No != null && Batch_No != '') {
+            if (typeof Batch_No != 'undefined' && Batch_No != null && Batch_No != '' && typeof APID1_Val != 'undefined' && APID1_Val != null && APID1_Val != '' && typeof APID2_Val != 'undefined' && APID2_Val != null && APID2_Val != '') {
 
                 ShowLoader(true);
 
                 $.ajax({
                     type: "GET",
-                    url: '@Url.Action("Generate_QRCode", "GenerateBatchQR", new { area = "LineMaster" })?strText=' + Batch_No + ',' + $('#MFG_Date').val(),
+                    url: '@Url.Action("Generate_QRCode", "GenerateBatchQR", new { area = "LineMaster" })?Batch_No=' + Batch_No + '&MFG_Date=' + $('#MFG_Date').val() + '&APID1_Val=' + APID1_Val + '&APID2_Val=' + APID2_Val,
                     data: null,
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
                     success: function (response) {
 
                         setTimeout(function () {
-                            
+
                             try {
                                 if (response.statusCode === 1) {
 
                                     $(".card-footer").css('display', 'block');
                                     $("#imgQRCodeImage").attr('src', response.data1);
-                                    $("#lableQRCodeImage").text(Batch_No + ',' + $('#MFG_Date').val());
+                                    //$("#lableQRCodeImage").text(Batch_No + ',' + $('#MFG_Date').val());
+                                    $("#lableQRCodeImage").text(response.data2);
 
                                 }
                                 else { CommonAlert_Error(response.message); }

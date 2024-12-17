@@ -9,5 +9,7 @@
         public int Julian_Day { get; set; }
         public long Serial_No { get; set; }
         public string Batch_No { get; set; }
+        public string APID1_Val { get; set; }
+        public string APID2_Val { get; set; }
     }
 }

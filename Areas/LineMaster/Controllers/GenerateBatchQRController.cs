@@ -90,10 +90,16 @@ namespace Dispatch_System.Areas.LineMaster.Controllers
                 oParams.Add(new MySqlParameter("P_ROLE_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.ROLE_ID) });
                 oParams.Add(new MySqlParameter("P_MENU_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.MENU_ID) });
 
-                var dt = DataContext.ExecuteStoredProcedure_DataTable_SQL("PC_BATCH_GET", oParams, true);
+                var ds = DataContext.ExecuteStoredProcedure_DataSet_SQL("PC_BATCH_GET", oParams, true);
 
-                if (dt != null && dt.Rows.Count > 0)
-                    CommonViewModel.Obj.Serial_No = Convert.ToInt64(dt.Rows[0][0]);
+                if (ds != null && ds.Tables.Count > 0 && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    CommonViewModel.Obj.Serial_No = Convert.ToInt64(ds.Tables[0].Rows[0][0]);
+
+                if (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                {
+                    CommonViewModel.Obj.APID1_Val = Convert.ToString(ds.Tables[1].Rows[0][1]);
+                    CommonViewModel.Obj.APID2_Val = Convert.ToString(ds.Tables[1].Rows[0][3]);
+                }
 
                 CommonViewModel.IsConfirm = false;
                 CommonViewModel.IsSuccess = true;
@@ -114,12 +120,18 @@ namespace Dispatch_System.Areas.LineMaster.Controllers
         }
 
         [HttpGet]
-        public IActionResult Generate_QRCode(string strText)
+        public IActionResult Generate_QRCode(string Batch_No, string MFG_Date, string APID1_Val, string APID2_Val)
         {
-            var imageBase64 = "";
-
             try
             {
+                var date = DateTime.ParseExact(MFG_Date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+                MFG_Date = date.ToString("yyyyMMdd");
+
+                var imageBase64 = "";
+
+                var strText = $"[{APID1_Val}]{Batch_No}[{APID2_Val}]{MFG_Date}";
+
                 QRCodeGenerator qrGenerator = new QRCodeGenerator();
                 QRCodeData qrCodeData = qrGenerator.CreateQrCode(strText, QRCodeGenerator.ECCLevel.Q);
 
@@ -131,7 +143,7 @@ namespace Dispatch_System.Areas.LineMaster.Controllers
                 {
                     qrCodeImage = new Bitmap(ms);
 
-                    qrCodeImage.Save(strText.Split(',')[0] + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                    qrCodeImage.Save($"{APID1_Val}_{Batch_No}_{APID2_Val}_{MFG_Date.Replace("/", "")}" + ".png", System.Drawing.Imaging.ImageFormat.Png);
 
                     byte[] byteArray = ms.ToArray();
 
@@ -145,6 +157,7 @@ namespace Dispatch_System.Areas.LineMaster.Controllers
                 CommonViewModel.Message = null;
 
                 CommonViewModel.Data1 = imageBase64;
+                CommonViewModel.Data2 = strText;
 
             }
             catch (Exception ex)
