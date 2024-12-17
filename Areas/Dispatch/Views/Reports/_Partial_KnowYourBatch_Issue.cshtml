@@ -7,13 +7,12 @@
 <div class="row no-gooters">
     <div class="col-md-12 my-1">
 
-        @if (Model != null && Model.Data3 != null && string.IsNullOrEmpty(Convert.ToString(Model.Message)) && !string.IsNullOrEmpty(Convert.ToString(Model.Status)))
+        @if (Model != null && (Model.Data1 != null || Model.Data2 != null) && string.IsNullOrEmpty(Convert.ToString(Model.Message)))
         {
             <button type="button" class="btn btn-info btn-flat my-2"
                     onclick="ajaxGet('@Url.Action("SyncBatch_New", "Home", new { area = "" })?searchTerm=@Model.Status', false, '@Model.RedirectURL')">
                 Process this file
             </button>
-
         }
 
         <table class="table table-bordered w-100 ">
