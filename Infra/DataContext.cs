@@ -877,6 +877,320 @@ namespace Dispatch_System
 
             plant_id = plant_id <= 0 ? AppHttpContextAccessor.PlantId : plant_id;
 
+            if (string.IsNullOrEmpty(tableName) || tableName.ToUpper() == "EXP_FG_GATE_IN_OUT")
+            {
+                try
+                {
+                    dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, GATE_SYS_ID, DATE_FORMAT(GATE_IN_DT, '%d/%m/%Y %H:%i:%s') AS GATE_IN_DT" +
+                            ", DATE_FORMAT(GATE_OUT_DT, '%d/%m/%Y %H:%i:%s') AS GATE_OUT_DT, INWARD_SYS_ID, MDA_SYS_ID, TRUCK_NO" +
+                            ", DRIVER_ID_TYPE, DRIVER_ID_NUMBER, DRIVER_NAME, DRIVER_CONTACT, DRIVER_CHANGED, DRIVER_NAME_NEW, DRIVER_CONTACT_NEW, TRUCK_VALIDATION" +
+                            ", EXPECTED_QTY, TRANS_SYS_ID, RFSYSID, VERIFIED_DOCUMENTS, RFID_RECEIVE, VERIFIED_OFFICER_ID, CANCEL_GATE_IN, CANCEL_GATE_REASON, GATE_SYS_ID_OLD" +
+                            ", IS_GOODS_TRANSFER, CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED " +
+                            "FROM EXP_FG_GATE_IN_OUT WHERE 1 = 1 " +
+                            $"{(ids_GateInOut.Count() > 0 ? " AND GATE_SYS_ID IN (" + string.Join(", ", ids_GateInOut) + ")" : "")}");
+
+                    if (dtSql != null && dtSql.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long PLANT_ID, long STATION_ID, long GATE_SYS_ID, long MDA_SYS_ID, string TRUCK_NO)>
+                            idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["GATE_SYS_ID"]}")
+                                            , Convert.ToInt64($"{row["MDA_SYS_ID"]}")
+                                            , Convert.ToString($"{row["TRUCK_NO"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.GATE_SYS_ID}, {tuple.MDA_SYS_ID}, '{tuple.TRUCK_NO}')";
+                            checkValues.Add(checkValue);
+                        }
+
+                        if (ids_GateInOut == null || ids_GateInOut.Count == 0)
+                            dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, STATION_ID, GATE_SYS_ID, MDA_SYS_ID, TRUCK_NO
+        										FROM EXP_FG_GATE_IN_OUT 
+        										WHERE (PLANT_ID, STATION_ID, GATE_SYS_ID, MDA_SYS_ID, TRUCK_NO) 
+        										IN ({string.Join(", ", checkValues)}) ");
+
+                        checkValues = new List<string>();
+
+                        if (dtOracle != null && dtOracle.Rows.Count > 0)
+                            idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable().Any(row => x == (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["GATE_SYS_ID"]}"), Convert.ToInt64($"{row["MDA_SYS_ID"]}"), Convert.ToString($"{row["TRUCK_NO"]}")))).ToList();
+
+                        if (idsToFilter != null && idsToFilter.Count() > 0)
+                        {
+                            foreach (var tuple in idsToFilter)
+                            {
+                                string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.GATE_SYS_ID}, {tuple.MDA_SYS_ID}, '{tuple.TRUCK_NO}')";
+                                checkValues.Add(checkValue);
+                            }
+
+                            dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, GATE_SYS_ID, DATE_FORMAT(GATE_IN_DT, '%d/%m/%Y %H:%i:%s') AS GATE_IN_DT, INWARD_SYS_ID" +
+                                    ", DATE_FORMAT(GATE_OUT_DT, '%d/%m/%Y %H:%i:%s') AS GATE_OUT_DT, MDA_SYS_ID, TRUCK_NO" +
+                                    ", DRIVER_ID_TYPE, DRIVER_ID_NUMBER, DRIVER_NAME, DRIVER_CONTACT, DRIVER_CHANGED, DRIVER_NAME_NEW, DRIVER_CONTACT_NEW, TRUCK_VALIDATION" +
+                                    ", EXPECTED_QTY, TRANS_SYS_ID, RFSYSID, VERIFIED_DOCUMENTS, RFID_RECEIVE, VERIFIED_OFFICER_ID, CANCEL_GATE_IN, CANCEL_GATE_REASON, GATE_SYS_ID_OLD" +
+                                    ", IS_GOODS_TRANSFER, CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, 0 IS_POSTED " +
+                                    "FROM EXP_FG_GATE_IN_OUT WHERE (PLANT_ID, STATION_ID, GATE_SYS_ID, MDA_SYS_ID, TRUCK_NO) " +
+                                    "IN (" + string.Join(", ", checkValues) + ") ");
+
+                            if (dtSql != null && dtSql.Rows.Count > 0)
+                            {
+                                foreach (DataRow dr in dtSql.Rows)
+                                {
+                                    List<OracleParameter> parameters = new List<OracleParameter>();
+
+                                    parameters.Add(new OracleParameter("P_GATE_SYS_ID", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_GATE_IN_DT", OracleDbType.Date) { Value = (dr["GATE_IN_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GATE_IN_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_GATE_OUT_DT", OracleDbType.Date) { Value = (dr["GATE_OUT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GATE_OUT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_INWARD_SYS_ID", OracleDbType.Int64) { Value = (dr["INWARD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["INWARD_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_MDA_SYS_ID", OracleDbType.Int64) { Value = (dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0M) });
+                                    
+                                    parameters.Add(new OracleParameter("P_TRUCK_NO", OracleDbType.NVarchar2) { Value = (dr["TRUCK_NO"] != DBNull.Value ? Convert.ToString(dr["TRUCK_NO"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_ID_TYPE", OracleDbType.NVarchar2) { Value = (dr["DRIVER_ID_TYPE"] != DBNull.Value ? Convert.ToString(dr["DRIVER_ID_TYPE"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_ID_NUMBER", OracleDbType.NVarchar2) { Value = (dr["DRIVER_ID_NUMBER"] != DBNull.Value ? Convert.ToString(dr["DRIVER_ID_NUMBER"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_NAME", OracleDbType.NVarchar2) { Value = (dr["DRIVER_NAME"] != DBNull.Value ? Convert.ToString(dr["DRIVER_NAME"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_CONTACT", OracleDbType.NVarchar2) { Value = (dr["DRIVER_CONTACT"] != DBNull.Value ? Convert.ToString(dr["DRIVER_CONTACT"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_CHANGED", OracleDbType.Int64) { Value = (dr["DRIVER_CHANGED"] != DBNull.Value ? Convert.ToInt64(dr["DRIVER_CHANGED"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_DRIVER_NAME_NEW", OracleDbType.NVarchar2) { Value = (dr["DRIVER_NAME_NEW"] != DBNull.Value ? Convert.ToString(dr["DRIVER_NAME_NEW"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_CONTACT_NEW", OracleDbType.NVarchar2) { Value = (dr["DRIVER_CONTACT_NEW"] != DBNull.Value ? Convert.ToString(dr["DRIVER_CONTACT_NEW"]) : "") });
+                                    parameters.Add(new OracleParameter("P_TRUCK_VALIDATION", OracleDbType.Int64) { Value = (dr["TRUCK_VALIDATION"] != DBNull.Value ? Convert.ToInt64(dr["TRUCK_VALIDATION"]) : 0M) });
+
+                                    parameters.Add(new OracleParameter("P_EXPECTED_QTY", OracleDbType.Int64) { Value = (dr["EXPECTED_QTY"] != DBNull.Value ? Convert.ToInt64(dr["EXPECTED_QTY"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_TRANS_SYS_ID", OracleDbType.Int64) { Value = (dr["TRANS_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["TRANS_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_RFSYSID", OracleDbType.Int64) { Value = (dr["RFSYSID"] != DBNull.Value ? Convert.ToInt64(dr["RFSYSID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_VERIFIED_DOCUMENTS", OracleDbType.Int64) { Value = (dr["VERIFIED_DOCUMENTS"] != DBNull.Value ? Convert.ToInt64(dr["VERIFIED_DOCUMENTS"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_RFID_RECEIVE", OracleDbType.Int64) { Value = (dr["RFID_RECEIVE"] != DBNull.Value ? Convert.ToInt64(dr["RFID_RECEIVE"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_VERIFIED_OFFICER_ID", OracleDbType.NVarchar2) { Value = (dr["VERIFIED_OFFICER_ID"] != DBNull.Value ? Convert.ToString(dr["VERIFIED_OFFICER_ID"]) : "") });
+                                    parameters.Add(new OracleParameter("P_CANCEL_GATE_IN", OracleDbType.Int64) { Value = (dr["CANCEL_GATE_IN"] != DBNull.Value ? Convert.ToInt64(dr["CANCEL_GATE_IN"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_CANCEL_GATE_REASON", OracleDbType.NVarchar2) { Value = (dr["CANCEL_GATE_REASON"] != DBNull.Value ? Convert.ToString(dr["CANCEL_GATE_REASON"]) : "") });
+                                    parameters.Add(new OracleParameter("P_GATE_SYS_ID_OLD", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID_OLD"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID_OLD"]) : 0M) });
+
+                                    parameters.Add(new OracleParameter("P_IS_GOODS_TRANSFER", OracleDbType.Int64) { Value = (dr["IS_GOODS_TRANSFER"] != DBNull.Value ? Convert.ToInt64(dr["IS_GOODS_TRANSFER"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_STATION_ID", OracleDbType.Int64) { Value = (dr["STATION_ID"] != DBNull.Value ? Convert.ToInt64(dr["STATION_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = (dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_CREATED_BY_ID", OracleDbType.Int64) { Value = (dr["CREATED_BY_ID"] != DBNull.Value ? Convert.ToInt64(dr["CREATED_BY_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_CREATED_DATETIME", OracleDbType.Date) { Value = (dr["CREATED_DATETIME"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["CREATED_DATETIME"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_IS_POSTED", OracleDbType.Int64) { Value = (dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt64(dr["IS_POSTED"]) : 0M) });
+
+                                    var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SAVE_EXP_FG_GATE_IN_OUT", parameters, false);
+
+                                }
+                            }
+                        }
+
+                    }
+
+
+                    dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, STATION_ID, GATE_SYS_ID, MDA_SYS_ID, TRUCK_NO
+        										FROM EXP_FG_GATE_IN_OUT 
+        										WHERE PLANT_ID = {plant_id} AND GATE_OUT_DT IS NULL
+        										{(ids_GateInOut.Count() > 0 ? " AND GATE_SYS_ID IN (" + string.Join(", ", ids_GateInOut) + ")" : "")}");
+
+                    if (dtOracle != null && dtOracle.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long PLANT_ID, long STATION_ID, long GATE_SYS_ID, long MDA_SYS_ID, string TRUCK_NO)>
+                            idsToFilter = dtOracle.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["GATE_SYS_ID"]}")
+                                            , Convert.ToInt64($"{row["MDA_SYS_ID"]}")
+                                            , Convert.ToString($"{row["TRUCK_NO"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.GATE_SYS_ID}, {tuple.MDA_SYS_ID}, '{tuple.TRUCK_NO}')";
+                            checkValues.Add(checkValue);
+                        }
+
+                        dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, GATE_SYS_ID, DATE_FORMAT(GATE_IN_DT, '%d/%m/%Y %H:%i:%s') AS GATE_IN_DT, INWARD_SYS_ID" +
+                                ", DATE_FORMAT(GATE_OUT_DT, '%d/%m/%Y %H:%i:%s') AS GATE_OUT_DT, MDA_SYS_ID, TRUCK_NO" +
+                                ", DRIVER_ID_TYPE, DRIVER_ID_NUMBER, DRIVER_NAME, DRIVER_CONTACT, DRIVER_CHANGED, DRIVER_NAME_NEW, DRIVER_CONTACT_NEW, TRUCK_VALIDATION" +
+                                ", EXPECTED_QTY, TRANS_SYS_ID, RFSYSID, VERIFIED_DOCUMENTS, RFID_RECEIVE, VERIFIED_OFFICER_ID, CANCEL_GATE_IN, CANCEL_GATE_REASON, GATE_SYS_ID_OLD" +
+                                ", IS_GOODS_TRANSFER, CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, 0 IS_POSTED " +
+                                "FROM EXP_FG_GATE_IN_OUT WHERE (PLANT_ID, STATION_ID, GATE_SYS_ID, MDA_SYS_ID, TRUCK_NO) " +
+                                "IN (" + string.Join(", ", checkValues) + ") AND (GATE_OUT_DT IS NOT NULL OR CANCEL_GATE_IN = 1) ");
+
+                        if (dtSql != null && dtSql.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtSql.Rows)
+                            {
+                                List<OracleParameter> parameters = new List<OracleParameter>();
+
+                                parameters.Add(new OracleParameter("P_GATE_SYS_ID", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_GATE_OUT_DT", OracleDbType.Date) { Value = (dr["GATE_OUT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GATE_OUT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                parameters.Add(new OracleParameter("P_MDA_SYS_ID", OracleDbType.Int64) { Value = (dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0M) });
+                                
+                                parameters.Add(new OracleParameter("P_CANCEL_GATE_IN", OracleDbType.Int64) { Value = (dr["CANCEL_GATE_IN"] != DBNull.Value ? Convert.ToInt64(dr["CANCEL_GATE_IN"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_CANCEL_GATE_REASON", OracleDbType.NVarchar2) { Value = (dr["CANCEL_GATE_REASON"] != DBNull.Value ? Convert.ToString(dr["CANCEL_GATE_REASON"]) : "") });
+                                parameters.Add(new OracleParameter("P_GATE_SYS_ID_OLD", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID_OLD"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID_OLD"]) : 0M) });
+
+                                parameters.Add(new OracleParameter("P_IS_GOODS_TRANSFER", OracleDbType.Int64) { Value = (dr["IS_GOODS_TRANSFER"] != DBNull.Value ? Convert.ToInt64(dr["IS_GOODS_TRANSFER"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_STATION_ID", OracleDbType.Int64) { Value = (dr["STATION_ID"] != DBNull.Value ? Convert.ToInt64(dr["STATION_ID"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = (dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0M) });
+
+                                var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_UPDATE_EXP_FG_GATE_IN_OUT", parameters, false);
+
+                            }
+                        }
+
+                    }
+
+                }
+                catch (Exception ex) { LogService.LogInsert("SyncData_LocalToCloud", "EXP_FG_GATE_IN_OUT", ex); }
+
+            }
+
+            if (string.IsNullOrEmpty(tableName) || tableName.ToUpper() == "EXP_FG_WEIGHMENT_DETAIL")
+            {
+                try
+                {
+                    dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID" +
+                        ", IFNULL(GROSS_WT, 0)GROSS_WT, DATE_FORMAT(GROSS_WT_DT, '%d/%m/%Y %H:%i:%s') AS GROSS_WT_DT, GROSS_WT_MANUALLY, GROSS_WT_NOTE" +
+                        ", TARE_WT, DATE_FORMAT(TARE_WT_DT, '%d/%m/%Y %H:%i:%s') AS TARE_WT_DT, TARE_WT_MANUALLY, TARE_WT_NOTE" +
+                        ", NET_WT, OUT_OF_TOLERANCE_WT, TOLERANCE_WT, ALLOW_TOLERANCE_WT" +
+                        ", CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED " +
+                        "FROM EXP_FG_WEIGHMENT_DETAIL WHERE 1 = 1 " +
+                        $"{(ids_GateInOut.Count() > 0 ? " AND GATE_SYS_ID IN (" + string.Join(", ", ids_GateInOut) + ")" : "")}");
+
+                    if (dtSql != null && dtSql.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long PLANT_ID, long STATION_ID, long WT_SYS_ID, long GATE_SYS_ID)>
+                            idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["WT_SYS_ID"]}"), Convert.ToInt64($"{row["GATE_SYS_ID"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.WT_SYS_ID}, {tuple.GATE_SYS_ID})";
+                            checkValues.Add(checkValue);
+                        }
+
+                        if (ids_GateInOut == null || ids_GateInOut.Count == 0)
+                            dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID
+        											FROM EXP_FG_WEIGHMENT_DETAIL 
+        											WHERE (PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID) 
+        											IN ({string.Join(", ", checkValues)})");
+
+                        checkValues = new List<string>();
+
+                        if (dtOracle != null && dtOracle.Rows.Count > 0)
+                            idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable().Any(row => x == (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["WT_SYS_ID"]}"), Convert.ToInt64($"{row["GATE_SYS_ID"]}")))).ToList();
+
+                        if (idsToFilter != null && idsToFilter.Count() > 0)
+                        {
+                            foreach (var tuple in idsToFilter)
+                            {
+                                string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.WT_SYS_ID}, {tuple.GATE_SYS_ID})";
+                                checkValues.Add(checkValue);
+                            }
+
+                            dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID" +
+                                    ", GROSS_WT, DATE_FORMAT(GROSS_WT_DT, '%d/%m/%Y %H:%i:%s') AS GROSS_WT_DT, GROSS_WT_MANUALLY, GROSS_WT_NOTE" +
+                                    ", TARE_WT, DATE_FORMAT(TARE_WT_DT, '%d/%m/%Y %H:%i:%s') AS TARE_WT_DT, TARE_WT_MANUALLY, TARE_WT_NOTE" +
+                                    ", NET_WT, OUT_OF_TOLERANCE_WT, TOLERANCE_WT, ALLOW_TOLERANCE_WT" +
+                                    ", CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED " +
+                                    "FROM EXP_FG_WEIGHMENT_DETAIL WHERE (PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID) " +
+                                    "IN (" + string.Join(", ", checkValues) + ")");
+
+                            if (dtSql != null && dtSql.Rows.Count > 0)
+                            {
+                                foreach (DataRow dr in dtSql.Rows)
+                                {
+                                    List<OracleParameter> parameters = new List<OracleParameter>();
+
+                                    parameters.Add(new OracleParameter("P_WT_SYS_ID", OracleDbType.Int64) { Value = (dr["WT_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["WT_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_GATE_SYS_ID", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_GROSS_WT", OracleDbType.Decimal) { Value = (dr["GROSS_WT"] != DBNull.Value ? Convert.ToDecimal(dr["GROSS_WT"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_GROSS_WT_DT", OracleDbType.Date) { Value = (dr["GROSS_WT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GROSS_WT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_GROSS_WT_MANUALLY", OracleDbType.Int64) { Value = (dr["GROSS_WT_MANUALLY"] != DBNull.Value ? Convert.ToInt64(dr["GROSS_WT_MANUALLY"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_GROSS_WT_NOTE", OracleDbType.NVarchar2) { Value = (dr["GROSS_WT_NOTE"] != DBNull.Value ? Convert.ToString(dr["GROSS_WT_NOTE"]) : "") });
+
+                                    parameters.Add(new OracleParameter("P_TARE_WT", OracleDbType.Decimal) { Value = (dr["TARE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["TARE_WT"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_TARE_WT_DT", OracleDbType.Date) { Value = (dr["TARE_WT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["TARE_WT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_TARE_WT_MANUALLY", OracleDbType.Int64) { Value = (dr["TARE_WT_MANUALLY"] != DBNull.Value ? Convert.ToInt64(dr["TARE_WT_MANUALLY"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_TARE_WT_NOTE", OracleDbType.NVarchar2) { Value = (dr["TARE_WT_NOTE"] != DBNull.Value ? Convert.ToString(dr["TARE_WT_NOTE"]) : "") });
+
+                                    parameters.Add(new OracleParameter("P_NET_WT", OracleDbType.Decimal) { Value = (dr["NET_WT"] != DBNull.Value ? Convert.ToDecimal(dr["NET_WT"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_OUT_OF_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["OUT_OF_TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["OUT_OF_TOLERANCE_WT"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["TOLERANCE_WT"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_ALLOW_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["ALLOW_TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["ALLOW_TOLERANCE_WT"]) : 0) });
+
+                                    parameters.Add(new OracleParameter("P_STATION_ID", OracleDbType.Int64) { Value = (dr["STATION_ID"] != DBNull.Value ? Convert.ToInt64(dr["STATION_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = (dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_CREATED_BY_ID", OracleDbType.Int64) { Value = (dr["CREATED_BY_ID"] != DBNull.Value ? Convert.ToInt64(dr["CREATED_BY_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_CREATED_DATETIME", OracleDbType.Date) { Value = (dr["CREATED_DATETIME"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["CREATED_DATETIME"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_IS_POSTED", OracleDbType.Int64) { Value = (dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt64(dr["IS_POSTED"]) : 0M) });
+
+
+                                    var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SAVE_EXP_FG_WEIGHMENT_DETAIL", parameters, false);
+
+                                }
+                            }
+                        }
+
+                    }
+
+                    dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID
+        											FROM EXP_FG_WEIGHMENT_DETAIL 
+        											WHERE PLANT_ID = {plant_id} AND NVL(GROSS_WT, 0) = 0 
+        											{(ids_GateInOut.Count() > 0 ? " AND GATE_SYS_ID IN (" + string.Join(", ", ids_GateInOut) + ")" : "")}");
+
+                    if (dtOracle != null && dtOracle.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long PLANT_ID, long STATION_ID, long WT_SYS_ID, long GATE_SYS_ID)>
+                            idsToFilter = dtOracle.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["WT_SYS_ID"]}"), Convert.ToInt64($"{row["GATE_SYS_ID"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.WT_SYS_ID}, {tuple.GATE_SYS_ID})";
+                            checkValues.Add(checkValue);
+                        }
+
+                        dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID" +
+                                ", GROSS_WT, DATE_FORMAT(GROSS_WT_DT, '%d/%m/%Y %H:%i:%s') AS GROSS_WT_DT, GROSS_WT_MANUALLY, GROSS_WT_NOTE" +
+                                ", TARE_WT, DATE_FORMAT(TARE_WT_DT, '%d/%m/%Y %H:%i:%s') AS TARE_WT_DT, TARE_WT_MANUALLY, TARE_WT_NOTE" +
+                                ", NET_WT, OUT_OF_TOLERANCE_WT, TOLERANCE_WT, ALLOW_TOLERANCE_WT" +
+                                ", CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED " +
+                                "FROM EXP_FG_WEIGHMENT_DETAIL WHERE (PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID) " +
+                                "IN (" + string.Join(", ", checkValues) + ") AND IFNULL(GROSS_WT, 0) > 0");
+
+                        if (dtSql != null && dtSql.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtSql.Rows)
+                            {
+                                List<OracleParameter> parameters = new List<OracleParameter>();
+
+                                parameters.Add(new OracleParameter("P_WT_SYS_ID", OracleDbType.Int64) { Value = (dr["WT_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["WT_SYS_ID"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_GATE_SYS_ID", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_GROSS_WT", OracleDbType.Decimal) { Value = (dr["GROSS_WT"] != DBNull.Value ? Convert.ToDecimal(dr["GROSS_WT"]) : 0) });
+                                parameters.Add(new OracleParameter("P_GROSS_WT_DT", OracleDbType.Date) { Value = (dr["GROSS_WT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GROSS_WT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                parameters.Add(new OracleParameter("P_GROSS_WT_MANUALLY", OracleDbType.Int64) { Value = (dr["GROSS_WT_MANUALLY"] != DBNull.Value ? Convert.ToInt64(dr["GROSS_WT_MANUALLY"]) : 0) });
+                                parameters.Add(new OracleParameter("P_GROSS_WT_NOTE", OracleDbType.NVarchar2) { Value = (dr["GROSS_WT_NOTE"] != DBNull.Value ? Convert.ToString(dr["GROSS_WT_NOTE"]) : "") });
+
+                                parameters.Add(new OracleParameter("P_NET_WT", OracleDbType.Decimal) { Value = (dr["NET_WT"] != DBNull.Value ? Convert.ToDecimal(dr["NET_WT"]) : 0) });
+                                parameters.Add(new OracleParameter("P_OUT_OF_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["OUT_OF_TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["OUT_OF_TOLERANCE_WT"]) : 0) });
+                                parameters.Add(new OracleParameter("P_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["TOLERANCE_WT"]) : 0) });
+                                parameters.Add(new OracleParameter("P_ALLOW_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["ALLOW_TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["ALLOW_TOLERANCE_WT"]) : 0) });
+
+                                parameters.Add(new OracleParameter("P_STATION_ID", OracleDbType.Int64) { Value = (dr["STATION_ID"] != DBNull.Value ? Convert.ToInt64(dr["STATION_ID"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = (dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0M) });
+
+                                var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_UPDATE_EXP_FG_WEIGHMENT_DETAIL", parameters, false);
+
+                            }
+                        }
+                    }
+
+                }
+                catch (Exception ex) { LogService.LogInsert("SyncData_LocalToCloud", "EXP_FG_WEIGHMENT_DETAIL", ex); }
+
+            }
+
             if (string.IsNullOrEmpty(tableName) || tableName.ToUpper() == "FG_GATE_IN_OUT")
             {
                 try
@@ -3623,6 +3937,946 @@ namespace Dispatch_System
 
                 }
                 catch (Exception ex) { LogService.LogInsert("SyncData_LocalToCloud", "PLANT_MASTER", ex); }
+            }
+
+        }
+
+        public static async Task SyncData_LocalToCloud_Export(string tableName, List<long> ids_GateInOut, List<long> ids_MDA)
+        {
+            DataTable dtSql = null;
+            DataTable dtOracle = null;
+            DataTable filteredDataTable = null;
+            DateTime? nullDateTime = null;
+
+            ids_GateInOut = ids_GateInOut == null ? new List<long>() { } : ids_GateInOut;
+            ids_MDA = ids_MDA == null ? new List<long>() { } : ids_MDA;
+
+            var plant_id = Common.Get_Session_Int(SessionKey.PLANT_ID);
+
+            plant_id = plant_id <= 0 ? AppHttpContextAccessor.PlantId : plant_id;
+
+            if (string.IsNullOrEmpty(tableName) || tableName.ToUpper() == "EXP_FG_GATE_IN_OUT")
+            {
+                try
+                {
+                    dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, GATE_SYS_ID, DATE_FORMAT(GATE_IN_DT, '%d/%m/%Y %H:%i:%s') AS GATE_IN_DT" +
+                            ", DATE_FORMAT(GATE_OUT_DT, '%d/%m/%Y %H:%i:%s') AS GATE_OUT_DT, INWARD_SYS_ID, MDA_SYS_ID, TRUCK_NO" +
+                            ", DRIVER_ID_TYPE, DRIVER_ID_NUMBER, DRIVER_NAME, DRIVER_CONTACT, DRIVER_CHANGED, DRIVER_NAME_NEW, DRIVER_CONTACT_NEW, TRUCK_VALIDATION" +
+                            ", EXPECTED_QTY, TRANS_SYS_ID, RFSYSID, VERIFIED_DOCUMENTS, RFID_RECEIVE, VERIFIED_OFFICER_ID, CANCEL_GATE_IN, CANCEL_GATE_REASON, GATE_SYS_ID_OLD" +
+                            ", IS_GOODS_TRANSFER, CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED " +
+                            "FROM EXP_FG_GATE_IN_OUT WHERE 1 = 1 " +
+                            $"{(ids_GateInOut.Count() > 0 ? " AND GATE_SYS_ID IN (" + string.Join(", ", ids_GateInOut) + ")" : "")}");
+
+                    if (dtSql != null && dtSql.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long PLANT_ID, long STATION_ID, long GATE_SYS_ID, long MDA_SYS_ID, string TRUCK_NO)>
+                            idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["GATE_SYS_ID"]}")
+                                            , Convert.ToInt64($"{row["MDA_SYS_ID"]}")
+                                            , Convert.ToString($"{row["TRUCK_NO"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.GATE_SYS_ID}, {tuple.MDA_SYS_ID}, '{tuple.TRUCK_NO}')";
+                            checkValues.Add(checkValue);
+                        }
+
+                        if (ids_GateInOut == null || ids_GateInOut.Count == 0)
+                            dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, STATION_ID, GATE_SYS_ID, MDA_SYS_ID, TRUCK_NO
+        										FROM EXP_FG_GATE_IN_OUT 
+        										WHERE (PLANT_ID, STATION_ID, GATE_SYS_ID, MDA_SYS_ID, TRUCK_NO) 
+        										IN ({string.Join(", ", checkValues)}) ");
+
+                        checkValues = new List<string>();
+
+                        if (dtOracle != null && dtOracle.Rows.Count > 0)
+                            idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable().Any(row => x == (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["GATE_SYS_ID"]}"), Convert.ToInt64($"{row["MDA_SYS_ID"]}"), Convert.ToString($"{row["TRUCK_NO"]}")))).ToList();
+
+                        if (idsToFilter != null && idsToFilter.Count() > 0)
+                        {
+                            foreach (var tuple in idsToFilter)
+                            {
+                                string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.GATE_SYS_ID}, {tuple.MDA_SYS_ID}, '{tuple.TRUCK_NO}')";
+                                checkValues.Add(checkValue);
+                            }
+
+                            dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, GATE_SYS_ID, DATE_FORMAT(GATE_IN_DT, '%d/%m/%Y %H:%i:%s') AS GATE_IN_DT, INWARD_SYS_ID" +
+                                    ", DATE_FORMAT(GATE_OUT_DT, '%d/%m/%Y %H:%i:%s') AS GATE_OUT_DT, MDA_SYS_ID, TRUCK_NO" +
+                                    ", DRIVER_ID_TYPE, DRIVER_ID_NUMBER, DRIVER_NAME, DRIVER_CONTACT, DRIVER_CHANGED, DRIVER_NAME_NEW, DRIVER_CONTACT_NEW, TRUCK_VALIDATION" +
+                                    ", EXPECTED_QTY, TRANS_SYS_ID, RFSYSID, VERIFIED_DOCUMENTS, RFID_RECEIVE, VERIFIED_OFFICER_ID, CANCEL_GATE_IN, CANCEL_GATE_REASON, GATE_SYS_ID_OLD" +
+                                    ", IS_GOODS_TRANSFER, CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, 0 IS_POSTED " +
+                                    "FROM EXP_FG_GATE_IN_OUT WHERE (PLANT_ID, STATION_ID, GATE_SYS_ID, MDA_SYS_ID, TRUCK_NO) " +
+                                    "IN (" + string.Join(", ", checkValues) + ") ");
+
+                            if (dtSql != null && dtSql.Rows.Count > 0)
+                            {
+                                foreach (DataRow dr in dtSql.Rows)
+                                {
+                                    List<OracleParameter> parameters = new List<OracleParameter>();
+
+                                    parameters.Add(new OracleParameter("P_GATE_SYS_ID", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_GATE_IN_DT", OracleDbType.Date) { Value = (dr["GATE_IN_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GATE_IN_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_GATE_OUT_DT", OracleDbType.Date) { Value = (dr["GATE_OUT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GATE_OUT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_INWARD_SYS_ID", OracleDbType.Int64) { Value = (dr["INWARD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["INWARD_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_MDA_SYS_ID", OracleDbType.Int64) { Value = (dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0M) });
+
+                                    parameters.Add(new OracleParameter("P_TRUCK_NO", OracleDbType.NVarchar2) { Value = (dr["TRUCK_NO"] != DBNull.Value ? Convert.ToString(dr["TRUCK_NO"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_ID_TYPE", OracleDbType.NVarchar2) { Value = (dr["DRIVER_ID_TYPE"] != DBNull.Value ? Convert.ToString(dr["DRIVER_ID_TYPE"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_ID_NUMBER", OracleDbType.NVarchar2) { Value = (dr["DRIVER_ID_NUMBER"] != DBNull.Value ? Convert.ToString(dr["DRIVER_ID_NUMBER"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_NAME", OracleDbType.NVarchar2) { Value = (dr["DRIVER_NAME"] != DBNull.Value ? Convert.ToString(dr["DRIVER_NAME"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_CONTACT", OracleDbType.NVarchar2) { Value = (dr["DRIVER_CONTACT"] != DBNull.Value ? Convert.ToString(dr["DRIVER_CONTACT"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_CHANGED", OracleDbType.Int64) { Value = (dr["DRIVER_CHANGED"] != DBNull.Value ? Convert.ToInt64(dr["DRIVER_CHANGED"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_DRIVER_NAME_NEW", OracleDbType.NVarchar2) { Value = (dr["DRIVER_NAME_NEW"] != DBNull.Value ? Convert.ToString(dr["DRIVER_NAME_NEW"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER_CONTACT_NEW", OracleDbType.NVarchar2) { Value = (dr["DRIVER_CONTACT_NEW"] != DBNull.Value ? Convert.ToString(dr["DRIVER_CONTACT_NEW"]) : "") });
+                                    parameters.Add(new OracleParameter("P_TRUCK_VALIDATION", OracleDbType.Int64) { Value = (dr["TRUCK_VALIDATION"] != DBNull.Value ? Convert.ToInt64(dr["TRUCK_VALIDATION"]) : 0M) });
+
+                                    parameters.Add(new OracleParameter("P_EXPECTED_QTY", OracleDbType.Int64) { Value = (dr["EXPECTED_QTY"] != DBNull.Value ? Convert.ToInt64(dr["EXPECTED_QTY"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_TRANS_SYS_ID", OracleDbType.Int64) { Value = (dr["TRANS_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["TRANS_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_RFSYSID", OracleDbType.Int64) { Value = (dr["RFSYSID"] != DBNull.Value ? Convert.ToInt64(dr["RFSYSID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_VERIFIED_DOCUMENTS", OracleDbType.Int64) { Value = (dr["VERIFIED_DOCUMENTS"] != DBNull.Value ? Convert.ToInt64(dr["VERIFIED_DOCUMENTS"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_RFID_RECEIVE", OracleDbType.Int64) { Value = (dr["RFID_RECEIVE"] != DBNull.Value ? Convert.ToInt64(dr["RFID_RECEIVE"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_VERIFIED_OFFICER_ID", OracleDbType.NVarchar2) { Value = (dr["VERIFIED_OFFICER_ID"] != DBNull.Value ? Convert.ToString(dr["VERIFIED_OFFICER_ID"]) : "") });
+                                    parameters.Add(new OracleParameter("P_CANCEL_GATE_IN", OracleDbType.Int64) { Value = (dr["CANCEL_GATE_IN"] != DBNull.Value ? Convert.ToInt64(dr["CANCEL_GATE_IN"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_CANCEL_GATE_REASON", OracleDbType.NVarchar2) { Value = (dr["CANCEL_GATE_REASON"] != DBNull.Value ? Convert.ToString(dr["CANCEL_GATE_REASON"]) : "") });
+                                    parameters.Add(new OracleParameter("P_GATE_SYS_ID_OLD", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID_OLD"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID_OLD"]) : 0M) });
+
+                                    parameters.Add(new OracleParameter("P_IS_GOODS_TRANSFER", OracleDbType.Int64) { Value = (dr["IS_GOODS_TRANSFER"] != DBNull.Value ? Convert.ToInt64(dr["IS_GOODS_TRANSFER"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_STATION_ID", OracleDbType.Int64) { Value = (dr["STATION_ID"] != DBNull.Value ? Convert.ToInt64(dr["STATION_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = (dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_CREATED_BY_ID", OracleDbType.Int64) { Value = (dr["CREATED_BY_ID"] != DBNull.Value ? Convert.ToInt64(dr["CREATED_BY_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_CREATED_DATETIME", OracleDbType.Date) { Value = (dr["CREATED_DATETIME"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["CREATED_DATETIME"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_IS_POSTED", OracleDbType.Int64) { Value = (dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt64(dr["IS_POSTED"]) : 0M) });
+
+                                    var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SAVE_EXP_FG_GATE_IN_OUT", parameters, false);
+
+                                }
+                            }
+                        }
+
+                    }
+
+
+                    dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, STATION_ID, GATE_SYS_ID, MDA_SYS_ID, TRUCK_NO
+        										FROM EXP_FG_GATE_IN_OUT 
+        										WHERE PLANT_ID = {plant_id} AND GATE_OUT_DT IS NULL
+        										{(ids_GateInOut.Count() > 0 ? " AND GATE_SYS_ID IN (" + string.Join(", ", ids_GateInOut) + ")" : "")}");
+
+                    if (dtOracle != null && dtOracle.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long PLANT_ID, long STATION_ID, long GATE_SYS_ID, long MDA_SYS_ID, string TRUCK_NO)>
+                            idsToFilter = dtOracle.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["GATE_SYS_ID"]}")
+                                            , Convert.ToInt64($"{row["MDA_SYS_ID"]}")
+                                            , Convert.ToString($"{row["TRUCK_NO"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.GATE_SYS_ID}, {tuple.MDA_SYS_ID}, '{tuple.TRUCK_NO}')";
+                            checkValues.Add(checkValue);
+                        }
+
+                        dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, GATE_SYS_ID, DATE_FORMAT(GATE_IN_DT, '%d/%m/%Y %H:%i:%s') AS GATE_IN_DT, INWARD_SYS_ID" +
+                                ", DATE_FORMAT(GATE_OUT_DT, '%d/%m/%Y %H:%i:%s') AS GATE_OUT_DT, MDA_SYS_ID, TRUCK_NO" +
+                                ", DRIVER_ID_TYPE, DRIVER_ID_NUMBER, DRIVER_NAME, DRIVER_CONTACT, DRIVER_CHANGED, DRIVER_NAME_NEW, DRIVER_CONTACT_NEW, TRUCK_VALIDATION" +
+                                ", EXPECTED_QTY, TRANS_SYS_ID, RFSYSID, VERIFIED_DOCUMENTS, RFID_RECEIVE, VERIFIED_OFFICER_ID, CANCEL_GATE_IN, CANCEL_GATE_REASON, GATE_SYS_ID_OLD" +
+                                ", IS_GOODS_TRANSFER, CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, 0 IS_POSTED " +
+                                "FROM EXP_FG_GATE_IN_OUT WHERE (PLANT_ID, STATION_ID, GATE_SYS_ID, MDA_SYS_ID, TRUCK_NO) " +
+                                "IN (" + string.Join(", ", checkValues) + ") AND (GATE_OUT_DT IS NOT NULL OR CANCEL_GATE_IN = 1) ");
+
+                        if (dtSql != null && dtSql.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtSql.Rows)
+                            {
+                                List<OracleParameter> parameters = new List<OracleParameter>();
+
+                                parameters.Add(new OracleParameter("P_GATE_SYS_ID", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_GATE_OUT_DT", OracleDbType.Date) { Value = (dr["GATE_OUT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GATE_OUT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                parameters.Add(new OracleParameter("P_MDA_SYS_ID", OracleDbType.Int64) { Value = (dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0M) });
+
+                                parameters.Add(new OracleParameter("P_CANCEL_GATE_IN", OracleDbType.Int64) { Value = (dr["CANCEL_GATE_IN"] != DBNull.Value ? Convert.ToInt64(dr["CANCEL_GATE_IN"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_CANCEL_GATE_REASON", OracleDbType.NVarchar2) { Value = (dr["CANCEL_GATE_REASON"] != DBNull.Value ? Convert.ToString(dr["CANCEL_GATE_REASON"]) : "") });
+                                parameters.Add(new OracleParameter("P_GATE_SYS_ID_OLD", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID_OLD"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID_OLD"]) : 0M) });
+
+                                parameters.Add(new OracleParameter("P_IS_GOODS_TRANSFER", OracleDbType.Int64) { Value = (dr["IS_GOODS_TRANSFER"] != DBNull.Value ? Convert.ToInt64(dr["IS_GOODS_TRANSFER"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_STATION_ID", OracleDbType.Int64) { Value = (dr["STATION_ID"] != DBNull.Value ? Convert.ToInt64(dr["STATION_ID"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = (dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0M) });
+
+                                var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_UPDATE_EXP_FG_GATE_IN_OUT", parameters, false);
+
+                            }
+                        }
+
+                    }
+
+                }
+                catch (Exception ex) { LogService.LogInsert("SyncData_LocalToCloud", "EXP_FG_GATE_IN_OUT", ex); }
+
+            }
+
+            if (string.IsNullOrEmpty(tableName) || tableName.ToUpper() == "EXP_FG_WEIGHMENT_DETAIL")
+            {
+                try
+                {
+                    dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID" +
+                        ", IFNULL(GROSS_WT, 0)GROSS_WT, DATE_FORMAT(GROSS_WT_DT, '%d/%m/%Y %H:%i:%s') AS GROSS_WT_DT, GROSS_WT_MANUALLY, GROSS_WT_NOTE" +
+                        ", TARE_WT, DATE_FORMAT(TARE_WT_DT, '%d/%m/%Y %H:%i:%s') AS TARE_WT_DT, TARE_WT_MANUALLY, TARE_WT_NOTE" +
+                        ", NET_WT, OUT_OF_TOLERANCE_WT, TOLERANCE_WT, ALLOW_TOLERANCE_WT" +
+                        ", CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED " +
+                        "FROM EXP_FG_WEIGHMENT_DETAIL WHERE 1 = 1 " +
+                        $"{(ids_GateInOut.Count() > 0 ? " AND GATE_SYS_ID IN (" + string.Join(", ", ids_GateInOut) + ")" : "")}");
+
+                    if (dtSql != null && dtSql.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long PLANT_ID, long STATION_ID, long WT_SYS_ID, long GATE_SYS_ID)>
+                            idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["WT_SYS_ID"]}"), Convert.ToInt64($"{row["GATE_SYS_ID"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.WT_SYS_ID}, {tuple.GATE_SYS_ID})";
+                            checkValues.Add(checkValue);
+                        }
+
+                        if (ids_GateInOut == null || ids_GateInOut.Count == 0)
+                            dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID
+        											FROM EXP_FG_WEIGHMENT_DETAIL 
+        											WHERE (PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID) 
+        											IN ({string.Join(", ", checkValues)})");
+
+                        checkValues = new List<string>();
+
+                        if (dtOracle != null && dtOracle.Rows.Count > 0)
+                            idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable().Any(row => x == (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["WT_SYS_ID"]}"), Convert.ToInt64($"{row["GATE_SYS_ID"]}")))).ToList();
+
+                        if (idsToFilter != null && idsToFilter.Count() > 0)
+                        {
+                            foreach (var tuple in idsToFilter)
+                            {
+                                string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.WT_SYS_ID}, {tuple.GATE_SYS_ID})";
+                                checkValues.Add(checkValue);
+                            }
+
+                            dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID" +
+                                    ", GROSS_WT, DATE_FORMAT(GROSS_WT_DT, '%d/%m/%Y %H:%i:%s') AS GROSS_WT_DT, GROSS_WT_MANUALLY, GROSS_WT_NOTE" +
+                                    ", TARE_WT, DATE_FORMAT(TARE_WT_DT, '%d/%m/%Y %H:%i:%s') AS TARE_WT_DT, TARE_WT_MANUALLY, TARE_WT_NOTE" +
+                                    ", NET_WT, OUT_OF_TOLERANCE_WT, TOLERANCE_WT, ALLOW_TOLERANCE_WT" +
+                                    ", CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED " +
+                                    "FROM EXP_FG_WEIGHMENT_DETAIL WHERE (PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID) " +
+                                    "IN (" + string.Join(", ", checkValues) + ")");
+
+                            if (dtSql != null && dtSql.Rows.Count > 0)
+                            {
+                                foreach (DataRow dr in dtSql.Rows)
+                                {
+                                    List<OracleParameter> parameters = new List<OracleParameter>();
+
+                                    parameters.Add(new OracleParameter("P_WT_SYS_ID", OracleDbType.Int64) { Value = (dr["WT_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["WT_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_GATE_SYS_ID", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_GROSS_WT", OracleDbType.Decimal) { Value = (dr["GROSS_WT"] != DBNull.Value ? Convert.ToDecimal(dr["GROSS_WT"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_GROSS_WT_DT", OracleDbType.Date) { Value = (dr["GROSS_WT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GROSS_WT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_GROSS_WT_MANUALLY", OracleDbType.Int64) { Value = (dr["GROSS_WT_MANUALLY"] != DBNull.Value ? Convert.ToInt64(dr["GROSS_WT_MANUALLY"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_GROSS_WT_NOTE", OracleDbType.NVarchar2) { Value = (dr["GROSS_WT_NOTE"] != DBNull.Value ? Convert.ToString(dr["GROSS_WT_NOTE"]) : "") });
+
+                                    parameters.Add(new OracleParameter("P_TARE_WT", OracleDbType.Decimal) { Value = (dr["TARE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["TARE_WT"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_TARE_WT_DT", OracleDbType.Date) { Value = (dr["TARE_WT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["TARE_WT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_TARE_WT_MANUALLY", OracleDbType.Int64) { Value = (dr["TARE_WT_MANUALLY"] != DBNull.Value ? Convert.ToInt64(dr["TARE_WT_MANUALLY"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_TARE_WT_NOTE", OracleDbType.NVarchar2) { Value = (dr["TARE_WT_NOTE"] != DBNull.Value ? Convert.ToString(dr["TARE_WT_NOTE"]) : "") });
+
+                                    parameters.Add(new OracleParameter("P_NET_WT", OracleDbType.Decimal) { Value = (dr["NET_WT"] != DBNull.Value ? Convert.ToDecimal(dr["NET_WT"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_OUT_OF_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["OUT_OF_TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["OUT_OF_TOLERANCE_WT"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["TOLERANCE_WT"]) : 0) });
+                                    parameters.Add(new OracleParameter("P_ALLOW_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["ALLOW_TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["ALLOW_TOLERANCE_WT"]) : 0) });
+
+                                    parameters.Add(new OracleParameter("P_STATION_ID", OracleDbType.Int64) { Value = (dr["STATION_ID"] != DBNull.Value ? Convert.ToInt64(dr["STATION_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = (dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_CREATED_BY_ID", OracleDbType.Int64) { Value = (dr["CREATED_BY_ID"] != DBNull.Value ? Convert.ToInt64(dr["CREATED_BY_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_CREATED_DATETIME", OracleDbType.Date) { Value = (dr["CREATED_DATETIME"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["CREATED_DATETIME"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_IS_POSTED", OracleDbType.Int64) { Value = (dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt64(dr["IS_POSTED"]) : 0M) });
+
+
+                                    var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SAVE_EXP_FG_WEIGHMENT_DETAIL", parameters, false);
+
+                                }
+                            }
+                        }
+
+                    }
+
+                    dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID
+        											FROM EXP_FG_WEIGHMENT_DETAIL 
+        											WHERE PLANT_ID = {plant_id} AND NVL(GROSS_WT, 0) = 0 
+        											{(ids_GateInOut.Count() > 0 ? " AND GATE_SYS_ID IN (" + string.Join(", ", ids_GateInOut) + ")" : "")}");
+
+                    if (dtOracle != null && dtOracle.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long PLANT_ID, long STATION_ID, long WT_SYS_ID, long GATE_SYS_ID)>
+                            idsToFilter = dtOracle.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["STATION_ID"]}")
+                                            , Convert.ToInt64($"{row["WT_SYS_ID"]}"), Convert.ToInt64($"{row["GATE_SYS_ID"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.PLANT_ID}, {tuple.STATION_ID}, {tuple.WT_SYS_ID}, {tuple.GATE_SYS_ID})";
+                            checkValues.Add(checkValue);
+                        }
+
+                        dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID" +
+                                ", GROSS_WT, DATE_FORMAT(GROSS_WT_DT, '%d/%m/%Y %H:%i:%s') AS GROSS_WT_DT, GROSS_WT_MANUALLY, GROSS_WT_NOTE" +
+                                ", TARE_WT, DATE_FORMAT(TARE_WT_DT, '%d/%m/%Y %H:%i:%s') AS TARE_WT_DT, TARE_WT_MANUALLY, TARE_WT_NOTE" +
+                                ", NET_WT, OUT_OF_TOLERANCE_WT, TOLERANCE_WT, ALLOW_TOLERANCE_WT" +
+                                ", CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED " +
+                                "FROM EXP_FG_WEIGHMENT_DETAIL WHERE (PLANT_ID, STATION_ID, WT_SYS_ID, GATE_SYS_ID) " +
+                                "IN (" + string.Join(", ", checkValues) + ") AND IFNULL(GROSS_WT, 0) > 0");
+
+                        if (dtSql != null && dtSql.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtSql.Rows)
+                            {
+                                List<OracleParameter> parameters = new List<OracleParameter>();
+
+                                parameters.Add(new OracleParameter("P_WT_SYS_ID", OracleDbType.Int64) { Value = (dr["WT_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["WT_SYS_ID"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_GATE_SYS_ID", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_GROSS_WT", OracleDbType.Decimal) { Value = (dr["GROSS_WT"] != DBNull.Value ? Convert.ToDecimal(dr["GROSS_WT"]) : 0) });
+                                parameters.Add(new OracleParameter("P_GROSS_WT_DT", OracleDbType.Date) { Value = (dr["GROSS_WT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GROSS_WT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                parameters.Add(new OracleParameter("P_GROSS_WT_MANUALLY", OracleDbType.Int64) { Value = (dr["GROSS_WT_MANUALLY"] != DBNull.Value ? Convert.ToInt64(dr["GROSS_WT_MANUALLY"]) : 0) });
+                                parameters.Add(new OracleParameter("P_GROSS_WT_NOTE", OracleDbType.NVarchar2) { Value = (dr["GROSS_WT_NOTE"] != DBNull.Value ? Convert.ToString(dr["GROSS_WT_NOTE"]) : "") });
+
+                                parameters.Add(new OracleParameter("P_NET_WT", OracleDbType.Decimal) { Value = (dr["NET_WT"] != DBNull.Value ? Convert.ToDecimal(dr["NET_WT"]) : 0) });
+                                parameters.Add(new OracleParameter("P_OUT_OF_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["OUT_OF_TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["OUT_OF_TOLERANCE_WT"]) : 0) });
+                                parameters.Add(new OracleParameter("P_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["TOLERANCE_WT"]) : 0) });
+                                parameters.Add(new OracleParameter("P_ALLOW_TOLERANCE_WT", OracleDbType.Decimal) { Value = (dr["ALLOW_TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(dr["ALLOW_TOLERANCE_WT"]) : 0) });
+
+                                parameters.Add(new OracleParameter("P_STATION_ID", OracleDbType.Int64) { Value = (dr["STATION_ID"] != DBNull.Value ? Convert.ToInt64(dr["STATION_ID"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = (dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0M) });
+
+                                var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_UPDATE_EXP_FG_WEIGHMENT_DETAIL", parameters, false);
+
+                            }
+                        }
+                    }
+
+                }
+                catch (Exception ex) { LogService.LogInsert("SyncData_LocalToCloud", "EXP_FG_WEIGHMENT_DETAIL", ex); }
+
+            }
+
+            if (string.IsNullOrEmpty(tableName) || tableName.ToUpper() == "MDA_HEADER")
+            {
+                try
+                {
+
+                    dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, MDA_SYS_ID, MDA_NO, DI_NO, DATE_FORMAT(MDA_DT, '%d/%m/%Y %H:%i:%s') AS MDA_DT, PLANT_CD, TRANS_SYS_ID, WH_CD, PARTY_NAME, DRIVER, VEHICLE_NO" +
+                        ", MOBILE_NO, DIST, BAG_NOS, NETT_QTY, GROSS_QTY, ECHIT_NO, GST_NO, DATE_FORMAT(OUT_TIME, '%d/%m/%Y %H:%i:%s') AS OUT_TIME, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED, DESP_PLACE " +
+                        "FROM MDA_HEADER WHERE 1 = 1 " +
+                        $"{(ids_MDA.Count() > 0 ? " AND MDA_SYS_ID IN (" + string.Join(", ", ids_MDA) + ")" : "")}");
+
+                    if (dtSql != null && dtSql.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long PLANT_ID, long MDA_SYS_ID, string MDA_NO, string DI_NO)>
+                            idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["MDA_SYS_ID"]}")
+                                            , Convert.ToString($"{row["MDA_NO"]}"), Convert.ToString($"{row["DI_NO"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_SYS_ID}, '{tuple.MDA_NO}', '{tuple.DI_NO}')";
+                            checkValues.Add(checkValue);
+                        }
+
+
+                        dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, MDA_SYS_ID, MDA_NO, DI_NO
+        										FROM MDA_HEADER 
+        										WHERE (PLANT_ID, MDA_SYS_ID, MDA_NO, DI_NO) 
+        										IN ({string.Join(", ", checkValues)})");
+
+                        checkValues = new List<string>();
+
+                        if (dtOracle != null && dtOracle.Rows.Count > 0)
+                            idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable().Any(row => x == (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["MDA_SYS_ID"]}")
+                                            , Convert.ToString($"{row["MDA_NO"]}"), Convert.ToString($"{row["DI_NO"]}")))).ToList();
+
+                        if (idsToFilter != null && idsToFilter.Count() > 0)
+                        {
+                            foreach (var tuple in idsToFilter)
+                            {
+                                string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_SYS_ID}, '{tuple.MDA_NO}', '{tuple.DI_NO}')";
+                                checkValues.Add(checkValue);
+                            }
+
+                            dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, MDA_SYS_ID, MDA_NO, DI_NO, DATE_FORMAT(MDA_DT, '%d/%m/%Y %H:%i:%s') AS MDA_DT, PLANT_CD, TRANS_SYS_ID, WH_CD, PARTY_NAME, DRIVER, VEHICLE_NO" +
+                                        ", MOBILE_NO, DIST, BAG_NOS, NETT_QTY, GROSS_QTY, ECHIT_NO, GST_NO, DATE_FORMAT(OUT_TIME, '%d/%m/%Y %H:%i:%s') AS OUT_TIME, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED, DESP_PLACE " +
+                                        $"FROM MDA_HEADER WHERE (PLANT_ID, MDA_SYS_ID, MDA_NO, DI_NO) IN({string.Join(", ", checkValues)})");
+
+                            if (dtSql != null && dtSql.Rows.Count > 0)
+                            {
+                                foreach (DataRow dr in dtSql.Rows)
+                                {
+                                    List<OracleParameter> parameters = new List<OracleParameter>();
+
+                                    parameters.Add(new OracleParameter("P_MDA_SYS_ID", OracleDbType.Int64) { Value = (dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_MDA_NO", OracleDbType.NVarchar2) { Value = (dr["MDA_NO"] != DBNull.Value ? Convert.ToString(dr["MDA_NO"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DI_NO", OracleDbType.NVarchar2) { Value = (dr["DI_NO"] != DBNull.Value ? Convert.ToString(dr["DI_NO"]) : "") });
+                                    parameters.Add(new OracleParameter("P_PLANT_CD", OracleDbType.NVarchar2) { Value = (dr["PLANT_CD"] != DBNull.Value ? Convert.ToString(dr["PLANT_CD"]) : "") });
+                                    parameters.Add(new OracleParameter("P_MDA_DT", OracleDbType.Date) { Value = (dr["MDA_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["MDA_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_TRANS_SYS_ID", OracleDbType.Int64) { Value = (dr["TRANS_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["TRANS_SYS_ID"]) : 0M) });
+
+                                    parameters.Add(new OracleParameter("P_WH_CD", OracleDbType.NVarchar2) { Value = (dr["WH_CD"] != DBNull.Value ? Convert.ToString(dr["WH_CD"]) : "") });
+                                    parameters.Add(new OracleParameter("P_PARTY_NAME", OracleDbType.NVarchar2) { Value = (dr["PARTY_NAME"] != DBNull.Value ? Convert.ToString(dr["PARTY_NAME"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DRIVER", OracleDbType.NVarchar2) { Value = (dr["DRIVER"] != DBNull.Value ? Convert.ToString(dr["DRIVER"]) : "") });
+                                    parameters.Add(new OracleParameter("P_VEHICLE_NO", OracleDbType.NVarchar2) { Value = (dr["VEHICLE_NO"] != DBNull.Value ? Convert.ToString(dr["VEHICLE_NO"]) : "") });
+                                    parameters.Add(new OracleParameter("P_MOBILE_NO", OracleDbType.NVarchar2) { Value = (dr["MOBILE_NO"] != DBNull.Value ? Convert.ToString(dr["MOBILE_NO"]) : "") });
+                                    parameters.Add(new OracleParameter("P_DIST", OracleDbType.Int64) { Value = (dr["DIST"] != DBNull.Value ? Convert.ToInt64(dr["DIST"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_BAG_NOS", OracleDbType.Int64) { Value = (dr["BAG_NOS"] != DBNull.Value ? Convert.ToInt64(dr["BAG_NOS"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_NETT_QTY", OracleDbType.Int64) { Value = (dr["NETT_QTY"] != DBNull.Value ? Convert.ToInt64(dr["NETT_QTY"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_GROSS_QTY", OracleDbType.Int64) { Value = (dr["GROSS_QTY"] != DBNull.Value ? Convert.ToInt64(dr["GROSS_QTY"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_ECHIT_NO", OracleDbType.NVarchar2) { Value = (dr["ECHIT_NO"] != DBNull.Value ? Convert.ToString(dr["ECHIT_NO"]) : "") });
+                                    parameters.Add(new OracleParameter("P_GST_NO", OracleDbType.NVarchar2) { Value = (dr["GST_NO"] != DBNull.Value ? Convert.ToString(dr["GST_NO"]) : "") });
+                                    parameters.Add(new OracleParameter("P_OUT_TIME", OracleDbType.Date) { Value = (dr["OUT_TIME"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["OUT_TIME"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+
+                                    parameters.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = (dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_CREATED_DATETIME", OracleDbType.Date) { Value = (dr["CREATED_DATETIME"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["CREATED_DATETIME"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_IS_POSTED", OracleDbType.Int64) { Value = (dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt64(dr["IS_POSTED"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_DESP_PLACE", OracleDbType.NVarchar2) { Value = (dr["DESP_PLACE"] != DBNull.Value ? Convert.ToString(dr["DESP_PLACE"]) : "") });
+
+                                    var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SAVE_MDA_HEADER", parameters, false);
+
+                                }
+                            }
+                        }
+
+                    }
+
+                    dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, MDA_SYS_ID, MDA_NO, DI_NO
+        										FROM MDA_HEADER 
+        										WHERE PLANT_ID = {plant_id} AND OUT_TIME IS NULL 
+        										{(ids_MDA.Count() > 0 ? " AND MDA_SYS_ID IN (" + string.Join(", ", ids_MDA) + ")" : "")}");
+
+                    if (dtOracle != null && dtOracle.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long PLANT_ID, long MDA_SYS_ID, string MDA_NO, string DI_NO)>
+                            idsToFilter = dtOracle.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["MDA_SYS_ID"]}")
+                                            , Convert.ToString($"{row["MDA_NO"]}"), Convert.ToString($"{row["DI_NO"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_SYS_ID}, '{tuple.MDA_NO}', '{tuple.DI_NO}')";
+                            checkValues.Add(checkValue);
+                        }
+
+                        dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, MDA_SYS_ID, MDA_NO, DI_NO, DATE_FORMAT(MDA_DT, '%d/%m/%Y %H:%i:%s') AS MDA_DT, PLANT_CD, TRANS_SYS_ID, WH_CD, PARTY_NAME, DRIVER, VEHICLE_NO" +
+                                    ", MOBILE_NO, DIST, BAG_NOS, NETT_QTY, GROSS_QTY, ECHIT_NO, GST_NO, DATE_FORMAT(OUT_TIME, '%d/%m/%Y %H:%i:%s') AS OUT_TIME, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED, DESP_PLACE " +
+                                    $"FROM MDA_HEADER WHERE (PLANT_ID, MDA_SYS_ID, MDA_NO, DI_NO) IN({string.Join(", ", checkValues)}) AND OUT_TIME IS NOT NULL");
+
+                        if (dtSql != null && dtSql.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtSql.Rows)
+                            {
+                                List<OracleParameter> parameters = new List<OracleParameter>();
+
+                                parameters.Add(new OracleParameter("P_MDA_SYS_ID", OracleDbType.Int64) { Value = (dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0M) });
+                                parameters.Add(new OracleParameter("P_OUT_TIME", OracleDbType.Date) { Value = (dr["OUT_TIME"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["OUT_TIME"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+
+                                parameters.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = (dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0M) });
+
+                                var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_UPDATE_MDA_HEADER", parameters, false);
+
+                            }
+                        }
+                    }
+
+                }
+                catch (Exception ex) { LogService.LogInsert("SyncData_LocalToCloud", "MDA_HEADER", ex); }
+
+            }
+
+            if (string.IsNullOrEmpty(tableName) || tableName.ToUpper() == "MDA_DETAIL")
+            {
+                try
+                {
+
+                    dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, MDA_DTL_SYS_ID, MDA_SYS_ID, MDA_NO, PROD_SYS_ID, PROD_SNO, MDA_DT" +
+                        ", SHIPMENT_NO, BAG_NOS, NETT_QTY, GROSS_QTY, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED " +
+                        "FROM MDA_DETAIL WHERE 1 = 1 " +
+                        $"{(ids_MDA.Count() > 0 ? " AND MDA_SYS_ID IN (" + string.Join(", ", ids_MDA) + ")" : "")}");
+
+                    if (dtSql != null && dtSql.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long PLANT_ID, long MDA_DTL_SYS_ID, long MDA_SYS_ID, string MDA_NO, long PROD_SYS_ID)>
+                            idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["MDA_DTL_SYS_ID"]}"), Convert.ToInt64($"{row["MDA_SYS_ID"]}")
+                                            , Convert.ToString($"{row["MDA_NO"]}"), Convert.ToInt64($"{row["PROD_SYS_ID"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_DTL_SYS_ID}, {tuple.MDA_SYS_ID}, '{tuple.MDA_NO}', {tuple.PROD_SYS_ID})";
+                            checkValues.Add(checkValue);
+                        }
+
+
+                        dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, MDA_DTL_SYS_ID, MDA_SYS_ID, MDA_NO, PROD_SYS_ID
+        										FROM MDA_DETAIL 
+        										WHERE (PLANT_ID, MDA_DTL_SYS_ID, MDA_SYS_ID, MDA_NO, PROD_SYS_ID) 
+        										IN ({string.Join(", ", checkValues)})");
+
+                        checkValues = new List<string>();
+
+                        if (dtOracle != null && dtOracle.Rows.Count > 0)
+                            idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable().Any(row => x == (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["MDA_DTL_SYS_ID"]}")
+                                            , Convert.ToInt64($"{row["MDA_SYS_ID"]}"), Convert.ToString($"{row["MDA_NO"]}"), Convert.ToInt64($"{row["PROD_SYS_ID"]}")))).ToList();
+
+                        if (idsToFilter != null && idsToFilter.Count() > 0)
+                        {
+                            foreach (var tuple in idsToFilter)
+                            {
+                                string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_DTL_SYS_ID}, {tuple.MDA_SYS_ID}, '{tuple.MDA_NO}', {tuple.PROD_SYS_ID})";
+                                checkValues.Add(checkValue);
+                            }
+
+
+                            dtSql = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, MDA_DTL_SYS_ID, MDA_SYS_ID, MDA_NO, PROD_SYS_ID, PROD_SNO, DATE_FORMAT(MDA_DT, '%d/%m/%Y %H:%i:%s') AS MDA_DT" +
+                            ", SHIPMENT_NO, BAG_NOS, NETT_QTY, GROSS_QTY, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED " +
+                            "FROM MDA_DETAIL WHERE (PLANT_ID, MDA_DTL_SYS_ID, MDA_SYS_ID, MDA_NO, PROD_SYS_ID)  " +
+                                    "IN (" + string.Join(", ", checkValues) + ")");
+
+                            if (dtSql != null && dtSql.Rows.Count > 0)
+                            {
+                                foreach (DataRow dr in dtSql.Rows)
+                                {
+                                    List<OracleParameter> parameters = new List<OracleParameter>();
+
+                                    parameters.Add(new OracleParameter("P_MDA_DTL_SYS_ID", OracleDbType.Int64) { Value = (dr["MDA_DTL_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_DTL_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_MDA_SYS_ID", OracleDbType.Int64) { Value = (dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_MDA_NO", OracleDbType.NVarchar2) { Value = (dr["MDA_NO"] != DBNull.Value ? Convert.ToString(dr["MDA_NO"]) : "") });
+                                    parameters.Add(new OracleParameter("P_PROD_SNO", OracleDbType.Int64) { Value = (dr["PROD_SNO"] != DBNull.Value ? Convert.ToInt64(dr["PROD_SNO"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_MDA_DT", OracleDbType.Date) { Value = (dr["MDA_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["MDA_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_PROD_SYS_ID", OracleDbType.Int64) { Value = (dr["PROD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["PROD_SYS_ID"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_SHIPMENT_NO", OracleDbType.Int64) { Value = (dr["SHIPMENT_NO"] != DBNull.Value ? Convert.ToInt64(dr["SHIPMENT_NO"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_BAG_NOS", OracleDbType.Int64) { Value = (dr["BAG_NOS"] != DBNull.Value ? Convert.ToInt64(dr["BAG_NOS"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_NETT_QTY", OracleDbType.Int64) { Value = (dr["NETT_QTY"] != DBNull.Value ? Convert.ToInt64(dr["NETT_QTY"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_GROSS_QTY", OracleDbType.Int64) { Value = (dr["GROSS_QTY"] != DBNull.Value ? Convert.ToInt64(dr["GROSS_QTY"]) : 0M) });
+                                    parameters.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = (dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0M) });
+
+                                    parameters.Add(new OracleParameter("P_CREATED_DATETIME", OracleDbType.Date) { Value = (dr["CREATED_DATETIME"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["CREATED_DATETIME"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
+                                    parameters.Add(new OracleParameter("P_IS_POSTED", OracleDbType.Int64) { Value = (dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt64(dr["IS_POSTED"]) : 0M) });
+
+                                    var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SAVE_MDA_DETAIL", parameters, false);
+
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+                catch (Exception ex) { LogService.LogInsert("SyncData_LocalToCloud", "MDA_DETAIL", ex); }
+
+            }
+
+            if (string.IsNullOrEmpty(tableName) || tableName.ToUpper() == "EXP_MDA_PALLATE_LOADING")
+            {
+                try
+                {
+                    dtOracle = DataContext.ExecuteQuery($"SELECT DISTINCT PLANT_ID, MDA_SYS_ID, GATE_SYS_ID, COUNT(*) CNT " +
+                    $"FROM EXP_MDA_PALLATE_LOADING WHERE PLANT_ID = " + plant_id + " GROUP BY PLANT_ID, MDA_SYS_ID, GATE_SYS_ID");
+
+                    List<(long PLANT_ID, long MDA_LOD_SYS_ID, long MDA_SYS_ID, long GATE_SYS_ID, long CNT)>
+                        _idsToFilter_Oracle = dtOracle.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}")
+                                        , (long)0, (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
+                                        , Convert.ToInt64($"{row["GATE_SYS_ID"]}"), Convert.ToInt64($"{row["CNT"]}"))).ToList();
+
+                    var dtSql_All = DataContext.ExecuteQuery_SQL("SELECT DISTINCT PLANT_ID, MDA_SYS_ID, GATE_SYS_ID, COUNT(*) CNT " +
+                            "FROM EXP_MDA_PALLATE_LOADING WHERE PLANT_ID = " + plant_id + " " +
+                            "GROUP BY PLANT_ID, MDA_SYS_ID, GATE_SYS_ID ");
+
+                    List<(long PLANT_ID, long MDA_LOD_SYS_ID, long MDA_SYS_ID, long GATE_SYS_ID, long CNT)>
+                        _idsToFilter_Sql = dtSql_All.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}")
+                                        , (long)0, (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
+                                        , Convert.ToInt64($"{row["GATE_SYS_ID"]}"), Convert.ToInt64($"{row["CNT"]}"))).ToList();
+
+
+                    var notInOracle = _idsToFilter_Sql.Except(_idsToFilter_Oracle).ToList();
+
+                    List<string> _checkValues = new List<string>();
+
+                    foreach (var tuple in notInOracle)
+                    {
+                        string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID})";
+                        _checkValues.Add(checkValue);
+                    }
+
+                    dtOracle = DataContext.ExecuteQuery($"SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, MDA_SYS_ID, GATE_SYS_ID " +
+                        $"FROM EXP_MDA_PALLATE_LOADING WHERE PLANT_ID = " + plant_id + " " +
+                        "AND (PLANT_ID, NVL(MDA_SYS_ID, 0), GATE_SYS_ID) " +
+                        $"IN ({string.Join(", ", _checkValues)})");
+
+                    _idsToFilter_Oracle = dtOracle.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}")
+                                        , Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}"), (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
+                                        , Convert.ToInt64($"{row["GATE_SYS_ID"]}"), (long)0)).ToList();
+
+                    dtSql_All = DataContext.ExecuteQuery_SQL("SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, MDA_SYS_ID, GATE_SYS_ID " +
+                            "FROM EXP_MDA_PALLATE_LOADING WHERE PLANT_ID = " + plant_id + " " +
+                            "AND (PLANT_ID, IFNULL(MDA_SYS_ID, 0), GATE_SYS_ID) " +
+                            $"IN ({string.Join(", ", _checkValues)}) ");
+
+                    _idsToFilter_Sql = dtSql_All.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}")
+                                        , Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}"), (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
+                                        , Convert.ToInt64($"{row["GATE_SYS_ID"]}"), (long)0)).ToList();
+
+                    notInOracle = _idsToFilter_Sql.Except(_idsToFilter_Oracle).ToList();
+
+                    _checkValues = new List<string>();
+
+                    foreach (var tuple in notInOracle)
+                    {
+                        string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_LOD_SYS_ID}, {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID})";
+                        _checkValues.Add(checkValue);
+                    }
+
+                    dtSql_All = DataContext.ExecuteQuery_SQL("SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, MDA_SYS_ID, GATE_SYS_ID, PROD_SYS_ID" +
+                            ", PALLATE_NO, CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME " +
+                            "FROM EXP_MDA_PALLATE_LOADING WHERE IFNULL(PALLATE_NO,'') != '' " +
+                            $"{(ids_GateInOut.Count() > 0 ? " AND GATE_SYS_ID IN (" + string.Join(", ", ids_GateInOut) + ")" : "")} " +
+                            $"{(ids_MDA.Count() > 0 ? " AND MDA_SYS_ID IN (" + string.Join(", ", ids_MDA) + ")" : "")} " +
+                            $"{(_checkValues.Count() > 0 ? $" AND (PLANT_ID, MDA_LOD_SYS_ID, IFNULL(MDA_SYS_ID, 0), GATE_SYS_ID) IN ({string.Join(", ", _checkValues)})" : "")} " +
+                            $"ORDER BY MDA_LOD_SYS_ID DESC ");
+
+                    if (dtSql_All != null && dtSql_All.Rows.Count > 0)
+                    {
+                        int chunkSize = 5000;
+
+                        int numberOfTasks = (int)Math.Ceiling((double)dtSql_All.Rows.Count / chunkSize);
+
+                        Task[] tasks = new Task[numberOfTasks];
+
+                        for (int i = 0; i < numberOfTasks; i++)
+                        {
+                            int start_Index = i * chunkSize;
+                            tasks[i] = Task.Run(() =>
+                            {
+                                try
+                                {
+                                    dtSql = dtSql_All.AsEnumerable()
+                                    .Skip(start_Index)
+                                    .Take(chunkSize)
+                                    .CopyToDataTable();
+
+                                    List<string> checkValues = new List<string>();
+
+                                    List<(long PLANT_ID, long MDA_LOD_SYS_ID, long MDA_SYS_ID, long GATE_SYS_ID, long PROD_SYS_ID)>
+                                        idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}")
+                                                        , (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0), Convert.ToInt64($"{row["GATE_SYS_ID"]}"), Convert.ToInt64($"{row["PROD_SYS_ID"]}"))).ToList();
+
+                                    foreach (var tuple in idsToFilter)
+                                    {
+                                        string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_LOD_SYS_ID}, {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID}, {tuple.PROD_SYS_ID})";
+                                        checkValues.Add(checkValue);
+                                    }
+
+                                    dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, MDA_SYS_ID, GATE_SYS_ID, PROD_SYS_ID 
+        														FROM EXP_MDA_PALLATE_LOADING 
+        														WHERE (PLANT_ID, MDA_LOD_SYS_ID, NVL(MDA_SYS_ID, 0), GATE_SYS_ID, PROD_SYS_ID) 
+        														IN ({string.Join(", ", checkValues)})");
+
+                                    checkValues = new List<string>();
+
+                                    if (dtOracle != null && dtOracle.Rows.Count > 0)
+                                        idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable().Any(row => x == (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}")
+                                                        , (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0), Convert.ToInt64($"{row["GATE_SYS_ID"]}"), Convert.ToInt64($"{row["PROD_SYS_ID"]}")))).ToList();
+
+                                    if (idsToFilter != null && idsToFilter.Count() > 0)
+                                    {
+                                        foreach (var tuple in idsToFilter)
+                                        {
+                                            string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_LOD_SYS_ID}, {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID}, {tuple.PROD_SYS_ID})";
+                                            checkValues.Add(checkValue);
+                                        }
+
+                                        dtSql = DataContext.ExecuteQuery_SQL("SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, MDA_SYS_ID, GATE_SYS_ID, PROD_SYS_ID" +
+                                                ", PALLATE_NO, CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME " +
+                                                $"FROM EXP_MDA_PALLATE_LOADING WHERE (PLANT_ID, MDA_LOD_SYS_ID, IFNULL(MDA_SYS_ID, 0), GATE_SYS_ID, PROD_SYS_ID) IN({string.Join(", ", checkValues)})");
+
+                                        if (dtSql != null && dtSql.Rows.Count > 0)
+                                        {
+                                            int startIndex = 0;
+
+                                            while (startIndex < dtSql.Rows.Count)
+                                            {
+                                                DataTable nextBatch = dtSql.AsEnumerable()
+                                                    .Skip(startIndex)
+                                                    .Take(1000)
+                                                    .CopyToDataTable();
+
+                                                var sqlQuery = "INSERT INTO EXP_MDA_PALLATE_LOADING (MDA_LOD_SYS_ID, GATE_SYS_ID, MDA_SYS_ID, PROD_SYS_ID" +
+                                                    ", PALLATE_NO, CREATED_BY_ID, CREATED_DATETIME, PLANT_ID) ";
+
+                                                var sqlQuery_Select = "";
+
+                                                foreach (DataRow dr in nextBatch.Rows)
+                                                {
+                                                    try
+                                                    {
+                                                        if ((dr["MDA_LOD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_LOD_SYS_ID"]) : 0) > 0)
+                                                        {
+                                                            sqlQuery_Select += $"SELECT {(dr["MDA_LOD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_LOD_SYS_ID"]) : 0)} MDA_LOD_SYS_ID" +
+                                                                $", {(dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0)} GATE_SYS_ID" +
+                                                                $", {(dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0)} MDA_SYS_ID" +
+                                                                $", {(dr["PROD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["PROD_SYS_ID"]) : 0)} PROD_SYS_ID" +
+                                                                $", '{(dr["PALLATE_NO"] != DBNull.Value ? Convert.ToString(dr["PALLATE_NO"]) : "")}' PALLATE_NO" +
+                                                                $", {(dr["CREATED_BY_ID"] != DBNull.Value ? Convert.ToInt64(dr["CREATED_BY_ID"]) : 0)} CREATED_BY_ID" +
+                                                                $", TO_DATE('{(dr["CREATED_DATETIME"] != DBNull.Value ? Convert.ToString(dr["CREATED_DATETIME"]) : "").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI:SS') CREATED_DATETIME" +
+                                                                $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+                                                                $" FROM DUAL UNION ";
+                                                        }
+
+                                                    }
+                                                    catch (Exception) { continue; }
+                                                }
+
+                                                if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+                                                    sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+                                                sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") ";
+
+                                                DataContext.ExecuteNonQuery(sqlQuery + sqlQuery_Select);
+
+                                                startIndex += 1000;
+                                            }
+
+                                        }
+                                    }
+
+                                }
+                                catch (Exception ex) { }
+
+
+                            });
+                        }
+
+                        Task.WaitAll(tasks);
+
+                    }
+
+                }
+                catch (Exception ex) { LogService.LogInsert("SyncData_LocalToCloud", "EXP_MDA_PALLATE_LOADING", ex); }
+            }
+
+            if (string.IsNullOrEmpty(tableName) || tableName.ToUpper() == "PALLATE_MASTER")
+            {
+                try
+                {
+                    dtSql = DataContext.ExecuteQuery_SQL("SELECT ID, PLANT_ID, PLANT_ID, DI_NO, PALLATE_NO, PALLATE_TYPE, SHIPPER_QTY, DISPATCH_MODE" +
+                        ", CREATED_BY, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME " +
+                            "FROM PALLATE_MASTER WHERE 1 = 1 ");
+
+                    if (dtSql != null && dtSql.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long ID, long PLANT_ID, string DI_NO, string PALLATE_NO)>
+                            idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["ID"]}"), Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToString($"{row["DI_NO"]}")
+                                            , Convert.ToString($"{row["PALLATE_NO"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.ID}, {tuple.PLANT_ID}, '{tuple.DI_NO}', '{tuple.PALLATE_NO}')";
+                            checkValues.Add(checkValue);
+                        }
+
+                        if (ids_GateInOut == null || ids_GateInOut.Count == 0)
+                            dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT ID, PLANT_ID, DI_NO, PALLATE_NO
+        										FROM PALLATE_MASTER 
+        										WHERE (ID, PLANT_ID, DI_NO, PALLATE_NO) 
+        										IN ({string.Join(", ", checkValues)})");
+
+                        checkValues = new List<string>();
+
+                        if (dtOracle != null && dtOracle.Rows.Count > 0)
+                            idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable()
+                                            .Any(row => x == (Convert.ToInt64($"{row["ID"]}"), Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToString($"{row["DI_NO"]}")
+                                            , Convert.ToString($"{row["PALLATE_NO"]}")))).ToList();
+
+                        if (idsToFilter != null && idsToFilter.Count() > 0)
+                        {
+                            foreach (var tuple in idsToFilter)
+                            {
+                                string checkValue = $"({tuple.ID}, {tuple.PLANT_ID}, '{tuple.DI_NO}', '{tuple.PALLATE_NO}')";
+                                checkValues.Add(checkValue);
+                            }
+
+                            dtSql = DataContext.ExecuteQuery_SQL("SELECT DISTINCT ID, PLANT_ID, DI_NO, PALLATE_NO, PALLATE_TYPE, SHIPPER_QTY, DISPATCH_MODE" +
+                                    ", CREATED_BY, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME " +
+                                    $"FROM PALLATE_MASTER WHERE (ID, PLANT_ID, DI_NO, PALLATE_NO) IN({string.Join(", ", checkValues)})");
+
+                            if (dtSql != null && dtSql.Rows.Count > 0)
+                            {
+                                int startIndex = 0;
+
+                                while (startIndex < dtSql.Rows.Count)
+                                {
+                                    DataTable nextBatch = dtSql.AsEnumerable()
+                                        .Skip(startIndex)
+                                        .Take(1000)
+                                        .CopyToDataTable();
+
+                                    var sqlQuery = "INSERT INTO PALLATE_MASTER (ID, PLANT_ID, DI_NO, PALLATE_NO, PALLATE_TYPE, SHIPPER_QTY, DISPATCH_MODE, CREATED_BY, CREATED_DATETIME) ";
+
+                                    var sqlQuery_Select = "";
+
+                                    foreach (DataRow dr in nextBatch.Rows)
+                                    {
+                                        try
+                                        {
+                                            if ((dr["ID"] != DBNull.Value ? Convert.ToInt64(dr["ID"]) : 0) > 0)
+                                            {
+                                                sqlQuery_Select += $"SELECT {(dr["ID"] != DBNull.Value ? Convert.ToInt64(dr["ID"]) : 0)} ID" +
+                                                    $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+                                                    $", '{(dr["DI_NO"] != DBNull.Value ? Convert.ToString(dr["DI_NO"]) : "")}' DI_NO" +
+                                                    $", '{(dr["PALLATE_NO"] != DBNull.Value ? Convert.ToString(dr["PALLATE_NO"]) : "")}' PALLATE_NO" +
+                                                    $", '{(dr["PALLATE_TYPE"] != DBNull.Value ? Convert.ToString(dr["PALLATE_TYPE"]) : "")}' PALLATE_TYPE" +
+                                                    $", {(dr["SHIPPER_QTY"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QTY"]) : 0)} SHIPPER_QTY" +
+                                                    $", '{(dr["DISPATCH_MODE"] != DBNull.Value ? Convert.ToString(dr["DISPATCH_MODE"]) : "")}' DISPATCH_MODE" +
+                                                    $", {(dr["CREATED_BY"] != DBNull.Value ? Convert.ToInt64(dr["CREATED_BY"]) : 0)} CREATED_BY" +
+                                                    $", TO_DATE('{(dr["CREATED_DATETIME"] != DBNull.Value ? Convert.ToString(dr["CREATED_DATETIME"]) : "").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI:SS') CREATED_DATETIME" +
+                                                    $" FROM DUAL UNION ";
+                                            }
+
+                                        }
+                                        catch (Exception) { continue; }
+                                    }
+
+                                    if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+                                        sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+                                    sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") ";
+
+                                    DataContext.ExecuteNonQuery(sqlQuery + sqlQuery_Select);
+
+                                    startIndex += 1000;
+                                }
+
+                            }
+                        }
+
+                    }
+
+                }
+                catch (Exception ex) { LogService.LogInsert("SyncData_LocalToCloud", "PALLATE_MASTER", ex); }
+            }
+
+            if (string.IsNullOrEmpty(tableName) || tableName.ToUpper() == "PALLATE_SHIPPER")
+            {
+                try
+                {
+                    dtSql = DataContext.ExecuteQuery_SQL("SELECT ID, PLANT_ID, DI_NO, PALLATE_ID, SHIPPER_QR_CODE, STATUS, REASON" +
+                        ", CREATED_BY, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME " +
+                            "FROM PALLATE_SHIPPER WHERE 1 = 1 ");
+
+                    if (dtSql != null && dtSql.Rows.Count > 0)
+                    {
+                        List<string> checkValues = new List<string>();
+
+                        List<(long ID, long PLANT_ID, string DI_NO, long PALLATE_ID, string SHIPPER_QR_CODE, string STATUS)>
+                            idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["ID"]}"), Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToString($"{row["DI_NO"]}")
+                                            , Convert.ToInt64($"{row["PALLATE_ID"]}"), Convert.ToString($"{row["SHIPPER_QR_CODE"]}"), Convert.ToString($"{row["STATUS"]}"))).ToList();
+
+                        foreach (var tuple in idsToFilter)
+                        {
+                            string checkValue = $"({tuple.ID}, {tuple.PLANT_ID}, '{tuple.DI_NO}', {tuple.PALLATE_ID}, '{tuple.SHIPPER_QR_CODE}', '{tuple.STATUS}')";
+                            checkValues.Add(checkValue);
+                        }
+
+                        if (ids_GateInOut == null || ids_GateInOut.Count == 0)
+                            dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT ID, PLANT_ID, DI_NO, PALLATE_ID, SHIPPER_QR_CODE, STATUS
+        										FROM PALLATE_SHIPPER 
+        										WHERE (ID, PLANT_ID, DI_NO, PALLATE_ID, SHIPPER_QR_CODE, STATUS) 
+        										IN ({string.Join(", ", checkValues)})");
+
+                        checkValues = new List<string>();
+
+                        if (dtOracle != null && dtOracle.Rows.Count > 0)
+                            idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable()
+                                            .Any(row => x == (Convert.ToInt64($"{row["ID"]}"), Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToString($"{row["DI_NO"]}")
+                                            , Convert.ToInt64($"{row["PALLATE_ID"]}")))).ToList();
+
+                        if (idsToFilter != null && idsToFilter.Count() > 0)
+                        {
+                            foreach (var tuple in idsToFilter)
+                            {
+                                string checkValue = $"({tuple.ID}, {tuple.PLANT_ID}, '{tuple.DI_NO}', {tuple.PALLATE_ID}, '{tuple.SHIPPER_QR_CODE}', '{tuple.STATUS}')";
+                                checkValues.Add(checkValue);
+                            }
+
+                            dtSql = DataContext.ExecuteQuery_SQL("SELECT DISTINCT ID, PLANT_ID, DI_NO, PALLATE_ID, SHIPPER_QR_CODE, STATUS, REASON" +
+                                    ", CREATED_BY, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME " +
+                                    $"FROM PALLATE_SHIPPER WHERE (ID, PLANT_ID, DI_NO, PALLATE_ID, SHIPPER_QR_CODE, STATUS) IN({string.Join(", ", checkValues)})");
+
+                            if (dtSql != null && dtSql.Rows.Count > 0)
+                            {
+                                int startIndex = 0;
+
+                                while (startIndex < dtSql.Rows.Count)
+                                {
+                                    DataTable nextBatch = dtSql.AsEnumerable()
+                                        .Skip(startIndex)
+                                        .Take(1000)
+                                        .CopyToDataTable();
+
+                                    var sqlQuery = "INSERT INTO PALLATE_SHIPPER (ID, PLANT_ID, DI_NO, PALLATE_ID, SHIPPER_QR_CODE, STATUS, REASON, CREATED_BY, CREATED_DATETIME) ";
+
+                                    var sqlQuery_Select = "";
+
+                                    foreach (DataRow dr in nextBatch.Rows)
+                                    {
+                                        try
+                                        {
+                                            if ((dr["ID"] != DBNull.Value ? Convert.ToInt64(dr["ID"]) : 0) > 0)
+                                            {
+                                                sqlQuery_Select += $"SELECT {(dr["ID"] != DBNull.Value ? Convert.ToInt64(dr["ID"]) : 0)} ID" +
+                                                    $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+                                                    $", '{(dr["DI_NO"] != DBNull.Value ? Convert.ToString(dr["DI_NO"]) : "")}' DI_NO" +
+                                                    $", {(dr["PALLATE_ID"] != DBNull.Value ? Convert.ToString(dr["PALLATE_ID"]) : "")} PALLATE_ID" +
+                                                    $", '{(dr["SHIPPER_QR_CODE"] != DBNull.Value ? Convert.ToString(dr["SHIPPER_QR_CODE"]) : "")}' SHIPPER_QR_CODE" +
+                                                    $", '{(dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "")}' STATUS" +
+                                                    $", '{(dr["REASON"] != DBNull.Value ? Convert.ToString(dr["REASON"]) : "")}' REASON" +
+                                                    $", {(dr["CREATED_BY"] != DBNull.Value ? Convert.ToInt64(dr["CREATED_BY"]) : 0)} CREATED_BY" +
+                                                    $", TO_DATE('{(dr["CREATED_DATETIME"] != DBNull.Value ? Convert.ToString(dr["CREATED_DATETIME"]) : "").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI:SS') CREATED_DATETIME" +
+                                                    $" FROM DUAL UNION ";
+                                            }
+
+                                        }
+                                        catch (Exception) { continue; }
+                                    }
+
+                                    if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+                                        sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+                                    sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") ";
+
+                                    DataContext.ExecuteNonQuery(sqlQuery + sqlQuery_Select);
+
+                                    startIndex += 1000;
+                                }
+
+                            }
+                        }
+
+                    }
+
+                }
+                catch (Exception ex) { LogService.LogInsert("SyncData_LocalToCloud", "PALLATE_SHIPPER", ex); }
             }
 
         }
