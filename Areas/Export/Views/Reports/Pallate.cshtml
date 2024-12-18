@@ -125,6 +125,19 @@ else
 
                     <td>Shipper Qty : <b>@Model.objPallate.Shipper_Qty</b> &nbsp;&nbsp;&nbsp; Bottle Qty : <b>@Model.objPallate.Bottle_Qty</b></td>
                 </tr>
+                <tr>
+                    <td colspan="3">Status : <b>@Model.objPallate.Pallate_Status</b></td>
+                </tr>
+                @if (!string.IsNullOrEmpty(Model.objPallate.MDA_No))
+                {
+                    <tr>
+                        <td>MDA No. : <b>@Model.objPallate.MDA_No</b></td>
+
+                        <td>Vehicle No. : @Model.objPallate.Vehicle_No</td>
+
+                        <td>Gate In Date & Time : <b>@Model.objPallate.Gate_In_dt</b> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; Gate Out Date & Time : <b>@Model.objPallate.Gate_Out_dt</b></td>
+                    </tr>
+                }
             </tbody>
         </table>
 
@@ -133,7 +146,7 @@ else
             <table id="table_Common" class="table table-bordered w-100">
 
                 <tbody>
-                    <tr><th colspan="9">Shipper QR Code List</th></tr>
+                    <tr><th colspan="6">Shipper QR Code List</th></tr>
 
                     @{
                         List<(int Sr_No, string Qr_Code)> listQRCode = ((List<Dispatch_System.Pallate_Shipper>)Model.objPallate.Shipper_QR_Code).Select(x => (x.Sr_No, x.QR_Code)).ToList();
@@ -147,7 +160,7 @@ else
                             <tr>
                                 @foreach (var qr_code in listQR)
                                 {
-                                    <td colspan="3" class="border-0">@(qr_code.Sr_No + ".   " + qr_code.Qr_Code)</td>
+                                    <td colspan="2" class="border-0">@(qr_code.Sr_No + ".   " + qr_code.Qr_Code)</td>
                                 }
                                 @if (listQR.Count() < 2)
                                 {

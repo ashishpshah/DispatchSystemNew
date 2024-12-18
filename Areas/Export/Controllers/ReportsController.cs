@@ -109,6 +109,11 @@ namespace Dispatch_System.Areas.Export.Controllers
                                 Plant_Name = dr["PLANT_NAME"] != DBNull.Value ? Convert.ToString(dr["PLANT_NAME"]) : "",
                                 Plant_Address = dr["PLANT_ADDRESS"] != DBNull.Value ? Convert.ToString(dr["PLANT_ADDRESS"]) : "",
                                 Report_Title = dr["REPORT_TITLE"] != DBNull.Value ? Convert.ToString(dr["REPORT_TITLE"]) : "",
+                                Vehicle_No = dr["VEHICLE_NO"] != DBNull.Value ? Convert.ToString(dr["VEHICLE_NO"]) : "",
+                                MDA_No = dr["MDA_NO"] != DBNull.Value ? Convert.ToString(dr["MDA_NO"]) : "",
+                                Gate_In_dt = dr["GATE_IN_DT"] != DBNull.Value ? Convert.ToString(dr["GATE_IN_DT"]) : "",
+                                Gate_Out_dt = dr["GATE_OUT_DT"] != DBNull.Value ? Convert.ToString(dr["GATE_OUT_DT"]) : "",
+                                Pallate_Status = dr["Pallate_Status"] != DBNull.Value ? Convert.ToString(dr["Pallate_Status"]) : "",
                                 Shipper_QR_Code = new List<Pallate_Shipper>()
                             };
 
