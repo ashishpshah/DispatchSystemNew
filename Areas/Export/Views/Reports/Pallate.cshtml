@@ -1,0 +1,271 @@
+﻿@model (string SearchTerm, dynamic objPallate, bool isPrint)
+
+@{
+    ViewData["Title"] = "Pallate Details";
+}
+
+@if (Model.isPrint == false && string.IsNullOrEmpty(Model.SearchTerm))
+{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+else if (Model.isPrint == true)
+{
+    Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+@if (Model.isPrint == false && string.IsNullOrEmpty(Model.SearchTerm))
+{
+    <section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12" style="text-align:center;">
+                    <h3 class="font-weight-bold">Pallate Details</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content p-0">
+        <div class="container-fluid p-0">
+            <div class="row no-gutters">
+                <div class="col-12 card">
+                    <div class="card-body pb-0">
+                        <div class="panel-divider">
+                            <span>Search Details</span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="form-horizontal">
+                                        <div class="card-body py-1 px-0">
+
+                                            <div class="form-group row">
+                                                <label for="inputSearch" class="col-sm-2 col-form-label text-right">Pallate No.</label>
+                                                <div class="col-sm-3">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" id="inputSearch" class="form-control" autocomplete="off" />
+                                                        <span class="input-group-append">
+                                                            <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-divider">
+                            <span>Pallate Details </span>
+                            <div class="row no-gutters p-0 m-0">
+                                <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                    <div class="card-body py-1 px-0" id="div_DataTable"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear()">Clear</button>
+                        <span class="float-right mr-3"><span class="text-danger">*</span> Mandatory Fields</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+}
+else if (Model.isPrint == true)
+{
+    <div class="row col-12 mb-3">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12" style="text-align:center;">
+                    <h2 class="font-weight-bold">@(Model.objPallate != null && !string.IsNullOrEmpty(Model.objPallate.Plant_Name) ? Model.objPallate.Plant_Name : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+                </div>
+                <br />
+                <div class="col-sm-12" style="text-align:center;">
+                    <h2 class="font-weight-bold">Pallate No. : <b>@Model.objPallate.Pallate_No</b></h2>
+                </div>
+                <br />
+                <div class="col-sm-12" style="text-align:right;">
+                    <h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="form-group row mb-3">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12" style="text-align:center;">
+                    <h2 class="font-weight-bold" id="lableReportTitle">Pallate No. : <b>@Model.objPallate.Pallate_No</b></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row mt-2">
+        <button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("Pallate","Reports", new { area = "Export"})?searchTerm=@(Model.SearchTerm)&isPrint=true')">Print</button>
+    </div>
+}
+
+@if (Model.objPallate != null)
+{
+    <div class="row col-12 mt-5">
+
+        <table id="table_Common_Main" class="table table-bordered w-100">
+            <tbody>
+                <tr>
+                    <td>Pallate No. : <b>@Model.objPallate.Pallate_No</b></td>
+
+                    <td>Pallate Type : @Model.objPallate.Pallate_Type_Text</td>
+
+                    <td>Shipper Qty : <b>@Model.objPallate.Shipper_Qty</b> &nbsp;&nbsp;&nbsp; Bottle Qty : <b>@Model.objPallate.Bottle_Qty</b></td>
+                </tr>
+            </tbody>
+        </table>
+
+        @if (Model.objPallate.Shipper_QR_Code != null && ((List<Dispatch_System.Pallate_Shipper>)Model.objPallate.Shipper_QR_Code).Count() > 0)
+        {
+            <table id="table_Common" class="table table-bordered w-100">
+
+                <tbody>
+                    <tr><th colspan="9">Shipper QR Code List</th></tr>
+
+                    @{
+                        List<(int Sr_No, string Qr_Code)> listQRCode = ((List<Dispatch_System.Pallate_Shipper>)Model.objPallate.Shipper_QR_Code).Select(x => (x.Sr_No, x.QR_Code)).ToList();
+
+                        var cnt = 0;
+
+                        while (cnt < listQRCode.OrderBy(x => x.Sr_No).Count())
+                        {
+                            List<(int Sr_No, string Qr_Code)> listQR = listQRCode.OrderBy(x => x.Sr_No).Skip(cnt).Take(2).ToList();
+
+                            <tr>
+                                @foreach (var qr_code in listQR)
+                                {
+                                    <td colspan="3" class="border-0">@(qr_code.Sr_No + ".   " + qr_code.Qr_Code)</td>
+                                }
+                                @if (listQR.Count() < 2)
+                                {
+                                    for (int i = listQR.Count(); i < 2; i++)
+                                    {
+                                        <td colspan="3" class="border-0 border-right">&nbsp;</td>
+                                    }
+                                }
+
+                            </tr>
+
+                            cnt += 2;
+                        }
+
+                    }
+
+                </tbody>
+            </table>
+
+        }
+
+    </div>
+
+}
+
+
+
+@if (Model.isPrint == false && string.IsNullOrEmpty(Model.SearchTerm))
+{
+    @section Scripts {
+
+    <script type="text/javascript">
+
+        var divToPrint_HTML = '';
+
+        $(document).ready(function () {
+
+        });
+
+        function printDiv($selector) {
+
+            var divToPrint = $($selector);
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+
+            let tagToAdd_html = document.createElement('html');
+
+            let tagToAdd_body = document.createElement('body');
+
+            tagToAdd_body.appendChild(divToPrint_HTML);
+
+            tagToAdd_html.appendChild(tagToAdd_body);
+
+            newWin.document.appendChild(tagToAdd_html);
+
+            newWin.document.close();
+
+        }
+
+        function fnLoad_DataTable() {
+            debugger;
+            ShowLoader(true);
+
+            $('#div_DataTable').html('');
+
+            var url = '';
+
+            var searchTerm = $('#inputSearch').val();
+
+            if (typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) {
+
+                url = '@Url.Action("Pallate","Reports", new { area = "Export"})?searchTerm=' + searchTerm;
+
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "html",
+                    success: function (response) {
+
+                        setTimeout(function () {
+
+                            $('#div_DataTable').html(response);
+
+                            ShowLoader(false);
+
+                        }, 1000);
+
+                    },
+                    failure: function (response) { CommonAlert_Error(null) },
+                    error: function (response) { CommonAlert_Error(null) }
+                });
+
+            }
+            else { ShowLoader(false); }
+        }
+
+        function fnClear() {
+
+            $('#inputSearch').val('');
+            $('#div_DataTable').html('');
+
+        }
+
+        function fnPrint_Report($url) {
+
+            var printWindow = window.open($url, '_blank');
+
+            if (printWindow) {
+                printWindow.onload = function () {
+                    printWindow.print();
+                };
+            }
+        }
+
+    </script>
+    }
+}

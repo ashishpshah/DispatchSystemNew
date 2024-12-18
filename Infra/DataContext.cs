@@ -944,7 +944,7 @@ namespace Dispatch_System
                                     parameters.Add(new OracleParameter("P_GATE_OUT_DT", OracleDbType.Date) { Value = (dr["GATE_OUT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GATE_OUT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
                                     parameters.Add(new OracleParameter("P_INWARD_SYS_ID", OracleDbType.Int64) { Value = (dr["INWARD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["INWARD_SYS_ID"]) : 0M) });
                                     parameters.Add(new OracleParameter("P_MDA_SYS_ID", OracleDbType.Int64) { Value = (dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0M) });
-                                    
+
                                     parameters.Add(new OracleParameter("P_TRUCK_NO", OracleDbType.NVarchar2) { Value = (dr["TRUCK_NO"] != DBNull.Value ? Convert.ToString(dr["TRUCK_NO"]) : "") });
                                     parameters.Add(new OracleParameter("P_DRIVER_ID_TYPE", OracleDbType.NVarchar2) { Value = (dr["DRIVER_ID_TYPE"] != DBNull.Value ? Convert.ToString(dr["DRIVER_ID_TYPE"]) : "") });
                                     parameters.Add(new OracleParameter("P_DRIVER_ID_NUMBER", OracleDbType.NVarchar2) { Value = (dr["DRIVER_ID_NUMBER"] != DBNull.Value ? Convert.ToString(dr["DRIVER_ID_NUMBER"]) : "") });
@@ -1019,7 +1019,7 @@ namespace Dispatch_System
                                 parameters.Add(new OracleParameter("P_GATE_SYS_ID", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0M) });
                                 parameters.Add(new OracleParameter("P_GATE_OUT_DT", OracleDbType.Date) { Value = (dr["GATE_OUT_DT"] != DBNull.Value ? DateTime.ParseExact(Convert.ToString(dr["GATE_OUT_DT"]).Replace("-", "/"), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : nullDateTime) });
                                 parameters.Add(new OracleParameter("P_MDA_SYS_ID", OracleDbType.Int64) { Value = (dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0M) });
-                                
+
                                 parameters.Add(new OracleParameter("P_CANCEL_GATE_IN", OracleDbType.Int64) { Value = (dr["CANCEL_GATE_IN"] != DBNull.Value ? Convert.ToInt64(dr["CANCEL_GATE_IN"]) : 0M) });
                                 parameters.Add(new OracleParameter("P_CANCEL_GATE_REASON", OracleDbType.NVarchar2) { Value = (dr["CANCEL_GATE_REASON"] != DBNull.Value ? Convert.ToString(dr["CANCEL_GATE_REASON"]) : "") });
                                 parameters.Add(new OracleParameter("P_GATE_SYS_ID_OLD", OracleDbType.Int64) { Value = (dr["GATE_SYS_ID_OLD"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID_OLD"]) : 0M) });
@@ -4809,7 +4809,7 @@ namespace Dispatch_System
                         if (dtOracle != null && dtOracle.Rows.Count > 0)
                             idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable()
                                             .Any(row => x == (Convert.ToInt64($"{row["ID"]}"), Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToString($"{row["DI_NO"]}")
-                                            , Convert.ToInt64($"{row["PALLATE_ID"]}")))).ToList();
+                                            , Convert.ToInt64($"{row["PALLATE_ID"]}"), Convert.ToString($"{row["SHIPPER_QR_CODE"]}"), Convert.ToString($"{row["STATUS"]}")))).ToList();
 
                         if (idsToFilter != null && idsToFilter.Count() > 0)
                         {
