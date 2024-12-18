@@ -1,0 +1,292 @@
+﻿@model (string SearchTerm, List<dynamic> listPallate, bool isPrint)
+
+@{
+	ViewData["Title"] = "MDA - Pallate Details";
+}
+
+@if (Model.isPrint == false && string.IsNullOrEmpty(Model.SearchTerm))
+{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+else if (Model.isPrint == true)
+{
+	Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+@if (Model.isPrint == false && string.IsNullOrEmpty(Model.SearchTerm))
+{
+	<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-12" style="text-align:center;">
+					<h3 class="font-weight-bold">MDA - Pallate Details</h3>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="content p-0">
+		<div class="container-fluid p-0">
+			<div class="row no-gutters">
+				<div class="col-12 card">
+					<div class="card-body pb-0">
+						<div class="panel-divider">
+							<span>Search Details</span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="form-horizontal">
+										<div class="card-body py-1 px-0">
+
+											<div class="form-group row">
+												<label for="inputSearch" class="col-sm-2 col-form-label text-right">MDA No.</label>
+												<div class="col-sm-3">
+													<div class="input-group input-group-sm">
+														<input type="text" id="inputSearch" class="form-control" autocomplete="off" />
+														<span class="input-group-append">
+															<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+														</span>
+													</div>
+												</div>
+											</div>
+
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="panel-divider">
+							<span>MDA - Pallate Details </span>
+							<div class="row no-gutters p-0 m-0">
+								<div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+									<div class="card-body py-1 px-0" id="div_DataTable"></div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+					<div class="card-footer">
+						<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClear()">Clear</button>
+						<span class="float-right mr-3"><span class="text-danger">*</span> Mandatory Fields</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+}
+else if (Model.isPrint == true && Model.listPallate != null && Model.listPallate.Count() > 0)
+{
+	<div class="row col-12 mb-3">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold">@(Model.listPallate != null && !string.IsNullOrEmpty(Model.listPallate[0].Plant_Name) ? Model.listPallate[0].Plant_Name : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+				</div>
+				<br />
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold">MDA No. : <b>@Model.listPallate[0].MDA_No</b></h2>
+				</div>
+				<br />
+				<div class="col-sm-12" style="text-align:right;">
+					<h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+else if (Model.listPallate != null && Model.listPallate.Count() > 0)
+{
+	<div class="form-group row mb-3">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold" id="lableReportTitle">MDA No. : <b>@Model.listPallate[0].MDA_No</b></h2>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="form-group row mt-2">
+		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("MDA_Wise_Pallate","Reports", new { area = "Export"})?searchTerm=@(Model.SearchTerm)&isPrint=true')">Print</button>
+	</div>
+}
+
+@if (Model.listPallate != null && Model.listPallate.Count() > 0)
+{
+	<div class="row col-12 mt-5">
+
+		<table id="table_Common_Main" class="table table-bordered w-100">
+			<tbody>
+				<tr>
+					<td>MDA No. : <b>@Model.listPallate[0].MDA_No</b></td>
+
+					<td>Party Name : @Model.listPallate[0].Party_Name</td>
+
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>Shipper Qty : <b>@Model.listPallate[0].Required_Shipper</b></td>
+
+					<td>Dispatch Place : @Model.listPallate[0].Desp_Place</td>
+
+					<td>Distance : @Model.listPallate[0].Dist</td>
+				</tr>
+			</tbody>
+		</table>
+
+		@if (Model.listPallate != null && ((List<dynamic>)Model.listPallate).Count() > 0)
+		{
+			<table id="table_Common" class="table table-bordered w-100">
+				<tbody>
+
+					@{
+						List<dynamic> listVehicle = ((List<dynamic>)Model.listPallate).GroupBy(x => new { x.Vehicle_No, x.Gate_In_dt, x.Gate_Out_dt })
+						.Select(x => new { Vehicle_No = x.Key.Vehicle_No, Gate_In_dt = x.Key.Gate_In_dt, Gate_Out_dt = x.Key.Gate_Out_dt }).ToList<dynamic>();
+					}
+
+					@foreach (var item in listVehicle)
+					{
+						<tr style="background-color: rgba(0, 0, 0, .05);">
+							<td colspan="2">Vehicle No. : <b>@item.Vehicle_No</b></td>
+
+							<td colspan="3">Gate In Date & Time : <b>@item.Gate_In_dt</b> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; Gate Out Date & Time : <b>@item.Gate_Out_dt</b></td>
+						</tr>
+
+						<tr><th colspan="5" class="border-0 border-right">Shipper QR Code List</th></tr>
+
+						{
+							List<(int Sr_No, string Qr_Code)> listQRCode = ((List<Dispatch_System.Pallate_Shipper>)item.Shipper_QR_Code).Select(x => (x.Sr_No, x.QR_Code)).ToList();
+
+							var cnt = 0;
+
+							while (cnt < listQRCode.OrderBy(x => x.Sr_No).Count())
+							{
+								List<(int Sr_No, string Qr_Code)> listQR = listQRCode.OrderBy(x => x.Sr_No).Skip(cnt).Take(2).ToList();
+
+								<tr>
+									@foreach (var qr_code in listQR)
+									{
+										<td colspan="2" class="border-0">@(qr_code.Sr_No + ".   " + qr_code.Qr_Code)</td>
+									}
+									@if (listQR.Count() < 2)
+									{
+										for (int i = listQR.Count(); i < 2; i++)
+										{
+											<td colspan="2" class="border-0 border-right">&nbsp;</td>
+										}
+									}
+
+								</tr>
+
+								cnt += 2;
+							}
+
+						}
+
+						<tr><td colspan="5" class="border-0">&nbsp;</td></tr>
+					}
+				</tbody>
+			</table>
+		}
+
+	</div>
+
+}
+
+
+
+@if (Model.isPrint == false && string.IsNullOrEmpty(Model.SearchTerm))
+{
+	@section Scripts {
+
+	<script type="text/javascript">
+
+		var divToPrint_HTML = '';
+
+		$(document).ready(function () {
+
+		});
+
+		function printDiv($selector) {
+
+			var divToPrint = $($selector);
+
+			var newWin = window.open('', 'Print-Window');
+
+			newWin.document.open();
+
+			let tagToAdd_html = document.createElement('html');
+
+			let tagToAdd_body = document.createElement('body');
+
+			tagToAdd_body.appendChild(divToPrint_HTML);
+
+			tagToAdd_html.appendChild(tagToAdd_body);
+
+			newWin.document.appendChild(tagToAdd_html);
+
+			newWin.document.close();
+
+		}
+
+		function fnLoad_DataTable() {
+			debugger;
+			ShowLoader(true);
+
+			$('#div_DataTable').html('');
+
+			var url = '';
+
+			var searchTerm = $('#inputSearch').val();
+
+			if (typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) {
+
+				url = '@Url.Action("MDA_Wise_Pallate", "Reports", new { area = "Export" })?searchTerm=' + searchTerm;
+
+				$.ajax({
+					type: "GET",
+					url: url,
+					data: null,
+					contentType: "application/json; charset=utf-8",
+					dataType: "html",
+					success: function (response) {
+
+						setTimeout(function () {
+
+							$('#div_DataTable').html(response);
+
+							ShowLoader(false);
+
+						}, 1000);
+
+					},
+					failure: function (response) { CommonAlert_Error(null) },
+					error: function (response) { CommonAlert_Error(null) }
+				});
+
+			}
+			else { ShowLoader(false); }
+		}
+
+		function fnClear() {
+
+			$('#inputSearch').val('');
+			$('#div_DataTable').html('');
+
+		}
+
+		function fnPrint_Report($url) {
+
+			var printWindow = window.open($url, '_blank');
+
+			if (printWindow) {
+				printWindow.onload = function () {
+					printWindow.print();
+				};
+			}
+		}
+
+	</script>
+	}
+}
