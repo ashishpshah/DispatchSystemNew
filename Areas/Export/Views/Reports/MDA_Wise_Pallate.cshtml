@@ -91,7 +91,7 @@ else if (Model.isPrint == true && Model.listPallate != null && Model.listPallate
 				</div>
 				<br />
 				<div class="col-sm-12" style="text-align:center;">
-					<h2 class="font-weight-bold">MDA wise Pallate</h2>
+					<h2 class="font-weight-bold">@((Model.withDetail == false) ? "MDA wise Pallate Summary" : "MDA wise Pallate Details")</h2>
 				</div>
 				<br />
 				<div class="col-sm-12" style="text-align:right;">
@@ -107,7 +107,7 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 		<div class="container-fluid">
 			<div class="row mb-2">
 				<div class="col-sm-12" style="text-align:center;">
-					<h2 class="font-weight-bold" id="lableReportTitle">MDA wise Pallate</h2>
+					<h2 class="font-weight-bold" id="lableReportTitle">@((Model.withDetail == false) ? "MDA wise Pallate Summary" : "MDA wise Pallate Details")</h2>
 				</div>
 			</div>
 		</div>

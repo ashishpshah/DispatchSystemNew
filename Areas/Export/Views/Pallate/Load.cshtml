@@ -27,7 +27,7 @@
                                 <div class="form-horizontal">
                                     <div class="card-body py-1 px-0">
                                         <div class="form-group row">
-                                            <label for="inputSearch" class="col-sm-2 col-form-label">DI Number</label>
+                                            <label for="inputSearch" class="col-sm-2 col-form-label">Export indent No.</label>
                                             <div class="col-sm-4">
                                                 <div class="input-group input-group-sm">
                                                     <input type="text" id="inputSearch" class="form-control form-control-sm">
@@ -51,7 +51,7 @@
                                 <div class="card-body py-1 px-0">
 
                                     <div class="row col-12 w-100 mt-1 mb-2">
-                                        <h4>DI Number : <label class="col-form-label" id="DI_No"></label></h4>
+                                        <h4>Export indent No. : <label class="col-form-label" id="DI_No"></label></h4>
                                     </div>
 
                                     <div class="row col-12 w-100">
@@ -85,7 +85,7 @@
                                 <div class="card-body py-1 px-0">
 
                                     <div class="row w-100 mt-1 mb-2">
-                                        <h5 class="col-3">DI Number : <label class="col-form-label" id="Pallate_DI_No"></label></h5>
+                                        <h5 class="col-3">Export indent No. : <label class="col-form-label" id="Pallate_DI_No"></label></h5>
                                         <h5 class="col-3">MDA Number : <label class="col-form-label" id="Pallate_MDA_No"></label></h5>
                                         <h5 class="col-3">Vehicle Number : <label class="col-form-label" id="Pallate_Vehicle_No"></label></h5>
                                     </div>
@@ -280,7 +280,7 @@
             fnCancel();
 
             if ($('#table_Common tbody tr.bg-info').length <= 0) {
-                CommonAlert_Error("Please select one DI Number");
+                CommonAlert_Error("Please select one Export indent No.");
                 return false;
             }
             else {
