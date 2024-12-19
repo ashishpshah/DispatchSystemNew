@@ -85,7 +85,7 @@ else if (Model.isPrint == true && Model.objPallate != null)
                 </div>
                 <br />
                 <div class="col-sm-12" style="text-align:center;">
-                    <h2 class="font-weight-bold">Pallate No. : <b>@Model.objPallate.Pallate_No</b></h2>
+                    <h2 class="font-weight-bold"><b>Pallate Details</b></h2>
                 </div>
                 <br />
                 <div class="col-sm-12" style="text-align:right;">
@@ -101,7 +101,7 @@ else if (Model.objPallate != null)
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-12" style="text-align:center;">
-                    <h2 class="font-weight-bold" id="lableReportTitle">Pallate No. : <b>@Model.objPallate.Pallate_No</b></h2>
+                    <h2 class="font-weight-bold" id="lableReportTitle">Pallate Details</h2>
                 </div>
             </div>
         </div>
@@ -223,7 +223,7 @@ else if (Model.objPallate != null)
         }
 
         function fnLoad_DataTable() {
-            debugger;
+            
             ShowLoader(true);
 
             $('#div_DataTable').html('');

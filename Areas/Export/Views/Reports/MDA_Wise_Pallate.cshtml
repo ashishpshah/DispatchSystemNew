@@ -1,4 +1,4 @@
-﻿@model (string SearchTerm, List<dynamic> listPallate, bool isPrint)
+﻿@model (string SearchTerm, List<dynamic> listPallate, bool isPrint, bool withDetail)
 
 @{
 	ViewData["Title"] = "MDA - Pallate Details";
@@ -39,16 +39,22 @@ else if (Model.isPrint == true)
 
 											<div class="form-group row">
 												<label for="inputSearch" class="col-sm-2 col-form-label text-right">MDA No.</label>
-												<div class="col-sm-3">
-													<div class="input-group input-group-sm">
-														<input type="text" id="inputSearch" class="form-control" autocomplete="off" />
-														<span class="input-group-append">
-															<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-														</span>
-													</div>
-												</div>
+												<input type="text" id="inputSearch" class="col-sm-3 form-control form-control-sm" autocomplete="off" />
 											</div>
-
+																						
+                                            <div class="form-group row">
+                                                <label class="col-sm-2 col-form-label text-right">With Detail </label>
+                                                <div class="col-sm-4">
+                                                    <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
+                                                        <input type="checkbox" class="custom-control-input" id="switch_Status" onchange="fnChange_Switch(this, 'label_Switch_Status')">
+                                                        <label class="custom-control-label pt-2" for="switch_Status" id="label_Switch_Status" data-true="Yes" data-false="No">No</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+											
+                                            <div class="form-group row col-sm-4 offset-sm-2 text-center ml-5 pl-5">
+                                                <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                            </div>
 										</div>
 									</div>
 								</div>
@@ -85,7 +91,7 @@ else if (Model.isPrint == true && Model.listPallate != null && Model.listPallate
 				</div>
 				<br />
 				<div class="col-sm-12" style="text-align:center;">
-					<h2 class="font-weight-bold">MDA No. : <b>@Model.listPallate[0].MDA_No</b></h2>
+					<h2 class="font-weight-bold">MDA wise Pallate</h2>
 				</div>
 				<br />
 				<div class="col-sm-12" style="text-align:right;">
@@ -101,7 +107,7 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 		<div class="container-fluid">
 			<div class="row mb-2">
 				<div class="col-sm-12" style="text-align:center;">
-					<h2 class="font-weight-bold" id="lableReportTitle">MDA No. : <b>@Model.listPallate[0].MDA_No</b></h2>
+					<h2 class="font-weight-bold" id="lableReportTitle">MDA wise Pallate</h2>
 				</div>
 			</div>
 		</div>
@@ -120,16 +126,11 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 			<tbody>
 				<tr>
 					<td>MDA No. : <b>@Model.listPallate[0].MDA_No</b></td>
-
-					<td>Party Name : @Model.listPallate[0].Party_Name</td>
-
-					<td>&nbsp;</td>
+					<td colspan="2">Party Name : @Model.listPallate[0].Party_Name</td>
 				</tr>
 				<tr>
 					<td>Shipper Qty : <b>@Model.listPallate[0].Required_Shipper</b></td>
-
 					<td>Dispatch Place : @Model.listPallate[0].Desp_Place</td>
-
 					<td>Distance : @Model.listPallate[0].Dist</td>
 				</tr>
 			</tbody>
@@ -141,50 +142,85 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 				<tbody>
 
 					@{
-						List<dynamic> listVehicle = ((List<dynamic>)Model.listPallate).GroupBy(x => new { x.Vehicle_No, x.Gate_In_dt, x.Gate_Out_dt })
-						.Select(x => new { Vehicle_No = x.Key.Vehicle_No, Gate_In_dt = x.Key.Gate_In_dt, Gate_Out_dt = x.Key.Gate_Out_dt }).ToList<dynamic>();
+						List<dynamic> listVehicle = ((List<dynamic>)Model.listPallate)
+						.GroupBy(x => new { x.Vehicle_No, x.Gate_In_dt, x.Gate_Out_dt })
+						.Select(x => new
+						{
+							Vehicle_No = x.Key.Vehicle_No,
+							Gate_In_dt = x.Key.Gate_In_dt,
+							Gate_Out_dt = x.Key.Gate_Out_dt,
+							Expected_Shipper = x.Sum(y => (decimal)y.Expected_Shipper),
+							Loaded_Shipper = x.Sum(y => (decimal)y.Loaded_Shipper),
+							Pallate_Count = x.Count()
+						})
+						.ToList<dynamic>();
 					}
 
 					@foreach (var item in listVehicle)
 					{
 						<tr style="background-color: rgba(0, 0, 0, .05);">
 							<td colspan="2">Vehicle No. : <b>@item.Vehicle_No</b></td>
-
-							<td colspan="3">Gate In Date & Time : <b>@item.Gate_In_dt</b> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; Gate Out Date & Time : <b>@item.Gate_Out_dt</b></td>
+							<td colspan="2">Gate In Date & Time : <b>@item.Gate_In_dt</b></td>
+							<td colspan="2">Gate Out Date & Time : <b>@item.Gate_Out_dt</b></td>
 						</tr>
 
-						<tr><th colspan="5" class="border-0 border-right">Shipper QR Code List</th></tr>
+						<tr style="background-color: rgba(0, 0, 0, .05);">
+							<td colspan="2">Pallate : <b>@item.Pallate_Count</b> </td>
+							<td colspan="2">Loaded Shipper : <b>@item.Loaded_Shipper</b> </td>
+							<td colspan="2">Expected Shipper : <b>@item.Expected_Shipper</b></td>
+						</tr>
 
-						{
-							List<(int Sr_No, string Qr_Code)> listQRCode = ((List<Dispatch_System.Pallate_Shipper>)item.Shipper_QR_Code).Select(x => (x.Sr_No, x.QR_Code)).ToList();
+						<tr>
+							<td colspan="6" class="border-0 border-right">
 
-							var cnt = 0;
+								<dl class="row">
+									@{
+										List<dynamic> list = ((List<dynamic>)Model.listPallate).Where(x => x.Vehicle_No == item.Vehicle_No).OrderBy(x => x.Sr_No).ToList();
 
-							while (cnt < listQRCode.OrderBy(x => x.Sr_No).Count())
-							{
-								List<(int Sr_No, string Qr_Code)> listQR = listQRCode.OrderBy(x => x.Sr_No).Skip(cnt).Take(2).ToList();
-
-								<tr>
-									@foreach (var qr_code in listQR)
-									{
-										<td colspan="2" class="border-0">@(qr_code.Sr_No + ".   " + qr_code.Qr_Code)</td>
-									}
-									@if (listQR.Count() < 2)
-									{
-										for (int i = listQR.Count(); i < 2; i++)
+										if (list != null && list.Count() > 0)
 										{
-											<td colspan="2" class="border-0 border-right">&nbsp;</td>
+											<dt class="col-sm-2">Pallate(s):</dt>											
+											<dd class="col-sm-10 row">
+												
+												@foreach (dynamic itemPallate in list)
+												{
+													<div class="@(Model.withDetail == true ? "col-6":"col-sm-4 col-6")">
+														<div class="description-block border-0 text-left m-0">
+															<span class="description-text @(Model.withDetail == true ? "text-bold":"")">@itemPallate.Sr_No. &nbsp; @itemPallate.Pallate_No</span>
+															
+															@if (Model.withDetail == true)
+															{
+																List<string> listQRCode = ((List<Dispatch_System.Pallate_Shipper>)itemPallate.Shipper_QR_Code)
+																			.Select(x => x.QR_Code).ToList();
+
+																<ul class="list-unstyled mt-1">
+																  <li>Shipper QR Code(s) : 
+																	<ol>
+																	@foreach (var qr_code in listQRCode)
+																	{
+																		<li>@qr_code</li>
+																	}
+																	</ol>
+																  </li>
+																</ul>
+															}
+														</div>
+													</div>
+												}												
+											</dd>
 										}
+										else
+										{
+											<dt class="lead">No any Pallate(s) loaded.</dt>
+										}
+
 									}
+								</dl>
 
-								</tr>
+							</td>
+						</tr>
 
-								cnt += 2;
-							}
-
-						}
-
-						<tr><td colspan="5" class="border-0">&nbsp;</td></tr>
+						<tr><td colspan="6" class="border-0 border-top">&nbsp;</td></tr>
 					}
 				</tbody>
 			</table>
@@ -231,7 +267,7 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 		}
 
 		function fnLoad_DataTable() {
-			debugger;
+
 			ShowLoader(true);
 
 			$('#div_DataTable').html('');
@@ -243,6 +279,8 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 			if (typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) {
 
 				url = '@Url.Action("MDA_Wise_Pallate", "Reports", new { area = "Export" })?searchTerm=' + searchTerm;
+
+				url = url + '&withDetail=' + $('#switch_Status').is(':checked');
 
 				$.ajax({
 					type: "GET",
@@ -277,6 +315,8 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 		}
 
 		function fnPrint_Report($url) {
+			
+            $url = $url + '&withDetail=' + $('#switch_Status').is(':checked');
 
 			var printWindow = window.open($url, '_blank');
 

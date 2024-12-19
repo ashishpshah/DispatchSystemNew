@@ -138,12 +138,12 @@ namespace Dispatch_System.Areas.LineMaster.Controllers
                 BitmapByteQRCode qrCode = new BitmapByteQRCode(qrCodeData);
                 byte[] qrCodeAsBitmapByteArr = qrCode.GetGraphic(20);
 
-                Bitmap qrCodeImage = null;
+                //Bitmap qrCodeImage = null;
                 using (var ms = new MemoryStream(qrCodeAsBitmapByteArr))
                 {
-                    qrCodeImage = new Bitmap(ms);
+                    //qrCodeImage = new Bitmap(ms);
 
-                    qrCodeImage.Save($"{APID1_Val}_{Batch_No}_{APID2_Val}_{MFG_Date.Replace("/", "")}" + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                    //qrCodeImage.Save($"{APID1_Val}_{Batch_No}_{APID2_Val}_{MFG_Date.Replace("/", "")}" + ".png", System.Drawing.Imaging.ImageFormat.Png);
 
                     byte[] byteArray = ms.ToArray();
 

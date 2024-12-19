@@ -495,7 +495,7 @@
 
                                 if (typeof response != 'undefined' && response != null && response.length > 0) {
                                     response = JSON.parse(response);
-                                    debugger;
+                                    
                                     if (typeof response["dI_Details"] != 'undefined' && response["dI_Details"] != null && response["dI_Details"].length > 0) {
                                         $('#Pallate_DI_No').html(response["dI_Details"][0]['di_no']);
                                         $('#Pallate_MDA_No').html(response["dI_Details"][0]['mda_no']);
