@@ -125,11 +125,12 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 		<table id="table_Common_Main" class="table table-bordered w-100">
 			<tbody>
 				<tr>
+					<td>Export Indent No. : <b>@Model.listPallate[0].DI_No</b></td>
 					<td>MDA No. : <b>@Model.listPallate[0].MDA_No</b></td>
-					<td colspan="2">Party Name : @Model.listPallate[0].Party_Name</td>
+					<td>Party Name : @Model.listPallate[0].Party_Name</td>
 				</tr>
 				<tr>
-					<td>Shipper Qty : <b>@Model.listPallate[0].Required_Shipper</b></td>
+					<td>No. of Shipper : <b>@Model.listPallate[0].Required_Shipper</b> &nbsp;&nbsp;&nbsp; No. of Bottle : <b>@Model.listPallate[0].Bag_Nos</b></td>
 					<td>Dispatch Place : @Model.listPallate[0].Desp_Place</td>
 					<td>Distance : @Model.listPallate[0].Dist</td>
 				</tr>
@@ -165,9 +166,8 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 						</tr>
 
 						<tr style="background-color: rgba(0, 0, 0, .05);">
-							<td colspan="2">Pallate : <b>@item.Pallate_Count</b> </td>
-							<td colspan="2">Loaded Shipper : <b>@item.Loaded_Shipper</b> </td>
-							<td colspan="2">Expected Shipper : <b>@item.Expected_Shipper</b></td>
+							<td colspan="2">No. of Pallate : <b>@item.Pallate_Count</b> </td>
+							<td colspan="4">No. of Shipper : <b>@item.Expected_Shipper</b></td>
 						</tr>
 
 						<tr>

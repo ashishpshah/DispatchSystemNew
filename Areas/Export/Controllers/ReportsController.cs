@@ -196,6 +196,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 									Expected_Shipper = dr["Expected_Shipper"] != DBNull.Value ? Convert.ToDecimal(dr["Expected_Shipper"]) : 0,
 									Loaded_Shipper = dr["Loaded_Shipper"] != DBNull.Value ? Convert.ToDecimal(dr["Loaded_Shipper"]) : 0,
 									Required_Shipper = dr["Required_Shipper"] != DBNull.Value ? Convert.ToDecimal(dr["Required_Shipper"]) : 0,
+									Bag_Nos = dr["BAG_NOS"] != DBNull.Value ? Convert.ToInt64(dr["BAG_NOS"]) : 0,
 									Party_Name = dr["PARTY_NAME"] != DBNull.Value ? Convert.ToString(dr["PARTY_NAME"]) : "",
 									Dist = dr["DIST"] != DBNull.Value ? Convert.ToInt64(dr["DIST"]) : 0,
 									Desp_Place = dr["DESP_PLACE"] != DBNull.Value ? Convert.ToString(dr["DESP_PLACE"]) : "",
