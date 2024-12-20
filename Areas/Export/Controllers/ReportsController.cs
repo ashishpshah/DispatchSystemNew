@@ -195,6 +195,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 									Driver_Name = dr["DRIVER_NAME"] != DBNull.Value ? Convert.ToString(dr["DRIVER_NAME"]) : null,
 									Driver_Contact = dr["DRIVER_CONTACT"] != DBNull.Value ? Convert.ToString(dr["DRIVER_CONTACT"]) : null,
 									Expected_Shipper = dr["Expected_Shipper"] != DBNull.Value ? Convert.ToDecimal(dr["Expected_Shipper"]) : 0,
+									Expected_Bottle = dr["Expected_Bottle"] != DBNull.Value ? Convert.ToDecimal(dr["Expected_Bottle"]) : 0,
 									Loaded_Shipper = dr["Loaded_Shipper"] != DBNull.Value ? Convert.ToDecimal(dr["Loaded_Shipper"]) : 0,
 									Loaded_Bottle = dr["Loaded_Bottle"] != DBNull.Value ? Convert.ToDecimal(dr["Loaded_Bottle"]) : 0,
 									Required_Shipper = dr["Required_Shipper"] != DBNull.Value ? Convert.ToDecimal(dr["Required_Shipper"]) : 0,

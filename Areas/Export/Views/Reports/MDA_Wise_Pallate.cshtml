@@ -144,16 +144,17 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 
 					@{
 						List<dynamic> listVehicle = ((List<dynamic>)Model.listPallate)
-						.GroupBy(x => new { x.Vehicle_No, x.Gate_In_dt, x.Gate_Out_dt })
+						.GroupBy(x => new { Vehicle_No = x.Vehicle_No, Gate_In_dt = x.Gate_In_dt, Gate_Out_dt = x.Gate_Out_dt, Expected_Shipper = x.Expected_Shipper, Expected_Bottle = x.Expected_Bottle/* , Pallate_Count = !string.IsNullOrEmpty(Convert.ToString(x.Pallate_No)) ? 1 : 0 */ })
 						.Select(x => new
 						{
 							Vehicle_No = x.Key.Vehicle_No,
 							Gate_In_dt = x.Key.Gate_In_dt,
 							Gate_Out_dt = x.Key.Gate_Out_dt,
-							Expected_Shipper = x.Sum(y => (decimal)y.Expected_Shipper),
+							Expected_Shipper = x.Key.Expected_Shipper,
+							Expected_Bottle = x.Key.Expected_Bottle,
 							Loaded_Shipper = x.Sum(y => (decimal)y.Loaded_Shipper),
 							Loaded_Bottle = x.Sum(y => (decimal)y.Loaded_Bottle),
-							Pallate_Count = x.Count()
+							Pallate_Count = x.Count(y => !string.IsNullOrEmpty(Convert.ToString(y.Pallate_No)))
 						})
 						.ToList<dynamic>();
 					}
@@ -169,7 +170,7 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 						<tr style="background-color: rgba(0, 0, 0, .05);">
 							<td colspan="2">No. of Pallate : <b>@item.Pallate_Count</b> </td>
 							<td colspan="2">No. of Shipper : <b>@item.Expected_Shipper</b></td>
-							<td colspan="2">No. of Bottle : <b>@item.Loaded_Bottle</b></td>
+							<td colspan="2">No. of Bottle : <b>@item.Expected_Bottle</b></td>
 						</tr>
 
 						<tr>
@@ -177,7 +178,7 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 
 								<dl class="row">
 									@{
-										List<dynamic> list = ((List<dynamic>)Model.listPallate).Where(x => x.Vehicle_No == item.Vehicle_No).OrderBy(x => x.Sr_No).ToList();
+										List<dynamic> list = ((List<dynamic>)Model.listPallate).Where(x => x.Vehicle_No == item.Vehicle_No && !string.IsNullOrEmpty(Convert.ToString(x.Pallate_No))).OrderBy(x => x.Sr_No).ToList();
 
 										if (list != null && list.Count() > 0)
 										{
@@ -213,7 +214,7 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 										}
 										else
 										{
-											<dt class="lead">No any Pallate(s) loaded.</dt>
+											<dt class="lead pl-2 text-bold">No any Pallate(s) loaded.</dt>
 										}
 
 									}
@@ -222,7 +223,7 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 							</td>
 						</tr>
 
-						<tr><td colspan="6" class="border-0 border-top">&nbsp;</td></tr>
+						@* <tr><td colspan="6" class="border-0 border-top">&nbsp;</td></tr> *@
 					}
 				</tbody>
 			</table>
