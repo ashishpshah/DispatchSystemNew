@@ -128,7 +128,9 @@ else if (Model.objPallate != null)
 					<td>No. of Bottle : <b>@Model.objPallate.Bottle_Qty</b></td>
 				</tr>
 				<tr>
-					<td colspan="3">Status : <b>@Model.objPallate.Pallate_Status</b></td>
+					<td colspan="2">Status : <b>@Model.objPallate.Pallate_Status</b></td>
+					<td>Destination Country : <b>@Model.objPallate.Dest_Country</b></td>
+					<td>Mode of Dispatch : @Model.objPallate.Dispatch_Mode_Text</td>
 				</tr>
 				@if (!string.IsNullOrEmpty(Model.objPallate.MDA_No))
 				{

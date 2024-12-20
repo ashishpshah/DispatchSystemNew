@@ -98,6 +98,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 								Id = dr["ID"] != DBNull.Value ? Convert.ToInt64(dr["ID"]) : 0,
 								Sr_No = dr["Sr_No"] != DBNull.Value ? Convert.ToInt32(dr["Sr_No"]) : 0,
 								DI_No = dr["DI_No"] != DBNull.Value ? Convert.ToString(dr["DI_No"]) : "",
+								Dest_Country = dr["Dest_Country"] != DBNull.Value ? Convert.ToString(dr["Dest_Country"]) : "",
 								Pallate_No = dr["Pallate_No"] != DBNull.Value ? Convert.ToString(dr["Pallate_No"]) : "",
 								Pallate_Type = dr["Pallate_Type"] != DBNull.Value ? Convert.ToString(dr["Pallate_Type"]) : "",
 								Shipper_Qty = dr["Shipper_Qty"] != DBNull.Value ? Convert.ToInt64(dr["Shipper_Qty"]) : 0,
