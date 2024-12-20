@@ -1,5 +1,5 @@
 ﻿@using System.Globalization;
-@model (Dispatch_System.Weighment Obj, int PurposeType, bool isPrint)
+@model (dynamic Obj, int PurposeType, bool isPrint)
 
 @{
 	ViewData["Title"] = "Weighment In Slip";
@@ -50,32 +50,41 @@
 
 		<div class="m-2">
 			<div class="form-group row">
-				<label class="col-sm-3 col-form-label">RFID No. <span class="float-right">:</span> </label>
+				<label class="col-sm-2 col-form-label">RFID No. <span class="float-right">:</span> </label>
 				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.RFID_No) ? Model.Obj.RFID_No : "") </label>
-				<label class="col-sm-3 col-form-label">Weigh In Date & Time<span class="float-right">:</span> </label>
+				<label class="col-sm-2 col-form-label">Weigh In Date & Time<span class="float-right">:</span> </label>
 				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.WeighIn_Wt_Dt) ? Model.Obj.WeighIn_Wt_Dt : "") </label>
 			</div>
 
 			<div class="form-group row">
-				<label class="col-sm-3 col-form-label">Vehicle No <span class="float-right">:</span> </label>
+				<label class="col-sm-2 col-form-label">Vehicle No. <span class="float-right">:</span> </label>
 				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Vehicle_No) ? Model.Obj.Vehicle_No : "") </label>
-				<label class="col-sm-3 col-form-label">In Weight  <span class="float-right">:</span> </label>
+				<label class="col-sm-2 col-form-label">In Weight  <span class="float-right">:</span> </label>
 				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null ? Model.Obj.WeighIn_Wt.ToString() : "")  &nbsp; @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.UOM) ? Model.Obj.UOM : "") </label>
 			</div>
 			<br />
 
 			<div class="form-group row">
-				<label class="col-sm-3 col-form-label">Required Shipper Qty <span class="float-right">:</span> </label>
-				<label class="col-sm-8 col-form-label ml-0"> @(Model.Obj != null ? Model.Obj.Required_Shipper.ToString() : "") </label>
+				<label class="col-sm-2 col-form-label">Export Indent No. <span class="float-right">:</span> </label>
+				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.DI_No) ? Model.Obj.DI_No : "") </label>
+				<label class="col-sm-2 col-form-label">Destination Country <span class="float-right">:</span> </label>
+				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Dest_Country) ? Model.Obj.Dest_Country : "") </label>
 			</div>
-			
+
 			<div class="form-group row">
-				<label class="col-sm-3 col-form-label">Transporter Name  <span class="float-right">:</span> </label>
+				<label class="col-sm-2 col-form-label">Indent Qty In Bottles <span class="float-right">:</span> </label>
+				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null ? Model.Obj.Required_Bottle : "") </label>
+				<label class="col-sm-2 col-form-label">Mode of Dispatch <span class="float-right">:</span> </label>
+				<label class="col-sm-3 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Dispatch_Mode) ? Model.Obj.Dispatch_Mode : "") </label>
+			</div>
+
+			<div class="form-group row">
+				<label class="col-sm-2 col-form-label">Transporter Name  <span class="float-right">:</span> </label>
 				<label class="col-sm-8 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.Transporter_Name) ? Model.Obj.Transporter_Name : "") </label>
 			</div>
 
 			<div class="form-group row">
-				<label class="col-sm-3 col-form-label">Remarks  <span class="float-right">:</span> </label>
+				<label class="col-sm-2 col-form-label">Remarks  <span class="float-right">:</span> </label>
 				<label class="col-sm-8 col-form-label ml-0"> @(Model.Obj != null && !string.IsNullOrEmpty(Model.Obj.WeighIn_Wt_Note) ? Model.Obj.WeighIn_Wt_Note : "") </label>
 			</div>
 
@@ -93,9 +102,9 @@
 						</tr>
 					</thead>
 					<tbody>
-						@if (Model.Obj.listWeighmentDtls != null && Model.Obj.listWeighmentDtls.Count() > 0)
+						@if (Model.Obj.listWeighmentDtls != null && ((List<Dispatch_System.WeighmentDtls>)Model.Obj.listWeighmentDtls).Count() > 0)
 						{
-							var list = Model.Obj.listWeighmentDtls.GroupBy(x => new
+							var list = ((List<Dispatch_System.WeighmentDtls>)Model.Obj.listWeighmentDtls).GroupBy(x => new
 							{
 								Common_No = x.Common_No,
 								Product_Desc = x.Product_Desc,
@@ -108,7 +117,6 @@
 							foreach (var item in list)
 							{
 								<tr>
-
 									<td width="10%">@item.Key.Common_No</td>
 									<td>@item.Key.Product_Desc</td>
 									<td class="text-center">@item.Key.Desp_Place</td>

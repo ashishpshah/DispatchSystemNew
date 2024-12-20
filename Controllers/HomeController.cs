@@ -3780,7 +3780,6 @@ namespace Dispatch_System.Controllers
 
 									}
 
-
 									if (string.IsNullOrEmpty(error) && shipperData.ShipperQRCode_Data.Any(x => x.Action.ToLower().Contains("delete")))
 									{
 										var len = 0;
@@ -3844,7 +3843,14 @@ namespace Dispatch_System.Controllers
 
 												if (dt != null && dt.Rows.Count > 0)
 													foreach (DataRow dr in dt.Rows)
-														error += $"Duplicates Shipper QR Code found in Database => " + (dr["shipper_qrcode"] != DBNull.Value ? Convert.ToString(dr["shipper_qrcode"]) : "") + System.Environment.NewLine;
+														error += $"Duplicates Shipper QR Code found in MySQL Database => " + (dr["shipper_qrcode"] != DBNull.Value ? Convert.ToString(dr["shipper_qrcode"]) : "") + System.Environment.NewLine;
+
+												dt = DataContext.ExecuteQuery("SELECT shipper_qrcode FROM SHIPPER_QRCODE " +
+													"WHERE plant_id = " + plant_id + " AND LOWER(action) = 'add' AND shipper_qrcode IN (" + string.Join(", ", listShipperQRCode.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ")");
+
+												if (dt != null && dt.Rows.Count > 0)
+													foreach (DataRow dr in dt.Rows)
+														error += $"Duplicates Shipper QR Code found in Oracle Database => " + (dr["shipper_qrcode"] != DBNull.Value ? Convert.ToString(dr["shipper_qrcode"]) : "") + System.Environment.NewLine;
 
 												len += 500;
 											}
@@ -3884,7 +3890,14 @@ namespace Dispatch_System.Controllers
 
 												if (dt != null && dt.Rows.Count > 0)
 													foreach (DataRow dr in dt.Rows)
-														error += $"Duplicate Bottle QRCode in Database : " + (dr["bottle_qrcode"] != DBNull.Value ? Convert.ToString(dr["bottle_qrcode"]) : "") + System.Environment.NewLine;
+														error += $"Duplicate Bottle QRCode in MySQL Database : " + (dr["bottle_qrcode"] != DBNull.Value ? Convert.ToString(dr["bottle_qrcode"]) : "") + System.Environment.NewLine;
+
+												dt = DataContext.ExecuteQuery_SQL("SELECT bottle_qrcode FROM bottle_qrcode " +
+													"WHERE plant_id = " + plant_id + " AND bottle_qrcode IN (" + string.Join(", ", listBottleQRCode.Skip(len).Take(300).Select(x => "'" + x.BottleQRCode + "'").ToArray()) + ")");
+
+												if (dt != null && dt.Rows.Count > 0)
+													foreach (DataRow dr in dt.Rows)
+														error += $"Duplicates Shipper QR Code found in Oracle Database => " + (dr["shipper_qrcode"] != DBNull.Value ? Convert.ToString(dr["shipper_qrcode"]) : "") + System.Environment.NewLine;
 
 												len += 300;
 											}

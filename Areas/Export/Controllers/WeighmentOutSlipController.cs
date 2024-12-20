@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using System.Data;
+using System.Dynamic;
 
 namespace Dispatch_System.Areas.Export.Controllers
 {
-    [Area("Export")]
+	[Area("Export")]
 	public class WeighmentOutSlipController : BaseController<ResponseModel<WeighmentOutSlip>>
 	{
 		#region Loading
@@ -28,7 +29,30 @@ namespace Dispatch_System.Areas.Export.Controllers
 		{
 			DataSet ds = new DataSet();
 
-			var obj = new Weighment();
+			dynamic obj = new ExpandoObject();
+
+			obj.Common_No = "";
+			obj.Vehicle_No = "";
+			obj.DI_No = "";
+			obj.Dest_Country = "";
+			obj.Dispatch_Mode = "";
+			obj.Transporter_Name = "";
+			obj.Party_Name = "";
+			obj.WeighIn_Wt = 0;
+			obj.WeighIn_Wt_Dt = "";
+			obj.WeighIn_Wt_Note = "";
+			obj.WeighOut_Wt = 0;
+			obj.WeighOut_Wt_Dt = "";
+			obj.WeighOut_Wt_Note = "";
+			obj.Net_Wt = 0;
+			obj.Tolerance_Wt = 0;
+			obj.RFID_No = "";
+			obj.UOM = "";
+			obj.Required_Shipper = 0;
+			obj.Loaded_Shipper = 0;
+			obj.Required_Bottle = 0;
+
+			obj.listWeighmentDtls = new List<WeighmentDtls>();
 
 			if (!string.IsNullOrEmpty(Vehicle_No) || Gate_In_Out_Id > 0)
 			{
@@ -44,25 +68,26 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 					if (ds != null && ds.Tables.Count > 1 && ds.Tables[1].Rows.Count > 0)
 					{
-						obj = new Weighment()
-						{
-							Common_No = ds.Tables[1].Rows[0]["MDA_NO"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["MDA_NO"]) : "",
-							Vehicle_No = ds.Tables[1].Rows[0]["VEHICLE_NO"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["VEHICLE_NO"]) : "",
-							Transporter_Name = ds.Tables[1].Rows[0]["TRANSPORTER_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["TRANSPORTER_NAME"]) : "",
-							Party_Name = ds.Tables[1].Rows[0]["PARTY_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["PARTY_NAME"]) : "",
-							WeighIn_Wt = ds.Tables[1].Rows[0]["WEIGH_IN_WT"] != DBNull.Value ? Convert.ToDouble(ds.Tables[1].Rows[0]["WEIGH_IN_WT"]) : 0,
-							WeighIn_Wt_Dt = ds.Tables[1].Rows[0]["WEIGH_IN_WT_DT"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["WEIGH_IN_WT_DT"]) : "",
-							WeighIn_Wt_Note = ds.Tables[1].Rows[0]["WEIGH_IN_WT_NOTE"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["WEIGH_IN_WT_NOTE"]) : "",
-							WeighOut_Wt = ds.Tables[1].Rows[0]["WEIGH_OUT_WT"] != DBNull.Value ? Convert.ToDouble(ds.Tables[1].Rows[0]["WEIGH_OUT_WT"]) : 0,
-							WeighOut_Wt_Dt = ds.Tables[1].Rows[0]["WEIGH_OUT_WT_DT"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["WEIGH_OUT_WT_DT"]) : "",
-							WeighOut_Wt_Note = ds.Tables[1].Rows[0]["WEIGH_OUT_WT_NOTE"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["WEIGH_OUT_WT_NOTE"]) : "",
-							Net_Wt = ds.Tables[1].Rows[0]["NET_WT"] != DBNull.Value ? Convert.ToDouble(ds.Tables[1].Rows[0]["NET_WT"]) : 0,
-							Tolerance_Wt = ds.Tables[1].Rows[0]["TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(ds.Tables[1].Rows[0]["TOLERANCE_WT"]) : 0,
-							RFID_No = ds.Tables[1].Rows[0]["RFIDSRNO"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["RFIDSRNO"]) : "",
-							UOM = ds.Tables[1].Rows[0]["WEIGHT_UOM"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["WEIGHT_UOM"]) : "",
-							Required_Shipper = ds.Tables[1].Rows[0]["Expected_Shipper"] != DBNull.Value ? Convert.ToInt32(ds.Tables[1].Rows[0]["Expected_Shipper"]) : 0,
-							Loaded_Shipper = ds.Tables[1].Rows[0]["Loaded_Shipper"] != DBNull.Value ? Convert.ToInt32(ds.Tables[1].Rows[0]["Loaded_Shipper"]) : 0
-						};
+						obj.Common_No = ds.Tables[1].Rows[0]["MDA_NO"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["MDA_NO"]) : "";
+						obj.Vehicle_No = ds.Tables[1].Rows[0]["VEHICLE_NO"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["VEHICLE_NO"]) : "";
+						obj.DI_No = ds.Tables[1].Rows[0]["DI_NO"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["DI_NO"]) : "";
+						obj.Dest_Country = ds.Tables[1].Rows[0]["Dest_Country"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["Dest_Country"]) : "";
+						obj.Dispatch_Mode = ds.Tables[1].Rows[0]["Dispatch_Mode"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["Dispatch_Mode"]) : "";
+						obj.Transporter_Name = ds.Tables[1].Rows[0]["TRANSPORTER_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["TRANSPORTER_NAME"]) : "";
+						obj.Party_Name = ds.Tables[1].Rows[0]["PARTY_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["PARTY_NAME"]) : "";
+						obj.WeighIn_Wt = ds.Tables[1].Rows[0]["WEIGH_IN_WT"] != DBNull.Value ? Convert.ToDouble(ds.Tables[1].Rows[0]["WEIGH_IN_WT"]) : 0;
+						obj.WeighIn_Wt_Dt = ds.Tables[1].Rows[0]["WEIGH_IN_WT_DT"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["WEIGH_IN_WT_DT"]) : "";
+						obj.WeighIn_Wt_Note = ds.Tables[1].Rows[0]["WEIGH_IN_WT_NOTE"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["WEIGH_IN_WT_NOTE"]) : "";
+						obj.WeighOut_Wt = ds.Tables[1].Rows[0]["WEIGH_OUT_WT"] != DBNull.Value ? Convert.ToDouble(ds.Tables[1].Rows[0]["WEIGH_OUT_WT"]) : 0;
+						obj.WeighOut_Wt_Dt = ds.Tables[1].Rows[0]["WEIGH_OUT_WT_DT"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["WEIGH_OUT_WT_DT"]) : "";
+						obj.WeighOut_Wt_Note = ds.Tables[1].Rows[0]["WEIGH_OUT_WT_NOTE"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["WEIGH_OUT_WT_NOTE"]) : "";
+						obj.Net_Wt = ds.Tables[1].Rows[0]["NET_WT"] != DBNull.Value ? Convert.ToDouble(ds.Tables[1].Rows[0]["NET_WT"]) : 0;
+						obj.Tolerance_Wt = ds.Tables[1].Rows[0]["TOLERANCE_WT"] != DBNull.Value ? Convert.ToDecimal(ds.Tables[1].Rows[0]["TOLERANCE_WT"]) : 0;
+						obj.RFID_No = ds.Tables[1].Rows[0]["RFIDSRNO"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["RFIDSRNO"]) : "";
+						obj.UOM = ds.Tables[1].Rows[0]["WEIGHT_UOM"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["WEIGHT_UOM"]) : "";
+						obj.Required_Shipper = ds.Tables[1].Rows[0]["Expected_Shipper"] != DBNull.Value ? Convert.ToInt32(ds.Tables[1].Rows[0]["Expected_Shipper"]) : 0;
+						obj.Loaded_Shipper = ds.Tables[1].Rows[0]["Loaded_Shipper"] != DBNull.Value ? Convert.ToInt32(ds.Tables[1].Rows[0]["Loaded_Shipper"]) : 0;
+						obj.Required_Bottle = ds.Tables[1].Rows[0]["BAG_NOS"] != DBNull.Value ? Convert.ToInt32(ds.Tables[1].Rows[0]["BAG_NOS"]) : 0;
 
 						obj.listWeighmentDtls = new List<WeighmentDtls>();
 
@@ -81,7 +106,6 @@ namespace Dispatch_System.Areas.Export.Controllers
 								UOM = dr["UOM"] != DBNull.Value ? Convert.ToString(dr["UOM"]) : ""
 							});
 					}
-
 				}
 				catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
 			}

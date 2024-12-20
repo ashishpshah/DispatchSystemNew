@@ -40,20 +40,15 @@ else if (Model.isPrint == true)
 											<div class="form-group row">
 												<label for="inputSearch" class="col-sm-2 col-form-label text-right">MDA No.</label>
 												<input type="text" id="inputSearch" class="col-sm-3 form-control form-control-sm" autocomplete="off" />
-											</div>
-																						
-                                            <div class="form-group row">
+											 
                                                 <label class="col-sm-2 col-form-label text-right">With Detail </label>
-                                                <div class="col-sm-4">
+                                                <div class="col-sm-1">
                                                     <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success border-0">
                                                         <input type="checkbox" class="custom-control-input" id="switch_Status" onchange="fnChange_Switch(this, 'label_Switch_Status')">
                                                         <label class="custom-control-label pt-2" for="switch_Status" id="label_Switch_Status" data-true="Yes" data-false="No">No</label>
                                                     </div>
                                                 </div>
-                                            </div>
-											
-                                            <div class="form-group row col-sm-4 offset-sm-2 text-center ml-5 pl-5">
-                                                <button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+                                                <button type="button" class="btn btn-info btn-flat col-sm-2 ml-3" onclick="fnLoad_DataTable()">Search</button>
                                             </div>
 										</div>
 									</div>
@@ -127,10 +122,15 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 				<tr>
 					<td>Export Indent No. : <b>@Model.listPallate[0].DI_No</b></td>
 					<td>MDA No. : <b>@Model.listPallate[0].MDA_No</b></td>
-					<td>Party Name : @Model.listPallate[0].Party_Name</td>
+					<td colspan="2">Party Name : @Model.listPallate[0].Party_Name</td>
 				</tr>
 				<tr>
-					<td>No. of Shipper : <b>@Model.listPallate[0].Required_Shipper</b> &nbsp;&nbsp;&nbsp; No. of Bottle : <b>@Model.listPallate[0].Bag_Nos</b></td>
+					<td colspan="2">Destination Country : <b>@Model.listPallate[0].Dest_Country</b></td>
+					<td colspan="2">Mode of Dispatch : @Model.listPallate[0].Dispatch_Mode_Text</td>
+				</tr>
+				<tr>
+					<td>No. of Shipper : <b>@Model.listPallate[0].Required_Shipper</b> </td>
+					<td>No. of Bottle : <b>@Model.listPallate[0].Bag_Nos</b></td>
 					<td>Dispatch Place : @Model.listPallate[0].Desp_Place</td>
 					<td>Distance : @Model.listPallate[0].Dist</td>
 				</tr>
@@ -152,6 +152,7 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 							Gate_Out_dt = x.Key.Gate_Out_dt,
 							Expected_Shipper = x.Sum(y => (decimal)y.Expected_Shipper),
 							Loaded_Shipper = x.Sum(y => (decimal)y.Loaded_Shipper),
+							Loaded_Bottle = x.Sum(y => (decimal)y.Loaded_Bottle),
 							Pallate_Count = x.Count()
 						})
 						.ToList<dynamic>();
@@ -167,7 +168,8 @@ else if (Model.listPallate != null && Model.listPallate.Count() > 0)
 
 						<tr style="background-color: rgba(0, 0, 0, .05);">
 							<td colspan="2">No. of Pallate : <b>@item.Pallate_Count</b> </td>
-							<td colspan="4">No. of Shipper : <b>@item.Expected_Shipper</b></td>
+							<td colspan="2">No. of Shipper : <b>@item.Expected_Shipper</b></td>
+							<td colspan="2">No. of Bottle : <b>@item.Loaded_Bottle</b></td>
 						</tr>
 
 						<tr>
