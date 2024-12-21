@@ -1,0 +1,218 @@
+﻿@{
+	ViewData["Title"] = "Invoice";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+}
+
+
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-12">
+				<h1 class="font-weight-bold">Invoice</h1>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+<section class="content p-0">
+	<div class="container-fluid p-0">
+		<div class="row no-gutters">
+			<div class="col-12 card">
+				<div class="card-body pb-0">
+					<div class="panel-divider">
+						<span>Search Details</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+								<div class="form-horizontal">
+									<div class="card-body py-1 px-0">
+										<div class="form-group row">
+											<label for="inputSearch" class="col-sm-2 col-form-label">Export Indent No.</label>
+											<div class="col-sm-4">
+												<div class="input-group input-group-sm">
+													<input type="text" id="inputSearch" class="form-control form-control-sm">
+													<span class="input-group-append ml-2">
+														<button type="button" class="btn btn-info btn-flat mr-2" onclick="GetInvoice()">Search</button>
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="panel-divider">
+						<span>Invoice Details</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+								<table id="table_Invoice" class="table table-bordered table-striped w-100"></table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+@section Scripts {
+
+	<script type="text/javascript">
+
+		$(function () {
+
+			ShowLoader(true);
+
+			$('table#table_Invoice').DataTable({
+				destroy: true,
+				sAjaxSource: '@Url_RootToController/GetInvoice?searchTerm=&IsDataTable=true',
+				bServerSide: true,
+				bProcessing: true,
+				bSearchable: true,
+				bSort: false,
+				paging: true,
+				lengthChange: true,
+				searching: true,
+				ordering: true,
+				info: true,
+				autoWidth: true,
+				responsive: true,
+				order: [[1, 'asc']],
+				pageLength: 50,
+				lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+				language: { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+				initComplete: function (settings, json) { ShowLoader(false); },
+				fnServerParams: function (aoData) { },
+				columns: [
+					{ "title": "Invoice No.", "data": "invoice_No", "autoWidth": true, "searchable": true },
+					{ "title": "Invoice Date", "data": "invoice_Date", "autoWidth": true, "searchable": true },
+					{ "title": "Order Ref No.", "data": "order_Ref_No", "autoWidth": true, "searchable": true },
+					{ "title": "Order Ref Date", "data": "order_Ref_Date", "autoWidth": true, "searchable": true },
+					{ "title": "Performa Invoice No.", "data": "performa_Invoice_No", "autoWidth": true, "searchable": true },
+					{ "title": "Performa Invoice Date", "data": "performa_Invoice_Date", "autoWidth": true, "searchable": true },
+					{ "title": "Indent No.", "data": "indent_No", "autoWidth": true, "searchable": true },
+					{ "title": "Plant MDA No.", "data": "plant_MDA_No", "autoWidth": true, "searchable": true },
+					{ "title": "Port Loading", "data": "port_Loading", "autoWidth": true, "searchable": true },
+					{ "title": "Port Discharge", "data": "port_Discharge", "autoWidth": true, "searchable": true },
+					{ "title": "Product Description", "data": "product_Desc", "autoWidth": true, "searchable": true },
+					{ "title": "Qty", "data": "qty", "autoWidth": true, "searchable": true }
+				],
+				fixedColumns: true,
+				dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+					"<'row'<'col-sm-12'tr>>" +
+					"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+				select: { style: 'multi', selector: 'td:first-child' }
+			});
+
+			$('table#table_Invoice thead th.no_sorting').removeClass('sorting');
+			$('table#table_Invoice thead th.no_sorting').removeClass('sorting_asc');
+			$('table#table_Invoice thead th.no_sorting').removeClass('sorting_desc');
+
+			$('table#table_Invoice').css('width', '100%');
+
+		});
+
+		function GetInvoice() {
+
+			if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
+
+			var searchTerm = $('#inputSearch').val();
+
+			if (typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) {
+
+				var html = '<div class="row col-12 mb-3">' +
+					'<button type="button" class="btn btn-info btn-flat px-3 mr-3" onclick="fnSelect_Invoice()"> Save All </button>' +
+					'<button type="button" class="btn btn-danger btn-flat px-3 mr-3" onclick="fnClose_Modal()">Close</button>' +
+					'</div><hr />' +
+					'<div class="row col-12 w-100">' +
+					'<table id="table_Invoice_Select" class="table table-bordered table-striped w-100">';
+				// '<thead> <tr><th><input class="dt-select-checkbox dt-select-checkbox-all" type="checkbox"></th>' +
+				//     '<th width="5%">Sr.No.</th>' +
+				//     '<th>Pallate Number</th>' +
+				//     '<th>Pallate Type</th>' +
+				//     '<th width="10%">Shipper Qty</th>' +
+				//     '<th width="10%">Bottle Qty</th>' +
+				//     '<th>Dispatch Mode</th>' +
+				//     '</tr></thead>';
+
+				html = html + '</table></div>';
+
+				$('#modal-xl .modal-body').html('');
+				$('#modal-xl .modal-body').append(html);
+
+				$('#modal-xl .modal-title').html('Invoice details');
+
+				$('#modal-xl').show();
+
+				if ($.fn.DataTable.isDataTable('#modal-xl .modal-body table#table_Invoice_Select')) {
+					$('#modal-xl .modal-body table#table_Invoice_Select').DataTable().destroy();
+				}
+
+				ShowLoader(true);
+
+				var tablePallateSelect = $('#modal-xl .modal-body table#table_Invoice_Select').DataTable({
+					destroy: true,
+					sAjaxSource: '@Url_RootToController/GetInvoice?searchTerm=' + $('#inputSearch').val(),
+					bServerSide: true,
+					bProcessing: true,
+					bSearchable: true,
+					bSort: false,
+					paging: true,
+					lengthChange: true,
+					searching: true,
+					ordering: true,
+					info: true,
+					autoWidth: true,
+					responsive: true,
+					order: [[1, 'asc']],
+					pageLength: 50,
+					lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+					language: { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
+					initComplete: function (settings, json) { ShowLoader(false); },
+					fnServerParams: function (aoData) { },
+					columns: [
+						{ "title": "Invoice No.", "data": "invoice_No", "autoWidth": true, "searchable": true },
+						{ "title": "Invoice Date", "data": "invoice_Date", "autoWidth": true, "searchable": true },
+						{ "title": "Order Ref No.", "data": "order_Ref_No", "autoWidth": true, "searchable": true },
+						{ "title": "Order Ref Date", "data": "order_Ref_Date", "autoWidth": true, "searchable": true },
+						{ "title": "Performa Invoice No.", "data": "performa_Invoice_No", "autoWidth": true, "searchable": true },
+						{ "title": "Performa Invoice Date", "data": "performa_Invoice_Date", "autoWidth": true, "searchable": true },
+						{ "title": "Indent No.", "data": "indent_No", "autoWidth": true, "searchable": true },
+						{ "title": "Plant MDA No.", "data": "plant_MDA_No", "autoWidth": true, "searchable": true },
+						{ "title": "Port Loading", "data": "port_Loading", "autoWidth": true, "searchable": true },
+						{ "title": "Port Discharge", "data": "port_Discharge", "autoWidth": true, "searchable": true },
+						{ "title": "Product Description", "data": "product_Desc", "autoWidth": true, "searchable": true },
+						{ "title": "Qty", "data": "qty", "autoWidth": true, "searchable": true }
+					],
+					fixedColumns: true,
+					dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+						"<'row'<'col-sm-12'tr>>" +
+						"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+					select: { style: 'multi', selector: 'td:first-child' }
+				});
+
+				$('#modal-xl .modal-body table thead th.no_sorting').removeClass('sorting');
+				$('#modal-xl .modal-body table thead th.no_sorting').removeClass('sorting_asc');
+				$('#modal-xl .modal-body table thead th.no_sorting').removeClass('sorting_desc');
+
+				$('#modal-xl .modal-body table').css('width', '100%');
+
+			}
+
+		}
+
+		function fnSelect_Invoice() {
+
+			ajaxPost('@Url_RootToController/Save?searchTerm=' + $('#inputSearch').val(), null)
+		}
+
+		function fnSubmitForm_Success(response, $type) {
+			window.location.reload();
+		}
+
+
+	</script>
+
+}

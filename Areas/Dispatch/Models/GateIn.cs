@@ -18,7 +18,8 @@ namespace Dispatch_System
 		public string Vendor_Name { get; set; }
 		public bool Is_Common_Dtls_Manually { get; set; }
 		public string Truck_No { get; set; }
-		public string Transporter_Code { get; set; }
+        public string Dest_County { get; set; }
+        public string Transporter_Code { get; set; }
 		public string Transporter_Name { get; set; }
 		public string Driver_Id_Type { get; set; }
 		public string Driver_Id_Number { get; set; }
