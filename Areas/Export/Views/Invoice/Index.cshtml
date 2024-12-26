@@ -28,7 +28,7 @@
 								<div class="form-horizontal">
 									<div class="card-body py-1 px-0">
 										<div class="form-group row">
-											<label for="inputSearch" class="col-sm-2 col-form-label">Export Indent No.</label>
+											<label for="inputSearch" class="col-sm-2 col-form-label">Invoice No.</label>
 											<div class="col-sm-4">
 												<div class="input-group input-group-sm">
 													<input type="text" id="inputSearch" class="form-control form-control-sm">
@@ -97,7 +97,15 @@
 					{ "title": "Port Loading", "data": "port_Loading", "autoWidth": true, "searchable": true },
 					{ "title": "Port Discharge", "data": "port_Discharge", "autoWidth": true, "searchable": true },
 					{ "title": "Product Description", "data": "product_Desc", "autoWidth": true, "searchable": true },
-					{ "title": "Qty", "data": "qty", "autoWidth": true, "searchable": true }
+					{ "title": "Qty", "data": "qty", "autoWidth": true, "searchable": true },
+					{
+						"title": "Action", "data": null, "autoWidth": false, "searchable": false, "width": "5%",
+						"render": function (data, type, row, meta) {
+							return '<div class="btn-group"><a class="btn btn-info btn-sm btn-flat" href="javascript:void(0);" '
+								+ 'onclick="ajaxPost(\'@Url_RootToController/Save?searchTerm='
+								+ data.invoice_No + '&Product_Desc=' + data.product_Desc + '\', null)"><span>Sync</span></a></div>';
+						}
+					}
 				],
 				fixedColumns: true,
 				dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
@@ -205,7 +213,7 @@
 
 		function fnSelect_Invoice() {
 
-			ajaxPost('@Url_RootToController/Save?searchTerm=' + $('#inputSearch').val(), null)
+			ajaxPost('@Url_RootToController/Save?searchTerm=' + $('#inputSearch').val(), null);
 		}
 
 		function fnSubmitForm_Success(response, $type) {
