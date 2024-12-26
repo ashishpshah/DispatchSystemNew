@@ -1,738 +1,825 @@
 ﻿@{
-    var listMenu = Common.GetUserMenuAccesses();
-    var listPlant = Common.GetUserPlantAccesses();
+	var listMenu = Common.GetUserMenuAccesses();
+	var listPlant = Common.GetUserPlantAccesses();
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>@ViewData["Title"] | Dispatch System</title>
+	<title>@ViewData["Title"] | Dispatch System</title>
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
 
-    <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css">
+	<link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css">
 
-    <link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
-    <link href="~/plugins/sweetalert2/sweetalert2.css" rel="stylesheet" />
+	<link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
+	<link href="~/plugins/sweetalert2/sweetalert2.css" rel="stylesheet" />
 
-    <!-- daterange picker -->
-    <link href="~/plugins/daterangepicker/daterangepicker.css" rel="stylesheet" />
+	<!-- daterange picker -->
+	<link href="~/plugins/daterangepicker/daterangepicker.css" rel="stylesheet" />
 
-    <link href="~/plugins/icheck-bootstrap/icheck-bootstrap.min.css" rel="stylesheet" />
+	<link href="~/plugins/icheck-bootstrap/icheck-bootstrap.min.css" rel="stylesheet" />
 
-    <!-- DataTables -->
-    @*<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />*@
+	<!-- DataTables -->
+	@*<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />*@
 
-    <link rel="stylesheet" href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-    <link rel="stylesheet" href="~/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-    <link href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
-    <link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css" rel="stylesheet" />
+	<link rel="stylesheet" href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+	<link rel="stylesheet" href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+	<link rel="stylesheet" href="~/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+	<link href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+	<link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css" rel="stylesheet" />
 
-    @*<link rel="stylesheet" href="~/dist/css/adminlte.min.css">*@
+	@*<link rel="stylesheet" href="~/dist/css/adminlte.min.css">*@
 
-    <link href="~/dist/css/adminlte.min.css" rel="stylesheet" />
+	<link href="~/dist/css/adminlte.min.css" rel="stylesheet" />
 
-    <style type="text/css">
-        .panel-divider {
-            text-align: left;
-            border: 1px solid #979faf;
-            line-height: 0.1em;
-            margin-bottom: 1.5rem !important;
-            border-radius: 0.25rem
-        }
+	<style type="text/css">
+		.panel-divider {
+			text-align: left;
+			border: 1px solid #979faf;
+			line-height: 0.1em;
+			margin-bottom: 1.5rem !important;
+			border-radius: 0.25rem
+		}
 
-            .panel-divider > span {
-                background: #fff;
-                padding: 0 1rem;
-                margin-left: 1rem !important;
-                font-size: 1.25rem;
-                font-weight: bold;
-            }
+			.panel-divider > span {
+				background: #fff;
+				padding: 0 1rem;
+				margin-left: 1rem !important;
+				font-size: 1.25rem;
+				font-weight: bold;
+			}
 
-            .panel-divider > div.row {
-                margin: 1rem 2rem 0rem 2rem !important;
-            }
+			.panel-divider > div.row {
+				margin: 1rem 2rem 0rem 2rem !important;
+			}
 
-            .panel-divider table td {
-                line-height: normal !important;
-            }
+			.panel-divider table td {
+				line-height: normal !important;
+			}
 
-        .b-radius-0 {
-            border-radius: 0 !important;
-        }
+		.b-radius-0 {
+			border-radius: 0 !important;
+		}
 
-        .select2-selection__rendered {
-            font-size: .875rem !important;
-        }
+		.select2-selection__rendered {
+			font-size: .875rem !important;
+		}
 
-        .col-form-label {
-            padding-top: 0 !important;
-        }
+		.col-form-label {
+			padding-top: 0 !important;
+		}
 
-        .form-group {
-            margin-bottom: 0.5rem !important;
-        }
+		.form-group {
+			margin-bottom: 0.5rem !important;
+		}
 
-        .dataTables_wrapper {
-            width: 100% !important;
-        }
+		.dataTables_wrapper {
+			width: 100% !important;
+		}
 
-        .navbar-nav > .user-menu > .dropdown-menu > li.user-header {
-            height: 200px !important;
-        }
+		.navbar-nav > .user-menu > .dropdown-menu > li.user-header {
+			height: 200px !important;
+		}
 
-        .swal2-container {
-            z-index: 99999999 !important;
-        }
+		.swal2-container {
+			z-index: 99999999 !important;
+		}
 
-        .modal-backdrop {
-            height: auto;
-        }
+		.modal-backdrop {
+			height: auto;
+		}
 
-        tr.row-disabled {
-            background-color: rgba(255,0,0,.15) !important;
-        }
+		tr.row-disabled {
+			background-color: rgba(255,0,0,.15) !important;
+		}
 
-        .select2-container {
-            width: 100% !important;
-        }
+		.select2-container {
+			width: 100% !important;
+		}
 
-        .progress {
-            height: 0.3rem !important;
-        }
+		.progress {
+			height: 0.3rem !important;
+		}
 
-        .progress-bar {
-            background-color: #fff !important;
-        }
+		.progress-bar {
+			background-color: #fff !important;
+		}
 
-        .progress-description {
-            padding: 10px !important;
-        }
+		.progress-description {
+			padding: 10px !important;
+		}
 
-        .dropdown-item {
-            padding: 0.55rem 1rem !important;
-        }
+		.dropdown-item {
+			padding: 0.55rem 1rem !important;
+		}
 
-            .dropdown-item.disabled {
-                background-color: rgba(0,0,0,.1) !important;
-            }
+			.dropdown-item.disabled {
+				background-color: rgba(0,0,0,.1) !important;
+			}
 
-        .main-sidebar .dropdown-item:focus, .main-sidebar .dropdown-item:hover {
-            color: #16181b;
-            text-decoration: none;
-            background-color: rgba(0,0,0,.1) !important;
-        }
+		.main-sidebar .dropdown-item:focus, .main-sidebar .dropdown-item:hover {
+			color: #16181b;
+			text-decoration: none;
+			background-color: rgba(0,0,0,.1) !important;
+		}
 
-        .preloader_new {
-            display: -ms-flexbox;
-            display: flex;
-            /*background-color: #f4f6f9;*/
-            /*height: 100vh;*/
-            width: 100%;
-            transition: height 200ms linear;
-            position: fixed;
-            left: 0;
-            top: 50%;
-            z-index: 9999999;
-        }
+		.preloader_new {
+			display: -ms-flexbox;
+			display: flex;
+			/*background-color: #f4f6f9;*/
+			/*height: 100vh;*/
+			width: 100%;
+			transition: height 200ms linear;
+			position: fixed;
+			left: 0;
+			top: 50%;
+			z-index: 9999999;
+		}
 
-        .animation_loader {
-            border: 16px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 16px solid #29a349;
-            border-bottom: 16px solid #29a349;
-            width: 120px;
-            height: 120px;
-            -webkit-animation: spin 2s linear infinite;
-            animation: spin 2s linear infinite;
-        }
+		.animation_loader {
+			border: 16px solid #f3f3f3;
+			border-radius: 50%;
+			border-top: 16px solid #29a349;
+			border-bottom: 16px solid #29a349;
+			width: 120px;
+			height: 120px;
+			-webkit-animation: spin 2s linear infinite;
+			animation: spin 2s linear infinite;
+		}
 
-        @@-webkit-keyframes spin {
-            0% {
-                -webkit-transform: rotate(0deg);
-            }
+		@@-webkit-keyframes spin {
+			0% {
+				-webkit-transform: rotate(0deg);
+			}
 
-            100% {
-                -webkit-transform: rotate(360deg);
-            }
-        }
+			100% {
+				-webkit-transform: rotate(360deg);
+			}
+		}
 
-        @@keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
+		@@keyframes spin {
+			0% {
+				transform: rotate(0deg);
+			}
 
-            100% {
-                transform: rotate(360deg);
-            }
-        }
+			100% {
+				transform: rotate(360deg);
+			}
+		}
 
-        table.dataTable thead > tr > th.sorting {
-            padding-right: inherit !important;
-        }
+		table.dataTable thead > tr > th.sorting {
+			padding-right: inherit !important;
+		}
 
-        .modal-xl {
-            max-width: 90% !important;
-        }
+		.modal-xl {
+			max-width: 90% !important;
+		}
 
-        .modal {
-            overflow: auto !important;
-        }
+		.modal {
+			overflow: auto !important;
+		}
 
-        table {
-            line-height: normal !important;
-        }
+		table {
+			line-height: normal !important;
+		}
 
-        .eye-pass {
-            position: absolute;
-            margin-top: 15px;
-            top: -4px;
-            right: 0;
-            margin-right: 35px;
-            cursor: pointer;
-        }
+		.eye-pass {
+			position: absolute;
+			margin-top: 15px;
+			top: -4px;
+			right: 0;
+			margin-right: 35px;
+			cursor: pointer;
+		}
 
-        input[type=password]::-ms-reveal,
-        input[type=password]::-ms-clear {
-            display: none;
-        }
+		input[type=password]::-ms-reveal,
+		input[type=password]::-ms-clear {
+			display: none;
+		}
 
-        #tblmain_length {
-            text-align: left !important;
-        }
+		#tblmain_length {
+			text-align: left !important;
+		}
 
-        #tblDispatchCounty_length {
-            text-align: left !important;
-        }
+		#tblDispatchCounty_length {
+			text-align: left !important;
+		}
 
-        .dataTables_info {
-            text-align: left !important;
-        }
+		.dataTables_info {
+			text-align: left !important;
+		}
 
-        .table td, .table th {
-            padding: .35rem !important;
-            vertical-align: middle !important;
-        }
+		.table td, .table th {
+			padding: .35rem !important;
+			vertical-align: middle !important;
+		}
 
-        .table th {
-            border-top: none !important;
-        }
+		.table th {
+			border-top: none !important;
+		}
 
-        table tr.selected {
-            color: #fff !important;
-            background-color: #17a2b8 !important;
-        }
+		table tr.selected {
+			color: #fff !important;
+			background-color: #17a2b8 !important;
+		}
 
-        select-info {
-            padding-left: 1rem !important;
-        }
+		select-info {
+			padding-left: 1rem !important;
+		}
 
-        /* table.dataTable tr th.select-checkbox.selected::after {
-                            content: "✔";
-                            margin-top: -11px;
-                            margin-left: -4px;
-                            text-align: center;
-                            text-shadow: rgb(176, 190, 217) 1px 1px, rgb(176, 190, 217) -1px -1px, rgb(176, 190, 217) 1px -1px, rgb(176, 190, 217) -1px 1px;
-                        } */
-    </style>
+		/* table.dataTable tr th.select-checkbox.selected::after {
+																	content: "✔";
+																	margin-top: -11px;
+																	margin-left: -4px;
+																	text-align: center;
+																	text-shadow: rgb(176, 190, 217) 1px 1px, rgb(176, 190, 217) -1px -1px, rgb(176, 190, 217) 1px -1px, rgb(176, 190, 217) -1px 1px;
+																} */
+	</style>
 
-    @RenderSection("Styles", required: false)
+	@RenderSection("Styles", required: false)
 
-    <link rel="stylesheet" href="~/Dispatch_System.styles.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/Dispatch_System.styles.css" asp-append-version="true" />
 </head>
 <body class="@((listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1) ? "sidebar-mini":"control-sidebar-slide-open sidebar-collapse") layout-fixed layout-footer-fixed text-sm accent-teal layout-navbar-fixed">
-    <div class="wrapper">
-
-
-        <div class="preloader_new flex-column justify-content-center align-items-center d-none">
-            @*<img class="animation__wobble" src="~/images/anticicon.png" alt="Logo" height="60" width="60">*@
-            @*<img class="animation__shake" src="https://adminlte.io/themes/v3/dist/img/AdminLTELogo.png" alt="AdminLTELogo" height="60" width="60">*@
-            <div class="animation_loader"></div>
-        </div>
-
-
-        <nav class="main-header navbar navbar-expand text-sm bg-teal bg-primary navbar-light dropdown-legacy border-bottom-0" style="background-color: #007D39 !important;">
-
-            @if (listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1)
-            {
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link text-white" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-                    </li>
-                </ul>
-            }
-            else
-            {
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a href="#" class="brand-link bg-teal" style="background-color: #007D39 !important;">
-                            <span class="brand-text font-weight-light text-white font-weight-bolder ml-2">Dispatch System</span>
-                        </a>
-                    </li>
-                </ul>
-            }
-
-            <ul class="navbar-nav ml-auto text-white">
-                <li class="nav-item dropdown user-menu">
-                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
-                        <img src="~/no_image_available.png" class="user-image img-circle elevation-2" alt="User Image">
-                        <span class="d-none d-md-inline text-white">@Common.Get_Session(SessionKey.USER_NAME)</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-
-                        <li class="user-header bg-lightblue color-palette text-white">
-                            <img src="~/no_image_available.png" class="img-circle elevation-2" alt="User Image">
-                            <p>
-                                @Common.Get_Session(SessionKey.USER_NAME)
-                                <br> @Common.Get_Session(SessionKey.ROLE_NAME)
-                                <br> @Common.Get_Session(SessionKey.PLANT_NAME)
-                            </p>
-                        </li>
-
-                        <li class="user-footer">
-                            <a role="button" href="#" class="btn btn-default btn-flat d-none" onclick="ajaxPost('@Url.Action("GetUpdate", "Home", new { area = "" })', null)">Load Data</a>
-                            <a href="@Url.Action("Logout", "Home", new { area = "" })" class="btn btn-default btn-flat float-right">Logout</a>
-                        </li>
-                    </ul>
-                </li>
-                @*<li class="nav-item">
-                <a class="nav-link btn-dark-mode" data-widget="control-sidebar" data-slide="true" href="#" role="button">
-                <i class="fas fa-adjust"></i>
-                </a>
-                </li>*@
-            </ul>
-
-        </nav>
-
-        @if (listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1)
-        {
-            <aside class="main-sidebar elevation-4 sidebar-dark-teal">
-                <a href="@Url.Action("Index", "Home", new { area = "" })" class="brand-link bg-teal" style="background-color: #007D39 !important;">
-                    <span class="brand-text font-weight-light text-white font-weight-bolder ml-2">Dispatch System</span>
-                </a>
-
-                <div class="sidebar">
-                    @*<div class="user-panel mt-3 pb-3 mb-3 navbar p-0 d-flex">*@
-                    <div class="user-panel mt-3 pb-3 mb-3 navbar p-0 d-none">
-                        <ul class="navbar-nav">
-                            <li class="nav-item dropdown">
-                                <a class="nav-link bg-lightblue color-palette rounded dropdown-toggle text-bold" href="#" id="navbarDropdown_Plant" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    @Common.Get_Session(SessionKey.PLANT_NAME)
-                                </a>
-                                <div class="dropdown-menu py-0 m-0 w-100 bg-lightblue color-palette border-0" aria-labelledby="navbarDropdown_Plant" style="left: 0px; right: inherit;">
-                                    @if (listPlant != null)
-                                    {
-                                        foreach (var item in listPlant)
-                                        {
-                                            <a role="button" class="dropdown-item dropdown-item-plant bg-lightblue color-palette @(Common.Get_Session_Int(SessionKey.PLANT_ID) == item.PlantID ? "disabled text-bold":"")"
-                                               href="#" onclick="ajaxPost('@Url.Action("Change_Plant", "Home", new { area = "" })?id=@item.PlantID', window.location.href)">@item.Plant_Name</a>
-                                        }
-                                    }
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                    <nav class="mt-2">
-                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-
-                            <li class="nav-item">
-                                <a href="@Url.Action("Index", "Home", new { Area = ""})" class="nav-link">
-                                    <i class="nav-icon fas fa-home"></i>
-                                    <p> Dashboard </p>
-                                </a>
-                            </li>
-
-                            @{
-                                if (listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1)
-                                {
-                                    if (listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => x.Parent_Id).Select(x => x.Key).Count() == 1)
-                                        listMenu.RemoveAll(x => x.Id == listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => x.Parent_Id).Select(x => x.Key).FirstOrDefault());
-
-                                    if (listMenu.Any(x => x.Parent_Id == 0))
-                                        foreach (var menu in listMenu.Where(x => x.Parent_Id == 0).OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.Display_Name, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
-                                        {
-                                            if (listMenu.Any(x => x.Parent_Id == menu.Key.Id))
-                                            {
-                                                <li class="nav-item" style="padding-top:5px !important">
-                                                    <a href="#" class="nav-link">
-                                                        <i class="nav-icon fas fa-tachometer-alt"></i>
-                                                        <p>
-                                                            @menu.Key.Display_Name
-                                                            <i class="right fas fa-angle-left"></i>
-                                                        </p>
-                                                    </a>
-                                                    <ul class="nav nav-treeview">
-                                                        @foreach (var menuChild in listMenu.Where(x => x.Parent_Id == menu.Key.Id).OrderBy(x => x.DisplayOrder))
-                                                        {
-                                                            <li class="nav-item ml-3">
-                                                                @if (string.IsNullOrEmpty(menuChild.Url))
-                                                                {
-                                                                    <a href="@Url.Action("Index", menuChild.Controller, new { Area = menuChild.Area })" data-title="@menuChild.Display_Name" class="nav-link">
-                                                                        <i class="nav-icon fas fa-th"></i>
-                                                                        <p>@menuChild.Display_Name</p>
-                                                                    </a>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <a href="@(Url.Content("~/")+menuChild.Url)" data-title="@menuChild.Display_Name" class="nav-link">
-                                                                        <i class="nav-icon fas fa-th"></i>
-                                                                        <p>@menuChild.Display_Name</p>
-                                                                    </a>
-                                                                }
-                                                            </li>
-                                                        }
-                                                    </ul>
-                                                </li>
-                                            }
-                                            else
-                                            {
-                                                <li class="nav-item">
-                                                    @if (string.IsNullOrEmpty(menu.Key.Url))
-                                                    {
-                                                        <a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" class="nav-link">
-                                                            <i class="nav-icon fas fa-th"></i>
-                                                            <p> @menu.Key.Display_Name </p>
-                                                        </a>
-                                                    }
-                                                    else
-                                                    {
-                                                        <a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
-                                                            <i class="nav-icon fas fa-th"></i>
-                                                            <p>@menu.Key.Display_Name</p>
-                                                        </a>
-                                                    }
-                                                </li>
-                                                // <li class="nav-item">
-                                                //     <a href="@Url.Action("Index", "MDABatchNoList", new { Area = "Admin"})" class="nav-link">
-                                                //         <i class="nav-icon fas fa-th"></i>
-                                                //         <p> MDA Batch No List </p>
-                                                //     </a>
-                                                // </li>
-                                            }
-                                        }
-                                    else
-                                    {
-                                        foreach (var menu in listMenu.OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.Display_Name, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
-                                        {
-                                            <li class="nav-item">
-                                                @if (string.IsNullOrEmpty(menu.Key.Url))
-                                                {
-                                                    <a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" class="nav-link">
-                                                        <i class="nav-icon fas fa-th"></i>
-                                                        <p> @menu.Key.Display_Name </p>
-                                                    </a>
-                                                }
-                                                else
-                                                {
-                                                    <a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
-                                                        <i class="nav-icon fas fa-th"></i>
-                                                        <p>@menu.Key.Display_Name</p>
-                                                    </a>
-                                                }
-                                            </li>
-                                        }
-                                    }
-                                }
-                            }
-
-                        </ul>
-                    </nav>
-                </div>
-            </aside>
-        }
-
-        <div class="content-wrapper" style="min-height: 540.016px;">
-            @RenderBody()
-            
-            <div class="modal" id="modal-xl" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header text-white" style="background-color: #007D39 !important;">
-                            <h4 class="modal-title">Extra Large Modal</h4>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="fnClose_Modal()">
-                                <span class="text-white" aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <p>One fine body&hellip;</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal fade" id="modal-default">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h4 class="modal-title">Default Modal</h4>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <p>One fine body&hellip;</p>
-                        </div>
-                        <div class="modal-footer justify-content-between">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary">Save changes</button>
-                        </div>
-                    </div>
-                    <!-- /.modal-content -->
-                </div>
-                <!-- /.modal-dialog -->
-            </div>
-            <button style="display: none;" id="checkPassword" type="button" class="btn btn-default" data-toggle="modal" data-target="#modal-default_z">
-                Check Password
-            </button>
-            <div class="modal" id="modal-default_z" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <form id="formPasswordSave" asp-area="Admin" asp-controller="Home" asp-action="ChangePassword" method="post" class="form-horizontal" enctype="multipart/form-data" style="width:100%">
-                        <div class="modal-content">
-                            <div class="modal-header text-white" style="background-color: #007D39 !important;">
-                                <h4 class="modal-title">Change Password</h4>
-                                <button type="button" id="btnclose" class="close" data-dismiss="modal" aria-label="Close" onclick="fnClose_Modal()">
-                                    <span class="text-white" aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="form-group row">
-                                    <label for="Newpassword" class="col-sm-3 col-form-label">New Password<span style="color:red">*</span></label>
-                                    <div class="col-sm-8">
-                                        <input class="form-control" id="Newpassword" type="password" maxlength="50" name="Newpassword">
-                                        <i class="fa fa-eye eye-pass fa-eye-slash" onclick="fnChangeIcon('Newpassword','togglePassword2')" id="togglePassword2"></i>
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label for="ConfirmPassword" class="col-sm-3 col-form-label">Confirm Password<span style="color:red">*</span></label>
-                                    <div class="col-sm-8">
-                                        <input class="form-control" id="ConfirmPassword" type="password" maxlength="50" name="ConfirmPassword">
-                                        <i class="fa fa-eye eye-pass fa-eye-slash" onclick="fnChangeIcon('ConfirmPassword','togglePassword3')" id="togglePassword3"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-default pull-left" aria-label="Close" data-dismiss="modal" onclick="fnClose_Modal()">Close</button>
-                                <button type="button" class="btn btn-primary" onclick="btnSubmitPassword()">Save changes</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            @*<div class="modal fade in" id="modal-default" style="display: none;">
-            <div class="modal-dialog">
-            <div class="modal-content">
-            <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-            </button>
-            <h4 class="modal-title">Default Modal</h4>
-            </div>
-            <div class="modal-body">
-            <p>One fine body…</p>
-            </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
-            </div>
-            </div>
-
-            </div>
-
-            </div>*@
-
-        </div>
-
-        <footer class="main-footer" style="background-color: #007D39 !important;">
-            <div class="text-white">
-                @* <strong>Copyright &copy; 2022-2023 Padhya Software Technologies</strong> *@
-                All rights reserved.
-            </div>
-        </footer>
-
-    </div>
-
-    <!-- /.modal -->
-    <!-- REQUIRED SCRIPTS -->
-    <!-- jQuery -->
-    <script src="~/plugins/jquery/jquery.min.js"></script>
-
-    <script src="~/plugins/bootstrap/js/bootstrap.min.js"></script>
-
-    <script src="~/plugins/select2/js/select2.min.js"></script>
-    <script src="~/plugins/moment/moment.min.js"></script>
-
-    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
-
-    <!-- InputMask -->
-    <script src="~/plugins/moment/moment.min.js"></script>
-    <script src="~/plugins/inputmask/jquery.inputmask.min.js"></script>
-
-    <!-- date-range-picker -->
-    <script src="~/plugins/daterangepicker/daterangepicker.js"></script>
-
-    <!-- DataTables  & Plugins -->
-    @*<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>*@
-    <script src="~/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="~/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-    <script src="~/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-    <script src="~/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-    <script src="~/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-    <script src="~/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
-    <script src="~/plugins/datatables-buttons/js/buttons.print.min.js"></script>
-    <script src="~/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
-    <script src="~/plugins/datatables-select/js/datatables.select.min.js"></script>
-    <script src="~/plugins/datatables-select/js/select.bootstrap4.min.js"></script>
-    <script src="~/plugins/jszip/jszip.min.js"></script>
-    <script src="~/plugins/pdfmake/pdfmake.min.js"></script>
-    <script src="~/plugins/pdfmake/vfs_fonts.js"></script>
-
-    <script src="~/dist/js/adminlte.min.js"></script>
-
-    <script src="https://rawgit.com/RobinHerbots/jquery.inputmask/3.x/dist/jquery.inputmask.bundle.js"></script>
-
-    <script src="~/common.js"></script>
-
-    <script src="//cdn.rawgit.com/rainabba/jquery-table2excel/1.1.0/dist/jquery.table2excel.min.js"></script>
-
-    <script type="text/javascript">
-        $(document).ready(function () {
-
-            var checkPassword = '@ViewBag.CheckPassword';
-
-            if (checkPassword === "SM8c7ckHAFA=") {
-                $('#checkPassword').trigger('click');
-
-            }
-            //$(document).on('click', 'body .modal-close', function (ele) {
-            //	$(ele.target).parents('div[role="dialog"]').modal('toggle');
-            //});
-
-            //$('body .modal').on('shown.bs.modal', function (ele) {
-            //	try { fnOpen_Modal($(ele.target).parents('div[role="dialog"]')); } catch (e) { }
-            //})
-
-            //$('body .modal').on('hidden.bs.modal', function (ele) {
-            //	try { fnClose_Modal($(ele.target).parents('div[role="dialog"]')); } catch (e) { }
-            //})
-
-            $('body .btn-dark-mode').on('click', function (ele) {
-
-                if (!$('body').hasClass('dark-mode')) {
-                    $('body').addClass('dark-mode')
-                } else {
-                    $('body').removeClass('dark-mode')
-                }
-            })
-
-        });
-
-        function btnSubmitPassword() {
-
-            const newPassword = $('#Newpassword').val();
-            const confirmPassword = $('#ConfirmPassword').val();
-
-            //if (!newPassword || !confirmPassword) {
-            //    swal('Error', 'Both password fields are required.', 'error');
-            //    return false; // Prevent form submission
-            //}
-
-            //if (newPassword !== confirmPassword) {
-            //    swal('Error', 'Passwords do not match.', 'error');
-            //    return false; // Prevent form submission
-            //}
-
-            var formData = $("#formPasswordSave").serialize(); // Serialize form data
-
-            $.ajax({
-                url: '@Url.Action("ChangePassword", "Home", "Admin")', // Adjust this URL to match your controller action
-                type: 'POST',
-                data: formData,
-                success: function (response) {
-                    fnClose_Modal();
-                    try {
-                        ShowLoader(false);
-                        if (response.statusCode === 1) {
-                            if (typeof response.isConfirm != 'undefined' && response.isConfirm != '' && response.isConfirm != null && response.isConfirm == true)
-                                if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
-                                    CommonConfirmed_Success(response.message, response.redirectURL, null);
-                                else
-                                    CommonConfirmed_Success(response.message, fnSubmitForm_Success, [response, $id]);
-                            else
-                                if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
-                                    window.location = response.redirectURL;
-                                else
-                                    fnSubmitForm_Success(response, $id);
-                        }
-                        else {
-                            CommonAlert_Error(response.message, null)
-                        }
-                    } catch {
-                        window.location.reload();
-                    }
-
-                },
-                failure: function (response) {
-
-                    ShowLoader(false);
-                    Swal.fire({ icon: 'error', title: 'Oops...! Something went wrong!' })
-                },
-                error: function (response) {
-
-                    ShowLoader(false);
-                    Swal.fire({ icon: 'error', title: 'Oops...! Something went wrong!' })
-                }
-            });
-
-        }
-
-        function fnClose_Modal() {
-            
-            // $('#modal-xl .modal-body').html('');
-            // $('#modal-xl').hide();
-
-            $('.modal .modal-body').html('');
-            $('.modal').hide();
-
-            $('div.loader-overlay').remove();
-        }
-
-        function fnChangeIcon($inputid, $fid) {
-
-            const togglePassword = document.querySelector('#' + $fid);
-            const password = document.querySelector('#' + $inputid);
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-            togglePassword.classList.toggle('fa-eye-slash');
-        }
-    </script>
-
-    @RenderSection("scripts", required: false)
-
-    <script type="text/javascript">
-
-        function fnPrint_Contents($selector) {
-
-            var divContents = $($selector)[0].outerHTML;
-            var a = window.open('', 'Print-Window');
-
-            var closeDiv = '</section></#body#></html>'
-
-            a.document.write('<html lang="en"><head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">'
-                + '<title>Know Your Batch Data</title> <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&amp;display=fallback">'
-                + '<link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css"> <link rel="stylesheet" href="/dist\css\adminlte.min.css"> </head>'
-                + '<body class="wrapper"> <section b-59dnbqsdq1="" class="invoice border-0">'
-                + divContents + closeDiv.replace('#', ''));
-
-            a.document.close();
-            a.print();
-        }
-
-    </script>
-
-    <script src="/_framework/aspnetcore-browser-refresh.js"></script>
+	<div class="wrapper">
+
+
+		<div class="preloader_new flex-column justify-content-center align-items-center d-none">
+			@*<img class="animation__wobble" src="~/images/anticicon.png" alt="Logo" height="60" width="60">*@
+			@*<img class="animation__shake" src="https://adminlte.io/themes/v3/dist/img/AdminLTELogo.png" alt="AdminLTELogo" height="60" width="60">*@
+			<div class="animation_loader"></div>
+		</div>
+
+
+		<nav class="main-header navbar navbar-expand text-sm bg-teal bg-primary navbar-light dropdown-legacy border-bottom-0" style="background-color: #007D39 !important;">
+
+			@if (listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1)
+			{
+				<ul class="navbar-nav">
+					<li class="nav-item">
+						<a class="nav-link text-white" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+					</li>
+				</ul>
+			}
+			else
+			{
+				<ul class="navbar-nav">
+					<li class="nav-item">
+						<a href="#" class="brand-link bg-teal" style="background-color: #007D39 !important;">
+							<span class="brand-text font-weight-light text-white font-weight-bolder ml-2">Dispatch System</span>
+						</a>
+					</li>
+				</ul>
+			}
+
+			<ul class="navbar-nav ml-auto text-white">
+				<li class="nav-item dropdown user-menu">
+					<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+						<img src="~/no_image_available.png" class="user-image img-circle elevation-2" alt="User Image">
+						<span class="d-none d-md-inline text-white">@Common.Get_Session(SessionKey.USER_NAME)</span>
+					</a>
+					<ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+
+						<li class="user-header bg-lightblue color-palette text-white">
+							<img src="~/no_image_available.png" class="img-circle elevation-2" alt="User Image">
+							<p>
+								@Common.Get_Session(SessionKey.USER_NAME)
+								<br> @Common.Get_Session(SessionKey.ROLE_NAME)
+								<br> @Common.Get_Session(SessionKey.PLANT_NAME)
+							</p>
+						</li>
+
+						<li class="user-footer">
+							<a role="button" href="#" class="btn btn-default btn-flat d-none" onclick="ajaxPost('@Url.Action("GetUpdate", "Home", new { area = "" })', null)">Load Data</a>
+							<a href="@Url.Action("Logout", "Home", new { area = "" })" class="btn btn-default btn-flat float-right">Logout</a>
+						</li>
+					</ul>
+				</li>
+				@*<li class="nav-item">
+				<a class="nav-link btn-dark-mode" data-widget="control-sidebar" data-slide="true" href="#" role="button">
+				<i class="fas fa-adjust"></i>
+				</a>
+				</li>*@
+			</ul>
+
+		</nav>
+
+		@if (listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1)
+		{
+			<aside class="main-sidebar elevation-4 sidebar-dark-teal">
+				<a href="@Url.Action("Index", "Home", new { area = "" })" class="brand-link bg-teal" style="background-color: #007D39 !important;">
+					<span class="brand-text font-weight-light text-white font-weight-bolder ml-2">Dispatch System</span>
+				</a>
+
+				<div class="sidebar">
+					@*<div class="user-panel mt-3 pb-3 mb-3 navbar p-0 d-flex">*@
+					<div class="user-panel mt-3 pb-3 mb-3 navbar p-0 d-none">
+						<ul class="navbar-nav">
+							<li class="nav-item dropdown">
+								<a class="nav-link bg-lightblue color-palette rounded dropdown-toggle text-bold" href="#" id="navbarDropdown_Plant" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									@Common.Get_Session(SessionKey.PLANT_NAME)
+								</a>
+								<div class="dropdown-menu py-0 m-0 w-100 bg-lightblue color-palette border-0" aria-labelledby="navbarDropdown_Plant" style="left: 0px; right: inherit;">
+									@if (listPlant != null)
+									{
+										foreach (var item in listPlant)
+										{
+											<a role="button" class="dropdown-item dropdown-item-plant bg-lightblue color-palette @(Common.Get_Session_Int(SessionKey.PLANT_ID) == item.PlantID ? "disabled text-bold":"")"
+											   href="#" onclick="ajaxPost('@Url.Action("Change_Plant", "Home", new { area = "" })?id=@item.PlantID', window.location.href)">@item.Plant_Name</a>
+										}
+									}
+								</div>
+							</li>
+						</ul>
+					</div>
+					<nav class="mt-2">
+						<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+							<li class="nav-item">
+								<a href="@Url.Action("Index", "Home", new { Area = ""})" class="nav-link">
+									<i class="nav-icon fas fa-home"></i>
+									<p> Dashboard </p>
+								</a>
+							</li>
+
+							@{
+								if (listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1)
+								{
+									if (listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => x.Parent_Id).Select(x => x.Key).Count() == 1)
+										listMenu.RemoveAll(x => x.Id == listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => x.Parent_Id).Select(x => x.Key).FirstOrDefault());
+
+									if (listMenu.Any(x => x.Parent_Id == 0))
+										foreach (var menu in listMenu.Where(x => x.Parent_Id == 0).OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.Display_Name, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
+										{
+											if (listMenu.Any(x => x.Parent_Id == menu.Key.Id))
+											{
+												<li class="nav-item" style="padding-top:5px !important">
+													<a href="#" class="nav-link">
+														<i class="nav-icon fas fa-tachometer-alt"></i>
+														<p>
+															@menu.Key.Display_Name
+															<i class="right fas fa-angle-left"></i>
+														</p>
+													</a>
+													<ul class="nav nav-treeview">
+														@foreach (var menuChild in listMenu.Where(x => x.Parent_Id == menu.Key.Id).OrderBy(x => x.DisplayOrder))
+														{
+															<li class="nav-item ml-3">
+																@if (string.IsNullOrEmpty(menuChild.Url))
+																{
+																	<a href="@Url.Action("Index", menuChild.Controller, new { Area = menuChild.Area })" data-title="@menuChild.Display_Name" class="nav-link">
+																		<i class="nav-icon fas fa-th"></i>
+																		<p>@menuChild.Display_Name</p>
+																	</a>
+																}
+																else
+																{
+																	<a href="@(Url.Content("~/")+menuChild.Url)" data-title="@menuChild.Display_Name" class="nav-link">
+																		<i class="nav-icon fas fa-th"></i>
+																		<p>@menuChild.Display_Name</p>
+																	</a>
+																}
+															</li>
+														}
+													</ul>
+												</li>
+											}
+											else
+											{
+												<li class="nav-item">
+													@if (string.IsNullOrEmpty(menu.Key.Url))
+													{
+														<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" class="nav-link">
+															<i class="nav-icon fas fa-th"></i>
+															<p> @menu.Key.Display_Name </p>
+														</a>
+													}
+													else
+													{
+														<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
+															<i class="nav-icon fas fa-th"></i>
+															<p>@menu.Key.Display_Name</p>
+														</a>
+													}
+												</li>
+												// <li class="nav-item">
+												//     <a href="@Url.Action("Index", "MDABatchNoList", new { Area = "Admin"})" class="nav-link">
+												//         <i class="nav-icon fas fa-th"></i>
+												//         <p> MDA Batch No List </p>
+												//     </a>
+												// </li>
+											}
+										}
+									else
+									{
+										foreach (var menu in listMenu.OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.Display_Name, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
+										{
+											<li class="nav-item">
+												@if (string.IsNullOrEmpty(menu.Key.Url))
+												{
+													<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" class="nav-link">
+														<i class="nav-icon fas fa-th"></i>
+														<p> @menu.Key.Display_Name </p>
+													</a>
+												}
+												else
+												{
+													<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
+														<i class="nav-icon fas fa-th"></i>
+														<p>@menu.Key.Display_Name</p>
+													</a>
+												}
+											</li>
+										}
+									}
+								}
+							}
+
+						</ul>
+					</nav>
+				</div>
+			</aside>
+		}
+
+		<div class="content-wrapper" style="min-height: 540.016px;">
+			@RenderBody()
+
+			<div class="modal" id="modal-xl" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered modal-xl">
+					<div class="modal-content">
+						<div class="modal-header text-white" style="background-color: #007D39 !important;">
+							<h4 class="modal-title">Extra Large Modal</h4>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="fnClose_Modal()">
+								<span class="text-white" aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<p>One fine body&hellip;</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="modal fade" id="modal-default">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">Default Modal</h4>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<p>One fine body&hellip;</p>
+						</div>
+						<div class="modal-footer justify-content-between">
+							<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							<button type="button" class="btn btn-primary">Save changes</button>
+						</div>
+					</div>
+					<!-- /.modal-content -->
+				</div>
+				<!-- /.modal-dialog -->
+			</div>
+			<button style="display: none;" id="checkPassword" type="button" class="btn btn-default" data-toggle="modal" data-target="#modal-default_z">
+				Check Password
+			</button>
+			<div class="modal" id="modal-default_z" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered modal-lg">
+					<form id="formPasswordSave" asp-area="Admin" asp-controller="Home" asp-action="ChangePassword" method="post" class="form-horizontal" enctype="multipart/form-data" style="width:100%">
+						<div class="modal-content">
+							<div class="modal-header text-white" style="background-color: #007D39 !important;">
+								<h4 class="modal-title">Change Password</h4>
+								<button type="button" id="btnclose" class="close" data-dismiss="modal" aria-label="Close" onclick="fnClose_Modal()">
+									<span class="text-white" aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body">
+								<div class="form-group row">
+									<label for="Newpassword" class="col-sm-3 col-form-label">New Password<span style="color:red">*</span></label>
+									<div class="col-sm-8">
+										<input class="form-control" id="Newpassword" type="password" maxlength="50" name="Newpassword">
+										<i class="fa fa-eye eye-pass fa-eye-slash" onclick="fnChangeIcon('Newpassword','togglePassword2')" id="togglePassword2"></i>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label for="ConfirmPassword" class="col-sm-3 col-form-label">Confirm Password<span style="color:red">*</span></label>
+									<div class="col-sm-8">
+										<input class="form-control" id="ConfirmPassword" type="password" maxlength="50" name="ConfirmPassword">
+										<i class="fa fa-eye eye-pass fa-eye-slash" onclick="fnChangeIcon('ConfirmPassword','togglePassword3')" id="togglePassword3"></i>
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default pull-left" aria-label="Close" data-dismiss="modal" onclick="fnClose_Modal()">Close</button>
+								<button type="button" class="btn btn-primary" onclick="btnSubmitPassword()">Save changes</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+			@*<div class="modal fade in" id="modal-default" style="display: none;">
+			<div class="modal-dialog">
+			<div class="modal-content">
+			<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">×</span>
+			</button>
+			<h4 class="modal-title">Default Modal</h4>
+			</div>
+			<div class="modal-body">
+			<p>One fine body…</p>
+			</div>
+			<div class="modal-footer">
+			<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary">Save changes</button>
+			</div>
+			</div>
+
+			</div>
+
+			</div>*@
+
+		</div>
+
+		<footer class="main-footer" style="background-color: #007D39 !important;">
+			<div class="text-white">
+				@* <strong>Copyright &copy; 2022-2023 Padhya Software Technologies</strong> *@
+				All rights reserved.
+			</div>
+		</footer>
+
+	</div>
+
+	<!-- /.modal -->
+	<!-- REQUIRED SCRIPTS -->
+	<!-- jQuery -->
+	<script src="~/plugins/jquery/jquery.min.js"></script>
+
+	<script src="~/plugins/bootstrap/js/bootstrap.min.js"></script>
+
+	<script src="~/plugins/select2/js/select2.min.js"></script>
+	<script src="~/plugins/moment/moment.min.js"></script>
+
+	<script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+
+	<!-- InputMask -->
+	<script src="~/plugins/moment/moment.min.js"></script>
+	<script src="~/plugins/inputmask/jquery.inputmask.min.js"></script>
+
+	<!-- date-range-picker -->
+	<script src="~/plugins/daterangepicker/daterangepicker.js"></script>
+
+	<!-- DataTables  & Plugins -->
+	@*<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>*@
+	<script src="~/plugins/datatables/jquery.dataTables.min.js"></script>
+	<script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+	<script src="~/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+	<script src="~/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+	<script src="~/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+	<script src="~/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+	<script src="~/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+	<script src="~/plugins/datatables-buttons/js/buttons.print.min.js"></script>
+	<script src="~/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+	<script src="~/plugins/datatables-select/js/datatables.select.min.js"></script>
+	<script src="~/plugins/datatables-select/js/select.bootstrap4.min.js"></script>
+	<script src="~/plugins/jszip/jszip.min.js"></script>
+	<script src="~/plugins/pdfmake/pdfmake.min.js"></script>
+	<script src="~/plugins/pdfmake/vfs_fonts.js"></script>
+
+	<script src="~/dist/js/adminlte.min.js"></script>
+
+	<script src="https://rawgit.com/RobinHerbots/jquery.inputmask/3.x/dist/jquery.inputmask.bundle.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.7/signalr.min.js"></script>
+
+	<script src="~/common.js"></script>
+
+	<script src="//cdn.rawgit.com/rainabba/jquery-table2excel/1.1.0/dist/jquery.table2excel.min.js"></script>
+
+	<script type="text/javascript">
+		var connection;
+		var userGuid = null;
+		var isConnected = false;
+
+		connection = new signalR.HubConnectionBuilder()
+			.withUrl("/conveyorhub")
+			.build();
+
+		connection.on("ReceiveMessage", function (msg) {
+			try { fnReceiveSignalR_Message(msg); } catch { }
+		});
+
+		connection.on("CloseConnection", function () {
+			if (connection.state === signalR.HubConnectionState.Connected){
+				connection.stop().then(() => { try { fnDisconnectSignalR_Result(true); } catch { } })
+				.catch(err => try { fnDisconnectSignalR_Result(false); } catch { });
+			}
+		});
+
+		function fnConnectSignalR() {
+			if (connection.state !== signalR.HubConnectionState.Connected) {
+				ShowLoader(true);
+				connection.start().then(function () {
+					ShowLoader(false);
+					userGuid = connection.connectionId;
+					isConnected = true;
+					try { fnConnectSignalR_Result(true); } catch { }
+				}).catch(function (err) {
+					ShowLoader(false);
+					try { fnConnectSignalR_Result(false); } catch { }
+				});
+			}
+		}
+
+		function fnDisconnectSignalR() {
+			if (connection.state === signalR.HubConnectionState.Connected) {
+				ShowLoader(true);
+				connection.stop().then(function () {
+					ShowLoader(false);
+					userGuid = null;
+					isConnected = false;
+					try { fnDisconnectSignalR_Result(true); } catch { }
+				}).catch(function (err) {
+					ShowLoader(false);
+					try { fnDisconnectSignalR_Result(false); } catch { }
+				});
+			}
+		}
+
+		function fnSendMessage(msg) {
+			try {
+				if (msg) {
+					if (connection.state === signalR.HubConnectionState.Connected) {
+						try {
+							ShowLoader(true);
+							connection.invoke("SendMessage", userGuid, msg).then(function () {
+								ShowLoader(false);
+								try { fnSendSignalR_Result(true); } catch { }
+							}).catch(function (err) {
+								ShowLoader(false);
+								try { fnSendSignalR_Result(false); } catch { }
+							});
+						} catch (err) {
+							console.error("Error sending message: " + err);
+						}
+					} else {
+						console.log("Not connected, attempting to reconnect...");
+						fnConnectSignalR();
+						if (connection.state === signalR.HubConnectionState.Connected) {
+							ShowLoader(true);
+							connection.invoke("SendMessage", userGuid, msg).then(function () {
+								ShowLoader(false);
+								try { fnSendSignalR_Result(true); } catch { }
+							}).catch(function (err) {
+								ShowLoader(false);
+								try { fnSendSignalR_Result(false); } catch { }
+							});
+						} else {
+							console.log("Failed to reconnect");
+						}
+					}
+
+				}
+			} catch { }
+		}
+
+		$(document).ready(function () {
+
+			var checkPassword = '@ViewBag.CheckPassword';
+
+			if (checkPassword === "SM8c7ckHAFA=") {
+				$('#checkPassword').trigger('click');
+
+			}
+			//$(document).on('click', 'body .modal-close', function (ele) {
+			//	$(ele.target).parents('div[role="dialog"]').modal('toggle');
+			//});
+
+			//$('body .modal').on('shown.bs.modal', function (ele) {
+			//	try { fnOpen_Modal($(ele.target).parents('div[role="dialog"]')); } catch (e) { }
+			//})
+
+			//$('body .modal').on('hidden.bs.modal', function (ele) {
+			//	try { fnClose_Modal($(ele.target).parents('div[role="dialog"]')); } catch (e) { }
+			//})
+
+			$('body .btn-dark-mode').on('click', function (ele) {
+
+				if (!$('body').hasClass('dark-mode')) {
+					$('body').addClass('dark-mode')
+				} else {
+					$('body').removeClass('dark-mode')
+				}
+			})
+
+		});
+
+		function btnSubmitPassword() {
+
+			const newPassword = $('#Newpassword').val();
+			const confirmPassword = $('#ConfirmPassword').val();
+
+			//if (!newPassword || !confirmPassword) {
+			//    swal('Error', 'Both password fields are required.', 'error');
+			//    return false; // Prevent form submission
+			//}
+
+			//if (newPassword !== confirmPassword) {
+			//    swal('Error', 'Passwords do not match.', 'error');
+			//    return false; // Prevent form submission
+			//}
+
+			var formData = $("#formPasswordSave").serialize(); // Serialize form data
+
+			$.ajax({
+				url: '@Url.Action("ChangePassword", "Home", "Admin")', // Adjust this URL to match your controller action
+				type: 'POST',
+				data: formData,
+				success: function (response) {
+					fnClose_Modal();
+					try {
+						ShowLoader(false);
+						if (response.statusCode === 1) {
+							if (typeof response.isConfirm != 'undefined' && response.isConfirm != '' && response.isConfirm != null && response.isConfirm == true)
+								if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+									CommonConfirmed_Success(response.message, response.redirectURL, null);
+								else
+									CommonConfirmed_Success(response.message, fnSubmitForm_Success, [response, $id]);
+							else
+								if (typeof response.redirectURL != 'undefined' && response.redirectURL != '' && response.redirectURL != null)
+									window.location = response.redirectURL;
+								else
+									fnSubmitForm_Success(response, $id);
+						}
+						else {
+							CommonAlert_Error(response.message, null)
+						}
+					} catch {
+						window.location.reload();
+					}
+
+				},
+				failure: function (response) {
+
+					ShowLoader(false);
+					Swal.fire({ icon: 'error', title: 'Oops...! Something went wrong!' })
+				},
+				error: function (response) {
+
+					ShowLoader(false);
+					Swal.fire({ icon: 'error', title: 'Oops...! Something went wrong!' })
+				}
+			});
+
+		}
+
+		function fnClose_Modal() {
+
+			// $('#modal-xl .modal-body').html('');
+			// $('#modal-xl').hide();
+
+			$('.modal .modal-body').html('');
+			$('.modal').hide();
+
+			$('div.loader-overlay').remove();
+		}
+
+		function fnChangeIcon($inputid, $fid) {
+
+			const togglePassword = document.querySelector('#' + $fid);
+			const password = document.querySelector('#' + $inputid);
+			const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+			password.setAttribute('type', type);
+			togglePassword.classList.toggle('fa-eye-slash');
+		}
+	</script>
+
+	@RenderSection("scripts", required: false)
+
+	<script type="text/javascript">
+
+		function fnPrint_Contents($selector) {
+
+			var divContents = $($selector)[0].outerHTML;
+			var a = window.open('', 'Print-Window');
+
+			var closeDiv = '</section></#body#></html>'
+
+			a.document.write('<html lang="en"><head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">'
+				+ '<title>Know Your Batch Data</title> <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&amp;display=fallback">'
+				+ '<link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css"> <link rel="stylesheet" href="/dist\css\adminlte.min.css"> </head>'
+				+ '<body class="wrapper"> <section b-59dnbqsdq1="" class="invoice border-0">'
+				+ divContents + closeDiv.replace('#', ''));
+
+			a.document.close();
+			a.print();
+		}
+
+	</script>
+
+	<script src="/_framework/aspnetcore-browser-refresh.js"></script>
 </body>
 </html>

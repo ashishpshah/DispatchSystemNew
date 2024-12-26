@@ -1,4 +1,5 @@
 using Dispatch_System;
+using Dispatch_System.Infra;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Hosting;
@@ -50,6 +51,9 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 });
 
 builder.Services.AddSession(options => { options.IdleTimeout = TimeSpan.FromMinutes(120); });
+
+builder.Services.AddCors();
+builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 //builder.Services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
@@ -104,6 +108,10 @@ app.UseSession();
 
 // Register your custom ActionMiddleware
 app.UseMiddleware<Dispatch_System.Infra.RedirectMiddleware>();
+
+app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
+app.MapHub<ConveyorHub>("/conveyorhub");
 
 app.MapControllerRoute(
     name: "qr",

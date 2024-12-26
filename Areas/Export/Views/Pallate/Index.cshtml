@@ -7,7 +7,7 @@
 }
 
 
-<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+<section class="content-header bg-gradient-green d-none" style="border-radius: 0.25rem" id="divPageTitle">
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-12">
@@ -196,6 +196,13 @@
                                             </div>
                                         </div>
                                     </div>
+									<div class="row no-gutters p-0 m-0 mt-2 d-none" id="divLoadButton">
+										<div class="col-12 w-100">
+											<button type="button" id="btnStartLoading" class="btn btn-success btn-flat px-3 mr-5" onclick="fnStartLoading(this)">Start Loading</button>
+											<button type="button" id="btnStopLoading" class="btn btn-danger btn-flat px-3 mr-5" onclick="fnStopLoading()" disabled>Stop Loading</button>
+											<button type="button" id="btnFinishLoading" class="btn btn-info btn-flat px-3 mr-5" onclick="fnClick_ClosePallate()">Finish Loading</button>
+										</div>
+									</div>
                                 </div>
                             </div>
                         </div>
@@ -210,12 +217,71 @@
 
 
 @section Scripts{
+    
+    <script type="text/javascript">
+        
+        var tagStartLoading = $('#btnStartLoading');
+        var tagStopLoading = $('#btnStopLoading');
+        var tagFinishLoading = $('#btnFinishLoading');
+    
+        function fnStartLoading($this){ 
+            debugger;
+            fnConnectSignalR();
+        }
+        
+        function fnConnectSignalR_Result($isConnect){ 
+            debugger;
+
+            if($isConnect && $isConnect == true){
+                tagStartLoading.prop('disabled', true);
+                tagStopLoading.prop('disabled', false);
+                tagFinishLoading.prop('disabled', false);
+            }
+        }
+
+        function fnDisconnectSignalR_Result($isDisconnect){ 
+            debugger;
+                tagStartLoading.prop('disabled', false);
+                tagStopLoading.prop('disabled', true);
+                tagFinishLoading.prop('disabled', true);
+        }
+
+        function fnSendSignalR_Result($isSend){ 
+            debugger;
+        }
+
+
+        function fnReceiveSignalR_Message(msg){ 
+            debugger;
+        }
+
+    </script>
 
     <script type="text/javascript">
-
+        
         var tablePallateDtls = {};
 
-        $(document).ready(function () { Load_Pallate(); });
+        $(document).ready(function () { 
+            
+            $('#divAddEditPallate').addClass('d-none');
+            $('#btnAdd_Pallate').addClass('d-none');
+
+            if($('#divLoadButton').hasClass('d-none')) 
+                $('#divLoadButton').removeClass('d-none');
+                
+            if(!$('#divPageTitle').hasClass('d-none')) 
+                $('#divPageTitle').addClass('d-none'); 
+
+            if(window.location.href.toLowerCase().indexOf('index') > -1) 
+            { 
+                $('#divLoadButton').addClass('d-none');
+                $('#divPageTitle').removeClass('d-none');
+                $('#divAddEditPallate').removeClass('d-none');
+                $('#btnAdd_Pallate').removeClass('d-none');
+            }  
+
+            Load_Pallate(); 
+        });
 
         function GetDI($this, $type) {
             ShowLoader(true);
@@ -433,6 +499,11 @@
                 $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting_desc');
 
                 tablePallateDtls.clear().draw();
+                
+                tablePallateDtls.column(':last').visible(false);
+                if(window.location.href.toLowerCase().indexOf('index') > -1) 
+                    tablePallateDtls.column(':last').visible(true);
+
             } catch { }
 
             var DI_No = $('#DI_No').val();
@@ -520,6 +591,7 @@
                 $('#span_Pallate_No').html($obj[2]);
 
                 ShowLoader(true);
+
                 $.ajax({
                     type: "GET",
                     url: '@Url_RootToController/Load_Pallate?Id=' + $obj[1] + '&DI_No=' + DI_No + '&GetShipper=true',
@@ -862,6 +934,6 @@
         }
 
     </script>
-
+    
 }
 
