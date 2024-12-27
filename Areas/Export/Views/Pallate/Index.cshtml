@@ -225,7 +225,7 @@
 		var tagStartLoading = $('#btnStartLoading');
 		var tagStopLoading = $('#btnStopLoading');
 		var tagFinishLoading = $('#btnFinishLoading');
-		//let timerId = null;
+		let timerId = null;
 
 		function fnStopLoading() {
 			ShowLoader(true);
@@ -236,7 +236,6 @@
 				contentType: "application/json; charset=utf-8",
 				dataType: "html",
 				success: function (response) {
-					debugger;
 
 					//if (timerId === null) timerId = setInterval(checkConveyorConnection, 1000);
 
@@ -262,9 +261,8 @@
 					contentType: "application/json; charset=utf-8",
 					dataType: "html",
 					success: function (response) {
-						debugger;
 
-						//if (timerId === null) timerId = setInterval(checkConveyorConnection, 1000);
+						if (timerId === null) timerId = setInterval(checkConveyorConnection, 1000);
 
 					},
 					failure: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); },
@@ -292,19 +290,26 @@
 			}
 		}
 
-		// function fnCheckConveyorConnection_Result($isConnect) {
-		// 	if ($isConnect && $isConnect == true) {
-		// 		debugger;
-		// 		tagStartLoading.prop('disabled', true);
-		// 		tagStopLoading.prop('disabled', false);
-		// 		tagFinishLoading.prop('disabled', false);
+		function fnCheckConveyorConnection_Result($isConnect) {
+			debugger;
+			if ($isConnect && $isConnect == true) {
 
-		// 		if (timerId !== null) {
-		// 			clearInterval(timerId);
-		// 			timerId = null;
-		// 		}
-		// 	}
-		// }
+				tagStartLoading.prop('disabled', true);
+				tagStopLoading.prop('disabled', false);
+				tagFinishLoading.prop('disabled', false);
+
+				if (timerId !== null) {
+					clearInterval(timerId);
+					timerId = null;
+				}
+			} else {
+				tagStartLoading.prop('disabled', false);
+				tagStopLoading.prop('disabled', true);
+				tagFinishLoading.prop('disabled', true);
+
+				ShowLoader(false);
+			}
+		}
 
 		// function fnConnectSignalR_Result($isConnect) {
 		// 	debugger;

@@ -4,6 +4,7 @@ using Dispatch_System.Infra;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using MySql.Data.MySqlClient;
+using MySqlX.XDevAPI;
 using Oracle.ManagedDataAccess.Client;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
@@ -22,11 +23,17 @@ namespace Dispatch_System.Areas.Export.Controllers
 	{
 		private readonly ConveyorBackgroundTask _socketBackgroundTask;
 		private readonly SharedDataService _sharedDataService;
+		private string iffco_url { get; set; }
+		private Int64 PLANT_ID { get; set; }
 
 		private readonly IHubContext<ConveyorHub> _hubContext;
 
 		public PallateController(ConveyorBackgroundTask socketBackgroundTask, SharedDataService sharedDataService, IHubContext<ConveyorHub> hubContext)
 		{
+			PLANT_ID = Common.Get_Session_Int(SessionKey.PLANT_ID);
+
+			iffco_url = AppHttpContextAccessor.IFFCO_Domain.TrimEnd('/');
+
 			_hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
 
 			_sharedDataService = sharedDataService;
@@ -37,9 +44,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 		{
 			try
 			{
-				_socketBackgroundTask.DisconnectToServer();
-
-				_sharedDataService.ClearScanData();
+				_socketBackgroundTask.SendToClient("STOP");
 
 				CommonViewModel.IsConfirm = true;
 				CommonViewModel.IsSuccess = true;
@@ -101,22 +106,66 @@ namespace Dispatch_System.Areas.Export.Controllers
 		private void Server_DataReceive(object sender, TcpServerListenerEventArgs e)
 		{
 			var receivedData = string.Format($"{Encoding.ASCII.GetString(e.buffer)}");
+
+			//Write_Log($"Socket server received message Before Split : \"{receivedData}\"");
+
+			if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains(iffco_url))
+			{
+				receivedData = receivedData.Substring(receivedData.IndexOf(iffco_url));
+
+				var strQR = receivedData.Replace(iffco_url, "");
+				var sb = new StringBuilder(strQR);
+
+				for (int i = 0; i < sb.Length; i++)
+				{
+					if (sb[i] == '/')
+						sb[i] = (i % 2 == 0) ? '(' : ')';
+				}
+				receivedData = Regex.Replace(receivedData, @"[^\w:/\(/\)\.\-]", "");
+			}
+
+			//Write_Log($"Socket server received message After Split : \"{receivedData}\"");
+
+			receivedData = receivedData.Trim().Replace(" ", "");
+
+			if (receivedData.ToUpper().Contains("MCSTOP") && _socketBackgroundTask.IsRunning())
+			{
+				_socketBackgroundTask.IsRunning(false);
+
+				_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
+
+				_socketBackgroundTask.DisconnectToServer();
+				_sharedDataService.ClearScanData();
+			}
+			else if (receivedData.ToUpper().Contains("MCSTART") && !_socketBackgroundTask.IsRunning())
+			{
+				_socketBackgroundTask.IsRunning(true);
+
+				_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_START");
+
+				_sharedDataService.ClearScanData();
+			}
+			else if (!receivedData.ToUpper().Contains("MCIDEL") && _socketBackgroundTask.IsRunning())
+			{
+
+			}
+
 			_hubContext.Clients.All.SendAsync("ReceiveMessage", receivedData);
 			Console.WriteLine($"Socket server received message Before Split : \"{receivedData}\"");
 		}
 
 		private void Server_ServerStarted(object sender, EventArgs e)
 		{
-			_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_START");
 			Console.WriteLine($"Socket connection started.");
+
+			//_socketBackgroundTask.SendToClient("STOP");
+			_socketBackgroundTask.SendToClient("START");
 		}
 
 		private void Server_ConnectionClosed(object sender, EventArgs e)
 		{
-			_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
 			Console.WriteLine($"Socket connection closed.");
 		}
-
 
 		#region Pallate
 

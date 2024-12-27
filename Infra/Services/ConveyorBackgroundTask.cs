@@ -23,38 +23,29 @@ namespace VendorQRGeneration.Infra.Services
 	public class ConveyorBackgroundTask
 	{
 
+		private dynamic objLoad { get; set; }
+		private bool isRunning { get; set; }
+		private bool MDA_QR_Scan_Response_Demo { get; set; }
+		private int MDA_QR_Scan_Delay_Sec = 1;
+
 		private IPAddress ConnectionIP;
 		private int ConnectionPort;
 		private TcpListener tcpListener;
 		private Thread tcpServerThread;
-		private bool isRunning = false;
 
+		private TcpClient connectedClient = new();
 		public event EventHandler<TcpServerListenerEventArgs> DataReceive;
 		public event EventHandler ConnectionClosed;
 		public event EventHandler ServerStarted;
 
-
-		private Int64 PLANT_ID { get; set; }
-		private dynamic objLoad { get; set; }
-		private bool MDA_QR_Scan_Response_Demo { get; set; }
-		private int MDA_QR_Scan_Delay_Sec = 1;
-		private string iffco_url { get; set; }
-
 		public ConveyorBackgroundTask()
 		{
-			PLANT_ID = Common.Get_Session_Int(SessionKey.PLANT_ID);
-
 			try { MDA_QR_Scan_Response_Demo = Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Response_Demo").Value); }
 			catch { MDA_QR_Scan_Response_Demo = false; }
 
 			MDA_QR_Scan_Delay_Sec = Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "1");
 
-			iffco_url = AppHttpContextAccessor.IFFCO_Domain.TrimEnd('/');
-
 		}
-
-		public void SetObjLoad(dynamic _objLoad) => objLoad = _objLoad;
-		public dynamic GetObjLoad() => objLoad;
 
 		public bool IsConnect()
 		{
@@ -64,7 +55,7 @@ namespace VendorQRGeneration.Infra.Services
 
 				s.Connect(ConnectionIP, ConnectionPort);
 
-				if (s.Connected) return true;
+				if (s.Connected && !(s.Poll(1, SelectMode.SelectRead) && s.Available == 0)) return true;
 			}
 			catch (Exception ex) { }
 
@@ -76,7 +67,6 @@ namespace VendorQRGeneration.Infra.Services
 			ConnectionIP = listenIP;
 			ConnectionPort = listenPort;
 
-			isRunning = true;
 			tcpServerThread = new Thread(TcpServerRun);
 			tcpServerThread.Start();
 		}
@@ -88,20 +78,27 @@ namespace VendorQRGeneration.Infra.Services
 
 			try
 			{
-				while (isRunning)
+				while (true)
 				{
+					if (!tcpListener.Active) break;
+
 					if (!tcpListener.Pending())
 					{
-						Thread.Sleep(100); // Avoid CPU overload.
+						Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
+						Thread.Sleep(1000); // Avoid CPU overload.
 						continue;
 					}
 
 					TcpClient client = tcpListener.AcceptTcpClient();
+
+					lock (connectedClient) connectedClient = client;
+
 					Thread tcpHandlerThread = new Thread(new ParameterizedThreadStart(TcpHandler));
 					tcpHandlerThread.Start(client);
 
 					OnServerStarted();
 				}
+
 			}
 			catch (SocketException ex)
 			{
@@ -122,15 +119,8 @@ namespace VendorQRGeneration.Infra.Services
 			{
 				using NetworkStream stream = mClient.GetStream();
 				byte[] buffer = new byte[1024];
-				//int bytesRead = stream.Read(buffer, 0, buffer.Length);
 
-				//if (bytesRead > 0)
-				//{
-				//	TcpServerListenerEventArgs args = new TcpServerListenerEventArgs { buffer = buffer };
-				//	OnDataReceive(args);
-				//}
-
-				while (isRunning)
+				while (true)
 				{
 					if (stream.DataAvailable)
 					{
@@ -143,7 +133,6 @@ namespace VendorQRGeneration.Infra.Services
 						}
 					}
 
-					// Optionally add a small delay to prevent busy waiting
 					Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
 				}
 			}
@@ -153,9 +142,34 @@ namespace VendorQRGeneration.Infra.Services
 			}
 			finally
 			{
+				lock (connectedClient) connectedClient = new();
+
 				mClient.Close();
 				OnConnectionClosed();
 			}
+		}
+
+		public async Task SendToClient(string data)
+		{
+			byte[] bytesToSend = Encoding.UTF8.GetBytes(data);
+
+			lock (connectedClient)
+			{
+				if (connectedClient.Connected)
+				{
+					try
+					{
+						NetworkStream stream = connectedClient.GetStream();
+						stream.Write(bytesToSend, 0, bytesToSend.Length);
+					}
+					catch (Exception ex)
+					{
+						// Handle exceptions when sending data.
+					}
+				}
+			}
+
+			await Task.CompletedTask;
 		}
 
 		protected virtual void OnDataReceive(TcpServerListenerEventArgs e)
@@ -174,18 +188,22 @@ namespace VendorQRGeneration.Infra.Services
 			ServerStarted?.Invoke(this, EventArgs.Empty);
 		}
 
-
 		public void DisconnectToServer()
 		{
-			isRunning = false;
-
 			tcpListener?.Stop();
 
 			if (tcpServerThread != null && tcpServerThread.IsAlive)
 				tcpServerThread.Join();
 
-			OnConnectionClosed();
 		}
+
+
+		public void SetObjLoad(dynamic _objLoad) => objLoad = _objLoad;
+		public dynamic GetObjLoad() => objLoad;
+
+		public void IsRunning(bool _isRunning) => isRunning = _isRunning;
+		public bool IsRunning() => isRunning;
+
 	}
 
 	public class TcpServerListenerEventArgs : EventArgs

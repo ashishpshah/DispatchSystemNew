@@ -39,7 +39,7 @@ namespace Dispatch_System.Infra
 
 		public override Task OnDisconnectedAsync(Exception? exception)
 		{
-			_userConnectionId = Context.ConnectionId;
+			_userConnectionId = string.Empty;
 			return base.OnDisconnectedAsync(exception);
 		}
 
