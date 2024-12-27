@@ -60,6 +60,7 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 builder.Services.AddSingleton<SharedDataService>();
 builder.Services.AddSingleton<SocketBackgroundTask>();
+builder.Services.AddSingleton<ConveyorBackgroundTask>();
 ////builder.Services.AddScoped<IBackgroundTaskService, BackgroundTaskService>();
 //builder.Services.AddHostedService<SocketBackgroundTask>();
 //builder.Services.AddSingleton<IWorker, Worker>();

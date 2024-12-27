@@ -231,12 +231,12 @@
 		}
 
 		/* table.dataTable tr th.select-checkbox.selected::after {
-																	content: "✔";
-																	margin-top: -11px;
-																	margin-left: -4px;
-																	text-align: center;
-																	text-shadow: rgb(176, 190, 217) 1px 1px, rgb(176, 190, 217) -1px -1px, rgb(176, 190, 217) 1px -1px, rgb(176, 190, 217) -1px 1px;
-																} */
+																			content: "✔";
+																			margin-top: -11px;
+																			margin-left: -4px;
+																			text-align: center;
+																			text-shadow: rgb(176, 190, 217) 1px 1px, rgb(176, 190, 217) -1px -1px, rgb(176, 190, 217) 1px -1px, rgb(176, 190, 217) -1px 1px;
+																		} */
 	</style>
 
 	@RenderSection("Styles", required: false)
@@ -602,50 +602,41 @@
 	<script type="text/javascript">
 		var connection;
 		var userGuid = null;
-		var isConnected = false;
+		var isSignalRConnected = false;
 
 		connection = new signalR.HubConnectionBuilder()
 			.withUrl("/conveyorhub")
 			.build();
 
-		connection.on("ReceiveMessage", function (msg) {
-			try { fnReceiveSignalR_Message(msg); } catch { }
+		connection.on("ReceiveMessage", function ($result) {
+			debugger;
+			try { fnReceiveSignalR_Message($result); } catch { }
 		});
 
 		connection.on("CloseConnection", function () {
-			if (connection.state === signalR.HubConnectionState.Connected){
+			if (connection.state === signalR.HubConnectionState.Connected) {
 				connection.stop().then(() => { try { fnDisconnectSignalR_Result(true); } catch { } })
-				.catch(err => try { fnDisconnectSignalR_Result(false); } catch { });
+					.catch(err => { try { fnDisconnectSignalR_Result(false); } catch { } });
 			}
 		});
 
 		function fnConnectSignalR() {
 			if (connection.state !== signalR.HubConnectionState.Connected) {
-				ShowLoader(true);
 				connection.start().then(function () {
-					ShowLoader(false);
 					userGuid = connection.connectionId;
-					isConnected = true;
+					isSignalRConnected = true;
 					try { fnConnectSignalR_Result(true); } catch { }
-				}).catch(function (err) {
-					ShowLoader(false);
-					try { fnConnectSignalR_Result(false); } catch { }
-				});
+				}).catch(function (err) { try { fnConnectSignalR_Result(false); } catch { } });
 			}
 		}
 
 		function fnDisconnectSignalR() {
 			if (connection.state === signalR.HubConnectionState.Connected) {
-				ShowLoader(true);
 				connection.stop().then(function () {
-					ShowLoader(false);
 					userGuid = null;
-					isConnected = false;
+					isSignalRConnected = false;
 					try { fnDisconnectSignalR_Result(true); } catch { }
-				}).catch(function (err) {
-					ShowLoader(false);
-					try { fnDisconnectSignalR_Result(false); } catch { }
-				});
+				}).catch(function (err) { try { fnDisconnectSignalR_Result(false); } catch { } });
 			}
 		}
 
@@ -656,10 +647,8 @@
 						try {
 							ShowLoader(true);
 							connection.invoke("SendMessage", userGuid, msg).then(function () {
-								ShowLoader(false);
 								try { fnSendSignalR_Result(true); } catch { }
 							}).catch(function (err) {
-								ShowLoader(false);
 								try { fnSendSignalR_Result(false); } catch { }
 							});
 						} catch (err) {
@@ -669,12 +658,9 @@
 						console.log("Not connected, attempting to reconnect...");
 						fnConnectSignalR();
 						if (connection.state === signalR.HubConnectionState.Connected) {
-							ShowLoader(true);
 							connection.invoke("SendMessage", userGuid, msg).then(function () {
-								ShowLoader(false);
 								try { fnSendSignalR_Result(true); } catch { }
 							}).catch(function (err) {
-								ShowLoader(false);
 								try { fnSendSignalR_Result(false); } catch { }
 							});
 						} else {
@@ -684,6 +670,20 @@
 
 				}
 			} catch { }
+		}
+
+		function checkConveyorConnection() {
+			if (connection.state === signalR.HubConnectionState.Connected) {
+				try {
+					connection.invoke("CheckConveyorConnection").then(function (result) {
+						try { fnCheckConveyorConnection_Result(result); } catch { }
+					}).catch(function (err) {
+						try { fnCheckConveyorConnection_Result(false); } catch { }
+					});
+				} catch (err) {
+					console.error("Error sending message: " + err);
+				}
+			}
 		}
 
 		$(document).ready(function () {

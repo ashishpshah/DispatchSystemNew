@@ -6,12 +6,12 @@ namespace Dispatch_System.Infra
 {
 	public class ConveyorHub : Hub
 	{
-		private static readonly ConcurrentDictionary<string, string> _userConnections = new();
-		private readonly SocketBackgroundTask _socketBackgroundTask;
+		private static string _userConnectionId { get; set; }
+		private readonly ConveyorBackgroundTask _socketBackgroundTask;
 		private readonly SharedDataService _sharedDataService;
 
 		// Constructor injection of services
-		public ConveyorHub(SocketBackgroundTask socketBackgroundTask, SharedDataService sharedDataService)
+		public ConveyorHub(ConveyorBackgroundTask socketBackgroundTask, SharedDataService sharedDataService)
 		{
 			_socketBackgroundTask = socketBackgroundTask;
 			_sharedDataService = sharedDataService;
@@ -19,55 +19,40 @@ namespace Dispatch_System.Infra
 
 		public override async Task OnConnectedAsync()
 		{
-			var userGuid = Context.ConnectionId;
-
-			if (_userConnections.ContainsKey(userGuid))
+			if (_userConnectionId == Context.ConnectionId)
 			{
 				await Clients.Caller.SendAsync("ReceiveMessage", "You are already connected. Only one connection is allowed.");
 
 				throw new HubException("Only one connection allowed per user.");
 			}
 
-			if (_userConnections.Count > 0)
+			if (!string.IsNullOrEmpty(_userConnectionId))
 			{
 				await Clients.Caller.SendAsync("ReceiveMessage", "Only one user can connect at a time.");
 				throw new HubException("Only one user can connect at a time.");
 			}
-			_userConnections[userGuid] = Context.ConnectionId;
+
+			_userConnectionId = Context.ConnectionId;
 
 			await base.OnConnectedAsync();
 		}
 
 		public override Task OnDisconnectedAsync(Exception? exception)
 		{
-			var userGuid = Context.ConnectionId;
-			_userConnections.TryRemove(userGuid, out _);
+			_userConnectionId = Context.ConnectionId;
 			return base.OnDisconnectedAsync(exception);
 		}
 
 		public async Task SendMessage(string targetUserGuid, string msg)
 		{
-			if (_userConnections.TryGetValue(targetUserGuid, out var connectionId))
-			{
-				await Clients.Client(connectionId).SendAsync("ReceiveMessage", msg);
-			}
+			if (_userConnectionId == targetUserGuid)
+				await Clients.Client(targetUserGuid).SendAsync("ReceiveMessage", msg);
 		}
 
-		public async Task SendDateTimeToCaller(string msg)
-		{
-			await Clients.Caller.SendAsync("ReceiveMessage", msg);
-		}
+		public async Task SendClientMessage(string msg) => await Clients.All.SendAsync("ReceiveMessage", msg);
 
-		public Task<string> GetConnectionIdAsync()
-		{
-			if (_userConnections.Count > 0)
-			{
-				var connectionId = _userConnections.Values.First();
-				return Task.FromResult(connectionId);
-			}
+		public static string GetConnectionId => _userConnectionId;
 
-			return Task.FromResult<string>(null);
-		}
-				
+		public bool CheckConveyorConnection() => _socketBackgroundTask.IsConnect();
 	}
 }

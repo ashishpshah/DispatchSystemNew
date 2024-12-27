@@ -1,11 +1,18 @@
-﻿using Dispatch_System.Controllers;
+﻿using com.itextpdf.text.pdf;
+using Dispatch_System.Controllers;
 using Dispatch_System.Infra;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using MySql.Data.MySqlClient;
 using Oracle.ManagedDataAccess.Client;
+using Org.BouncyCastle.Asn1.Ocsp;
+using System;
 using System.Data;
 using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Text.RegularExpressions;
 using VendorQRGeneration.Infra.Services;
 
 namespace Dispatch_System.Areas.Export.Controllers
@@ -26,18 +33,88 @@ namespace Dispatch_System.Areas.Export.Controllers
 			_socketBackgroundTask = socketBackgroundTask;
 		}
 
-		private async Task StopConveyor()
+		public async Task<IActionResult> StopLoading()
 		{
 			try
 			{
-				if (_hubContext != null)
-					await _hubContext.Clients.All.SendAsync("CloseConnection");
+				_socketBackgroundTask.DisconnectToServer();
 
-				if (_socketBackgroundTask.IsRunning())
-					_socketBackgroundTask.StopWork();
 				_sharedDataService.ClearScanData();
+
+				CommonViewModel.IsConfirm = true;
+				CommonViewModel.IsSuccess = true;
+				CommonViewModel.StatusCode = ResponseStatusCode.Success;
+				CommonViewModel.Message = "Stop Loading";
 			}
-			catch (Exception ex) { }
+			catch (Exception ex)
+			{
+				LogService.LogInsert(GetCurrentAction(), "", ex);
+
+				CommonViewModel.IsSuccess = false;
+				CommonViewModel.StatusCode = ResponseStatusCode.Error;
+				CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
+			}
+
+			return Json(CommonViewModel);
+		}
+
+		public async Task<IActionResult> StartLoading()
+		{
+			try
+			{
+				var isRunning = _socketBackgroundTask.IsConnect();
+
+				if (!isRunning)
+				{
+					string listenIPString = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Listen_IP").Value ?? "");
+					string listenPortString = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Listen_Port").Value ?? "");
+
+					if (Regex.IsMatch((listenIPString ?? ""), @"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
+						&& IPAddress.TryParse(listenIPString, out IPAddress listenIP) && int.TryParse(listenPortString, out int listenPort) && listenPort > 0 && listenPort <= 65535)
+					{
+						_socketBackgroundTask.ConnectToServer(listenIP, listenPort);
+						_socketBackgroundTask.DataReceive += Server_DataReceive;
+						_socketBackgroundTask.ConnectionClosed += Server_ConnectionClosed;
+						_socketBackgroundTask.ServerStarted += Server_ServerStarted;
+					}
+				}
+
+				_sharedDataService.ClearScanData();
+
+				CommonViewModel.IsConfirm = true;
+				CommonViewModel.IsSuccess = isRunning;
+				CommonViewModel.StatusCode = isRunning ? ResponseStatusCode.Success : ResponseStatusCode.Error;
+				CommonViewModel.Message = isRunning ? "Start Loading" : "Connectivity issue with Conveyor.";
+			}
+			catch (Exception ex)
+			{
+				LogService.LogInsert(GetCurrentAction(), "", ex);
+
+				CommonViewModel.IsSuccess = false;
+				CommonViewModel.StatusCode = ResponseStatusCode.Error;
+				CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
+			}
+
+			return Json(CommonViewModel);
+		}
+
+		private void Server_DataReceive(object sender, TcpServerListenerEventArgs e)
+		{
+			var receivedData = string.Format($"{Encoding.ASCII.GetString(e.buffer)}");
+			_hubContext.Clients.All.SendAsync("ReceiveMessage", receivedData);
+			Console.WriteLine($"Socket server received message Before Split : \"{receivedData}\"");
+		}
+
+		private void Server_ServerStarted(object sender, EventArgs e)
+		{
+			_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_START");
+			Console.WriteLine($"Socket connection started.");
+		}
+
+		private void Server_ConnectionClosed(object sender, EventArgs e)
+		{
+			_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
+			Console.WriteLine($"Socket connection closed.");
 		}
 
 
@@ -45,16 +122,12 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 		public IActionResult Index()
 		{
-			StopConveyor();
-
 			return View();
 		}
 
 		[HttpGet]
 		public IActionResult GetDI(string type, string searchTerm, int id = -1)
 		{
-			StopConveyor();
-
 			var list = new List<MDA>();
 
 			try
@@ -91,8 +164,6 @@ namespace Dispatch_System.Areas.Export.Controllers
 		[HttpGet]
 		public IActionResult Load_Pallate(Int64 Id = 0, string DI_No = "", bool GetShipper = false, bool IsDataTable = false, JqueryDatatableParam param = null)
 		{
-			StopConveyor();
-
 			var iTotalRecords = 0;
 
 			var list = new List<dynamic>();
@@ -159,9 +230,10 @@ namespace Dispatch_System.Areas.Export.Controllers
 							}
 						}
 						catch { continue; }
+
+						_socketBackgroundTask.SetObjLoad(new { Pallate_Id = Id, });
 					}
 
-					_socketBackgroundTask.SetMDA(viewModel);
 				}
 			}
 			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
