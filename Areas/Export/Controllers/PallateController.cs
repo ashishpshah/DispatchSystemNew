@@ -27,6 +27,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 		private Int64 PLANT_ID { get; set; }
 
 		private readonly IHubContext<ConveyorHub> _hubContext;
+		private Thread threadConnectionStatus;
 
 		public PallateController(ConveyorBackgroundTask socketBackgroundTask, SharedDataService sharedDataService, IHubContext<ConveyorHub> hubContext)
 		{
@@ -38,13 +39,36 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 			_sharedDataService = sharedDataService;
 			_socketBackgroundTask = socketBackgroundTask;
+
+
+			threadConnectionStatus = null;
+
 		}
 
-		public async Task<IActionResult> StopLoading()
+		public void ConnectionStatus()
+		{
+			while (threadConnectionStatus != null)
+			{
+				_hubContext.Clients.All.SendAsync("ReceiveMessage", $"CONNECTION_STATUS:{Convert.ToString(_socketBackgroundTask.IsConnect()).ToUpper()}");
+				Thread.Sleep(1000 * 10);
+			}
+		}
+
+		public async Task<IActionResult> StopLoading(bool isManuallyStop = false)
 		{
 			try
 			{
-				_socketBackgroundTask.SendToClient("STOP");
+				if (!isManuallyStop)
+					_socketBackgroundTask.SendToClient("STOP");
+				else
+				{
+					_socketBackgroundTask.IsRunning(false);
+
+					_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
+
+					_socketBackgroundTask.DisconnectToServer();
+					_sharedDataService.ClearScanData();
+				}
 
 				CommonViewModel.IsConfirm = true;
 				CommonViewModel.IsSuccess = true;
@@ -67,6 +91,8 @@ namespace Dispatch_System.Areas.Export.Controllers
 		{
 			try
 			{
+				threadConnectionStatus = null;
+
 				var isRunning = _socketBackgroundTask.IsConnect();
 
 				if (!isRunning)
@@ -81,6 +107,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 						_socketBackgroundTask.DataReceive += Server_DataReceive;
 						_socketBackgroundTask.ConnectionClosed += Server_ConnectionClosed;
 						_socketBackgroundTask.ServerStarted += Server_ServerStarted;
+
 					}
 				}
 
@@ -137,7 +164,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 				_socketBackgroundTask.DisconnectToServer();
 				_sharedDataService.ClearScanData();
 			}
-			else if (receivedData.ToUpper().Contains("MCSTART") && !_socketBackgroundTask.IsRunning())
+			else if (receivedData.ToUpper().Contains("MCSTART"))
 			{
 				_socketBackgroundTask.IsRunning(true);
 
@@ -145,7 +172,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 				_sharedDataService.ClearScanData();
 			}
-			else if (!receivedData.ToUpper().Contains("MCIDEL") && _socketBackgroundTask.IsRunning())
+			else if (!receivedData.ToUpper().Contains("MCIDEL"))
 			{
 
 			}
@@ -160,11 +187,16 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 			//_socketBackgroundTask.SendToClient("STOP");
 			_socketBackgroundTask.SendToClient("START");
+
+			threadConnectionStatus = new Thread(ConnectionStatus);
+			threadConnectionStatus.Start();
+
 		}
 
 		private void Server_ConnectionClosed(object sender, EventArgs e)
 		{
 			Console.WriteLine($"Socket connection closed.");
+			threadConnectionStatus = null;
 		}
 
 		#region Pallate

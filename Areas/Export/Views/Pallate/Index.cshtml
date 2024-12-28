@@ -199,7 +199,7 @@
 									<div class="row no-gutters p-0 m-0 mt-2 d-none" id="divLoadButton">
 										<div class="col-12 w-100">
 											<button type="button" id="btnStartLoading" class="btn btn-success btn-flat px-3 mr-5" onclick="fnStartLoading()">Start Loading</button>
-											<button type="button" id="btnStopLoading" class="btn btn-danger btn-flat px-3 mr-5" onclick="fnStopLoading()" disabled>Stop Loading</button>
+											<button type="button" id="btnStopLoading" class="btn btn-danger btn-flat px-3 mr-5" onclick="fnStopLoading(false)" disabled>Stop Loading</button>
 											<button type="button" id="btnFinishLoading" class="btn btn-info btn-flat px-3 mr-5" onclick="fnClick_ClosePallate()">Finish Loading</button>
 										</div>
 									</div>
@@ -227,11 +227,11 @@
 		var tagFinishLoading = $('#btnFinishLoading');
 		let timerId = null;
 
-		function fnStopLoading() {
+		function fnStopLoading(isManuallyStop) {
 			ShowLoader(true);
 			$.ajax({
 				type: "GET",
-				url: '@Url_RootToController/StopLoading',
+				url: '@Url_RootToController/StopLoading?isManuallyStop=' + isManuallyStop,
 				data: null,
 				contentType: "application/json; charset=utf-8",
 				dataType: "html",
@@ -280,6 +280,7 @@
 				tagFinishLoading.prop('disabled', false);
 
 				ShowLoader(false);
+				CommonAlert_Success("Start Loading");
 			}
 			else if ($result && $result === 'SERVER_STOP') {
 				tagStartLoading.prop('disabled', false);
@@ -287,11 +288,16 @@
 				tagFinishLoading.prop('disabled', true);
 
 				ShowLoader(false);
+				CommonAlert_Error("Stop Loading");
+				fnDisconnectSignalR();
+			}
+			else if ($result && $result.indexOf('CONNECTION_STATUS:FALSE') > -1 && timerId === null) {
+				fnStopLoading(true);
 			}
 		}
 
 		function fnCheckConveyorConnection_Result($isConnect) {
-			debugger;
+
 			if ($isConnect && $isConnect == true) {
 
 				tagStartLoading.prop('disabled', true);
@@ -302,13 +308,8 @@
 					clearInterval(timerId);
 					timerId = null;
 				}
-			} else {
-				tagStartLoading.prop('disabled', false);
-				tagStopLoading.prop('disabled', true);
-				tagFinishLoading.prop('disabled', true);
-
-				ShowLoader(false);
-			}
+			} else
+				fnReceiveSignalR_Message('SERVER_STOP');
 		}
 
 		// function fnConnectSignalR_Result($isConnect) {

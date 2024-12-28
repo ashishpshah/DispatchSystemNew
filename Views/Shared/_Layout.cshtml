@@ -231,12 +231,12 @@
 		}
 
 		/* table.dataTable tr th.select-checkbox.selected::after {
-																			content: "✔";
-																			margin-top: -11px;
-																			margin-left: -4px;
-																			text-align: center;
-																			text-shadow: rgb(176, 190, 217) 1px 1px, rgb(176, 190, 217) -1px -1px, rgb(176, 190, 217) 1px -1px, rgb(176, 190, 217) -1px 1px;
-																		} */
+																					content: "✔";
+																					margin-top: -11px;
+																					margin-left: -4px;
+																					text-align: center;
+																					text-shadow: rgb(176, 190, 217) 1px 1px, rgb(176, 190, 217) -1px -1px, rgb(176, 190, 217) 1px -1px, rgb(176, 190, 217) -1px 1px;
+																				} */
 	</style>
 
 	@RenderSection("Styles", required: false)
@@ -356,55 +356,55 @@
 										{
 											if (listMenu.Any(x => x.Parent_Id == menu.Key.Id))
 											{
-													<li class="nav-item" style="padding-top:5px !important">
-														<a href="#" class="nav-link">
-															<i class="nav-icon fas fa-tachometer-alt"></i>
-															<p>
-																@menu.Key.Display_Name
-																<i class="right fas fa-angle-left"></i>
-															</p>
-														</a>
-														<ul class="nav nav-treeview">
-															@foreach (var menuChild in listMenu.Where(x => x.Parent_Id == menu.Key.Id).OrderBy(x => x.DisplayOrder))
+												<li class="nav-item" style="padding-top:5px !important">
+													<a href="#" class="nav-link">
+														<i class="nav-icon fas fa-tachometer-alt"></i>
+														<p>
+															@menu.Key.Display_Name
+															<i class="right fas fa-angle-left"></i>
+														</p>
+													</a>
+													<ul class="nav nav-treeview">
+														@foreach (var menuChild in listMenu.Where(x => x.Parent_Id == menu.Key.Id).OrderBy(x => x.DisplayOrder))
 														{
-																<li class="nav-item ml-3">
-																	@if (string.IsNullOrEmpty(menuChild.Url))
+															<li class="nav-item ml-3">
+																@if (string.IsNullOrEmpty(menuChild.Url))
 																{
-																		<a href="@Url.Action("Index", menuChild.Controller, new { Area = menuChild.Area })" data-title="@menuChild.Display_Name" class="nav-link">
-																			<i class="nav-icon fas fa-th"></i>
-																			<p>@menuChild.Display_Name</p>
-																		</a>
+																	<a href="@Url.Action("Index", menuChild.Controller, new { Area = menuChild.Area })" data-title="@menuChild.Display_Name" class="nav-link">
+																		<i class="nav-icon fas fa-th"></i>
+																		<p>@menuChild.Display_Name</p>
+																	</a>
 																}
 																else
 																{
-																		<a href="@(Url.Content("~/")+menuChild.Url)" data-title="@menuChild.Display_Name" class="nav-link">
-																			<i class="nav-icon fas fa-th"></i>
-																			<p>@menuChild.Display_Name</p>
-																		</a>
+																	<a href="@(Url.Content("~/")+menuChild.Url)" data-title="@menuChild.Display_Name" class="nav-link">
+																		<i class="nav-icon fas fa-th"></i>
+																		<p>@menuChild.Display_Name</p>
+																	</a>
 																}
-																</li>
+															</li>
 														}
-														</ul>
-													</li>
+													</ul>
+												</li>
 											}
 											else
 											{
-													<li class="nav-item">
-														@if (string.IsNullOrEmpty(menu.Key.Url))
+												<li class="nav-item">
+													@if (string.IsNullOrEmpty(menu.Key.Url))
 													{
-															<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" class="nav-link">
-																<i class="nav-icon fas fa-th"></i>
-																<p> @menu.Key.Display_Name </p>
-															</a>
+														<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" class="nav-link">
+															<i class="nav-icon fas fa-th"></i>
+															<p> @menu.Key.Display_Name </p>
+														</a>
 													}
 													else
 													{
-															<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
-																<i class="nav-icon fas fa-th"></i>
-																<p>@menu.Key.Display_Name</p>
-															</a>
+														<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
+															<i class="nav-icon fas fa-th"></i>
+															<p>@menu.Key.Display_Name</p>
+														</a>
 													}
-													</li>
+												</li>
 												// <li class="nav-item">
 												//     <a href="@Url.Action("Index", "MDABatchNoList", new { Area = "Admin"})" class="nav-link">
 												//         <i class="nav-icon fas fa-th"></i>
@@ -417,22 +417,22 @@
 									{
 										foreach (var menu in listMenu.OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.Display_Name, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
 										{
-												<li class="nav-item">
-													@if (string.IsNullOrEmpty(menu.Key.Url))
+											<li class="nav-item">
+												@if (string.IsNullOrEmpty(menu.Key.Url))
 												{
-														<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" class="nav-link">
-															<i class="nav-icon fas fa-th"></i>
-															<p> @menu.Key.Display_Name </p>
-														</a>
+													<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" class="nav-link">
+														<i class="nav-icon fas fa-th"></i>
+														<p> @menu.Key.Display_Name </p>
+													</a>
 												}
 												else
 												{
-														<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
-															<i class="nav-icon fas fa-th"></i>
-															<p>@menu.Key.Display_Name</p>
-														</a>
+													<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
+														<i class="nav-icon fas fa-th"></i>
+														<p>@menu.Key.Display_Name</p>
+													</a>
 												}
-												</li>
+											</li>
 										}
 									}
 								}
@@ -622,13 +622,13 @@
 
 		connection.onclose(function (error) {
 			debugger;
-			try { checkConveyorConnection() } catch { }
+			//try { checkConveyorConnection() } catch { }
 			if (error) {
 				console.error("Connection closed with error: ", error);
 			} else {
 				console.log("Connection closed");
 			}
-			
+
 			//reconnect();
 		});
 
@@ -656,6 +656,7 @@
 		}
 
 		function fnDisconnectSignalR() {
+			debugger;
 			if (connection.state === signalR.HubConnectionState.Connected) {
 				connection.stop().then(function () {
 					userGuid = null;

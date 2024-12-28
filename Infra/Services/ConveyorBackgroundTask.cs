@@ -4,6 +4,7 @@ using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using MySqlX.XDevAPI;
 using Newtonsoft.Json;
 using Oracle.ManagedDataAccess.Client;
 using Org.BouncyCastle.Utilities.Encoders;
@@ -51,11 +52,22 @@ namespace VendorQRGeneration.Infra.Services
 		{
 			try
 			{
-				Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+				//Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-				s.Connect(ConnectionIP, ConnectionPort);
+				//s.Connect(ConnectionIP, ConnectionPort);
 
-				if (s.Connected && !(s.Poll(1, SelectMode.SelectRead) && s.Available == 0)) return true;
+				//if (s.Connected && !(s.Poll(1, SelectMode.SelectRead) && s.Available == 0)) return true;
+				lock (connectedClient)
+				{
+					if (connectedClient?.Client == null || !connectedClient.Client.Connected)
+						return false;
+
+					// Poll to check connection state
+					if (connectedClient.Client.Poll(0, SelectMode.SelectRead) && connectedClient.Client.Available == 0)
+						return false;
+
+					return true;
+				}
 			}
 			catch (Exception ex) { }
 
@@ -64,28 +76,44 @@ namespace VendorQRGeneration.Infra.Services
 
 		public void ConnectToServer(IPAddress listenIP, int listenPort)
 		{
+			isRunning = true;
+
 			ConnectionIP = listenIP;
 			ConnectionPort = listenPort;
 
 			tcpServerThread = new Thread(TcpServerRun);
 			tcpServerThread.Start();
+
 		}
 
-		private void TcpServerRun()
+		private void TcpServerRunningRun()
 		{
-			tcpListener = new TcpListener(ConnectionIP, ConnectionPort);
-			tcpListener.Start();
-
 			try
 			{
 				while (true)
 				{
-					if (!tcpListener.Active) break;
+					Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
+				}
 
+			}
+			catch (Exception ex)
+			{
+				// Log exception or handle it as needed.
+			}
+		}
+
+		private void TcpServerRun()
+		{
+			try
+			{
+				tcpListener = new TcpListener(ConnectionIP, ConnectionPort);
+				tcpListener.Start();
+
+				while (isRunning)
+				{
 					if (!tcpListener.Pending())
 					{
 						Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
-						Thread.Sleep(1000); // Avoid CPU overload.
 						continue;
 					}
 
@@ -120,7 +148,7 @@ namespace VendorQRGeneration.Infra.Services
 				using NetworkStream stream = mClient.GetStream();
 				byte[] buffer = new byte[1024];
 
-				while (true)
+				while (isRunning)
 				{
 					if (stream.DataAvailable)
 					{
@@ -167,6 +195,11 @@ namespace VendorQRGeneration.Infra.Services
 						// Handle exceptions when sending data.
 					}
 				}
+				else
+				{
+					IsRunning(false);
+					OnConnectionClosed();
+				}
 			}
 
 			await Task.CompletedTask;
@@ -180,6 +213,7 @@ namespace VendorQRGeneration.Infra.Services
 
 		protected virtual void OnConnectionClosed()
 		{
+			tcpListener?.Stop();
 			ConnectionClosed?.Invoke(this, EventArgs.Empty);
 		}
 

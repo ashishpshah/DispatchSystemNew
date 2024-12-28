@@ -53,6 +53,6 @@ namespace Dispatch_System.Infra
 
 		public static string GetConnectionId => _userConnectionId;
 
-		public bool CheckConveyorConnection() => _socketBackgroundTask.IsConnect();
+		public bool CheckConveyorConnection() => _socketBackgroundTask.IsRunning();
 	}
 }
