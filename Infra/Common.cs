@@ -9,6 +9,7 @@ using ZXing;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using ZXing.QrCode;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Dispatch_System
 {
@@ -47,8 +48,17 @@ namespace Dispatch_System
 		public static bool IsUserLogged() => Get_Session_Int(SessionKey.USER_ID) > 0;
 		public static bool IsSuperAdmin() => Get_Session_Int(SessionKey.ROLE_ID) == 1;
 		public static bool IsAdmin() => Get_Session_Int(SessionKey.ROLE_ADMIN) == 1;
-		public static Int64 LoggedUser_Id() => Get_Session_Int(SessionKey.USER_ID);
-		public static Int64 LoggedUser_Plant_Id() => Get_Session_Int(SessionKey.PLANT_ID);
+		public static Int64 LoggedUser_Id => Get_Session_Int(SessionKey.USER_ID);
+		public static Int64 LoggedUser_Plant_Id => GetPlantId();
+
+		private static long GetPlantId()
+		{
+			var PLANT_ID = Get_Session_Int(SessionKey.PLANT_ID);
+
+			if (PLANT_ID <= 0) PLANT_ID = AppHttpContextAccessor.PlantId;
+
+			return PLANT_ID;
+		}
 
 
 
@@ -352,6 +362,18 @@ namespace Dispatch_System
 				resizedQrCodeImage.Save(ms, ImageFormat.Png);
 				return Convert.ToBase64String(ms.ToArray());
 			}
+		}
+	}
+
+	public class FirstCharLowerCaseContractResolver : DefaultContractResolver
+	{
+		protected override string ResolvePropertyName(string propertyName)
+		{
+			if (string.IsNullOrEmpty(propertyName))
+				return propertyName;
+
+			// Convert only the first character to lowercase
+			return char.ToLower(propertyName[0]) + propertyName.Substring(1);
 		}
 	}
 

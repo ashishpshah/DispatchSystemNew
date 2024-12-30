@@ -1,10 +1,12 @@
 ﻿using com.itextpdf.text.pdf;
 using Dispatch_System.Controllers;
 using Dispatch_System.Infra;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using MySql.Data.MySqlClient;
 using MySqlX.XDevAPI;
+using Newtonsoft.Json;
 using Oracle.ManagedDataAccess.Client;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
@@ -87,7 +89,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 			return Json(CommonViewModel);
 		}
 
-		public async Task<IActionResult> StartLoading()
+		public async Task<IActionResult> StartLoading(Int64 Id = 0, string DI_No = "")
 		{
 			try
 			{
@@ -103,6 +105,8 @@ namespace Dispatch_System.Areas.Export.Controllers
 					if (Regex.IsMatch((listenIPString ?? ""), @"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
 						&& IPAddress.TryParse(listenIPString, out IPAddress listenIP) && int.TryParse(listenPortString, out int listenPort) && listenPort > 0 && listenPort <= 65535)
 					{
+						LoadingData objLoad = new LoadingData() { Id = Id, Data1 = DI_No };
+						_socketBackgroundTask.SetObjLoad(objLoad);
 						_socketBackgroundTask.ConnectToServer(listenIP, listenPort);
 						_socketBackgroundTask.DataReceive += Server_DataReceive;
 						_socketBackgroundTask.ConnectionClosed += Server_ConnectionClosed;
@@ -132,13 +136,16 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 		private void Server_DataReceive(object sender, TcpServerListenerEventArgs e)
 		{
+			LoadingData objLoad = _socketBackgroundTask.GetObjLoad();
+
 			var receivedData = string.Format($"{Encoding.ASCII.GetString(e.buffer)}");
+			var ticks = e.ticks;
 
 			//Write_Log($"Socket server received message Before Split : \"{receivedData}\"");
 
-			if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains(iffco_url))
+			if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains(iffco_url) && !receivedData.ToUpper().StartsWith("MC"))
 			{
-				receivedData = receivedData.Substring(receivedData.IndexOf(iffco_url));
+				receivedData = receivedData.Substring(receivedData.IndexOf(iffco_url) + iffco_url.Length);
 
 				var strQR = receivedData.Replace(iffco_url, "");
 				var sb = new StringBuilder(strQR);
@@ -148,12 +155,14 @@ namespace Dispatch_System.Areas.Export.Controllers
 					if (sb[i] == '/')
 						sb[i] = (i % 2 == 0) ? '(' : ')';
 				}
-				receivedData = Regex.Replace(receivedData, @"[^\w:/\(/\)\.\-]", "");
+				receivedData = Regex.Replace(sb.ToString(), @"[^\w:/\(/\)\.\-]", "");
 			}
 
 			//Write_Log($"Socket server received message After Split : \"{receivedData}\"");
 
 			receivedData = receivedData.Trim().Replace(" ", "");
+
+			var (IsSuccess, response, Id) = (false, "NOK", 0M);
 
 			if (receivedData.ToUpper().Contains("MCSTOP") && _socketBackgroundTask.IsRunning())
 			{
@@ -174,16 +183,76 @@ namespace Dispatch_System.Areas.Export.Controllers
 			}
 			else if (!receivedData.ToUpper().Contains("MCIDEL"))
 			{
+				if (!string.IsNullOrEmpty(receivedData) && receivedData.Trim().ToUpper().Replace(" ", "") == "<#>") return;
+				else if (!string.IsNullOrEmpty(receivedData) && receivedData.Trim().ToUpper().Replace(" ", "") == "<@>")
+				{
+					//Write_Log($"ReceivedData : {receivedData} | <@> Response : continue");
 
+					receivedData = "##########";
+
+					return;
+				}
+
+				List<MySqlParameter> oParams = new List<MySqlParameter>();
+
+				oParams.Add(new MySqlParameter("P_QR_CODE", MySqlDbType.VarString) { Value = receivedData });
+				oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = objLoad.Id });
+				oParams.Add(new MySqlParameter("P_DI_NO", MySqlDbType.VarString) { Value = Convert.ToString(objLoad.Data1) });
+				oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.LoggedUser_Plant_Id });
+				oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
+
+				(IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_PALLATE_SHIPPER_QRCODE_CHECK", oParams, true);
+
+				long requiredShipper = Convert.ToInt64(response.Split("#")[1]);
+				long loaddedShipper = Convert.ToInt64(response.Split("#")[2]);
+				long rejectShipper = Convert.ToInt64(response.Split("#")[3]);
+				bool isInsert = Convert.ToBoolean(Convert.ToInt16(response.Split("#")[4]));
+
+				objLoad.RequiredShipper = requiredShipper;
+				objLoad.LoaddedShipper = loaddedShipper;
+				objLoad.RejectShipper = rejectShipper;
+
+				objLoad.QRCode = receivedData;
+				objLoad.Ticks = ticks;
+
+				_socketBackgroundTask.SetObjLoad(objLoad);
+
+				response = response.Split("#")[0].ToString();
+
+				CommonViewModel.IsConfirm = !IsSuccess;
+				CommonViewModel.IsSuccess = IsSuccess;
+				CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
+				CommonViewModel.Message = response.Contains('_') ? response.Split('_')[0] : response;
+
+				CommonViewModel.Data1 = new
+				{
+					Id = Id,
+					Text = receivedData,
+					Success = response.Contains('_') ? response.Split('_')[0] : response,
+					RequiredShipper = requiredShipper,
+					LoaddedShipper = loaddedShipper,
+					RejectShipper = rejectShipper,
+					IsInsert = isInsert
+				};
+
+				CommonViewModel.Data2 = response.Contains('_') ? response.Split('_')[1] : null;
+
+				bool serverResponse = _socketBackgroundTask.SendToClient(CommonViewModel.Data1.Success);
+
+				if (serverResponse) _hubContext.Clients.All.SendAsync("ReceiveMessage", "DATA:" + JsonConvert.SerializeObject(CommonViewModel, new JsonSerializerSettings
+				{ ContractResolver = new FirstCharLowerCaseContractResolver(), Formatting = Formatting.Indented }));
+
+				//if (requiredShipper <= loaddedShipper) _hubContext.Clients.All.SendAsync("ReceiveMessage", "COMPLETE");
 			}
 
-			_hubContext.Clients.All.SendAsync("ReceiveMessage", receivedData);
-			Console.WriteLine($"Socket server received message Before Split : \"{receivedData}\"");
+			//_hubContext.Clients.All.SendAsync("ReceiveMessage", receivedData);
+			//Console.WriteLine($"Socket server received message Before Split : \"{receivedData}\"");
+
 		}
 
 		private void Server_ServerStarted(object sender, EventArgs e)
 		{
-			Console.WriteLine($"Socket connection started.");
+			//Console.WriteLine($"Socket connection started.");
 
 			//_socketBackgroundTask.SendToClient("STOP");
 			_socketBackgroundTask.SendToClient("START");
@@ -195,7 +264,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 		private void Server_ConnectionClosed(object sender, EventArgs e)
 		{
-			Console.WriteLine($"Socket connection closed.");
+			//Console.WriteLine($"Socket connection closed.");
 			threadConnectionStatus = null;
 		}
 
@@ -312,7 +381,6 @@ namespace Dispatch_System.Areas.Export.Controllers
 						}
 						catch { continue; }
 
-						_socketBackgroundTask.SetObjLoad(new { Pallate_Id = Id, });
 					}
 
 				}
@@ -503,16 +571,12 @@ namespace Dispatch_System.Areas.Export.Controllers
 			{
 				if (!string.IsNullOrEmpty(QR_Code) && Pallate_Id > 0 && !string.IsNullOrEmpty(DI_No))
 				{
-					var PLANT_ID = Common.Get_Session_Int(SessionKey.PLANT_ID);
-
-					if (PLANT_ID <= 0) PLANT_ID = AppHttpContextAccessor.PlantId;
-
 					List<MySqlParameter> oParams = new List<MySqlParameter>();
 
 					oParams.Add(new MySqlParameter("P_QR_CODE", MySqlDbType.VarString) { Value = QR_Code });
 					oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = Pallate_Id });
 					oParams.Add(new MySqlParameter("P_DI_NO", MySqlDbType.VarString) { Value = DI_No });
-					oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = PLANT_ID });
+					oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.LoggedUser_Plant_Id });
 					oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
 
 					var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_PALLATE_SHIPPER_QRCODE_CHECK", oParams, true);

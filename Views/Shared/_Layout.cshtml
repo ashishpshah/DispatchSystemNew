@@ -621,8 +621,7 @@
 		});
 
 		connection.onclose(function (error) {
-			debugger;
-			//try { checkConveyorConnection() } catch { }
+			try { checkConveyorConnection() } catch { }
 			if (error) {
 				console.error("Connection closed with error: ", error);
 			} else {
@@ -656,7 +655,6 @@
 		}
 
 		function fnDisconnectSignalR() {
-			debugger;
 			if (connection.state === signalR.HubConnectionState.Connected) {
 				connection.stop().then(function () {
 					userGuid = null;

@@ -228,6 +228,7 @@
 		let timerId = null;
 
 		function fnStopLoading(isManuallyStop) {
+			debugger;
 			ShowLoader(true);
 			$.ajax({
 				type: "GET",
@@ -250,29 +251,33 @@
 
 			if (!isSignalRConnected) fnConnectSignalR();
 
-			var selectedData = tablePallateDtls.rows('.bg-info').data();
-			if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
+			var Pallate_Id = $('#span_Pallate_Id').html();
+			var DI_No = $('#span_DI_No').html();
 
+			if (typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.length > 0 && typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
 				ShowLoader(true);
+
 				$.ajax({
 					type: "GET",
-					url: '@Url_RootToController/StartLoading',
+					url: '@Url_RootToController/StartLoading?Id=' + Pallate_Id + '&DI_No=' + DI_No,
 					data: null,
 					contentType: "application/json; charset=utf-8",
 					dataType: "html",
 					success: function (response) {
 
-						if (timerId === null) timerId = setInterval(checkConveyorConnection, 1000);
+						if (timerId === null) timerId = setInterval(checkConveyorConnection, 3000);
 
 					},
 					failure: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); },
 					error: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); }
 				});
 			}
+			else CommonAlert_Error("Please Select Pallte.");
 
 		}
 
 		function fnReceiveSignalR_Message($result) {
+
 			console.log($result);
 			if ($result && $result === 'SERVER_START') {
 				tagStartLoading.prop('disabled', true);
@@ -294,6 +299,70 @@
 			else if ($result && $result.indexOf('CONNECTION_STATUS:FALSE') > -1 && timerId === null) {
 				fnStopLoading(true);
 			}
+			else if ($result && $result.indexOf('DATA:') > -1) {
+				debugger;
+				$result = $result.replace('DATA:', '');
+
+				try {
+
+					var RequiredShipper = 0;
+					var LoaddedShipper = 0;
+
+					var $response = JSON.parse($result);
+
+					if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
+
+						if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK') && $response.data1['isInsert'] === true) {
+
+							if ($response.data1['success'] === 'OK') {
+								var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="S" class="float-left text-success text-bold">'
+									+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+								$('#ul_Scan_QR_Code').prepend(html);
+								$('#ul_Accepted_QR_Code').prepend(html);
+
+								$('#input_Scan_QR_Code').val('');
+								$('#input_temp_Scan_QR_Code').val('');
+
+							}
+							else {
+								var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="R" class="float-left text-danger text-bold">'
+									+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+
+								$('#ul_Scan_QR_Code').prepend(html);
+								$('#ul_Rejected_QR_Code').prepend(html);
+
+								$('#input_Scan_QR_Code').val('');
+								$('#input_temp_Scan_QR_Code').val('');
+							}
+						}
+
+						//$('#span_Total_Scan_QR_Code').attr('data-last', $response.data1['id']);
+						$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
+						$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+						$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+						$('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
+
+						RequiredShipper = $response.data1['requiredShipper'];
+						LoaddedShipper = $response.data1['loaddedShipper'];
+
+						fnCalculate_QR_Code();
+					}
+
+					debugger;
+					if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '' && (RequiredShipper <= LoaddedShipper && LoaddedShipper > 0))
+						CommonConfirmed_Success($response.data2, fnStopLoading, [false]);
+					else if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '')
+						CommonAlert_Error($response.data2);
+
+				} catch { }
+
+				ShowLoader(false);
+			}
+			// else if ($result && $result.indexOf('COMPLETE') > -1) {
+			// 	debugger;
+			// 	fnStopLoading(false);
+			// }
 		}
 
 		function fnCheckConveyorConnection_Result($isConnect) {
@@ -308,12 +377,12 @@
 					clearInterval(timerId);
 					timerId = null;
 				}
-			} else
+			} else if (timerId === null)
 				fnReceiveSignalR_Message('SERVER_STOP');
 		}
 
 		// function fnConnectSignalR_Result($isConnect) {
-		// 	debugger;
+		//
 		// 	// if ($isConnect && $isConnect == true && timerId === null) {
 		// 	// 	tagStartLoading.prop('disabled', true);
 		// 	// 	tagStopLoading.prop('disabled', false);
@@ -322,14 +391,14 @@
 		// }
 
 		// function fnDisconnectSignalR_Result($isDisconnect) {
-		// 	debugger;
+		//
 		// 	tagStartLoading.prop('disabled', false);
 		// 	tagStopLoading.prop('disabled', true);
 		// 	tagFinishLoading.prop('disabled', true);
 		// }
 
 		// function fnSendSignalR_Result($isSend) {
-		// 	debugger;
+		//
 		// }
 
 	</script>

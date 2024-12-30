@@ -23,8 +23,7 @@ namespace VendorQRGeneration.Infra.Services
 {
 	public class ConveyorBackgroundTask
 	{
-
-		private dynamic objLoad { get; set; }
+		private LoadingData objLoad { get; set; } = new LoadingData();
 		private bool isRunning { get; set; }
 		private bool MDA_QR_Scan_Response_Demo { get; set; }
 		private int MDA_QR_Scan_Delay_Sec = 1;
@@ -111,11 +110,15 @@ namespace VendorQRGeneration.Infra.Services
 
 				while (isRunning)
 				{
-					if (!tcpListener.Pending())
+					try
 					{
-						Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
-						continue;
+						if (!tcpListener.Pending())
+						{
+							Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
+							continue;
+						}
 					}
+					catch { continue; }
 
 					TcpClient client = tcpListener.AcceptTcpClient();
 
@@ -156,7 +159,7 @@ namespace VendorQRGeneration.Infra.Services
 
 						if (bytesRead > 0)
 						{
-							TcpServerListenerEventArgs args = new TcpServerListenerEventArgs { buffer = buffer };
+							TcpServerListenerEventArgs args = new TcpServerListenerEventArgs { buffer = buffer, ticks = DateTime.UtcNow.Ticks };
 							OnDataReceive(args);
 						}
 					}
@@ -177,7 +180,7 @@ namespace VendorQRGeneration.Infra.Services
 			}
 		}
 
-		public async Task SendToClient(string data)
+		public bool SendToClient(string data)
 		{
 			byte[] bytesToSend = Encoding.UTF8.GetBytes(data);
 
@@ -189,6 +192,8 @@ namespace VendorQRGeneration.Infra.Services
 					{
 						NetworkStream stream = connectedClient.GetStream();
 						stream.Write(bytesToSend, 0, bytesToSend.Length);
+
+						return true;
 					}
 					catch (Exception ex)
 					{
@@ -202,7 +207,7 @@ namespace VendorQRGeneration.Infra.Services
 				}
 			}
 
-			await Task.CompletedTask;
+			return false;
 		}
 
 		protected virtual void OnDataReceive(TcpServerListenerEventArgs e)
@@ -232,8 +237,9 @@ namespace VendorQRGeneration.Infra.Services
 		}
 
 
-		public void SetObjLoad(dynamic _objLoad) => objLoad = _objLoad;
-		public dynamic GetObjLoad() => objLoad;
+		public void SetObjLoad(LoadingData _objLoad) { lock (objLoad) objLoad = _objLoad; }
+
+		public LoadingData GetObjLoad() => objLoad;
 
 		public void IsRunning(bool _isRunning) => isRunning = _isRunning;
 		public bool IsRunning() => isRunning;
@@ -243,10 +249,23 @@ namespace VendorQRGeneration.Infra.Services
 	public class TcpServerListenerEventArgs : EventArgs
 	{
 		public byte[] buffer { get; set; }
+		public long ticks { get; set; }
 	}
 
 	public class ClientConnectionEventArgs : EventArgs
 	{
 		public string ClientIP { get; set; }
+	}
+
+	public class LoadingData
+	{
+		public long Id { get; set; }
+		public dynamic? Data1 { get; set; }
+		public dynamic? Data2 { get; set; }
+		public long RequiredShipper { get; set; }
+		public long LoaddedShipper { get; set; }
+		public long RejectShipper { get; set; }
+		public string QRCode { get; set; }
+		public long Ticks { get; set; }
 	}
 }
