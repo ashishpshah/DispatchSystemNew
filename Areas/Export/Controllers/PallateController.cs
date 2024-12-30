@@ -24,14 +24,13 @@ namespace Dispatch_System.Areas.Export.Controllers
 	public class PallateController : BaseController<ResponseModel<Pallate>>
 	{
 		private readonly ConveyorBackgroundTask _socketBackgroundTask;
-		private readonly SharedDataService _sharedDataService;
 		private string iffco_url { get; set; }
 		private Int64 PLANT_ID { get; set; }
 
 		private readonly IHubContext<ConveyorHub> _hubContext;
 		private Thread threadConnectionStatus;
 
-		public PallateController(ConveyorBackgroundTask socketBackgroundTask, SharedDataService sharedDataService, IHubContext<ConveyorHub> hubContext)
+		public PallateController(ConveyorBackgroundTask socketBackgroundTask, IHubContext<ConveyorHub> hubContext)
 		{
 			PLANT_ID = Common.Get_Session_Int(SessionKey.PLANT_ID);
 
@@ -39,7 +38,6 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 			_hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
 
-			_sharedDataService = sharedDataService;
 			_socketBackgroundTask = socketBackgroundTask;
 
 
@@ -66,10 +64,10 @@ namespace Dispatch_System.Areas.Export.Controllers
 				{
 					_socketBackgroundTask.IsRunning(false);
 
+					_socketBackgroundTask.DisconnectToServer();
+
 					_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
 
-					_socketBackgroundTask.DisconnectToServer();
-					_sharedDataService.ClearScanData();
 				}
 
 				CommonViewModel.IsConfirm = true;
@@ -114,8 +112,6 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 					}
 				}
-
-				_sharedDataService.ClearScanData();
 
 				CommonViewModel.IsConfirm = true;
 				CommonViewModel.IsSuccess = isRunning;
@@ -171,7 +167,6 @@ namespace Dispatch_System.Areas.Export.Controllers
 				_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
 
 				_socketBackgroundTask.DisconnectToServer();
-				_sharedDataService.ClearScanData();
 			}
 			else if (receivedData.ToUpper().Contains("MCSTART"))
 			{
@@ -179,7 +174,6 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 				_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_START");
 
-				_sharedDataService.ClearScanData();
 			}
 			else if (!receivedData.ToUpper().Contains("MCIDEL"))
 			{
@@ -282,6 +276,16 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 			try
 			{
+				if (_socketBackgroundTask.IsConnect())
+				{
+					_socketBackgroundTask.IsRunning(false);
+
+					_socketBackgroundTask.DisconnectToServer();
+
+					_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
+
+				}
+
 				List<MySqlParameter> oParams = new List<MySqlParameter>();
 
 				oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = id });
@@ -320,6 +324,16 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 			try
 			{
+				if (_socketBackgroundTask.IsConnect())
+				{
+					_socketBackgroundTask.IsRunning(false);
+
+					_socketBackgroundTask.DisconnectToServer();
+
+					_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
+
+				}
+
 				List<MySqlParameter> oParams = new List<MySqlParameter>();
 
 				oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = Id });
@@ -683,6 +697,61 @@ namespace Dispatch_System.Areas.Export.Controllers
 			return Json(CommonViewModel);
 		}
 
+
+		public JsonResult Delete_QR_Code(Int64 Pallate_Id = 0, string DI_No = "", string QR_Code_type = "", Int64 QR_Code_Id = -1)
+		{
+			try
+			{
+				var (IsSuccess, response, Id) = (false, ResponseStatusMessage.Error, 0M);
+
+				List<MySqlParameter> oParams = new List<MySqlParameter>();
+
+				oParams.Add(new MySqlParameter("P_Pallate_Id", MySqlDbType.Int64) { Value = Pallate_Id });
+				oParams.Add(new MySqlParameter("P_DI_No", MySqlDbType.VarString) { Value = DI_No });
+				oParams.Add(new MySqlParameter("P_QR_Code_Id", MySqlDbType.Int64) { Value = QR_Code_Id });
+				oParams.Add(new MySqlParameter("P_QR_Code_type", MySqlDbType.VarString) { Value = QR_Code_type });
+				oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+				oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
+
+				(IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_PALLATE_SHIPPER_QRCODE_DELETE", oParams, true);
+
+				long requiredShipper = Convert.ToInt64(response.Split("#")[1]);
+				long loaddedShipper = Convert.ToInt64(response.Split("#")[2]);
+				long rejectShipper = Convert.ToInt64(response.Split("#")[3]);
+				bool isDelete = Convert.ToBoolean(Convert.ToInt16(response.Split("#")[4]));
+
+				response = response.Split("#")[0].ToString();
+
+				CommonViewModel.IsConfirm = !IsSuccess;
+				CommonViewModel.IsSuccess = IsSuccess;
+				CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
+				CommonViewModel.Message = response.Contains('_') ? response.Split('_')[0] : response;
+
+				CommonViewModel.Data1 = new
+				{
+					Id = QR_Code_Id,
+					Text = QR_Code_type,
+					Success = response.Contains('_') ? response.Split('_')[0] : response,
+					RequiredShipper = requiredShipper,
+					LoaddedShipper = loaddedShipper,
+					RejectShipper = rejectShipper,
+					IsDelete = isDelete
+				};
+
+				CommonViewModel.Data2 = response.Contains('_') ? response.Split('_')[1] : null;
+
+			}
+			catch (Exception ex)
+			{
+				LogService.LogInsert(GetCurrentAction(), "", ex);
+
+				CommonViewModel.IsSuccess = false;
+				CommonViewModel.StatusCode = ResponseStatusCode.Error;
+				CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
+			}
+
+			return Json(CommonViewModel);
+		}
 		#endregion
 
 		#region Pallate-Load

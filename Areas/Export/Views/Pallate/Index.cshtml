@@ -316,7 +316,7 @@
 
 							if ($response.data1['success'] === 'OK') {
 								var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="S" class="float-left text-success text-bold">'
-									+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+									+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'S\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
 								$('#ul_Scan_QR_Code').prepend(html);
 								$('#ul_Accepted_QR_Code').prepend(html);
@@ -327,7 +327,7 @@
 							}
 							else {
 								var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="R" class="float-left text-danger text-bold">'
-									+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+									+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'R\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
 								$('#ul_Scan_QR_Code').prepend(html);
 								$('#ul_Rejected_QR_Code').prepend(html);
@@ -695,6 +695,7 @@
 		$(document).on('click', '#table_Pallate_Dtls tbody tr', function (e) {
 			fnCancel();
 			fnSelectPallate(null);
+			fnStopLoading(true);
 
 			$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
 				if (i != (e.currentTarget.rowIndex - 1))
@@ -765,7 +766,7 @@
 
 										if (item['status'] === 'S') {
 											var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + item['id'] + '" data-type="S" class="float-left text-success text-bold">'
-												+ item['qR_Code'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+												+ item['qR_Code'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'S\',' + item['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
 											$('#ul_Scan_QR_Code').prepend(html);
 											$('#ul_Accepted_QR_Code').prepend(html);
@@ -776,7 +777,7 @@
 										}
 										else {
 											var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + item['id'] + '" data-type="R" class="float-left text-danger text-bold">'
-												+ item['qR_Code'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+												+ item['qR_Code'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'R\',' + item['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
 											$('#ul_Scan_QR_Code').prepend(html);
 											$('#ul_Rejected_QR_Code').prepend(html);
@@ -890,7 +891,8 @@
 							$('#input_Scan_QR_Code').trigger('input');
 
 						}
-					} else {
+					} 
+					else {
 						$('#input_Scan_QR_Code').val(input_Scanner);
 						$('#input_Scan_QR_Code').trigger('change');
 						$('#input_Scan_QR_Code').trigger('input');
@@ -939,7 +941,7 @@
 
 											if ($response.data1['success'] === 'OK') {
 												var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="S" class="float-left text-success text-bold">'
-													+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+													+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'S\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
 												$('#ul_Scan_QR_Code').prepend(html);
 												$('#ul_Accepted_QR_Code').prepend(html);
@@ -950,7 +952,7 @@
 											}
 											else {
 												var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="R" class="float-left text-danger text-bold">'
-													+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+													+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'R\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
 												$('#ul_Scan_QR_Code').prepend(html);
 												$('#ul_Rejected_QR_Code').prepend(html);
@@ -960,7 +962,6 @@
 											}
 										}
 
-										//$('#span_Total_Scan_QR_Code').attr('data-last', $response.data1['id']);
 										$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
 										$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
 										$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
@@ -1074,6 +1075,108 @@
 					} catch { }
 				});
 			}
+		}
+
+		function fnClick_Delete_QR_Code($this, $type, $id, $elementId){
+			var Pallate_Id = $('#span_Pallate_Id').html();
+			var DI_No = $('#span_DI_No').html();
+
+			if (typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.length > 0 && typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
+				ShowLoader(true);
+
+				var qr_code = $($this).parent().find('span').text().trim();
+
+				var message = "";
+
+				if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length == 0 && $type == "") {
+					message = "Are you sure to delete all Shipper QR Codes ?";
+				}
+				else if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length > 0 && $type == "S") {
+					message = "Are you sure to delete all Accepted Shipper QR Codes ?";
+				}
+				else if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length > 0 && $type == "R") {
+					message = "Are you sure to delete all Rejected Shipper QR Codes ?";
+				}
+				else {
+					message = "Are you sure to delete Shipper QR Code   " + qr_code + " ?";
+				}
+
+				Swal.fire({
+					icon: 'warning',
+					title: message,
+					showDenyButton: false,
+					showCancelButton: true,
+					confirmButtonText: 'OK'
+				}).then((result) => {
+
+					if (result != null && result.isConfirmed == true) {
+						$.ajax({
+							type: "GET",
+							url: '@Url_RootToController/Delete_QR_Code?Pallate_Id=' + Pallate_Id + '&DI_No=' + DI_No + '&QR_Code_type=' + $type + '&QR_Code_Id=' + $id,
+							data: null,
+							contentType: "application/json; charset=utf-8",
+							dataType: "json",
+							success: function ($response) {
+						
+									setTimeout(function () {
+
+										try {
+											if ($response.statusCode === 1) {
+												if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
+
+													if ($response.data1['success'] === 'OK' && $response.data1['isDelete'] === true) {
+													
+														if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length > 0) {
+															if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length == 0 && $type == "") {
+																$('#div_Scan_QR_Code ul li').remove();
+																$('#ul_Accepted_QR_Code ul li').remove();
+																$('#ul_Rejected_QR_Code ul li').remove();
+															}
+															else if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length > 0) {								
+																$('#div_Scan_QR_Code ul li span:contains("' + qr_code + '")[data-type="'+$type+'"]').closest('li').remove();
+																$('#ul_Accepted_QR_Code ul li span:contains("' + qr_code + '")[data-type="'+$type+'"]').closest('li').remove();
+																$('#ul_Rejected_QR_Code ul li span:contains("' + qr_code + '")[data-type="'+$type+'"]').closest('li').remove();
+															}
+															else {															
+																$('#div_Scan_QR_Code ul li span:contains("' + qr_code + '")[data-id="'+$id+'"]').closest('li').remove();
+																$('#ul_Accepted_QR_Code ul li span:contains("' + qr_code + '")[data-id="'+$id+'"]').closest('li').remove();
+																$('#ul_Rejected_QR_Code ul li span:contains("' + qr_code + '")[data-id="'+$id+'"]').closest('li').remove();
+															}
+														}
+																												
+														if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '') 
+															CommonAlert_Success($response.data2);
+													}
+													else if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '') 
+														CommonAlert_Success($response.data2);
+
+													$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
+													$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+													$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+													$('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
+
+													fnCalculate_QR_Code();
+												}
+
+											}
+											else CommonAlert_Error($response.message);
+
+										} catch { }
+
+										ShowLoader(false);
+
+									}, 1000);
+
+							},
+							failure: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); },
+							error: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); }
+						});
+					}
+				});
+
+				
+			}
+			
 		}
 
 	</script>

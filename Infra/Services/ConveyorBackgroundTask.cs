@@ -25,6 +25,7 @@ namespace VendorQRGeneration.Infra.Services
 	{
 		private LoadingData objLoad { get; set; } = new LoadingData();
 		private bool isRunning { get; set; }
+		public (string command, bool isSuccess) LastCommand { get; set; }
 		private bool MDA_QR_Scan_Response_Demo { get; set; }
 		private int MDA_QR_Scan_Delay_Sec = 1;
 
@@ -83,22 +84,7 @@ namespace VendorQRGeneration.Infra.Services
 			tcpServerThread = new Thread(TcpServerRun);
 			tcpServerThread.Start();
 
-		}
-
-		private void TcpServerRunningRun()
-		{
-			try
-			{
-				while (true)
-				{
-					Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
-				}
-
-			}
-			catch (Exception ex)
-			{
-				// Log exception or handle it as needed.
-			}
+			LastCommand = new("", false);
 		}
 
 		private void TcpServerRun()
@@ -127,7 +113,7 @@ namespace VendorQRGeneration.Infra.Services
 					Thread tcpHandlerThread = new Thread(new ParameterizedThreadStart(TcpHandler));
 					tcpHandlerThread.Start(client);
 
-					OnServerStarted();
+					ServerStarted?.Invoke(this, EventArgs.Empty);
 				}
 
 			}
@@ -138,6 +124,7 @@ namespace VendorQRGeneration.Infra.Services
 			finally
 			{
 				tcpListener?.Stop();
+				LastCommand = new("", false);
 			}
 		}
 
@@ -160,7 +147,8 @@ namespace VendorQRGeneration.Infra.Services
 						if (bytesRead > 0)
 						{
 							TcpServerListenerEventArgs args = new TcpServerListenerEventArgs { buffer = buffer, ticks = DateTime.UtcNow.Ticks };
-							OnDataReceive(args);
+
+							DataReceive?.Invoke(this, args);
 						}
 					}
 
@@ -173,15 +161,20 @@ namespace VendorQRGeneration.Infra.Services
 			}
 			finally
 			{
+				LastCommand = new("", false);
 				lock (connectedClient) connectedClient = new();
 
 				mClient.Close();
-				OnConnectionClosed();
+				tcpListener?.Stop();
+				ConnectionClosed?.Invoke(this, EventArgs.Empty);
 			}
 		}
 
 		public bool SendToClient(string data)
 		{
+			if (!LastCommand.command.Contains("OK") && LastCommand.command == data && LastCommand.isSuccess == true)
+				return true;
+
 			byte[] bytesToSend = Encoding.UTF8.GetBytes(data);
 
 			lock (connectedClient)
@@ -193,6 +186,8 @@ namespace VendorQRGeneration.Infra.Services
 						NetworkStream stream = connectedClient.GetStream();
 						stream.Write(bytesToSend, 0, bytesToSend.Length);
 
+						LastCommand = new(data, true);
+
 						return true;
 					}
 					catch (Exception ex)
@@ -203,32 +198,20 @@ namespace VendorQRGeneration.Infra.Services
 				else
 				{
 					IsRunning(false);
-					OnConnectionClosed();
+					tcpListener?.Stop();
+					ConnectionClosed?.Invoke(this, EventArgs.Empty);
 				}
 			}
+
+			LastCommand = new(data, false);
 
 			return false;
 		}
 
-		protected virtual void OnDataReceive(TcpServerListenerEventArgs e)
-		{
-			EventHandler<TcpServerListenerEventArgs> handler = DataReceive;
-			handler?.Invoke(this, e);
-		}
-
-		protected virtual void OnConnectionClosed()
-		{
-			tcpListener?.Stop();
-			ConnectionClosed?.Invoke(this, EventArgs.Empty);
-		}
-
-		protected virtual void OnServerStarted()
-		{
-			ServerStarted?.Invoke(this, EventArgs.Empty);
-		}
-
 		public void DisconnectToServer()
 		{
+			LastCommand = new("", false);
+
 			tcpListener?.Stop();
 
 			if (tcpServerThread != null && tcpServerThread.IsAlive)
