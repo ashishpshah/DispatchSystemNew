@@ -278,7 +278,6 @@
 
 		function fnReceiveSignalR_Message($result) {
 
-			console.log($result);
 			if ($result && $result === 'SERVER_START') {
 				tagStartLoading.prop('disabled', true);
 				tagStopLoading.prop('disabled', false);
@@ -300,7 +299,7 @@
 				fnStopLoading(true);
 			}
 			else if ($result && $result.indexOf('DATA:') > -1) {
-				debugger;
+
 				$result = $result.replace('DATA:', '');
 
 				try {
@@ -337,7 +336,6 @@
 							}
 						}
 
-						//$('#span_Total_Scan_QR_Code').attr('data-last', $response.data1['id']);
 						$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
 						$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
 						$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
@@ -349,7 +347,6 @@
 						fnCalculate_QR_Code();
 					}
 
-					debugger;
 					if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '' && (RequiredShipper <= LoaddedShipper && LoaddedShipper > 0))
 						CommonConfirmed_Success($response.data2, fnStopLoading, [false]);
 					else if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '')
@@ -359,10 +356,6 @@
 
 				ShowLoader(false);
 			}
-			// else if ($result && $result.indexOf('COMPLETE') > -1) {
-			// 	debugger;
-			// 	fnStopLoading(false);
-			// }
 		}
 
 		function fnCheckConveyorConnection_Result($isConnect) {
@@ -380,26 +373,6 @@
 			} else if (timerId === null)
 				fnReceiveSignalR_Message('SERVER_STOP');
 		}
-
-		// function fnConnectSignalR_Result($isConnect) {
-		//
-		// 	// if ($isConnect && $isConnect == true && timerId === null) {
-		// 	// 	tagStartLoading.prop('disabled', true);
-		// 	// 	tagStopLoading.prop('disabled', false);
-		// 	// 	tagFinishLoading.prop('disabled', false);
-		// 	// }
-		// }
-
-		// function fnDisconnectSignalR_Result($isDisconnect) {
-		//
-		// 	tagStartLoading.prop('disabled', false);
-		// 	tagStopLoading.prop('disabled', true);
-		// 	tagFinishLoading.prop('disabled', true);
-		// }
-
-		// function fnSendSignalR_Result($isSend) {
-		//
-		// }
 
 	</script>
 
@@ -425,6 +398,10 @@
 
 			Load_Pallate();
 		});
+		
+        function fnDelete_Success(response) {            
+            if (typeof response != 'undefined' && response != null && response.statusCode === 1) Load_Pallate();
+        }
 
 		function GetDI($this, $type) {
 			ShowLoader(true);
@@ -605,7 +582,10 @@
 
 		function Load_Pallate() {
 			ShowLoader(true);
-
+			
+			if (window.location.href.toLowerCase().indexOf('index') > -1)
+				fnStopLoading(true);
+			
 			tablePallateDtls = null;
 
 			fnCancel();
@@ -653,6 +633,7 @@
 
 			if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
 				ShowLoader(true);
+
 				$.ajax({
 					type: "GET",
 					url: '@Url_RootToController/Load_Pallate?Id=-1&DI_No=' + DI_No,
@@ -668,8 +649,6 @@
 							else if (typeof response != 'undefined' && response != null && response.length > 0) {
 								$.each(response, function (i, item) {
 									var btnRow = '<div class="btn-group">' +
-										// '<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit" ' +
-										// 'onclick="fnClick_AddEditPallate(' + item['id'] + ');"><i class="far fa-edit"></i></button> ' +
 										'<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete" ' +
 										'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['id'] + '\'); "><i class="far fa-trash-alt"></i></button></div>';
 
@@ -689,14 +668,17 @@
 				});
 
 			}
-			else { ShowLoader(false); }
+			else ShowLoader(false);
 		}
 
 		$(document).on('click', '#table_Pallate_Dtls tbody tr', function (e) {
+
 			fnCancel();
 			fnSelectPallate(null);
-			fnStopLoading(true);
-
+			
+			if (window.location.href.toLowerCase().indexOf('index') > -1)
+				fnStopLoading(true);
+			
 			$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
 				if (i != (e.currentTarget.rowIndex - 1))
 					$(ez).removeClass('bg-info');
@@ -704,14 +686,11 @@
 
 
 			e.currentTarget.classList.toggle('bg-info');
-			// if (e.currentTarget.classList.contains('bg-info') == true)
-			//     e.currentTarget.classList.removeClass('bg-info');
-			// else
-			//     e.currentTarget.classList.addClass('bg-info');
 
 			if (e.currentTarget.classList.contains('bg-info') == true) {
 				var selectedData = tablePallateDtls.rows('.bg-info').data();
-				if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) fnSelectPallate(selectedData[0]);
+				if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) 
+				fnSelectPallate(selectedData[0]);
 			}
 
 			return false;
