@@ -229,7 +229,6 @@
 		let timerId = null;
 
 		function fnStopLoading(isManuallyStop) {
-			debugger;
 			ShowLoader(true);
 			$.ajax({
 				type: "GET",
@@ -917,7 +916,7 @@
 
 									if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
 
-										if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK')) {
+										if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK') && $response.data1['isInsert'] === true) {
 
 											if ($response.data1['success'] === 'OK') {
 												var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="S" class="float-left text-success text-bold">'

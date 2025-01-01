@@ -599,8 +599,9 @@ namespace Dispatch_System.Areas.Export.Controllers
 					long requiredShipper = Convert.ToInt64(response.Split("#")[1]);
 					long loaddedShipper = Convert.ToInt64(response.Split("#")[2]);
 					long rejectShipper = Convert.ToInt64(response.Split("#")[3]);
+                    bool isInsert = Convert.ToBoolean(Convert.ToInt16(response.Split("#")[4]));
 
-					response = response.Split("#")[0].ToString();
+                    response = response.Split("#")[0].ToString();
 
 					CommonViewModel.IsConfirm = !IsSuccess;
 					CommonViewModel.IsSuccess = IsSuccess;
@@ -614,8 +615,9 @@ namespace Dispatch_System.Areas.Export.Controllers
 						Success = response.Contains('_') ? response.Split('_')[0] : response,
 						RequiredShipper = requiredShipper,
 						LoaddedShipper = loaddedShipper,
-						RejectShipper = rejectShipper
-					};
+						RejectShipper = rejectShipper,
+                        IsInsert = isInsert
+                    };
 
 					CommonViewModel.Data2 = response.Contains('_') ? response.Split('_')[1] : null;
 
