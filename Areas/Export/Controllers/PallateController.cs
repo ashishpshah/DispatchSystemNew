@@ -40,7 +40,6 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 			_socketBackgroundTask = socketBackgroundTask;
 
-
 			threadConnectionStatus = null;
 
 		}
@@ -352,6 +351,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 							Id = dr["ID"] != DBNull.Value ? Convert.ToInt64(dr["ID"]) : 0,
 							Sr_No = dr["Sr_No"] != DBNull.Value ? Convert.ToInt32(dr["Sr_No"]) : 0,
 							DI_No = dr["DI_No"] != DBNull.Value ? Convert.ToString(dr["DI_No"]) : "",
+							SSCC = dr["SSCC"] != DBNull.Value ? Convert.ToString(dr["SSCC"]) : "",
 							Pallate_No = dr["Pallate_No"] != DBNull.Value ? Convert.ToString(dr["Pallate_No"]) : "",
 							Pallate_Type = dr["Pallate_Type"] != DBNull.Value ? Convert.ToString(dr["Pallate_Type"]) : "",
 							Shipper_Qty = dr["Shipper_Qty"] != DBNull.Value ? Convert.ToInt64(dr["Shipper_Qty"]) : 0,
@@ -439,6 +439,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 					{
 						Id = ds.Tables[1].Rows[0]["ID"] != DBNull.Value ? Convert.ToInt64(ds.Tables[1].Rows[0]["ID"]) : 0,
 						DI_No = ds.Tables[1].Rows[0]["DI_No"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["DI_No"]) : "",
+						SSCC = ds.Tables[1].Rows[0]["SSCC"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["SSCC"]) : "",
 						Pallate_No = ds.Tables[1].Rows[0]["Pallate_No"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["Pallate_No"]) : "",
 						Pallate_Type = ds.Tables[1].Rows[0]["Pallate_Type"] != DBNull.Value ? Convert.ToString(ds.Tables[1].Rows[0]["Pallate_Type"]) : "",
 						Shipper_Qty = ds.Tables[1].Rows[0]["Shipper_Qty"] != DBNull.Value ? Convert.ToInt64(ds.Tables[1].Rows[0]["Shipper_Qty"]) : 0,
@@ -875,6 +876,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 							MDA_Id = dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0,
 							GateInOut_Id = dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0,
 							DI_No = dr["DI_NO"] != DBNull.Value ? Convert.ToString(dr["DI_NO"]) : "",
+							SSCC = dr["SSCC"] != DBNull.Value ? Convert.ToString(dr["SSCC"]) : "",
 							Pallate_No = dr["PALLATE_NO"] != DBNull.Value ? Convert.ToString(dr["PALLATE_NO"]) : "",
 							Pallate_Type = dr["Pallate_Type_Text"] != DBNull.Value ? Convert.ToString(dr["Pallate_Type_Text"]) : "",
 							Shipper_Qty = dr["Shipper_Qty"] != DBNull.Value ? Convert.ToInt64(dr["Shipper_Qty"]) : 0,

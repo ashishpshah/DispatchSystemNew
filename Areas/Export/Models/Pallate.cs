@@ -5,6 +5,7 @@
         public long Id { get; set; }
         public int Sr_No { get; set; }
         public string DI_No { get; set; }
+        public string SSCC { get; set; }
         public string Pallate_No { get; set; }
         public string Pallate_Type { get; set; }
         public long Shipper_Qty { get; set; }
