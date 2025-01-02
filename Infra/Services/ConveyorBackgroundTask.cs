@@ -172,7 +172,7 @@ namespace VendorQRGeneration.Infra.Services
 
 		public bool SendToClient(string data)
 		{
-			if (!LastCommand.command.Contains("OK") && LastCommand.command == data && LastCommand.isSuccess == true)
+			if (!string.IsNullOrEmpty(LastCommand.command) && !LastCommand.command.Contains("OK") && LastCommand.command == data && LastCommand.isSuccess == true)
 				return true;
 
 			byte[] bytesToSend = Encoding.UTF8.GetBytes(data);

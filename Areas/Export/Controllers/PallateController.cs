@@ -90,6 +90,16 @@ namespace Dispatch_System.Areas.Export.Controllers
 		{
 			try
 			{
+				if (true)
+				{
+					_socketBackgroundTask.SendToClient("STOP");
+
+					_socketBackgroundTask.DisconnectToServer();
+
+					//_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
+
+				}
+
 				threadConnectionStatus = null;
 
 				var isRunning = _socketBackgroundTask.IsConnect();
@@ -131,6 +141,8 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 		private void Server_DataReceive(object sender, TcpServerListenerEventArgs e)
 		{
+			_socketBackgroundTask.IsRunning(true);
+
 			LoadingData objLoad = _socketBackgroundTask.GetObjLoad();
 
 			var receivedData = string.Format($"{Encoding.ASCII.GetString(e.buffer)}");
@@ -176,7 +188,14 @@ namespace Dispatch_System.Areas.Export.Controllers
 			}
 			else if (!receivedData.ToUpper().Contains("MCIDEL"))
 			{
-				if (!string.IsNullOrEmpty(receivedData) && receivedData.Trim().ToUpper().Replace(" ", "") == "<#>") return;
+				if (!string.IsNullOrEmpty(receivedData) && !string.IsNullOrEmpty(objLoad.QRCode) && objLoad.QRCode.Contains(receivedData.Trim().ToUpper()))
+				{
+					if (((ticks - objLoad.Ticks) / TimeSpan.TicksPerSecond < 5))
+					{
+						return;
+					}
+				}
+				else if (!string.IsNullOrEmpty(receivedData) && receivedData.Trim().ToUpper().Replace(" ", "") == "<#>") return;
 				else if (!string.IsNullOrEmpty(receivedData) && receivedData.Trim().ToUpper().Replace(" ", "") == "<@>") receivedData = "##########";
 
 				List<MySqlParameter> oParams = new List<MySqlParameter>();
@@ -259,6 +278,20 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 		public IActionResult Index()
 		{
+
+			if (_socketBackgroundTask.IsConnect())
+			{
+				_socketBackgroundTask.SendToClient("STOP");
+
+				_socketBackgroundTask.IsRunning(false);
+
+				_socketBackgroundTask.DisconnectToServer();
+
+				_hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
+
+			}
+
+
 			return View();
 		}
 

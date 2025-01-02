@@ -265,7 +265,7 @@
 					dataType: "html",
 					success: function (response) {
 
-						if (timerId === null) timerId = setInterval(checkConveyorConnection, 3000);
+						if (timerId === null) timerId = setInterval(checkConveyorConnection, 1000);
 
 					},
 					failure: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); },
@@ -359,7 +359,7 @@
 		}
 
 		function fnCheckConveyorConnection_Result($isConnect) {
-
+			debugger;
 			if ($isConnect && $isConnect == true) {
 
 				tagStartLoading.prop('disabled', true);
