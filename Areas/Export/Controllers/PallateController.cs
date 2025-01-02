@@ -177,14 +177,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 			else if (!receivedData.ToUpper().Contains("MCIDEL"))
 			{
 				if (!string.IsNullOrEmpty(receivedData) && receivedData.Trim().ToUpper().Replace(" ", "") == "<#>") return;
-				else if (!string.IsNullOrEmpty(receivedData) && receivedData.Trim().ToUpper().Replace(" ", "") == "<@>")
-				{
-					//Write_Log($"ReceivedData : {receivedData} | <@> Response : continue");
-
-					receivedData = "##########";
-
-					return;
-				}
+				else if (!string.IsNullOrEmpty(receivedData) && receivedData.Trim().ToUpper().Replace(" ", "") == "<@>") receivedData = "##########";
 
 				List<MySqlParameter> oParams = new List<MySqlParameter>();
 
@@ -222,9 +215,9 @@ namespace Dispatch_System.Areas.Export.Controllers
 					Id = Id,
 					Text = receivedData,
 					Success = response.Contains('_') ? response.Split('_')[0] : response,
-					RequiredShipper = requiredShipper,
-					LoaddedShipper = loaddedShipper,
-					RejectShipper = rejectShipper,
+					RequiredShipper = objLoad.RequiredShipper,
+					LoaddedShipper = objLoad.LoaddedShipper,
+					RejectShipper = objLoad.RejectShipper,
 					IsInsert = isInsert
 				};
 
@@ -232,8 +225,9 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 				bool serverResponse = _socketBackgroundTask.SendToClient(CommonViewModel.Data1.Success);
 
-				if (serverResponse) _hubContext.Clients.All.SendAsync("ReceiveMessage", "DATA:" + JsonConvert.SerializeObject(CommonViewModel, new JsonSerializerSettings
-				{ ContractResolver = new FirstCharLowerCaseContractResolver(), Formatting = Formatting.Indented }));
+				if (serverResponse)
+					_hubContext.Clients.All.SendAsync("ReceiveMessage", "DATA:" + JsonConvert.SerializeObject(CommonViewModel, new JsonSerializerSettings
+					{ ContractResolver = new FirstCharLowerCaseContractResolver(), Formatting = Formatting.Indented }));
 
 				//if (requiredShipper <= loaddedShipper) _hubContext.Clients.All.SendAsync("ReceiveMessage", "COMPLETE");
 			}
@@ -599,9 +593,9 @@ namespace Dispatch_System.Areas.Export.Controllers
 					long requiredShipper = Convert.ToInt64(response.Split("#")[1]);
 					long loaddedShipper = Convert.ToInt64(response.Split("#")[2]);
 					long rejectShipper = Convert.ToInt64(response.Split("#")[3]);
-                    bool isInsert = Convert.ToBoolean(Convert.ToInt16(response.Split("#")[4]));
+					bool isInsert = Convert.ToBoolean(Convert.ToInt16(response.Split("#")[4]));
 
-                    response = response.Split("#")[0].ToString();
+					response = response.Split("#")[0].ToString();
 
 					CommonViewModel.IsConfirm = !IsSuccess;
 					CommonViewModel.IsSuccess = IsSuccess;
@@ -616,8 +610,8 @@ namespace Dispatch_System.Areas.Export.Controllers
 						RequiredShipper = requiredShipper,
 						LoaddedShipper = loaddedShipper,
 						RejectShipper = rejectShipper,
-                        IsInsert = isInsert
-                    };
+						IsInsert = isInsert
+					};
 
 					CommonViewModel.Data2 = response.Contains('_') ? response.Split('_')[1] : null;
 
