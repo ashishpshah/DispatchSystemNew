@@ -1,1164 +1,1164 @@
 ﻿@model Dispatch_System.ResponseModel<Dispatch_System.MDA>
 
 @{
-	ViewData["Title"] = "Pallate";
-	Layout = "~/Views/Shared/_Layout.cshtml";
-	var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
+    ViewData["Title"] = "Pallate";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Url_RootToController = Url.Content("~/") + ViewContext.RouteData.Values["area"].ToString() + "/" + ViewContext.RouteData.Values["Controller"].ToString();
 }
 
 
 <section class="content-header bg-gradient-green d-none" style="border-radius: 0.25rem" id="divPageTitle">
-	<div class="container-fluid">
-		<div class="row mb-2">
-			<div class="col-sm-12">
-				<h1 class="font-weight-bold">Pallate</h1>
-			</div>
-		</div>
-	</div>
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12">
+                <h1 class="font-weight-bold">Pallate</h1>
+            </div>
+        </div>
+    </div>
 </section>
 
 <!-- Main content -->
 <section class="content p-0">
-	<div class="container-fluid p-0">
-		<div class="row no-gutters">
-			<div class="col-12 card">
-				@* <form id="formSave" asp-controller="Load_DI" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data" data_form_isvalidate> *@
-				<div class="card-body pb-0">
-					<div class="panel-divider">
-						<span>Search Details</span>
-						<div class="row no-gutters p-0 m-0">
-							<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
-								<div class="form-horizontal">
-									<div class="card-body py-1 px-0">
-										<div class="form-group row">
-											<label for="inputSearch" class="col-sm-2 col-form-label">Export Indent No.</label>
-											<div class="col-sm-4">
-												<div class="input-group input-group-sm">
-													<input type="text" id="inputSearch" class="form-control form-control-sm">
-													<span class="input-group-append ml-2">
-														<button type="button" class="btn btn-info btn-flat mr-2" onclick="GetDI(this, 'S')">Search</button>
-														<button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetDI(this, 'V')">View DI</button>
-													</span>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
+    <div class="container-fluid p-0">
+        <div class="row no-gutters">
+            <div class="col-12 card">
+                @* <form id="formSave" asp-controller="Load_DI" asp-action="Save" method="post" class="form-horizontal" enctype="multipart/form-data" data_form_isvalidate> *@
+                <div class="card-body pb-0">
+                    <div class="panel-divider">
+                        <span>Search Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="form-horizontal">
+                                    <div class="card-body py-1 px-0">
+                                        <div class="form-group row">
+                                            <label for="inputSearch" class="col-sm-2 col-form-label">Export Indent No.</label>
+                                            <div class="col-sm-8">
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" id="inputSearch" class="form-control form-control-sm">
+                                                    <span class="input-group-append ml-2">
+                                                        <button type="button" class="btn btn-info btn-flat mr-2" onclick="GetDI(this, 'S')">Search</button>
+                                                        <button type="button" class="btn btn-info btn-flat b-radius-0" onclick="GetDI(this, 'V')">View DI</button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-					<div class="panel-divider">
-						<span>Indent Details</span>
-						<div class="row no-gutters p-0 m-0">
-							<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
-								<div class="form-horizontal">
-									<div class="card-body py-1 px-0">
-										<div class="form-group row">
-											<label for="DI_No" class="col-sm-2 col-form-label">Export Indent No.</label>
-											<div class="col-sm-2">
-												<input type="text" class="form-control form-control-sm" id="DI_No" name="DI_No" autocomplete="off" readonly>
-											</div>
-										</div>
-										<div class="form-group row">
-											<label for="bag_nos" class="col-sm-2 col-form-label">No. of Bottle</label>
-											<div class="col-sm-2">
-												<input type="text" class="form-control form-control-sm" id="Bag_Nos" name="bag_nos" autocomplete="off" readonly>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
+                    <div class="panel-divider">
+                        <span>Indent Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="form-horizontal">
+                                    <div class="card-body py-1 px-0">
+                                        <div class="form-group row">
+                                            <label for="DI_No" class="col-sm-2 col-form-label">Export Indent No.</label>
+                                            <div class="col-sm-2">
+                                                <input type="text" class="form-control form-control-sm" id="DI_No" name="DI_No" autocomplete="off" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="bag_nos" class="col-sm-2 col-form-label">No. of Bottle</label>
+                                            <div class="col-sm-2">
+                                                <input type="text" class="form-control form-control-sm" id="Bag_Nos" name="bag_nos" autocomplete="off" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-					<div class="panel-divider">
-						<span>Export Indent Details</span>
-						<div class="row no-gutters p-0 m-0">
-							<div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
-								<div class="card-body py-1 px-0" id="divDI_Dtls">
+                    <div class="panel-divider">
+                        <span>Export Indent Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="card-body py-1 px-0" id="divDI_Dtls">
 
-									<div class="row col-12 w-100 d-flex d-none" id="divAddEditPallate">
-									</div>
+                                    <div class="row col-12 w-100 d-flex d-none" id="divAddEditPallate">
+                                    </div>
 
-									<div class="row col-12 w-100 d-flex flex-row-reverse">
-										<button id="btnAdd_Pallate" type="button" class="btn btn-info btn-flat col-2" onclick="fnClick_AddEditPallate(0)"> Add Pallate</button>
-									</div>
+                                    <div class="row col-12 w-100 d-flex flex-row-reverse">
+                                        <button id="btnAdd_Pallate" type="button" class="btn btn-info btn-flat col-2" onclick="fnClick_AddEditPallate(0)"> Add Pallate</button>
+                                    </div>
 
-									<div class="row col-12 w-100">
-										<table id="table_Pallate_Dtls" class="table table-bordered table-striped w-100">
-											<thead>
-												<tr>
-													<th width="5%">Sr.No.</th>
-													<th hidden>Id</th>
-													<th>SSCC</th>
-													<th>Pallate Number</th>
-													<th>Pallate Type</th>
-													<th width="10%">No. of Shipper</th>
-													<th width="10%">No. of Bottle</th>
-													<th>Dispatch Mode</th>
-													<th width="5%">Action</th>
-												</tr>
-											</thead>
-											<tbody></tbody>
-										</table>
-									</div>
+                                    <div class="row col-12 w-100">
+                                        <table id="table_Pallate_Dtls" class="table table-bordered table-striped w-100">
+                                            <thead>
+                                                <tr>
+                                                    <th width="5%">Sr.No.</th>
+                                                    <th hidden>Id</th>
+                                                    <th>SSCC</th>
+                                                    <th>Pallate Number</th>
+                                                    <th>Pallate Type</th>
+                                                    <th width="10%">No. of Shipper</th>
+                                                    <th width="10%">No. of Bottle</th>
+                                                    <th>Dispatch Mode</th>
+                                                    <th width="5%">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
 
-								</div>
-							</div>
-						</div>
-					</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-					<div class="panel-divider d-none" id="divShipperQRCode">
-						<span>Shipper QR Code Details</span>
-						<div class="row no-gutters p-0 m-0">
-							<div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
-								<div class="card-body py-1 px-0">
-									<div class="form-group row">
-										<label class="col-sm-2 col-form-label text-right pr-2">DI No. : </label>
-										<label class="col-sm-2 col-form-label ml-0" id="span_DI_No"> </label>
-										<label class="col-sm-2 col-form-label ml-0 d-none" id="span_Pallate_Id"> </label>
-										<label class="col-sm-1 col-form-label text-right pr-2">Pallate No. : </label>
-										<label class="col-sm-4 col-form-label ml-0" id="span_Pallate_No"></label>
-										<button id="btnClose_Pallate" type="button" class="btn btn-danger btn-flat col-1" onclick="fnClick_ClosePallate()"> Close Pallate</button>
-									</div>
-									<div class="row no-gutters p-0 m-0 mb-3">
-										<label for="input_Scan_QR_Code" class="col-sm-2 col-form-label text-right pr-2">Enter QR Code </label>
-										<div class="col-sm-6">
-											<input type="text" id="input_Scan_QR_Code" class="form-control form-control-sm">
-										</div>
-										<div class="col-sm-4 d-none">
-											<input type="text" id="input_temp_Scan_QR_Code" class="form-control form-control-sm">
-										</div>
-									</div>
-									<div class="row no-gutters p-0 m-0" id="div_Scan_QR_Code">
-										<div class="col-4">
-											<div class="card direct-chat direct-chat-warning">
-												<div class="card-header">
-													<h3 class="card-title text-bold">Total Scan QR Code</h3>
-													<div class="card-tools mt-2">
-														<button type="button" class="btn btn-tool text-primary d-none btnViewQR" id="btnViewAll">
-															<i class="fas fa-eye"></i> &nbsp; View All
-														</button>
-													</div>
-												</div>
+                    <div class="panel-divider d-none" id="divShipperQRCode">
+                        <span>Shipper QR Code Details</span>
+                        <div class="row no-gutters p-0 m-0">
+                            <div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+                                <div class="card-body py-1 px-0">
+                                    <div class="form-group row">
+                                        <label class="col-sm-1 col-form-label text-right pr-2">DI No. : </label>
+                                        <label class="col-sm-2 col-form-label ml-0" id="span_DI_No"> </label>
+                                        <label class="col-sm-2 col-form-label ml-0 d-none" id="span_Pallate_Id"> </label>
+                                        <label class="col-sm-2 col-form-label text-right pr-2">Pallate No. : </label>
+                                        <label class="col-sm-3 col-form-label ml-0" id="span_Pallate_No"></label>
+                                        <button id="btnClose_Pallate" type="button" class="btn btn-danger btn-flat col-2" onclick="fnClick_ClosePallate()"> Close Pallate</button>
+                                    </div>
+                                    <div class="row no-gutters p-0 m-0 mb-3">
+                                        <label for="input_Scan_QR_Code" class="col-sm-2 col-form-label text-right pr-2">Enter QR Code </label>
+                                        <div class="col-sm-6">
+                                            <input type="text" id="input_Scan_QR_Code" class="form-control form-control-sm">
+                                        </div>
+                                        <div class="col-sm-4 d-none">
+                                            <input type="text" id="input_temp_Scan_QR_Code" class="form-control form-control-sm">
+                                        </div>
+                                    </div>
+                                    <div class="row no-gutters p-0 m-0" id="div_Scan_QR_Code">
+                                        <div class="col-4">
+                                            <div class="card direct-chat direct-chat-warning">
+                                                <div class="card-header">
+                                                    <h3 class="card-title text-bold">Total Scan QR Code</h3>
+                                                    <div class="card-tools mt-2">
+                                                        <button type="button" class="btn btn-tool text-primary d-none btnViewQR" id="btnViewAll">
+                                                            <i class="fas fa-eye"></i> &nbsp; View All
+                                                        </button>
+                                                    </div>
+                                                </div>
 
-												<div class="card-body">
-													<div class="direct-chat-messages">
-														<ul class="nav flex-column" id="ul_Scan_QR_Code"></ul>
-													</div>
-												</div>
-												<div class="card-footer">
-													<div class="d-flex flex-row justify-content-between">
-														<h5 class="card-title text-bold">Count : <span id="span_Total_Scan_QR_Code" data-cntReq="" data-cnt="" data-last=""></span></h5>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div class="col-4">
-											<div class="card direct-chat direct-chat-warning">
-												<div class="card-header">
-													<h3 class="card-title text-bold">Accepted</h3>
-												</div>
+                                                <div class="card-body">
+                                                    <div class="direct-chat-messages">
+                                                        <ul class="nav flex-column" id="ul_Scan_QR_Code" style="font-size:11px;"></ul>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <div class="d-flex flex-row justify-content-between">
+                                                        <h5 class="card-title text-bold">Count : <span id="span_Total_Scan_QR_Code" data-cntReq="" data-cnt="" data-last=""></span></h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="card direct-chat direct-chat-warning">
+                                                <div class="card-header">
+                                                    <h3 class="card-title text-bold">Accepted</h3>
+                                                </div>
 
-												<div class="card-body">
-													<div class="direct-chat-messages">
-														<ul class="nav flex-column" id="ul_Accepted_QR_Code"></ul>
-													</div>
-												</div>
-												<div class="card-footer">
-													<div class="d-flex flex-row justify-content-between">
-														<h5 class="card-title text-bold">Count : <span id="span_Total_Accepted_QR_Code" data-cnt="" style="font-size: 1.2rem !important;"></span></h5>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div class="col-4">
-											<div class="card direct-chat direct-chat-warning">
-												<div class="card-header">
-													<h3 class="card-title text-bold">Rejected</h3>
-													<div class="card-tools mt-2">
-														<button type="button" class="btn btn-tool text-primary d-none btnViewQR" id="btnViewReason">
-															<i class="fas fa-eye"></i> &nbsp; View Reason
-														</button>
-													</div>
-												</div>
+                                                <div class="card-body">
+                                                    <div class="direct-chat-messages">
+                                                        <ul class="nav flex-column" id="ul_Accepted_QR_Code" style="font-size:11px;"></ul>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <div class="d-flex flex-row justify-content-between">
+                                                        <h5 class="card-title text-bold">Count : <span id="span_Total_Accepted_QR_Code" data-cnt="" style="font-size: 1.2rem !important;"></span></h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="card direct-chat direct-chat-warning">
+                                                <div class="card-header">
+                                                    <h3 class="card-title text-bold">Rejected</h3>
+                                                    <div class="card-tools mt-2">
+                                                        <button type="button" class="btn btn-tool text-primary d-none btnViewQR" id="btnViewReason">
+                                                            <i class="fas fa-eye"></i> &nbsp; View Reason
+                                                        </button>
+                                                    </div>
+                                                </div>
 
-												<div class="card-body">
-													<div class="direct-chat-messages">
-														<ul class="nav flex-column" id="ul_Rejected_QR_Code"></ul>
-													</div>
-												</div>
-												<div class="card-footer">
-													<div class="d-flex flex-row justify-content-between">
-														<h5 class="card-title text-bold">Count : <span id="span_Total_Rejected_QR_Code" data-cnt=""></span></h5>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-									<div class="row no-gutters p-0 m-0 mt-2 d-none" id="divLoadButton">
-										<div class="col-12 w-100">
-											<button type="button" id="btnStartLoading" class="btn btn-success btn-flat px-3 mr-5" onclick="fnStartLoading()">Start Loading</button>
-											<button type="button" id="btnStopLoading" class="btn btn-danger btn-flat px-3 mr-5" onclick="fnStopLoading(false)" disabled>Stop Loading</button>
-											<button type="button" id="btnFinishLoading" class="btn btn-info btn-flat px-3 mr-5" onclick="fnClick_ClosePallate()">Finish Loading</button>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
+                                                <div class="card-body">
+                                                    <div class="direct-chat-messages">
+                                                        <ul class="nav flex-column" id="ul_Rejected_QR_Code" style="font-size:11px;"></ul>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <div class="d-flex flex-row justify-content-between">
+                                                        <h5 class="card-title text-bold">Count : <span id="span_Total_Rejected_QR_Code" data-cnt=""></span></h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row no-gutters p-0 m-0 mt-2 d-none" id="divLoadButton">
+                                        <div class="col-12 w-100">
+                                            <button type="button" id="btnStartLoading" class="btn btn-success btn-flat px-3 mr-5" onclick="fnStartLoading()">Start Loading</button>
+                                            <button type="button" id="btnStopLoading" class="btn btn-danger btn-flat px-3 mr-5" onclick="fnStopLoading(false)" disabled>Stop Loading</button>
+                                            <button type="button" id="btnFinishLoading" class="btn btn-info btn-flat px-3 mr-5" onclick="fnClick_ClosePallate()">Finish Loading</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-				</div>
-				@* </form> *@
-			</div>
-		</div>
-	</div>
+                </div>
+                @* </form> *@
+            </div>
+        </div>
+    </div>
 </section>
 
 
 @section Scripts {
 
-	<script type="text/javascript">
+    <script type="text/javascript">
 
-		var tablePallateDtls = {};
+        var tablePallateDtls = {};
 
-		var tagStartLoading = $('#btnStartLoading');
-		var tagStopLoading = $('#btnStopLoading');
-		var tagFinishLoading = $('#btnFinishLoading');
-		let timerId = null;
+        var tagStartLoading = $('#btnStartLoading');
+        var tagStopLoading = $('#btnStopLoading');
+        var tagFinishLoading = $('#btnFinishLoading');
+        let timerId = null;
 
-		function fnStopLoading(isManuallyStop) {
-			ShowLoader(true);
-			$.ajax({
-				type: "GET",
-				url: '@Url_RootToController/StopLoading?isManuallyStop=' + isManuallyStop,
-				data: null,
-				contentType: "application/json; charset=utf-8",
-				dataType: "html",
-				success: function (response) {
+        function fnStopLoading(isManuallyStop) {
+            ShowLoader(true);
+            $.ajax({
+                type: "GET",
+                url: '@Url_RootToController/StopLoading?isManuallyStop=' + isManuallyStop,
+                data: null,
+                contentType: "application/json; charset=utf-8",
+                dataType: "html",
+                success: function (response) {
 
-					//if (timerId === null) timerId = setInterval(checkConveyorConnection, 1000);
+                    //if (timerId === null) timerId = setInterval(checkConveyorConnection, 1000);
 
-				},
-				failure: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); },
-				error: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); }
-			});
-		}
+                },
+                failure: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); },
+                error: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); }
+            });
+        }
 
-		function fnStartLoading() {
-			if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
+        function fnStartLoading() {
+            if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
 
-			if (!isSignalRConnected) fnConnectSignalR();
+            if (!isSignalRConnected) fnConnectSignalR();
 
-			var Pallate_Id = $('#span_Pallate_Id').html();
-			var DI_No = $('#span_DI_No').html();
+            var Pallate_Id = $('#span_Pallate_Id').html();
+            var DI_No = $('#span_DI_No').html();
 
-			if (typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.length > 0 && typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
-				ShowLoader(true);
+            if (typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.length > 0 && typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
+                ShowLoader(true);
 
-				$.ajax({
-					type: "GET",
-					url: '@Url_RootToController/StartLoading?Id=' + Pallate_Id + '&DI_No=' + DI_No,
-					data: null,
-					contentType: "application/json; charset=utf-8",
-					dataType: "html",
-					success: function (response) {
+                $.ajax({
+                    type: "GET",
+                    url: '@Url_RootToController/StartLoading?Id=' + Pallate_Id + '&DI_No=' + DI_No,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "html",
+                    success: function (response) {
 
-						if (timerId === null) timerId = setInterval(checkConveyorConnection, 1000);
+                        if (timerId === null) timerId = setInterval(checkConveyorConnection, 1000);
 
-					},
-					failure: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); },
-					error: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); }
-				});
-			}
-			else CommonAlert_Error("Please Select Pallte.");
+                    },
+                    failure: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); },
+                    error: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); }
+                });
+            }
+            else CommonAlert_Error("Please Select Pallte.");
 
-		}
+        }
 
-		function fnReceiveSignalR_Message($result) {
+        function fnReceiveSignalR_Message($result) {
 
-			if ($result && $result === 'SERVER_START') {
-				tagStartLoading.prop('disabled', true);
-				tagStopLoading.prop('disabled', false);
-				tagFinishLoading.prop('disabled', false);
+            if ($result && $result === 'SERVER_START') {
+                tagStartLoading.prop('disabled', true);
+                tagStopLoading.prop('disabled', false);
+                tagFinishLoading.prop('disabled', false);
 
-				ShowLoader(false);
-				CommonAlert_Success("Start Loading");
-			}
-			else if ($result && $result === 'SERVER_STOP') {
-				tagStartLoading.prop('disabled', false);
-				tagStopLoading.prop('disabled', true);
-				tagFinishLoading.prop('disabled', true);
+                ShowLoader(false);
+                CommonAlert_Success("Start Loading");
+            }
+            else if ($result && $result === 'SERVER_STOP') {
+                tagStartLoading.prop('disabled', false);
+                tagStopLoading.prop('disabled', true);
+                tagFinishLoading.prop('disabled', true);
 
-				ShowLoader(false);
-				CommonAlert_Error("Stop Loading");
-				fnDisconnectSignalR();
-			}
-			else if ($result && $result.indexOf('CONNECTION_STATUS:FALSE') > -1 && timerId === null) {
-				fnStopLoading(true);
-			}
-			else if ($result && $result.indexOf('DATA:') > -1) {
+                ShowLoader(false);
+                CommonAlert_Error("Stop Loading");
+                fnDisconnectSignalR();
+            }
+            else if ($result && $result.indexOf('CONNECTION_STATUS:FALSE') > -1 && timerId === null) {
+                fnStopLoading(true);
+            }
+            else if ($result && $result.indexOf('DATA:') > -1) {
 
-				$result = $result.replace('DATA:', '');
+                $result = $result.replace('DATA:', '');
 
-				try {
+                try {
 
-					var RequiredShipper = 0;
-					var LoaddedShipper = 0;
+                    var RequiredShipper = 0;
+                    var LoaddedShipper = 0;
 
-					var $response = JSON.parse($result);
+                    var $response = JSON.parse($result);
 
-					if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
+                    if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
 
-						if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK') && $response.data1['isInsert'] === true) {
+                        if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK') && $response.data1['isInsert'] === true) {
 
-							if ($response.data1['success'] === 'OK') {
-								var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="S" class="float-left text-success text-bold">'
-									+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'S\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+                            if ($response.data1['success'] === 'OK') {
+                                var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="S" class="float-left text-success text-bold">'
+                                    + $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'S\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-								$('#ul_Scan_QR_Code').prepend(html);
-								$('#ul_Accepted_QR_Code').prepend(html);
+                                $('#ul_Scan_QR_Code').prepend(html);
+                                $('#ul_Accepted_QR_Code').prepend(html);
 
-								$('#input_Scan_QR_Code').val('');
-								$('#input_temp_Scan_QR_Code').val('');
+                                $('#input_Scan_QR_Code').val('');
+                                $('#input_temp_Scan_QR_Code').val('');
 
-							}
-							else {
-								var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="R" class="float-left text-danger text-bold">'
-									+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'R\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+                            }
+                            else {
+                                var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="R" class="float-left text-danger text-bold">'
+                                    + $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'R\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-								$('#ul_Scan_QR_Code').prepend(html);
-								$('#ul_Rejected_QR_Code').prepend(html);
+                                $('#ul_Scan_QR_Code').prepend(html);
+                                $('#ul_Rejected_QR_Code').prepend(html);
 
-								$('#input_Scan_QR_Code').val('');
-								$('#input_temp_Scan_QR_Code').val('');
-							}
-						}
+                                $('#input_Scan_QR_Code').val('');
+                                $('#input_temp_Scan_QR_Code').val('');
+                            }
+                        }
 
-						$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
-						$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
-						$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
-						$('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
+                        $('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
+                        $('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+                        $('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+                        $('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
 
-						RequiredShipper = $response.data1['requiredShipper'];
-						LoaddedShipper = $response.data1['loaddedShipper'];
+                        RequiredShipper = $response.data1['requiredShipper'];
+                        LoaddedShipper = $response.data1['loaddedShipper'];
 
-						fnCalculate_QR_Code();
-					}
+                        fnCalculate_QR_Code();
+                    }
 
-					if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '' && (RequiredShipper <= LoaddedShipper && LoaddedShipper > 0))
-						CommonConfirmed_Success($response.data2, fnStopLoading, [false]);
-					else if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '')
-						CommonAlert_Error($response.data2);
+                    if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '' && (RequiredShipper <= LoaddedShipper && LoaddedShipper > 0))
+                        CommonConfirmed_Success($response.data2, fnStopLoading, [false]);
+                    else if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '')
+                        CommonAlert_Error($response.data2);
 
-				} catch { }
+                } catch { }
 
-				ShowLoader(false);
-			}
-		}
+                ShowLoader(false);
+            }
+        }
 
-		function fnCheckConveyorConnection_Result($isConnect) {
-			debugger;
-			if ($isConnect && $isConnect == true) {
+        function fnCheckConveyorConnection_Result($isConnect) {
+            debugger;
+            if ($isConnect && $isConnect == true) {
 
-				tagStartLoading.prop('disabled', true);
-				tagStopLoading.prop('disabled', false);
-				tagFinishLoading.prop('disabled', false);
+                tagStartLoading.prop('disabled', true);
+                tagStopLoading.prop('disabled', false);
+                tagFinishLoading.prop('disabled', false);
 
-				if (timerId !== null) {
-					clearInterval(timerId);
-					timerId = null;
-				}
-			} else if (timerId === null)
-				fnReceiveSignalR_Message('SERVER_STOP');
-		}
+                if (timerId !== null) {
+                    clearInterval(timerId);
+                    timerId = null;
+                }
+            } else if (timerId === null)
+                fnReceiveSignalR_Message('SERVER_STOP');
+        }
 
-	</script>
+    </script>
 
-	<script type="text/javascript">
+    <script type="text/javascript">
 
-		$(document).ready(function () {
+        $(document).ready(function () {
 
-			$('#divAddEditPallate').addClass('d-none');
-			$('#btnAdd_Pallate').addClass('d-none');
+            $('#divAddEditPallate').addClass('d-none');
+            $('#btnAdd_Pallate').addClass('d-none');
 
-			if ($('#divLoadButton').hasClass('d-none'))
-				$('#divLoadButton').removeClass('d-none');
+            if ($('#divLoadButton').hasClass('d-none'))
+                $('#divLoadButton').removeClass('d-none');
 
-			if (!$('#divPageTitle').hasClass('d-none'))
-				$('#divPageTitle').addClass('d-none');
+            if (!$('#divPageTitle').hasClass('d-none'))
+                $('#divPageTitle').addClass('d-none');
 
-			if (window.location.href.toLowerCase().indexOf('index') > -1) {
-				$('#divLoadButton').addClass('d-none');
-				$('#divPageTitle').removeClass('d-none');
-				$('#divAddEditPallate').removeClass('d-none');
-				$('#btnAdd_Pallate').removeClass('d-none');
-			}
+            if (window.location.href.toLowerCase().indexOf('index') > -1) {
+                $('#divLoadButton').addClass('d-none');
+                $('#divPageTitle').removeClass('d-none');
+                $('#divAddEditPallate').removeClass('d-none');
+                $('#btnAdd_Pallate').removeClass('d-none');
+            }
 
-			Load_Pallate();
-		});
-		
-        function fnDelete_Success(response) {            
+            Load_Pallate();
+        });
+
+        function fnDelete_Success(response) {
             if (typeof response != 'undefined' && response != null && response.statusCode === 1) Load_Pallate();
         }
 
-		function GetDI($this, $type) {
-			ShowLoader(true);
+        function GetDI($this, $type) {
+            ShowLoader(true);
 
-			fnCancel();
+            fnCancel();
 
-			if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
+            if ($('#modal-xl').hasClass('show')) $('#modal-xl').hide();
 
-			$.ajax({
-				type: "GET",
-				url: '@Url_RootToController/GetDI?type=' + $type + '&searchTerm=' + $('#inputSearch').val(),
-				data: null,
-				contentType: "application/json; charset=utf-8",
-				dataType: "html",
-				success: function (response) {
+            $.ajax({
+                type: "GET",
+                url: '@Url_RootToController/GetDI?type=' + $type + '&searchTerm=' + $('#inputSearch').val(),
+                data: null,
+                contentType: "application/json; charset=utf-8",
+                dataType: "html",
+                success: function (response) {
 
-					fnClear_DI();
-					ShowLoader(true);
+                    fnClear_DI();
+                    ShowLoader(true);
 
-					if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
-						ShowLoader(false);
-						CommonAlert_Error("No any record(s) found");
-						return false;
-					}
+                    if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
+                        ShowLoader(false);
+                        CommonAlert_Error("No any record(s) found");
+                        return false;
+                    }
 
-					if (response.indexOf('{') == 0 || response.indexOf('[') == 0) {
+                    if (response.indexOf('{') == 0 || response.indexOf('[') == 0) {
 
-						setTimeout(function () {
+                        setTimeout(function () {
 
-							try {
-								ShowLoader(false);
+                            try {
+                                ShowLoader(false);
 
-								if (typeof response != 'undefined' && response != null && response.length > 0) {
+                                if (typeof response != 'undefined' && response != null && response.length > 0) {
 
-									var selectedData = JSON.parse(response);
+                                    var selectedData = JSON.parse(response);
 
-									if (response.indexOf('[') == 0)
-										selectedData = JSON.parse(response)[0];
+                                    if (response.indexOf('[') == 0)
+                                        selectedData = JSON.parse(response)[0];
 
-									if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
-										$('#DI_No').val(selectedData['di_no']).trigger('change');
-										$('#Bag_Nos').val(selectedData['bag_nos']).trigger('change');
+                                    if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
+                                        $('#DI_No').val(selectedData['di_no']).trigger('change');
+                                        $('#Bag_Nos').val(selectedData['bag_nos']).trigger('change');
 
-										Load_Pallate();
-									}
+                                        Load_Pallate();
+                                    }
 
-								} else
-									CommonAlert_Error("No any DI record(s) found");
+                                } else
+                                    CommonAlert_Error("No any DI record(s) found");
 
-							} catch { ShowLoader(false); }
+                            } catch { ShowLoader(false); }
 
 
-						}, 1000);
+                        }, 1000);
 
-					}
-					else {
+                    }
+                    else {
 
-						$('#modal-xl .modal-body').html('');
-						$('#modal-xl .modal-body').append(response);
+                        $('#modal-xl .modal-body').html('');
+                        $('#modal-xl .modal-body').append(response);
 
-						if ($type == 'S')
-							$('#modal-xl .modal-title').html('Search DI');
-						else
-							$('#modal-xl .modal-title').html('View DI');
+                        if ($type == 'S')
+                            $('#modal-xl .modal-title').html('Search DI');
+                        else
+                            $('#modal-xl .modal-title').html('View DI');
 
-						setTimeout(function () {
+                        setTimeout(function () {
 
-							try {
+                            try {
 
-								if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
-									$('#modal-xl .modal-body #table_Common').DataTable().destroy();
-								}
+                                if ($.fn.DataTable.isDataTable('#modal-xl .modal-body #table_Common')) {
+                                    $('#modal-xl .modal-body #table_Common').DataTable().destroy();
+                                }
 
-								table = $('#modal-xl .modal-body #table_Common').DataTable({
-									paging: true,
-									lengthChange: true,
-									searching: true,
-									ordering: true,
-									info: true,
-									autoWidth: true,
-									responsive: true,
-									pageLength: 10,
-									lengthMenu: [
-										[10, 25, 50, -1],
-										[10, 25, 50, 'All']
-									],
-									fixedColumns: true,
-									dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-										"<'row'<'col-sm-12'tr>>" +
-										"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-								});
+                                table = $('#modal-xl .modal-body #table_Common').DataTable({
+                                    paging: true,
+                                    lengthChange: true,
+                                    searching: true,
+                                    ordering: true,
+                                    info: true,
+                                    autoWidth: true,
+                                    responsive: true,
+                                    pageLength: 10,
+                                    lengthMenu: [
+                                        [10, 25, 50, -1],
+                                        [10, 25, 50, 'All']
+                                    ],
+                                    fixedColumns: true,
+                                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                                        "<'row'<'col-sm-12'tr>>" +
+                                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+                                });
 
-								$('#modal-xl .modal-body #table_Common').css('width', '100%');
+                                $('#modal-xl .modal-body #table_Common').css('width', '100%');
 
-								table.on('click', 'tbody tr', function (e) {
+                                table.on('click', 'tbody tr', function (e) {
 
-									$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
-										if (i != (e.currentTarget.rowIndex - 1))
-											$(ez).removeClass('bg-info');
-									});
+                                    $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+                                        if (i != (e.currentTarget.rowIndex - 1))
+                                            $(ez).removeClass('bg-info');
+                                    });
 
-									fnClear_DI();
+                                    fnClear_DI();
 
-									e.currentTarget.classList.toggle('bg-info');
+                                    e.currentTarget.classList.toggle('bg-info');
 
-								});
+                                });
 
-							} catch { }
+                            } catch { }
 
-							if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
-								$('#modal-xl').show();
-							else
-								CommonAlert_Error("No any DI record(s) found");
+                            if ($('#modal-xl .modal-body #table_Common tbody tr').length > 0)
+                                $('#modal-xl').show();
+                            else
+                                CommonAlert_Error("No any DI record(s) found");
 
-							ShowLoader(false);
+                            ShowLoader(false);
 
-						}, 1000);
+                        }, 1000);
 
-					}
-				},
-				failure: function (response) { fnClear_DI(); CommonAlert_Error(null); },
-				error: function (response) { fnClear_DI(); CommonAlert_Error(null); }
-			});
-		}
+                    }
+                },
+                failure: function (response) { fnClear_DI(); CommonAlert_Error(null); },
+                error: function (response) { fnClear_DI(); CommonAlert_Error(null); }
+            });
+        }
 
-		function fnSelect_DI() {
+        function fnSelect_DI() {
 
-			fnCancel();
+            fnCancel();
 
-			if ($('#table_Common tbody tr.bg-info').length <= 0) {
-				CommonAlert_Error("Please select one Export Indent");
-				return false;
-			}
-			else {
-				var selectedData = table.rows('.bg-info').data();
+            if ($('#table_Common tbody tr.bg-info').length <= 0) {
+                CommonAlert_Error("Please select one Export Indent");
+                return false;
+            }
+            else {
+                var selectedData = table.rows('.bg-info').data();
 
-				if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
-					$('#DI_No').val(selectedData[0][0]).trigger('change');
-					$('#Bag_Nos').val(selectedData[0][1]).trigger('change');
+                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) {
+                    $('#DI_No').val(selectedData[0][0]).trigger('change');
+                    $('#Bag_Nos').val(selectedData[0][1]).trigger('change');
 
-					Load_Pallate();
-				}
+                    Load_Pallate();
+                }
 
-				fnClose_Modal();
-			}
+                fnClose_Modal();
+            }
 
-		}
+        }
 
-		function fnClear_DI() {
+        function fnClear_DI() {
 
-			$('#table_Common tbody tr.bg-info').each(function (i, ez) {
-				$(ez).removeClass('bg-info');
-			});
+            $('#table_Common tbody tr.bg-info').each(function (i, ez) {
+                $(ez).removeClass('bg-info');
+            });
 
-			$('#DI_No').val('').trigger('change');
-			$('#Bag_Nos').val('').trigger('change');
+            $('#DI_No').val('').trigger('change');
+            $('#Bag_Nos').val('').trigger('change');
 
-			$('#table_Pallate_Dtls tbody tr').remove();
+            $('#table_Pallate_Dtls tbody tr').remove();
 
-			fnCancel();
+            fnCancel();
 
-		}
+        }
 
-		function fnCancel() {
+        function fnCancel() {
 
-			$('#divAddEditPallate').html('');
-			$('#divAddEditPallate').removeClass('d-none');
-			$('#divAddEditPallate').addClass('d-none');
+            $('#divAddEditPallate').html('');
+            $('#divAddEditPallate').removeClass('d-none');
+            $('#divAddEditPallate').addClass('d-none');
 
-			if (!$('#divShipperQRCode').is('.d-none'))
-				$('#divShipperQRCode').addClass('d-none');
+            if (!$('#divShipperQRCode').is('.d-none'))
+                $('#divShipperQRCode').addClass('d-none');
 
-			$('#divShipperQRCode card ul').html('');
-			$('#divShipperQRCode card span').html('');
-			$('#divShipperQRCode card button').addClass('d-none');
+            $('#divShipperQRCode card ul').html('');
+            $('#divShipperQRCode card span').html('');
+            $('#divShipperQRCode card button').addClass('d-none');
 
-		}
+        }
 
-		function Load_Pallate() {
-			ShowLoader(true);
-			
-			if (window.location.href.toLowerCase().indexOf('index') > -1)
-				fnStopLoading(true);
-			
-			tablePallateDtls = null;
+        function Load_Pallate() {
+            ShowLoader(true);
 
-			fnCancel();
+            if (window.location.href.toLowerCase().indexOf('index') > -1)
+                fnStopLoading(true);
 
-			try {
-				if ($.fn.DataTable.isDataTable('#table_Pallate_Dtls')) {
-					$('#table_Pallate_Dtls').DataTable().destroy();
-				}
+            tablePallateDtls = null;
 
-				tablePallateDtls = $('#table_Pallate_Dtls').DataTable({
-					paging: true,
-					lengthChange: true,
-					searching: true,
-					ordering: true,
-					info: true,
-					autoWidth: true,
-					responsive: true,
-					order: [[0, 'asc']],
-					pageLength: 25,
-					lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
-					columnDefs: [
-						{ "targets": 0, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false },
-						{ "targets": 1, "className": "text-center", "width": "0%", "autoWidth": false, "searchable": false, "orderable": false, "visible": false },
-						{ "targets": -1, "className": "text-center", "width": "0%", "autoWidth": false, "searchable": false, "orderable": false }
-					],
-					fixedColumns: true,
-					dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-						"<'row'<'col-sm-12'tr>>" +
-						"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-				});
+            fnCancel();
 
-				$('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting');
-				$('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting_asc');
-				$('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting_desc');
+            try {
+                if ($.fn.DataTable.isDataTable('#table_Pallate_Dtls')) {
+                    $('#table_Pallate_Dtls').DataTable().destroy();
+                }
 
-				tablePallateDtls.clear().draw();
+                tablePallateDtls = $('#table_Pallate_Dtls').DataTable({
+                    paging: true,
+                    lengthChange: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    autoWidth: true,
+                    responsive: true,
+                    order: [[0, 'asc']],
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+                    columnDefs: [
+                        { "targets": 0, "className": "text-center", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false },
+                        { "targets": 1, "className": "text-center", "width": "0%", "autoWidth": false, "searchable": false, "orderable": false, "visible": false },
+                        { "targets": -1, "className": "text-center", "width": "0%", "autoWidth": false, "searchable": false, "orderable": false }
+                    ],
+                    fixedColumns: true,
+                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+                });
 
-				tablePallateDtls.column(':last').visible(false);
-				if (window.location.href.toLowerCase().indexOf('index') > -1)
-					tablePallateDtls.column(':last').visible(true);
+                $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting');
+                $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting_asc');
+                $('#table_Pallate_Dtls' + " thead th.no_sorting").removeClass('sorting_desc');
 
-			} catch { }
+                tablePallateDtls.clear().draw();
 
-			var DI_No = $('#DI_No').val();
+                tablePallateDtls.column(':last').visible(false);
+                if (window.location.href.toLowerCase().indexOf('index') > -1)
+                    tablePallateDtls.column(':last').visible(true);
 
-			if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
-				ShowLoader(true);
+            } catch { }
 
-				$.ajax({
-					type: "GET",
-					url: '@Url_RootToController/Load_Pallate?Id=-1&DI_No=' + DI_No,
-					data: null,
-					contentType: "application/json; charset=utf-8",
-					dataType: "json",
-					success: function (response) {
+            var DI_No = $('#DI_No').val();
 
-						setTimeout(function () {
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
+                ShowLoader(true);
 
-							if (typeof response != 'undefined' && response != null && response.length <= 0)
-								CommonAlert_Error("No any Pallate record(s) found");
-							else if (typeof response != 'undefined' && response != null && response.length > 0) {
-								$.each(response, function (i, item) {
-									var btnRow = '<div class="btn-group">' +
-										'<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete" ' +
-										'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['id'] + '\'); "><i class="far fa-trash-alt"></i></button></div>';
+                $.ajax({
+                    type: "GET",
+                    url: '@Url_RootToController/Load_Pallate?Id=-1&DI_No=' + DI_No,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
 
-									tablePallateDtls.row.add([item['sr_No'], item['id'], item['sscc'], item['pallate_No'], item['pallate_Type_Text'], item['shipper_Qty'], item['bottle_Qty'], item['dispatch_Mode_Text'], btnRow]).draw();
+                        setTimeout(function () {
 
-									$(tablePallateDtls.rows(i).nodes().to$()).attr('id', 'tr_' + item['id']);
-								});
-							}
+                            if (typeof response != 'undefined' && response != null && response.length <= 0)
+                                CommonAlert_Error("No any Pallate record(s) found");
+                            else if (typeof response != 'undefined' && response != null && response.length > 0) {
+                                $.each(response, function (i, item) {
+                                    var btnRow = '<div class="btn-group">' +
+                                        '<button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete" ' +
+                                        'onclick="fnDelete_Confirm(\'@Url_RootToController/DeleteConfirmed?Id=' + item['id'] + '\'); "><i class="far fa-trash-alt"></i></button></div>';
 
-							ShowLoader(false);
+                                    tablePallateDtls.row.add([item['sr_No'], item['id'], item['sscc'], item['pallate_No'], item['pallate_Type_Text'], item['shipper_Qty'], item['bottle_Qty'], item['dispatch_Mode_Text'], btnRow]).draw();
 
-						}, 1000);
+                                    $(tablePallateDtls.rows(i).nodes().to$()).attr('id', 'tr_' + item['id']);
+                                });
+                            }
 
-					},
-					failure: function (response) { CommonAlert_Error(null) },
-					error: function (response) { CommonAlert_Error(null) }
-				});
+                            ShowLoader(false);
 
-			}
-			else ShowLoader(false);
-		}
+                        }, 1000);
 
-		$(document).on('click', '#table_Pallate_Dtls tbody tr', function (e) {
+                    },
+                    failure: function (response) { CommonAlert_Error(null) },
+                    error: function (response) { CommonAlert_Error(null) }
+                });
 
-			fnCancel();
-			fnSelectPallate(null);
-			
-			if (window.location.href.toLowerCase().indexOf('index') > -1)
-				fnStopLoading(true);
-			
-			$(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
-				if (i != (e.currentTarget.rowIndex - 1))
-					$(ez).removeClass('bg-info');
-			});
+            }
+            else ShowLoader(false);
+        }
 
+        $(document).on('click', '#table_Pallate_Dtls tbody tr', function (e) {
 
-			e.currentTarget.classList.toggle('bg-info');
+            fnCancel();
+            fnSelectPallate(null);
 
-			if (e.currentTarget.classList.contains('bg-info') == true) {
-				var selectedData = tablePallateDtls.rows('.bg-info').data();
-				if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0) 
-				fnSelectPallate(selectedData[0]);
-			}
+            if (window.location.href.toLowerCase().indexOf('index') > -1)
+                fnStopLoading(true);
 
-			return false;
-		});
+            $(e.currentTarget.parentElement).find('tr').each(function (i, ez) {
+                if (i != (e.currentTarget.rowIndex - 1))
+                    $(ez).removeClass('bg-info');
+            });
 
-		function fnSelectPallate($obj) {
 
-			if (!$('#divShipperQRCode').is('.d-none'))
-				$('#divShipperQRCode').addClass('d-none');
+            e.currentTarget.classList.toggle('bg-info');
 
-			$('#divShipperQRCode card ul').html('');
-			$('#divShipperQRCode card span').html('');
-			$('#divShipperQRCode card button').addClass('d-none');
+            if (e.currentTarget.classList.contains('bg-info') == true) {
+                var selectedData = tablePallateDtls.rows('.bg-info').data();
+                if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length > 0)
+                    fnSelectPallate(selectedData[0]);
+            }
 
-			var DI_No = $('#DI_No').val();
+            return false;
+        });
 
-			if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0 && typeof $obj != 'undefined' && $obj != null) {
+        function fnSelectPallate($obj) {
 
-				$('#span_Pallate_Id').html($obj[1]);
-				$('#span_DI_No').html(DI_No);
-				$('#span_Pallate_No').html($obj[2]);
+            if (!$('#divShipperQRCode').is('.d-none'))
+                $('#divShipperQRCode').addClass('d-none');
 
-				ShowLoader(true);
+            $('#divShipperQRCode card ul').html('');
+            $('#divShipperQRCode card span').html('');
+            $('#divShipperQRCode card button').addClass('d-none');
 
-				$.ajax({
-					type: "GET",
-					url: '@Url_RootToController/Load_Pallate?Id=' + $obj[1] + '&DI_No=' + DI_No + '&GetShipper=true',
-					data: null,
-					contentType: "application/json; charset=utf-8",
-					dataType: "json",
-					success: function (response) {
+            var DI_No = $('#DI_No').val();
 
-						$('#divShipperQRCode card ul').html('');
-						$('#divShipperQRCode card span').html('');
-						$('#divShipperQRCode card button').addClass('d-none');
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0 && typeof $obj != 'undefined' && $obj != null) {
 
-						$('#ul_Scan_QR_Code').html('');
-						$('#ul_Accepted_QR_Code').html('');
-						$('#ul_Rejected_QR_Code').html('');
+                $('#span_Pallate_Id').html($obj[1]);
+                $('#span_DI_No').html(DI_No);
+                $('#span_Pallate_No').html($obj[2]);
 
-						setTimeout(function () {
+                ShowLoader(true);
 
-							if (typeof response != 'undefined' && response != null && response.length > 0) {
+                $.ajax({
+                    type: "GET",
+                    url: '@Url_RootToController/Load_Pallate?Id=' + $obj[1] + '&DI_No=' + DI_No + '&GetShipper=true',
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
 
-								if ($('#divShipperQRCode').is('.d-none'))
-									$('#divShipperQRCode').removeClass('d-none');
+                        $('#divShipperQRCode card ul').html('');
+                        $('#divShipperQRCode card span').html('');
+                        $('#divShipperQRCode card button').addClass('d-none');
 
-								if (typeof response[0]['shipper_QR_Code'] != 'undefined' && response[0]['shipper_QR_Code'] != null && response[0]['shipper_QR_Code'].length > 0) {
-									response[0]['shipper_QR_Code'] = response[0]['shipper_QR_Code'].sort((a, b) => b['sr_No'] - a['sr_No']);
+                        $('#ul_Scan_QR_Code').html('');
+                        $('#ul_Accepted_QR_Code').html('');
+                        $('#ul_Rejected_QR_Code').html('');
 
-									$.each(response[0]['shipper_QR_Code'], function (i, item) {
+                        setTimeout(function () {
 
-										if (item['status'] === 'S') {
-											var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + item['id'] + '" data-type="S" class="float-left text-success text-bold">'
-												+ item['qR_Code'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'S\',' + item['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+                            if (typeof response != 'undefined' && response != null && response.length > 0) {
 
-											$('#ul_Scan_QR_Code').prepend(html);
-											$('#ul_Accepted_QR_Code').prepend(html);
+                                if ($('#divShipperQRCode').is('.d-none'))
+                                    $('#divShipperQRCode').removeClass('d-none');
 
-											$('#input_Scan_QR_Code').val('');
-											$('#input_temp_Scan_QR_Code').val('');
+                                if (typeof response[0]['shipper_QR_Code'] != 'undefined' && response[0]['shipper_QR_Code'] != null && response[0]['shipper_QR_Code'].length > 0) {
+                                    response[0]['shipper_QR_Code'] = response[0]['shipper_QR_Code'].sort((a, b) => b['sr_No'] - a['sr_No']);
 
-										}
-										else {
-											var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + item['id'] + '" data-type="R" class="float-left text-danger text-bold">'
-												+ item['qR_Code'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'R\',' + item['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+                                    $.each(response[0]['shipper_QR_Code'], function (i, item) {
 
-											$('#ul_Scan_QR_Code').prepend(html);
-											$('#ul_Rejected_QR_Code').prepend(html);
+                                        if (item['status'] === 'S') {
+                                            var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + item['id'] + '" data-type="S" class="float-left text-success text-bold">'
+                                                + item['qR_Code'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'S\',' + item['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-											$('#input_Scan_QR_Code').val('');
-											$('#input_temp_Scan_QR_Code').val('');
-										}
-									});
+                                            $('#ul_Scan_QR_Code').prepend(html);
+                                            $('#ul_Accepted_QR_Code').prepend(html);
 
+                                            $('#input_Scan_QR_Code').val('');
+                                            $('#input_temp_Scan_QR_Code').val('');
 
-									//$('#span_Total_Scan_QR_Code').attr('data-last', $response.data1['id']);
-									$('#span_Total_Scan_QR_Code').attr('data-cntReq', response[0]['shipper_Qty']);
-									$('#span_Total_Scan_QR_Code').attr('data-cnt', response[0]['shipper_QR_Code'].length);
-									$('#span_Total_Accepted_QR_Code').attr('data-cnt', response[0]['shipper_QR_Code'].filter(x => x['status'] === 'S').length);
-									$('#span_Total_Rejected_QR_Code').attr('data-cnt', response[0]['shipper_QR_Code'].filter(x => x['status'] !== 'S').length);
+                                        }
+                                        else {
+                                            var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + item['id'] + '" data-type="R" class="float-left text-danger text-bold">'
+                                                + item['qR_Code'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'R\',' + item['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-									fnCalculate_QR_Code();
-								}
+                                            $('#ul_Scan_QR_Code').prepend(html);
+                                            $('#ul_Rejected_QR_Code').prepend(html);
 
-							}
-							else CommonAlert_Error("No any Shipper QR Code(s) found");
+                                            $('#input_Scan_QR_Code').val('');
+                                            $('#input_temp_Scan_QR_Code').val('');
+                                        }
+                                    });
 
-							ShowLoader(false);
 
-						}, 1000);
+                                    //$('#span_Total_Scan_QR_Code').attr('data-last', $response.data1['id']);
+                                    $('#span_Total_Scan_QR_Code').attr('data-cntReq', response[0]['shipper_Qty']);
+                                    $('#span_Total_Scan_QR_Code').attr('data-cnt', response[0]['shipper_QR_Code'].length);
+                                    $('#span_Total_Accepted_QR_Code').attr('data-cnt', response[0]['shipper_QR_Code'].filter(x => x['status'] === 'S').length);
+                                    $('#span_Total_Rejected_QR_Code').attr('data-cnt', response[0]['shipper_QR_Code'].filter(x => x['status'] !== 'S').length);
 
-					},
-					failure: function (response) { CommonAlert_Error(null) },
-					error: function (response) { CommonAlert_Error(null) }
-				});
+                                    fnCalculate_QR_Code();
+                                }
 
-			}
-		}
+                            }
+                            else CommonAlert_Error("No any Shipper QR Code(s) found");
 
-		function fnClick_AddEditPallate($id) {
+                            ShowLoader(false);
 
-			ShowLoader(true);
+                        }, 1000);
 
-			fnCancel();
+                    },
+                    failure: function (response) { CommonAlert_Error(null) },
+                    error: function (response) { CommonAlert_Error(null) }
+                });
 
-			var DI_No = $('#DI_No').val();
+            }
+        }
 
-			if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
+        function fnClick_AddEditPallate($id) {
 
-				$.ajax({
-					type: "GET",
-					url: '@Url.Action("Partial_AddEditForm", "Pallate", new { area = "Export" })?id=' + $id + '&DI_No=' + DI_No,
-					data: null,
-					contentType: "application/json; charset=utf-8",
-					dataType: 'html',
-					success: function (response) {
+            ShowLoader(true);
 
-						if (typeof response == 'undefined' || response == null || response == '' || response.length <= 0) {
+            fnCancel();
 
-							if ($noAlert == false)
-								CommonAlert_Error("No any record(s) found");
-							return false;
-						}
+            var DI_No = $('#DI_No').val();
 
-						setTimeout(function () {
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
 
-							ShowLoader(false);
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Partial_AddEditForm", "Pallate", new { area = "Export" })?id=' + $id + '&DI_No=' + DI_No,
+                    data: null,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'html',
+                    success: function (response) {
 
-							$('#divAddEditPallate').append(response);
-							$('#divAddEditPallate').removeClass('d-none');
+                        if (typeof response == 'undefined' || response == null || response == '' || response.length <= 0) {
 
-						}, 1000);
+                            if ($noAlert == false)
+                                CommonAlert_Error("No any record(s) found");
+                            return false;
+                        }
 
-					},
-					failure: function (response) { ShowLoader(false); CommonAlert_Error(null) },
-					error: function (response) { ShowLoader(false); CommonAlert_Error(null) }
-				});
+                        setTimeout(function () {
 
-			}
-			else {
-				CommonAlert_Error("Please select DI.");
-			}
-		}
+                            ShowLoader(false);
 
-		function fnSubmitForm_Success(response, $id) {
+                            $('#divAddEditPallate').append(response);
+                            $('#divAddEditPallate').removeClass('d-none');
 
-			if (response.statusCode === 1) {
+                        }, 1000);
 
-				$('#divAddEditPallate').append('');
-				$('#divAddEditPallate').removeClass('d-none');
-				$('#divAddEditPallate').addClass('d-none');
+                    },
+                    failure: function (response) { ShowLoader(false); CommonAlert_Error(null) },
+                    error: function (response) { ShowLoader(false); CommonAlert_Error(null) }
+                });
 
-				Load_Pallate();
-			}
+            }
+            else {
+                CommonAlert_Error("Please select DI.");
+            }
+        }
 
-		}
+        function fnSubmitForm_Success(response, $id) {
 
-		$(document).on('blur', '#input_temp_Scan_QR_Code', function (e) {
-			e.preventDefault();
+            if (response.statusCode === 1) {
 
-			try {
-				var input_Scanner = $(this).val();
+                $('#divAddEditPallate').append('');
+                $('#divAddEditPallate').removeClass('d-none');
+                $('#divAddEditPallate').addClass('d-none');
 
-				if (typeof input_Scanner != 'undefined' && input_Scanner != null && input_Scanner.length > 0) {
+                Load_Pallate();
+            }
 
-					var arrayStr = input_Scanner.split('/');
+        }
 
-					if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0 && input_Scanner.indexOf('/') > -1) {
+        $(document).on('blur', '#input_temp_Scan_QR_Code', function (e) {
+            e.preventDefault();
 
-						var qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
+            try {
+                var input_Scanner = $(this).val();
 
-						if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length > 0) {
+                if (typeof input_Scanner != 'undefined' && input_Scanner != null && input_Scanner.length > 0) {
 
-							$('#input_Scan_QR_Code').val(qr_code);
-							$('#input_Scan_QR_Code').trigger('change');
-							$('#input_Scan_QR_Code').trigger('input');
+                    var arrayStr = input_Scanner.split('/');
 
-						}
-					} 
-					else {
-						$('#input_Scan_QR_Code').val(input_Scanner);
-						$('#input_Scan_QR_Code').trigger('change');
-						$('#input_Scan_QR_Code').trigger('input');
-					}
-				}
-			} catch { }
+                    if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0 && input_Scanner.indexOf('/') > -1) {
 
-			return false;
-		});
+                        var qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
 
-		$(document).on('change', '#input_Scan_QR_Code', function (e) {
-			e.preventDefault();
+                        if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length > 0) {
 
-			ShowLoader(true);
+                            $('#input_Scan_QR_Code').val(qr_code);
+                            $('#input_Scan_QR_Code').trigger('change');
+                            $('#input_Scan_QR_Code').trigger('input');
 
-			var DI_No = $('#DI_No').val();
-			var Pallate_Id = $('#span_Pallate_Id').html();
+                        }
+                    }
+                    else {
+                        $('#input_Scan_QR_Code').val(input_Scanner);
+                        $('#input_Scan_QR_Code').trigger('change');
+                        $('#input_Scan_QR_Code').trigger('input');
+                    }
+                }
+            } catch { }
 
-			if (typeof DI_No != 'undefined' && DI_No != null && DI_No.trim() != ''
-				&& typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.trim() != '') {
+            return false;
+        });
 
-				var arrayStr = $(this).val().indexOf('/') > -1 ? $(this).val().split('/') : [];
+        $(document).on('change', '#input_Scan_QR_Code', function (e) {
+            e.preventDefault();
 
-				var qr_code = "";
+            ShowLoader(true);
 
-				if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0)
-					qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
+            var DI_No = $('#DI_No').val();
+            var Pallate_Id = $('#span_Pallate_Id').html();
 
-				if (qr_code.length >= 30 && qr_code.length <= 50) {
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.trim() != ''
+                && typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.trim() != '') {
 
-					$.ajax({
-						type: "GET",
-						url: '@Url_RootToController/Check_QR_Code?QR_Code=' + qr_code + '&Pallate_Id=' + Pallate_Id + '&DI_No=' + DI_No,
-						data: null,
-						contentType: "application/json; charset=utf-8",
-						dataType: "json",
-						success: function ($response) {
+                var arrayStr = $(this).val().indexOf('/') > -1 ? $(this).val().split('/') : [];
 
-							setTimeout(function () {
+                var qr_code = "";
 
-								try {
+                if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0)
+                    qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
 
-									if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
+                if (qr_code.length >= 30 && qr_code.length <= 50) {
 
-										if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK') && $response.data1['isInsert'] === true) {
+                    $.ajax({
+                        type: "GET",
+                        url: '@Url_RootToController/Check_QR_Code?QR_Code=' + qr_code + '&Pallate_Id=' + Pallate_Id + '&DI_No=' + DI_No,
+                        data: null,
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function ($response) {
 
-											if ($response.data1['success'] === 'OK') {
-												var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="S" class="float-left text-success text-bold">'
-													+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'S\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+                            setTimeout(function () {
 
-												$('#ul_Scan_QR_Code').prepend(html);
-												$('#ul_Accepted_QR_Code').prepend(html);
+                                try {
 
-												$('#input_Scan_QR_Code').val('');
-												$('#input_temp_Scan_QR_Code').val('');
+                                    if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
 
-											}
-											else {
-												var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="R" class="float-left text-danger text-bold">'
-													+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'R\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+                                        if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK') && $response.data1['isInsert'] === true) {
 
-												$('#ul_Scan_QR_Code').prepend(html);
-												$('#ul_Rejected_QR_Code').prepend(html);
+                                            if ($response.data1['success'] === 'OK') {
+                                                var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="S" class="float-left text-success text-bold">'
+                                                    + $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'S\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-												$('#input_Scan_QR_Code').val('');
-												$('#input_temp_Scan_QR_Code').val('');
-											}
-										}
+                                                $('#ul_Scan_QR_Code').prepend(html);
+                                                $('#ul_Accepted_QR_Code').prepend(html);
 
-										$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
-										$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
-										$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
-										$('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
+                                                $('#input_Scan_QR_Code').val('');
+                                                $('#input_temp_Scan_QR_Code').val('');
 
-										fnCalculate_QR_Code();
+                                            }
+                                            else {
+                                                var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['id'] + '" data-type="R" class="float-left text-danger text-bold">'
+                                                    + $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this,\'R\',' + $response.data1['id'] + ', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-										$('#input_Scan_QR_Code').focus();
+                                                $('#ul_Scan_QR_Code').prepend(html);
+                                                $('#ul_Rejected_QR_Code').prepend(html);
 
-									}
+                                                $('#input_Scan_QR_Code').val('');
+                                                $('#input_temp_Scan_QR_Code').val('');
+                                            }
+                                        }
 
-									if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '')
-										CommonAlert_Error($response.data2);
+                                        $('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
+                                        $('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+                                        $('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+                                        $('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
 
-								} catch { }
+                                        fnCalculate_QR_Code();
 
-								ShowLoader(false);
+                                        $('#input_Scan_QR_Code').focus();
 
-							}, 1000);
+                                    }
 
-						},
-						failure: function (response) { ShowLoader(false); CommonAlert_Error(null); },
-						error: function (response) { ShowLoader(false); CommonAlert_Error(null); }
-					});
+                                    if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '')
+                                        CommonAlert_Error($response.data2);
 
-					return false;
-				}
-			}
+                                } catch { }
 
-			ShowLoader(false);
+                                ShowLoader(false);
 
-			return false;
-		});
+                            }, 1000);
 
-		function fnCalculate_QR_Code() {
+                        },
+                        failure: function (response) { ShowLoader(false); CommonAlert_Error(null); },
+                        error: function (response) { ShowLoader(false); CommonAlert_Error(null); }
+                    });
 
-			var RequiredShipper = $('#span_Total_Scan_QR_Code').attr('data-cntReq');
-			var LoaddedShipper = $('#span_Total_Accepted_QR_Code').attr('data-cnt');
-			var RejectShipper = $('#span_Total_Rejected_QR_Code').attr('data-cnt');
+                    return false;
+                }
+            }
 
-			if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0) { }
-			else { RequiredShipper = $('#table_MDA_Dtls tbody tr#tr_MDA_' + $('#input_MDA_Id').val() + ' td.Required_Shipper').text(); }
+            ShowLoader(false);
 
-			if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0)
-				RequiredShipper = parseInt(RequiredShipper.trim());
-			else RequiredShipper = 0;
+            return false;
+        });
 
-			if (typeof LoaddedShipper != 'undefined' && LoaddedShipper != null && LoaddedShipper.trim().length > 0 && parseInt(LoaddedShipper.trim()) > 0)
-				LoaddedShipper = parseInt(LoaddedShipper.trim());
-			else LoaddedShipper = 0;
+        function fnCalculate_QR_Code() {
 
-			if (typeof RejectShipper != 'undefined' && RejectShipper != null && RejectShipper.trim().length > 0 && parseInt(RejectShipper.trim()) > 0)
-				RejectShipper = parseInt(RejectShipper.trim());
-			else RejectShipper = 0;
+            var RequiredShipper = $('#span_Total_Scan_QR_Code').attr('data-cntReq');
+            var LoaddedShipper = $('#span_Total_Accepted_QR_Code').attr('data-cnt');
+            var RejectShipper = $('#span_Total_Rejected_QR_Code').attr('data-cnt');
 
-			$('#span_Total_Scan_QR_Code').html((LoaddedShipper + RejectShipper));
+            if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0) { }
+            else { RequiredShipper = $('#table_MDA_Dtls tbody tr#tr_MDA_' + $('#input_MDA_Id').val() + ' td.Required_Shipper').text(); }
 
-			$('#span_Total_Accepted_QR_Code').html(LoaddedShipper + ' / ' + RequiredShipper);
+            if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0)
+                RequiredShipper = parseInt(RequiredShipper.trim());
+            else RequiredShipper = 0;
 
-			$('#span_Total_Rejected_QR_Code').html(RejectShipper);
+            if (typeof LoaddedShipper != 'undefined' && LoaddedShipper != null && LoaddedShipper.trim().length > 0 && parseInt(LoaddedShipper.trim()) > 0)
+                LoaddedShipper = parseInt(LoaddedShipper.trim());
+            else LoaddedShipper = 0;
 
-			if ((LoaddedShipper + RejectShipper) <= 0) $('#btnViewAll').css('display', 'none');
-			else $('#btnViewAll').css('display', 'block');
+            if (typeof RejectShipper != 'undefined' && RejectShipper != null && RejectShipper.trim().length > 0 && parseInt(RejectShipper.trim()) > 0)
+                RejectShipper = parseInt(RejectShipper.trim());
+            else RejectShipper = 0;
 
-			if (RejectShipper <= 0) $('#btnViewReason').css('display', 'none');
-			else $('#btnViewReason').css('display', 'block');
+            $('#span_Total_Scan_QR_Code').html((LoaddedShipper + RejectShipper));
 
-		}
+            $('#span_Total_Accepted_QR_Code').html(LoaddedShipper + ' / ' + RequiredShipper);
 
-		function fnClick_ClosePallate() {
+            $('#span_Total_Rejected_QR_Code').html(RejectShipper);
 
-			var DI_No = $('#DI_No').val();
-			var Pallate_Id = $('#span_Pallate_Id').html();
+            if ((LoaddedShipper + RejectShipper) <= 0) $('#btnViewAll').css('display', 'none');
+            else $('#btnViewAll').css('display', 'block');
 
-			if (typeof DI_No != 'undefined' && DI_No != null && DI_No.trim() != ''
-				&& typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.trim() != '') {
+            if (RejectShipper <= 0) $('#btnViewReason').css('display', 'none');
+            else $('#btnViewReason').css('display', 'block');
 
-				Swal.fire({
-					icon: "warning",
-					title: "Are you sure to close this pallate?",
-					//type: "error",
-					showCancelButton: true,
-					confirmButtonColor: '#3085d6',
-					cancelButtonColor: '#d33',
-					confirmButtonText: 'Yes!',
-					//closeOnConfirm: false
-				}).then((result) => {
+        }
 
-					try {
+        function fnClick_ClosePallate() {
 
-						if (result != null && result.isConfirmed == true) {
-							ShowLoader(true);
+            var DI_No = $('#DI_No').val();
+            var Pallate_Id = $('#span_Pallate_Id').html();
 
-							$.ajax({
-								type: "POST",
-								url: '@Url_RootToController/ClosePallate?Pallate_Id=' + Pallate_Id + '&DI_No=' + DI_No,
-								data: null,
-								success: function (response) {
-									ShowLoader(false);
+            if (typeof DI_No != 'undefined' && DI_No != null && DI_No.trim() != ''
+                && typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.trim() != '') {
 
-									try {
-										if (response.statusCode === 1) CommonConfirmed_Success(response.message, Load_Pallate, []);
-										else CommonAlert_Error(response.message, null);
-									} catch { window.location.reload(); }
-								},
-								failure: function (response) { ShowLoader(false); CommonAlert_Error(null) },
-								error: function (response) { ShowLoader(false); CommonAlert_Error(null) }
-							});
-						}
+                Swal.fire({
+                    icon: "warning",
+                    title: "Are you sure to close this pallate?",
+                    //type: "error",
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes!',
+                    //closeOnConfirm: false
+                }).then((result) => {
 
-					} catch { }
-				});
-			}
-		}
+                    try {
 
-		function fnClick_Delete_QR_Code($this, $type, $id, $elementId){
-			var Pallate_Id = $('#span_Pallate_Id').html();
-			var DI_No = $('#span_DI_No').html();
+                        if (result != null && result.isConfirmed == true) {
+                            ShowLoader(true);
 
-			if (typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.length > 0 && typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
-				ShowLoader(true);
+                            $.ajax({
+                                type: "POST",
+                                url: '@Url_RootToController/ClosePallate?Pallate_Id=' + Pallate_Id + '&DI_No=' + DI_No,
+                                data: null,
+                                success: function (response) {
+                                    ShowLoader(false);
 
-				var qr_code = $($this).parent().find('span').text().trim();
+                                    try {
+                                        if (response.statusCode === 1) CommonConfirmed_Success(response.message, Load_Pallate, []);
+                                        else CommonAlert_Error(response.message, null);
+                                    } catch { window.location.reload(); }
+                                },
+                                failure: function (response) { ShowLoader(false); CommonAlert_Error(null) },
+                                error: function (response) { ShowLoader(false); CommonAlert_Error(null) }
+                            });
+                        }
 
-				var message = "";
+                    } catch { }
+                });
+            }
+        }
 
-				if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length == 0 && $type == "") {
-					message = "Are you sure to delete all Shipper QR Codes ?";
-				}
-				else if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length > 0 && $type == "S") {
-					message = "Are you sure to delete all Accepted Shipper QR Codes ?";
-				}
-				else if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length > 0 && $type == "R") {
-					message = "Are you sure to delete all Rejected Shipper QR Codes ?";
-				}
-				else {
-					message = "Are you sure to delete Shipper QR Code   " + qr_code + " ?";
-				}
+        function fnClick_Delete_QR_Code($this, $type, $id, $elementId) {
+            var Pallate_Id = $('#span_Pallate_Id').html();
+            var DI_No = $('#span_DI_No').html();
 
-				Swal.fire({
-					icon: 'warning',
-					title: message,
-					showDenyButton: false,
-					showCancelButton: true,
-					confirmButtonText: 'OK'
-				}).then((result) => {
+            if (typeof Pallate_Id != 'undefined' && Pallate_Id != null && Pallate_Id.length > 0 && typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) {
+                ShowLoader(true);
 
-					if (result != null && result.isConfirmed == true) {
-						$.ajax({
-							type: "GET",
-							url: '@Url_RootToController/Delete_QR_Code?Pallate_Id=' + Pallate_Id + '&DI_No=' + DI_No + '&QR_Code_type=' + $type + '&QR_Code_Id=' + $id,
-							data: null,
-							contentType: "application/json; charset=utf-8",
-							dataType: "json",
-							success: function ($response) {
-						
-									setTimeout(function () {
+                var qr_code = $($this).parent().find('span').text().trim();
 
-										try {
-											if ($response.statusCode === 1) {
-												if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
+                var message = "";
 
-													if ($response.data1['success'] === 'OK' && $response.data1['isDelete'] === true) {
-													
-														if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length > 0) {
-															if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length == 0 && $type == "") {
-																$('#div_Scan_QR_Code ul li').remove();
-																$('#ul_Accepted_QR_Code ul li').remove();
-																$('#ul_Rejected_QR_Code ul li').remove();
-															}
-															else if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length > 0) {								
-																$('#div_Scan_QR_Code ul li span:contains("' + qr_code + '")[data-type="'+$type+'"]').closest('li').remove();
-																$('#ul_Accepted_QR_Code ul li span:contains("' + qr_code + '")[data-type="'+$type+'"]').closest('li').remove();
-																$('#ul_Rejected_QR_Code ul li span:contains("' + qr_code + '")[data-type="'+$type+'"]').closest('li').remove();
-															}
-															else {															
-																$('#div_Scan_QR_Code ul li span:contains("' + qr_code + '")[data-id="'+$id+'"]').closest('li').remove();
-																$('#ul_Accepted_QR_Code ul li span:contains("' + qr_code + '")[data-id="'+$id+'"]').closest('li').remove();
-																$('#ul_Rejected_QR_Code ul li span:contains("' + qr_code + '")[data-id="'+$id+'"]').closest('li').remove();
-															}
-														}
-																												
-														if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '') 
-															CommonAlert_Success($response.data2);
-													}
-													else if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '') 
-														CommonAlert_Success($response.data2);
+                if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length == 0 && $type == "") {
+                    message = "Are you sure to delete all Shipper QR Codes ?";
+                }
+                else if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length > 0 && $type == "S") {
+                    message = "Are you sure to delete all Accepted Shipper QR Codes ?";
+                }
+                else if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length > 0 && $type == "R") {
+                    message = "Are you sure to delete all Rejected Shipper QR Codes ?";
+                }
+                else {
+                    message = "Are you sure to delete Shipper QR Code   " + qr_code + " ?";
+                }
 
-													$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
-													$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
-													$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
-													$('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
+                Swal.fire({
+                    icon: 'warning',
+                    title: message,
+                    showDenyButton: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'OK'
+                }).then((result) => {
 
-													fnCalculate_QR_Code();
-												}
+                    if (result != null && result.isConfirmed == true) {
+                        $.ajax({
+                            type: "GET",
+                            url: '@Url_RootToController/Delete_QR_Code?Pallate_Id=' + Pallate_Id + '&DI_No=' + DI_No + '&QR_Code_type=' + $type + '&QR_Code_Id=' + $id,
+                            data: null,
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: function ($response) {
 
-											}
-											else CommonAlert_Error($response.message);
+                                setTimeout(function () {
 
-										} catch { }
+                                    try {
+                                        if ($response.statusCode === 1) {
+                                            if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
 
-										ShowLoader(false);
+                                                if ($response.data1['success'] === 'OK' && $response.data1['isDelete'] === true) {
 
-									}, 1000);
+                                                    if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length > 0) {
+                                                        if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length == 0 && $type == "") {
+                                                            $('#div_Scan_QR_Code ul li').remove();
+                                                            $('#ul_Accepted_QR_Code ul li').remove();
+                                                            $('#ul_Rejected_QR_Code ul li').remove();
+                                                        }
+                                                        else if ($id == 0 && typeof $type != 'undefined' && $type != null && $type.trim().length > 0) {
+                                                            $('#div_Scan_QR_Code ul li span:contains("' + qr_code + '")[data-type="' + $type + '"]').closest('li').remove();
+                                                            $('#ul_Accepted_QR_Code ul li span:contains("' + qr_code + '")[data-type="' + $type + '"]').closest('li').remove();
+                                                            $('#ul_Rejected_QR_Code ul li span:contains("' + qr_code + '")[data-type="' + $type + '"]').closest('li').remove();
+                                                        }
+                                                        else {
+                                                            $('#div_Scan_QR_Code ul li span:contains("' + qr_code + '")[data-id="' + $id + '"]').closest('li').remove();
+                                                            $('#ul_Accepted_QR_Code ul li span:contains("' + qr_code + '")[data-id="' + $id + '"]').closest('li').remove();
+                                                            $('#ul_Rejected_QR_Code ul li span:contains("' + qr_code + '")[data-id="' + $id + '"]').closest('li').remove();
+                                                        }
+                                                    }
 
-							},
-							failure: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); },
-							error: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); }
-						});
-					}
-				});
+                                                    if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '')
+                                                        CommonAlert_Success($response.data2);
+                                                }
+                                                else if (typeof $response.data2 != 'undefined' && $response.data2 != null && $response.data2 != '')
+                                                    CommonAlert_Success($response.data2);
 
-				
-			}
-			
-		}
+                                                $('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
+                                                $('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+                                                $('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+                                                $('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
 
-	</script>
+                                                fnCalculate_QR_Code();
+                                            }
+
+                                        }
+                                        else CommonAlert_Error($response.message);
+
+                                    } catch { }
+
+                                    ShowLoader(false);
+
+                                }, 1000);
+
+                            },
+                            failure: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); },
+                            error: function (response) { fnConnectSignalR(); ShowLoader(false); CommonAlert_Error(null); }
+                        });
+                    }
+                });
+
+
+            }
+
+        }
+
+    </script>
 
 }
 
