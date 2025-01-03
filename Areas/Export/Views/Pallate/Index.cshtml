@@ -277,7 +277,7 @@
         }
 
         function fnReceiveSignalR_Message($result) {
-
+                console.log($result);
             if ($result && $result === 'SERVER_START') {
                 tagStartLoading.prop('disabled', true);
                 tagStopLoading.prop('disabled', false);
@@ -359,7 +359,6 @@
         }
 
         function fnCheckConveyorConnection_Result($isConnect) {
-            debugger;
             if ($isConnect && $isConnect == true) {
 
                 tagStartLoading.prop('disabled', true);

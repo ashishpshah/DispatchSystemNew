@@ -164,9 +164,9 @@ namespace VendorQRGeneration.Infra.Services
 				LastCommand = new("", false);
 				lock (connectedClient) connectedClient = new();
 
-				mClient.Close();
+                ConnectionClosed?.Invoke(this, EventArgs.Empty);
+                mClient.Close();
 				tcpListener?.Stop();
-				ConnectionClosed?.Invoke(this, EventArgs.Empty);
 			}
 		}
 
