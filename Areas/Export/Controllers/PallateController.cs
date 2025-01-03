@@ -57,15 +57,16 @@ namespace Dispatch_System.Areas.Export.Controllers
         {
             try
             {
-                if (!isManuallyStop)
-                    _socketBackgroundTask.SendToClient("STOP");
-                else
+                //if (!isManuallyStop)
+                _socketBackgroundTask.SendToClient("STOP");
+
+                if (isManuallyStop && _socketBackgroundTask.IsRunning())
                 {
                     _socketBackgroundTask.DisconnectToServer();
 
-                    _hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
-
                     _socketBackgroundTask.IsRunning(false);
+
+                    _hubContext.Clients.All.SendAsync("ReceiveMessage", "SERVER_STOP");
 
                 }
 
