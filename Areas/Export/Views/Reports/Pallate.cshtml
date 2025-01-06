@@ -1,10 +1,10 @@
-﻿@model (string SearchTerm, dynamic objPallate, bool isPrint)
+﻿@model (string SearchTerm, string FromDate, string ToDate, string MDA_No, string Vehicle_No, string DI_No, string Shipper_QR_Code, List<dynamic> listPallate, bool isPrint, List<Dispatch_System.SelectListItem_Custom> SelectList)
 
 @{
 	ViewData["Title"] = "Pallate Details";
 }
 
-@if (Model.isPrint == false && string.IsNullOrEmpty(Model.SearchTerm))
+@if (Model.isPrint == false && Model.SearchTerm == "-")
 {
 	Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -13,7 +13,7 @@ else if (Model.isPrint == true)
 	Layout = "~/Views/Shared/_Layout_Print.cshtml";
 }
 
-@if (Model.isPrint == false && string.IsNullOrEmpty(Model.SearchTerm))
+@if (Model.isPrint == false && Model.SearchTerm == "-")
 {
 	<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
 		<div class="container-fluid">
@@ -37,18 +37,53 @@ else if (Model.isPrint == true)
 									<div class="form-horizontal">
 										<div class="card-body py-1 px-0">
 
-											<div class="form-group row">
-												<label for="inputSearch" class="col-sm-2 col-form-label text-right">Pallate No.</label>
-												<div class="col-sm-3">
-													<div class="input-group input-group-sm">
-														<input type="text" id="inputSearch" class="form-control" autocomplete="off" />
-														<span class="input-group-append">
-															<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-														</span>
-													</div>
+											<div class="row no-gutters p-0 m-0">
+												<div class="form-group col-md-4 mx-3">
+													<label class="col-form-label" style="align-content:start">Pallate No.</label>
+													<select id="Pallate_No" name="Pallate_No" class="form-control form-control-sm select2-tags" style="width: 100%;">
+														@if (Model.SelectList != null)
+														{
+															foreach (var item in Model.SelectList)
+															{
+																<option value="@item.Value">@item.Text</option>
+															}
+														}
+													</select>
 												</div>
 											</div>
-
+											<div class="row no-gutters p-0 m-0">
+												<div class="form-group col-md-3 mx-3">
+													<label class="col-form-label" style="align-content:start">MDA No.</label>
+													<input type="text" class="form-control form-control-sm" id="MDA_No" autocomplete="off">
+												</div>
+												<div class="form-group col-md-3 mx-3">
+													<label class="col-form-label" style="align-content:start">Vehicle No.</label>
+													<input type="text" class="form-control form-control-sm" id="Vehicle_No" autocomplete="off">
+												</div>
+											</div>
+											<div class="row no-gutters p-0 m-0">
+												<div class="form-group col-md-3 mx-3">
+													<label class="col-form-label" style="align-content:start">DI No.</label>
+													<input type="text" class="form-control form-control-sm" id="DI_No" autocomplete="off">
+												</div>
+												<div class="form-group col-md-3 mx-3">
+													<label class="col-form-label" style="align-content:start">Shipper QR Code</label>
+													<input type="text" class="form-control form-control-sm" id="Shipper_QR_Code" autocomplete="off">
+												</div>
+											</div>
+											<div class="row no-gutters p-0 m-0">
+												<div class="form-group col-md-3 mx-3">
+													<label class="col-form-label" style="align-content:start">From Date</label>
+													<input type="text" class="form-control form-control-sm datepicker" id="FromDate" autocomplete="off">
+												</div>
+												<div class="form-group col-md-3 mx-3">
+													<label class="col-form-label" style="align-content:start">To Date</label>
+													<input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+												</div>
+											</div>
+											<div class="form-group row col-sm-12 text-center ml-5 pl-5">
+												<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -75,13 +110,15 @@ else if (Model.isPrint == true)
 	</section>
 
 }
-else if (Model.isPrint == true && Model.objPallate != null)
+else if (Model.isPrint == true && Model.listPallate != null)
 {
+	dynamic objPallate = Model.listPallate.FirstOrDefault();
+
 	<div class="row col-12 mb-3">
 		<div class="container-fluid">
 			<div class="row mb-2">
 				<div class="col-sm-12" style="text-align:center;">
-					<h2 class="font-weight-bold">@(Model.objPallate != null && !string.IsNullOrEmpty(Model.objPallate.Plant_Name) ? Model.objPallate.Plant_Name : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+					<h2 class="font-weight-bold">@(objPallate != null && !string.IsNullOrEmpty(objPallate.Plant_Name) ? objPallate.Plant_Name : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
 				</div>
 				<br />
 				<div class="col-sm-12" style="text-align:center;">
@@ -95,7 +132,7 @@ else if (Model.isPrint == true && Model.objPallate != null)
 		</div>
 	</div>
 }
-else if (Model.objPallate != null)
+else if (Model.listPallate != null)
 {
 	<div class="form-group row mb-3">
 		<div class="container-fluid">
@@ -108,87 +145,93 @@ else if (Model.objPallate != null)
 	</div>
 
 	<div class="form-group row mt-2">
-		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("Pallate","Reports", new { area = "Export"})?searchTerm=@(Model.SearchTerm)&isPrint=true')">Print</button>
+		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("Pallate","Reports", new { area = "Export"})?searchTerm=@(Model.SearchTerm)&FromDate=@(Model.FromDate)&ToDate=@(Model.ToDate)&MDA_No=@(Model.MDA_No)&Vehicle_No=@(Model.Vehicle_No)&DI_No=@(Model.DI_No)&Shipper_QR_Code=@(Model.Shipper_QR_Code)&isPrint=true')">Print</button>
 	</div>
 }
 
-@if (Model.objPallate != null)
+@if (Model.listPallate != null)
 {
 	<div class="row col-12 mt-5">
 
-		<table id="table_Common_Main" class="table table-bordered w-100">
+		<table id="table_Common_Main" class="table table-bordered w-100 border-0">
 			<tbody>
-				<tr>
-					<td>Pallate No. : <b>@Model.objPallate.Pallate_No</b></td>
-					<td>Pallate Type : @Model.objPallate.Pallate_Type_Text</td>
-					<td>No. of Shipper : <b>@Model.objPallate.Shipper_Qty</b> </td>
-					<td>No. of Bottle : <b>@Model.objPallate.Bottle_Qty</b></td>
-				</tr>
-				<tr>
-					<td colspan="2">Status : <b>@Model.objPallate.Pallate_Status</b></td>
-					<td>Destination Country : <b>@Model.objPallate.Dest_Country</b></td>
-					<td>Mode of Dispatch : @Model.objPallate.Dispatch_Mode_Text</td>
-				</tr>
-				@if (!string.IsNullOrEmpty(Model.objPallate.MDA_No))
-				{
-					<tr>
-						<td>Export Indent No. : <b>@Model.objPallate.DI_No</b></td>
-						<td>MDA No. : <b>@Model.objPallate.MDA_No</b></td>
-						<td>Vehicle No. : @Model.objPallate.Vehicle_No</td>
-						<td>Gate In Date & Time : <b>@Model.objPallate.Gate_In_dt</b> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; Gate Out Date & Time : <b>@Model.objPallate.Gate_Out_dt</b></td>
-					</tr>
+				@{
+					foreach (dynamic objPallate in Model.listPallate)
+					{
+						<tr>
+							<td>Pallate No. : <b>@objPallate.Pallate_No</b></td>
+							<td>Pallate Type : @objPallate.Pallate_Type_Text</td>
+							<td>No. of Shipper : <b>@objPallate.Shipper_Qty</b> </td>
+							<td>No. of Bottle : <b>@objPallate.Bottle_Qty</b></td>
+						</tr>
+						<tr>
+							<td colspan="2">Status : <b>@objPallate.Pallate_Status</b></td>
+							<td>Destination Country : <b>@objPallate.Dest_Country</b></td>
+							<td>Mode of Dispatch : @objPallate.Dispatch_Mode_Text</td>
+						</tr>
+						@if (!string.IsNullOrEmpty(objPallate.MDA_No))
+						{
+							<tr>
+								<td>Export Indent No. : <b>@objPallate.DI_No</b></td>
+								<td>MDA No. : <b>@objPallate.MDA_No</b></td>
+								<td>Vehicle No. : @objPallate.Vehicle_No</td>
+								<td>Gate In Date & Time : <b>@objPallate.Gate_In_dt</b> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; Gate Out Date & Time : <b>@objPallate.Gate_Out_dt</b></td>
+							</tr>
+						}
+
+						<tr>
+							<td colspan="4">
+								@if (objPallate.Shipper_QR_Code != null && ((List<Dispatch_System.Pallate_Shipper>)objPallate.Shipper_QR_Code).Count() > 0)
+								{
+									<table id="table_Common" class="table table-bordered w-100 p-0 m-0 border-0">
+										<tbody>
+											<tr><th colspan="6" class="p-0 m-0 border-0">Shipper QR Code List</th></tr>
+
+											@{
+												List<(int Sr_No, string Qr_Code)> listQRCode = ((List<Dispatch_System.Pallate_Shipper>)objPallate.Shipper_QR_Code).Select(x => (x.Sr_No, x.QR_Code)).ToList();
+
+												var cnt = 0;
+
+												while (cnt < listQRCode.OrderBy(x => x.Sr_No).Count())
+												{
+													List<(int Sr_No, string Qr_Code)> listQR = listQRCode.OrderBy(x => x.Sr_No).Skip(cnt).Take(2).ToList();
+
+													<tr>
+														@foreach (var qr_code in listQR)
+														{
+															<td colspan="2" class="border-0">@(qr_code.Sr_No + ".   " + qr_code.Qr_Code)</td>
+														}
+														@if (listQR.Count() < 2)
+														{
+															for (int i = listQR.Count(); i < 2; i++)
+															{
+																<td colspan="3" class="border-0 border-right">&nbsp;</td>
+															}
+														}
+
+													</tr>
+
+													cnt += 2;
+												}
+											}
+										</tbody>
+									</table>
+								}
+							</td>
+						</tr>
+						<tr> <td colspan="4" class="border-0">&nbsp;</td> </tr>
+					}
 				}
 			</tbody>
 		</table>
 
-		@if (Model.objPallate.Shipper_QR_Code != null && ((List<Dispatch_System.Pallate_Shipper>)Model.objPallate.Shipper_QR_Code).Count() > 0)
-		{
-			<table id="table_Common" class="table table-bordered w-100">
-
-				<tbody>
-					<tr><th colspan="6">Shipper QR Code List</th></tr>
-
-					@{
-						List<(int Sr_No, string Qr_Code)> listQRCode = ((List<Dispatch_System.Pallate_Shipper>)Model.objPallate.Shipper_QR_Code).Select(x => (x.Sr_No, x.QR_Code)).ToList();
-
-						var cnt = 0;
-
-						while (cnt < listQRCode.OrderBy(x => x.Sr_No).Count())
-						{
-							List<(int Sr_No, string Qr_Code)> listQR = listQRCode.OrderBy(x => x.Sr_No).Skip(cnt).Take(2).ToList();
-
-							<tr>
-								@foreach (var qr_code in listQR)
-								{
-									<td colspan="2" class="border-0">@(qr_code.Sr_No + ".   " + qr_code.Qr_Code)</td>
-								}
-								@if (listQR.Count() < 2)
-								{
-									for (int i = listQR.Count(); i < 2; i++)
-									{
-										<td colspan="3" class="border-0 border-right">&nbsp;</td>
-									}
-								}
-
-							</tr>
-
-							cnt += 2;
-						}
-
-					}
-
-				</tbody>
-			</table>
-
-		}
-
 	</div>
 
 }
 
 
 
-@if (Model.isPrint == false && string.IsNullOrEmpty(Model.SearchTerm))
+@if (Model.isPrint == false && Model.SearchTerm == "-")
 {
 	@section Scripts {
 
@@ -230,11 +273,33 @@ else if (Model.objPallate != null)
 
 			var url = '';
 
-			var searchTerm = $('#inputSearch').val();
+			debugger;
+			var searchTerm = $('#Pallate_No option:selected').val();
+			if (typeof searchTerm == 'undefined' || searchTerm == null || searchTerm == "") searchTerm = " ";
+			url += 'searchTerm=' + searchTerm + '';
 
-			if (typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) {
+			var FromDate = $('#FromDate').val();
+			if (typeof FromDate != 'undefined' && FromDate != null && FromDate.length > 0) url += '&FromDate=' + FromDate;
 
-				url = '@Url.Action("Pallate", "Reports", new { area = "Export" })?searchTerm=' + searchTerm;
+			var ToDate = $('#ToDate').val();
+			if (typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) url += '&ToDate=' + ToDate;
+
+			var MDA_No = $('#MDA_No').val();
+			if (typeof MDA_No != 'undefined' && MDA_No != null && MDA_No.length > 0) url += '&MDA_No=' + MDA_No;
+
+			var Vehicle_No = $('#Vehicle_No').val();
+			if (typeof Vehicle_No != 'undefined' && Vehicle_No != null && Vehicle_No.length > 0) url += '&Vehicle_No=' + Vehicle_No;
+
+			var DI_No = $('#DI_No').val();
+			if (typeof DI_No != 'undefined' && DI_No != null && DI_No.length > 0) url += '&DI_No=' + DI_No;
+
+			var Shipper_QR_Code = $('#Shipper_QR_Code').val();
+			if (typeof Shipper_QR_Code != 'undefined' && Shipper_QR_Code != null && Shipper_QR_Code.length > 0) url += '&Shipper_QR_Code=' + Shipper_QR_Code;
+
+
+			if (typeof url != 'undefined' && url != null && url.length > 0) {
+
+				url = '@Url.Action("Pallate", "Reports", new { area = "Export" })?' + url;
 
 				$.ajax({
 					type: "GET",

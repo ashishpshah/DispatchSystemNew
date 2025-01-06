@@ -29,6 +29,7 @@ $(document).ready(function () {
 
     try {
         $('.select2').select2();
+        $('.select2-tags').select2({ tags: true });
 
         $('select').on('select2:open', function () {
             var container = $('.select2-container').last();

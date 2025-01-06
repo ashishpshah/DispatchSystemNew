@@ -73,27 +73,39 @@ namespace Dispatch_System.Areas.Export.Controllers
 
 
 		[HttpGet]
-		public IActionResult Pallate(string searchTerm = null, bool isPrint = false)
+		public IActionResult Pallate(string searchTerm = "-", string FromDate = null, string ToDate = null, string MDA_No = null, string Vehicle_No = null, string DI_No = null, string Shipper_QR_Code = null, bool isPrint = false)
 		{
-			dynamic result = null;
+			List<dynamic> result = null;
+
+			List<SelectListItem_Custom> list = new List<SelectListItem_Custom>();
+
+			list.Insert(0, new SelectListItem_Custom("", "-- Select or type --", ""));
 
 			DataSet ds = new DataSet();
 
-			if (!string.IsNullOrEmpty(searchTerm))
+			if (searchTerm != "-")
 				try
 				{
 					List<MySqlParameter> oParams = new List<MySqlParameter>();
 
-					oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = 0 });
-					oParams.Add(new MySqlParameter("P_PALLATE_NO", MySqlDbType.VarString) { Value = searchTerm ?? "" });
-					oParams.Add(new MySqlParameter("P_MDA_NO", MySqlDbType.VarString) { Value = "" });
+					oParams.Add(new MySqlParameter("P_DI_No", MySqlDbType.VarString) { Value = DI_No ?? "" });
+					oParams.Add(new MySqlParameter("P_MDA_No", MySqlDbType.VarString) { Value = MDA_No ?? "" });
+					oParams.Add(new MySqlParameter("P_Vehicle_No", MySqlDbType.VarString) { Value = Vehicle_No ?? "" });
+					oParams.Add(new MySqlParameter("P_Shipper_QR_Code", MySqlDbType.VarString) { Value = Shipper_QR_Code ?? "" });
+					oParams.Add(new MySqlParameter("P_Pallate_No", MySqlDbType.VarString) { Value = searchTerm });
+					oParams.Add(new MySqlParameter("P_FromDate", MySqlDbType.VarString) { Value = FromDate ?? "" });
+					oParams.Add(new MySqlParameter("P_ToDate", MySqlDbType.VarString) { Value = ToDate ?? "" });
 					oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
 
-					ds = DataContext.ExecuteStoredProcedure_DataSet_SQL("PC_PALLATE_GET", oParams);
+					ds = DataContext.ExecuteStoredProcedure_DataSet_SQL("PC_PALLATE_REPORT_GET", oParams);
 
 					if (ds != null && ds.Tables.Count > 0 && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+					{
+						result = new List<dynamic>();
+
 						foreach (DataRow dr in ds.Tables[0].Rows)
-							result = new
+						{
+							var obj = new
 							{
 								Id = dr["ID"] != DBNull.Value ? Convert.ToInt64(dr["ID"]) : 0,
 								Sr_No = dr["Sr_No"] != DBNull.Value ? Convert.ToInt32(dr["Sr_No"]) : 0,
@@ -118,35 +130,75 @@ namespace Dispatch_System.Areas.Export.Controllers
 								Shipper_QR_Code = new List<Pallate_Shipper>()
 							};
 
-					if (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
-						foreach (DataRow dr in ds.Tables[1].Rows)
-						{
-							try
+							if (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
 							{
-								if (result.Shipper_QR_Code == null)
-									result.Shipper_QR_Code = new List<Pallate_Shipper>();
-
-								result.Shipper_QR_Code.Add(new Pallate_Shipper()
+								var filteredRows = ds.Tables[1].AsEnumerable().Where(row => (long)row.Field<dynamic>("Pallate_Id") == (long)obj.Id);
+								
+								if (filteredRows.Any())
 								{
-									Id = dr["ID"] != DBNull.Value ? Convert.ToInt64(dr["ID"]) : 0,
-									Sr_No = dr["Sr_No"] != DBNull.Value ? Convert.ToInt32(dr["Sr_No"]) : 0,
-									DI_No = dr["DI_No"] != DBNull.Value ? Convert.ToString(dr["DI_No"]) : "",
-									Pallate_Id = dr["Pallate_Id"] != DBNull.Value ? Convert.ToInt64(dr["Pallate_Id"]) : 0,
-									QR_Code = dr["Shipper_QR_Code"] != DBNull.Value ? Convert.ToString(dr["Shipper_QR_Code"]) : "",
-									Status = dr["Status"] != DBNull.Value ? Convert.ToString(dr["Status"]) : "",
-									Reason = dr["Reason"] != DBNull.Value ? Convert.ToString(dr["Reason"]) : "",
-								});
+									DataTable filteredTable = filteredRows.CopyToDataTable();
+
+									foreach (DataRow dr_ in filteredTable.Rows)
+									{
+										try
+										{
+											obj.Shipper_QR_Code.Add(new Pallate_Shipper()
+											{
+												Id = dr_["ID"] != DBNull.Value ? Convert.ToInt64(dr_["ID"]) : 0,
+												Sr_No = dr_["Sr_No"] != DBNull.Value ? Convert.ToInt32(dr_["Sr_No"]) : 0,
+												DI_No = dr_["DI_No"] != DBNull.Value ? Convert.ToString(dr_["DI_No"]) : "",
+												Pallate_Id = dr_["Pallate_Id"] != DBNull.Value ? Convert.ToInt64(dr_["Pallate_Id"]) : 0,
+												QR_Code = dr_["Shipper_QR_Code"] != DBNull.Value ? Convert.ToString(dr_["Shipper_QR_Code"]) : "",
+												Status = dr_["Status"] != DBNull.Value ? Convert.ToString(dr_["Status"]) : "",
+												Reason = dr_["Reason"] != DBNull.Value ? Convert.ToString(dr_["Reason"]) : "",
+											});
+										}
+										catch { continue; }
+									}
+								}
+
 							}
-							catch { continue; }
+
+
+							result.Add(obj);
 						}
+					}
 
 				}
 				catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
 
-			if (isPrint == true || string.IsNullOrEmpty(searchTerm))
-				return View((searchTerm, result, isPrint));
+			if (isPrint == true || searchTerm == "-")
+			{
+				if (isPrint == false)
+				{
+					var oParams = new List<MySqlParameter>();
+
+					try
+					{
+						oParams.Add(new MySqlParameter("P_DI_No", MySqlDbType.VarString) { Value = "" });
+						oParams.Add(new MySqlParameter("P_MDA_No", MySqlDbType.VarString) { Value = "" });
+						oParams.Add(new MySqlParameter("P_Vehicle_No", MySqlDbType.VarString) { Value = "" });
+						oParams.Add(new MySqlParameter("P_Shipper_QR_Code", MySqlDbType.VarString) { Value = "" });
+						oParams.Add(new MySqlParameter("P_Pallate_No", MySqlDbType.VarString) { Value = "-1" });
+						oParams.Add(new MySqlParameter("P_FromDate", MySqlDbType.VarString) { Value = "" });
+						oParams.Add(new MySqlParameter("P_ToDate", MySqlDbType.VarString) { Value = "" });
+						oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+
+						var dt = DataContext.ExecuteStoredProcedure_DataTable_SQL("PC_PALLATE_REPORT_GET", oParams, false);
+
+						if (dt != null && dt.Rows.Count > 0)
+							foreach (DataRow dr in dt.Rows)
+								list.Add(new SelectListItem_Custom(Convert.ToString(dr["Pallate_Id"]), Convert.ToString(dr["Pallate_No"]), ""));
+
+					}
+					catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+				}
+
+				return View((searchTerm, FromDate, ToDate, MDA_No, Vehicle_No, DI_No, Shipper_QR_Code, result, isPrint, list));
+			}
 			else
-				return PartialView((searchTerm, result, isPrint));
+				return PartialView((searchTerm, FromDate, ToDate, MDA_No, Vehicle_No, DI_No, Shipper_QR_Code, result, isPrint, list));
 		}
 
 
