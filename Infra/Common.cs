@@ -10,6 +10,8 @@ using DocumentFormat.OpenXml.Drawing.Charts;
 using ZXing.QrCode;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Net.Mail;
+using System.Net.Mime;
 
 namespace Dispatch_System
 {
@@ -184,7 +186,7 @@ namespace Dispatch_System
 		}
 
 
-		public static async Task<(bool IsSuccess, string Message)> SendEmail(string subject, string body, string[] to_mails, List<(Stream contentStream, string contentType, string? fileDownloadName)> attachments, bool isBodyHtml = false)
+		public static async Task<(bool IsSuccess, string Message)> SendEmail(string subject, string body, string[] to_mails, List<(MemoryStream contentStream, string contentType, string? fileDownloadName)> attachments, bool isBodyHtml = false)
 		{
 			LogService.LogInsert("Common - SendEmail", $"Send Email => Starting at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")} | Subject : {subject} | To : {string.Join(", ", to_mails)}", null);
 
@@ -214,6 +216,14 @@ namespace Dispatch_System
 
 						foreach (string item in to_mails)
 							mailMessage.To.Add(new System.Net.Mail.MailAddress(item.Trim())); // Trim to remove leading/trailing spaces
+
+						// Attach the PDF file
+						if (attachments != null)
+							foreach ((Stream contentStream, string contentType, string? fileDownloadName) attachment in attachments)
+							{
+								Attachment attac = new Attachment(attachment.contentStream, attachment.fileDownloadName, MediaTypeNames.Application.Octet);
+								mailMessage.Attachments.Add(attac);
+							}
 
 						//if (to_mails.Contains(","))
 						//{
@@ -252,6 +262,8 @@ namespace Dispatch_System
 							DeliveryMethod = System.Net.Mail.SmtpDeliveryMethod.Network,
 							UseDefaultCredentials = AppHttpContextAccessor.DefaultCredentials
 						};
+
+						//smtpClient.SendCompleted += SmtpClient_SendCompleted;
 
 						// Send the email
 						await smtpClient.SendMailAsync(mailMessage);
@@ -296,7 +308,6 @@ namespace Dispatch_System
 						try { result.Message = result.Message + " | Exception: " + ex.ToString().Substring(0, (ex.Source.ToString().Length > 3000 ? 3000 : ex.Source.ToString().Length)); } catch { result.Message = result.Message + "Exception: " + ex?.ToString(); }
 					}
 				}
-
 			}
 
 			LogService.LogInsert("Common - SendEmail", $"Send Email => Completed at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")} | IsSuccess : {result.IsSuccess} | Message : {result.Message} | Subject : {subject} | To : {string.Join(", ", to_mails)}", null);
@@ -304,6 +315,27 @@ namespace Dispatch_System
 			return result;
 		}
 
+		//private static void SmtpClient_SendCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+		//{
+		//	string error = "";
+
+		//	if (e.Error != null)
+		//		error += $"Error: {JsonConvert.SerializeObject(e.Error)}";
+		//	else if (e.Cancelled)
+		//		error += "Email sending was canceled.";
+		//	else
+		//	{
+		//		// Retrieve the MailMessage from the state object
+		//		MailMessage sentMessage = e.UserState as MailMessage;
+		//		if (sentMessage != null)
+		//		{
+		//			error += "Email sent successfully!";
+		//			error += $"To: {string.Join(", ", sentMessage.To)}";
+		//		}
+		//	}
+
+		//	LogService.LogInsert("Common - SendEmail", $"Send Email => Completed at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")} : {error}", null);
+		//}
 
 		public static string GenerateQrCodeBase64_ZXing(string qrText, int size = 250)
 		{

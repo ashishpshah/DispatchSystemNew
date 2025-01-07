@@ -60,15 +60,9 @@ else if (Model.isPrint == true)
 													<label class="col-form-label" style="align-content:start">Vehicle No.</label>
 													<input type="text" class="form-control form-control-sm" id="Vehicle_No" autocomplete="off">
 												</div>
-											</div>
-											<div class="row no-gutters p-0 m-0">
 												<div class="form-group col-md-3 mx-3">
 													<label class="col-form-label" style="align-content:start">DI No.</label>
 													<input type="text" class="form-control form-control-sm" id="DI_No" autocomplete="off">
-												</div>
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">Shipper QR Code</label>
-													<input type="text" class="form-control form-control-sm" id="Shipper_QR_Code" autocomplete="off">
 												</div>
 											</div>
 											<div class="row no-gutters p-0 m-0">
@@ -79,6 +73,10 @@ else if (Model.isPrint == true)
 												<div class="form-group col-md-3 mx-3">
 													<label class="col-form-label" style="align-content:start">To Date</label>
 													<input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+												</div>
+												<div class="form-group col-md-3 mx-3">
+													<label class="col-form-label" style="align-content:start">Shipper QR Code</label>
+													<input type="text" class="form-control form-control-sm" id="Shipper_QR_Code" autocomplete="off">
 												</div>
 											</div>
 											<div class="form-group row col-sm-12 text-center ml-5 pl-5">
@@ -125,6 +123,34 @@ else if (Model.isPrint == true && Model.listPallate != null)
 					<h2 class="font-weight-bold"><b>Pallate Details</b></h2>
 				</div>
 				<br />
+				<div class="col-sm-12" style="text-align:center;">
+					<h5 class="font-weight-bold">
+
+						@{
+							var pageTitle = "";
+							var pallate_No = "";// Model.listPallate.Where(x => );
+
+							if (Model.SearchTerm != null && long.TryParse(Model.SearchTerm, out long pallate_no_id) && pallate_no_id > 0)
+								pallate_No = Model.listPallate.Where(x => (long)x.Id == pallate_no_id).Select(x => (string)x.Pallate_No).FirstOrDefault();
+							else if (Model.SearchTerm != null)
+								pallate_No = Model.listPallate.Where(x => Convert.ToString(x.Pallate_No).ToLower() == Convert.ToString(Model.SearchTerm).ToLower()).Select(x => (string)x.Pallate_No).FirstOrDefault();
+
+							pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(pallate_No) ? "" : $"Pallate No. : {pallate_No}");
+							pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(Model.MDA_No) ? "" : $"MDA No. : {Model.MDA_No}");
+							pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(Model.DI_No) ? "" : $"DI No. : {Model.DI_No}");
+							pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(Model.Vehicle_No) ? "" : $"Vehicle No. : {Model.Vehicle_No}");
+							pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(Model.FromDate) ? "" : $"From Date : {Model.FromDate}");
+							pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(Model.ToDate) ? "" : $"To Date : {Model.ToDate}");
+
+							pageTitle = pageTitle.Trim();
+
+							while (pageTitle.EndsWith(",")) pageTitle = pageTitle.TrimEnd(',').Trim();
+
+						}
+						<b>@pageTitle</b>
+					</h5>
+				</div>
+				<br />
 				<div class="col-sm-12" style="text-align:right;">
 					<h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
 				</div>
@@ -139,6 +165,34 @@ else if (Model.listPallate != null)
 			<div class="row mb-2">
 				<div class="col-sm-12" style="text-align:center;">
 					<h2 class="font-weight-bold" id="lableReportTitle">Pallate Details</h2>
+					<br />
+					<div class="col-sm-12" style="text-align:center;">
+						<h5 class="font-weight-bold">
+
+							@{
+								var pageTitle = "";
+								var pallate_No = "";// Model.listPallate.Where(x => );
+
+								if (Model.SearchTerm != null && long.TryParse(Model.SearchTerm, out long pallate_no_id) && pallate_no_id > 0)
+									pallate_No = Model.listPallate.Where(x => (long)x.Id == pallate_no_id).Select(x => (string)x.Pallate_No).FirstOrDefault();
+								else if (Model.SearchTerm != null)
+									pallate_No = Model.listPallate.Where(x => Convert.ToString(x.Pallate_No).ToLower() == Convert.ToString(Model.SearchTerm).ToLower()).Select(x => (string)x.Pallate_No).FirstOrDefault();
+
+								pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(pallate_No) ? "" : $"Pallate No. : {pallate_No}");
+								pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(Model.MDA_No) ? "" : $"MDA No. : {Model.MDA_No}");
+								pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(Model.DI_No) ? "" : $"DI No. : {Model.DI_No}");
+								pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(Model.Vehicle_No) ? "" : $"Vehicle No. : {Model.Vehicle_No}");
+								pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(Model.FromDate) ? "" : $"From Date : {Model.FromDate}");
+								pageTitle += (string.IsNullOrEmpty(pageTitle) ? "" : ", ") + (string.IsNullOrEmpty(Model.ToDate) ? "" : $"To Date : {Model.ToDate}");
+
+								pageTitle = pageTitle.Trim();
+
+								while (pageTitle.EndsWith(",")) pageTitle = pageTitle.TrimEnd(',').Trim();
+
+							}
+							<b>@pageTitle</b>
+						</h5>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -159,7 +213,7 @@ else if (Model.listPallate != null)
 					foreach (dynamic objPallate in Model.listPallate)
 					{
 						<tr>
-							<td>Pallate No. : <b>@objPallate.Pallate_No</b></td>
+							<td>Pallate No. : <b>@objPallate.Pallate_No &nbsp; (@objPallate.SSCC)</b></td>
 							<td>Pallate Type : @objPallate.Pallate_Type_Text</td>
 							<td>No. of Shipper : <b>@objPallate.Shipper_Qty</b> </td>
 							<td>No. of Bottle : <b>@objPallate.Bottle_Qty</b></td>
@@ -174,7 +228,7 @@ else if (Model.listPallate != null)
 							<tr>
 								<td>Export Indent No. : <b>@objPallate.DI_No</b></td>
 								<td>MDA No. : <b>@objPallate.MDA_No</b></td>
-								<td>Vehicle No. : @objPallate.Vehicle_No</td>
+								<td>Vehicle No. : <b>@objPallate.Vehicle_No</b></td>
 								<td>Gate In Date & Time : <b>@objPallate.Gate_In_dt</b> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; Gate Out Date & Time : <b>@objPallate.Gate_Out_dt</b></td>
 							</tr>
 						}

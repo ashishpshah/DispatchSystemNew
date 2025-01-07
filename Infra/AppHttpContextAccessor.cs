@@ -60,6 +60,7 @@ namespace Dispatch_System
 		public static bool IsSendMail => Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("Email_Configuration").GetSection("IsSendMail").Value);
 		public static bool IsSendMail_Vendor => Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("Email_Configuration").GetSection("IsSendMail_Vendor").Value);
 		public static string AdminToMail => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Email_Configuration").GetSection("To").Value);
+		public static string ToMail_Batch_Log_File => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Email_Configuration").GetSection("ToMail_Batch_Log_File").Value);
 		public static string AdminFromMail => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Email_Configuration").GetSection("From").Value);
 		public static string DisplayName => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Email_Configuration").GetSection("DisplayName").Value);
 		public static string Host => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Email_Configuration").GetSection("Host").Value);

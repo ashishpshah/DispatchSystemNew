@@ -46,7 +46,8 @@ namespace Dispatch_System.Controllers
 					AreaName = Convert.ToString(context.RouteData.Values["area"]);
 
 
-				if (!Common.IsUserLogged() && Convert.ToString(ControllerName).ToLower() != "home" && (Convert.ToString(ActionName).ToLower() != "login" || !Convert.ToString(ActionName).ToLower().Contains("sync")))
+				if (!Common.IsUserLogged() && (Convert.ToString(ControllerName).ToLower() != "home" && (Convert.ToString(ActionName).ToLower() != "login" || !Convert.ToString(ActionName).ToLower().Contains("sync")))
+					&& (Convert.ToString(ControllerName).ToLower() != "reports" && !Convert.ToString(ActionName).ToLower().Contains("getdata_batchlogfile")))
 				{
 					//	//context.Result = new RedirectResult(Url.Content("~/") + (string.IsNullOrEmpty(areaName) ? "" : areaName + "/") + "Home/Login");
 					//	context.Result = new RedirectResult(Url.Content("~/") + "Home/Login");
