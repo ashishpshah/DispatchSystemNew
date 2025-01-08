@@ -7028,6 +7028,8 @@ namespace Dispatch_System.Controllers
         {
             if (string.IsNullOrEmpty(subject)) return BadRequest("Enter Subject.");
 
+            if (!string.IsNullOrEmpty(body_html)) body_html = HttpUtility.UrlDecode(body_html);
+
             to = to ?? "";
             cc = cc ?? "";
             bcc = bcc ?? "";
@@ -7121,7 +7123,6 @@ namespace Dispatch_System.Controllers
 
             var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, false);
 
-
             //Common.SendEmail($"Batch file(s) Log at {(FromDate == ToDate ? FromDate : FromDate + " to " + ToDate)}", "<h3><b>Good Morning</b></h3> <p><b>PFA</b></p>"
             //, AppHttpContextAccessor.ToMail_Batch_Log_File.Replace(" ", "").Replace(";", ",").Split(",").ToArray(), list.Select(x=>(x.contentStream, x.contentType, x.fileDownloadName)).ToList(), true);
 
@@ -7131,117 +7132,110 @@ namespace Dispatch_System.Controllers
             CommonViewModel.Message = "E-Mail Sending.....";
 
             return Json(CommonViewModel);
+
         }
 
-        CommonViewModel.IsConfirm = false;
-            CommonViewModel.IsSuccess = false;
-            CommonViewModel.StatusCode = ResponseStatusCode.Error;
-            CommonViewModel.Message = "Error : E-Mail Sending.";
+        public IActionResult SendEmailTest()
+        {
+            LogService.LogInsert("Home - SendEmailTest", $"Send Email Test => Starting at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}", null);
+
+            Common.SendEmail($"Dispatch System Send Mail Testing at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}", "For Testing", AppHttpContextAccessor.AdminToMail.Replace(" ", "").Replace(";", ",").Split(",").ToArray(), null, false);
+
+            LogService.LogInsert("Home - SendEmailTest", $"Send Email Test => Completed at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}", null);
+
+            CommonViewModel.IsConfirm = true;
+            CommonViewModel.IsSuccess = true;
+            CommonViewModel.StatusCode = ResponseStatusCode.Success;
+            CommonViewModel.Message = "E-Mail Sending.....";
 
             return Json(CommonViewModel);
-    }
-
-    public IActionResult SendEmailTest()
-    {
-        LogService.LogInsert("Home - SendEmailTest", $"Send Email Test => Starting at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}", null);
-
-        Common.SendEmail($"Dispatch System Send Mail Testing at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}", "For Testing", AppHttpContextAccessor.AdminToMail.Replace(" ", "").Replace(";", ",").Split(",").ToArray(), null, false);
-
-        LogService.LogInsert("Home - SendEmailTest", $"Send Email Test => Completed at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}", null);
-
-        CommonViewModel.IsConfirm = true;
-        CommonViewModel.IsSuccess = true;
-        CommonViewModel.StatusCode = ResponseStatusCode.Success;
-        CommonViewModel.Message = "E-Mail Sending.....";
-
-        return Json(CommonViewModel);
-    }
+        }
 
 
 
-    public async Task<IActionResult> SendToPrinter(string V1 = "Test-V1", string V2 = "Test-V1", string V3 = "Test-V1")
-    {
-        Write_Log($"Printer : Data to Send => V1 : {V1}, V2 : {V2}, V3 : {V3} ");
+        public async Task<IActionResult> SendToPrinter(string V1 = "Test-V1", string V2 = "Test-V1", string V3 = "Test-V1")
+        {
+            Write_Log($"Printer : Data to Send => V1 : {V1}, V2 : {V2}, V3 : {V3} ");
 
-        IPAddress listenIP;
-        int listenPort;
+            IPAddress listenIP;
+            int listenPort;
 
-        string listenIPString = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Printer_IP").Value ?? "");
-        string listenPortString = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Printer_Port").Value ?? "");
+            string listenIPString = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Printer_IP").Value ?? "");
+            string listenPortString = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Printer_Port").Value ?? "");
 
-        if (Regex.IsMatch((listenIPString ?? ""), @"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
-            && IPAddress.TryParse(listenIPString, out listenIP) && int.TryParse(listenPortString, out listenPort) && listenPort > 0 && listenPort <= 65535)
+            if (Regex.IsMatch((listenIPString ?? ""), @"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
+                && IPAddress.TryParse(listenIPString, out listenIP) && int.TryParse(listenPortString, out listenPort) && listenPort > 0 && listenPort <= 65535)
+            {
+                try
+                {
+                    Write_Log(System.Environment.NewLine);
+
+                    // Format the data to be sent
+                    string dataToSend = "\x02" + "041C1E1Q0R1" + "\x17" + "D" + $"{V1}" + "\x0A" + $"{V2}" + "\x0A" + $"{V3}??" + "\x0D";
+
+                    // Connect to the server
+                    using var client = new TcpClient();
+                    await client.ConnectAsync(listenIP, listenPort);
+
+                    Write_Log("Printer : Connected to the server.");
+                    Write_Log($"Printer : Listening on Address {listenIP.ToString()}:{listenPort}..." + System.Environment.NewLine);
+
+                    // Get the network stream for writing data to the server
+                    using NetworkStream stream = client.GetStream();
+
+                    Write_Log($"Printer : Data to Send => {dataToSend}");
+
+                    // Convert the string data to bytes
+                    byte[] buffer = Encoding.UTF8.GetBytes(dataToSend);
+
+                    // Send the data to the server
+                    await stream.WriteAsync(buffer, 0, buffer.Length);
+
+                    Write_Log("Printer : Data sent to the server.");
+
+                    // Disconnect from the server
+                    client.Close();
+
+                }
+                catch (Exception ex)
+                {
+                    Write_Log($"Printer : Error => {JsonConvert.SerializeObject(ex)}");
+
+                    throw ex;
+                }
+            }
+
+
+            return Json(null);
+        }
+
+        private void Write_Log(string text)
         {
             try
             {
-                Write_Log(System.Environment.NewLine);
+                if (!string.IsNullOrEmpty(text))
+                {
+                    string filePath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Log_File_Path").Value ?? "C:\\Z_Project_Dispatch_System\\Logs\\<YYYYMMDD>\\MDA_QR_Scan_<HH>.txt");
 
-                // Format the data to be sent
-                string dataToSend = "\x02" + "041C1E1Q0R1" + "\x17" + "D" + $"{V1}" + "\x0A" + $"{V2}" + "\x0A" + $"{V3}??" + "\x0D";
+                    //filePath = filePath.Replace("#", DateTime.Now.ToString("yyyyMMdd_HH"));
 
-                // Connect to the server
-                using var client = new TcpClient();
-                await client.ConnectAsync(listenIP, listenPort);
+                    filePath = filePath.Replace("<YYYYMMDD>", DateTime.Now.ToString("yyyyMMdd"));
+                    filePath = filePath.Replace("<HH>", DateTime.Now.ToString("HH"));
 
-                Write_Log("Printer : Connected to the server.");
-                Write_Log($"Printer : Listening on Address {listenIP.ToString()}:{listenPort}..." + System.Environment.NewLine);
+                    if (!System.IO.Directory.Exists(Path.GetDirectoryName(filePath)))
+                        System.IO.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
-                // Get the network stream for writing data to the server
-                using NetworkStream stream = client.GetStream();
+                    if (!System.IO.File.Exists(filePath))
+                        System.IO.File.Create(filePath).Dispose();
 
-                Write_Log($"Printer : Data to Send => {dataToSend}");
+                    using (StreamWriter sw = System.IO.File.AppendText(filePath))
+                        sw.WriteLine(DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text + System.Environment.NewLine);
 
-                // Convert the string data to bytes
-                byte[] buffer = Encoding.UTF8.GetBytes(dataToSend);
-
-                // Send the data to the server
-                await stream.WriteAsync(buffer, 0, buffer.Length);
-
-                Write_Log("Printer : Data sent to the server.");
-
-                // Disconnect from the server
-                client.Close();
-
+                    Console.WriteLine(DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text + System.Environment.NewLine);
+                }
             }
-            catch (Exception ex)
-            {
-                Write_Log($"Printer : Error => {JsonConvert.SerializeObject(ex)}");
-
-                throw ex;
-            }
+            catch (Exception ex) { }
         }
-
-
-        return Json(null);
     }
-
-    private void Write_Log(string text)
-    {
-        try
-        {
-            if (!string.IsNullOrEmpty(text))
-            {
-                string filePath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Log_File_Path").Value ?? "C:\\Z_Project_Dispatch_System\\Logs\\<YYYYMMDD>\\MDA_QR_Scan_<HH>.txt");
-
-                //filePath = filePath.Replace("#", DateTime.Now.ToString("yyyyMMdd_HH"));
-
-                filePath = filePath.Replace("<YYYYMMDD>", DateTime.Now.ToString("yyyyMMdd"));
-                filePath = filePath.Replace("<HH>", DateTime.Now.ToString("HH"));
-
-                if (!System.IO.Directory.Exists(Path.GetDirectoryName(filePath)))
-                    System.IO.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
-                if (!System.IO.File.Exists(filePath))
-                    System.IO.File.Create(filePath).Dispose();
-
-                using (StreamWriter sw = System.IO.File.AppendText(filePath))
-                    sw.WriteLine(DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text + System.Environment.NewLine);
-
-                Console.WriteLine(DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text + System.Environment.NewLine);
-            }
-        }
-        catch (Exception ex) { }
-    }
-}
 
 }
