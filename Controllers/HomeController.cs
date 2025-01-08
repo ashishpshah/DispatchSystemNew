@@ -1,5 +1,4 @@
 ﻿using Dispatch_System.Models;
-using DocumentFormat.OpenXml.Office.Word;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.AspNetCore.Mvc;
@@ -7139,7 +7138,24 @@ namespace Dispatch_System.Controllers
         {
             LogService.LogInsert("Home - SendEmailTest", $"Send Email Test => Starting at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}", null);
 
-            Common.SendEmail($"Dispatch System Send Mail Testing at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}", "For Testing", AppHttpContextAccessor.AdminToMail.Replace(" ", "").Replace(";", ",").Split(",").ToArray(), null, false);
+            //Common.SendEmail($"Dispatch System Send Mail Testing at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}", "For Testing", AppHttpContextAccessor.AdminToMail.Replace(" ", "").Replace(";", ",").Split(",").ToArray(), null, false);
+
+            var listOracleParameter = new List<OracleParameter>();
+
+            listOracleParameter.Add(new OracleParameter("p_from", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.AdminFromMail });
+            listOracleParameter.Add(new OracleParameter("p_to", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.AdminToMail });
+            listOracleParameter.Add(new OracleParameter("p_cc", OracleDbType.NVarchar2) { Value = "" });
+            listOracleParameter.Add(new OracleParameter("p_bcc", OracleDbType.NVarchar2) { Value = "" });
+            listOracleParameter.Add(new OracleParameter("p_subject", OracleDbType.NVarchar2) { Value = $"Test subject : {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}" });
+            listOracleParameter.Add(new OracleParameter("p_text_msg", OracleDbType.NVarchar2) { Value = "Test body" });
+            listOracleParameter.Add(new OracleParameter("p_html_msg", OracleDbType.NVarchar2) { Value = "" });
+            listOracleParameter.Add(new OracleParameter("p_attachment_names", OracleDbType.NVarchar2) { Value = "" });
+            listOracleParameter.Add(new OracleParameter("p_attachment_ids", OracleDbType.NVarchar2) { Value = "" });
+            listOracleParameter.Add(new OracleParameter("p_attachments_clob", OracleDbType.Clob) { Value = null });
+            listOracleParameter.Add(new OracleParameter("p_attachments_blob", OracleDbType.Blob) { Value = null });
+            listOracleParameter.Add(new OracleParameter("p_reply_to", OracleDbType.NVarchar2) { Value = null });
+
+            var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, false);
 
             LogService.LogInsert("Home - SendEmailTest", $"Send Email Test => Completed at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}", null);
 
