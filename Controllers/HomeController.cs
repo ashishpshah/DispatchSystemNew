@@ -6997,7 +6997,7 @@ namespace Dispatch_System.Controllers
                         listOracleParameter.Add(new OracleParameter("p_attachments_blob", OracleDbType.Blob) { Value = null });
                         listOracleParameter.Add(new OracleParameter("p_reply_to", OracleDbType.NVarchar2) { Value = null });
 
-                        var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, false);
+                        var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, true);
 
                     }
                 }
@@ -7128,7 +7128,7 @@ namespace Dispatch_System.Controllers
             listOracleParameter.Add(new OracleParameter("p_attachments_blob", OracleDbType.Blob) { Value = null });
             listOracleParameter.Add(new OracleParameter("p_reply_to", OracleDbType.NVarchar2) { Value = null });
 
-            var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, false);
+            var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, true);
 
             //Common.SendEmail($"Batch file(s) Log at {(FromDate == ToDate ? FromDate : FromDate + " to " + ToDate)}", "<h3><b>Good Morning</b></h3> <p><b>PFA</b></p>"
             //, AppHttpContextAccessor.ToMail_Batch_Log_File.Replace(" ", "").Replace(";", ",").Split(",").ToArray(), list.Select(x=>(x.contentStream, x.contentType, x.fileDownloadName)).ToList(), true);
