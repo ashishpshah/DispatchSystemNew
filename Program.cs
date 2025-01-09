@@ -1,3 +1,5 @@
+using DinkToPdf;
+using DinkToPdf.Contracts;
 using Dispatch_System;
 using Dispatch_System.Infra;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
@@ -56,6 +58,7 @@ builder.Services.AddCors();
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddSingleton<IConverter, SynchronizedConverter>(provider => new SynchronizedConverter(new PdfTools()));
 //builder.Services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
 builder.Services.AddSingleton<SharedDataService>();

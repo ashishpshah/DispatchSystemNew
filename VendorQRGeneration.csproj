@@ -130,7 +130,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="ClosedXML" Version="0.102.1" />
-		<PackageReference Include="DinkToPdf" Version="1.0.8" />
+		<PackageReference Include="DinkPDFGenerator" Version="1.0.0" />
 		<PackageReference Include="EPPlus" Version="7.1.0" />
 		<PackageReference Include="IronPdf.Extensions.Mvc.Core" Version="2025.1.4" />
 		<PackageReference Include="iTextSharp" Version="5.5.13.4" />
@@ -170,6 +170,12 @@
 	    <Generator>ResXFileCodeGenerator</Generator>
 	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
 	  </EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="libwkhtmltox.dll">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 	<!--<ItemGroup>
