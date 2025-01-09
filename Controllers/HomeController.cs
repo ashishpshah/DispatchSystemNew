@@ -6,6 +6,7 @@ using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Oracle.ManagedDataAccess.Client;
+using PuppeteerSharp;
 using System.Data;
 using System.Diagnostics;
 using System.Dynamic;
@@ -6925,7 +6926,7 @@ namespace Dispatch_System.Controllers
         }
 
 
-        public IActionResult SendEmail_BatchLog(string BatchNo = null, string FromDate = null, string ToDate = null)
+        public async Task<IActionResult> SendEmail_BatchLog(string BatchNo = null, string FromDate = null, string ToDate = null)
         {
             FromDate = string.IsNullOrEmpty(FromDate) ? DateTime.Now.AddDays(-1).ToString("dd/MM/yyyy").Replace("-", "/") :
                 DateTime.ParseExact(FromDate, "dd/MM/yyyy", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/");
@@ -6942,7 +6943,16 @@ namespace Dispatch_System.Controllers
                 if (!string.IsNullOrEmpty(url))
                     url = HttpUtility.UrlDecode(url);
 
-                byte[] fileData = Task.Run(() => client.GetByteArrayAsync(url)).Result;
+                //byte[] fileData = Task.Run(() => client.GetByteArrayAsync(url)).Result;
+
+                var browserFetcher = new BrowserFetcher();
+                await browserFetcher.DownloadAsync();
+
+                using var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+                using var page = await browser.NewPageAsync();
+                await page.GoToAsync(url); // In case of fonts being loaded from a CDN, use WaitUntilNavigation.Networkidle0 as a second param.
+                await page.EvaluateExpressionHandleAsync("document.fonts.ready"); // Wait for fonts to be loaded. Omitting this might result in no text rendered in pdf.
+                byte[] fileData = await page.PdfDataAsync();
 
                 if (fileData != null && fileData.Length > 0)
                 {
@@ -6982,7 +6992,6 @@ namespace Dispatch_System.Controllers
 
                     if (isSuccess == true)
                     {
-
                         listOracleParameter = new List<OracleParameter>();
                         listOracleParameter.Add(new OracleParameter("p_from", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.AdminFromMail });
                         listOracleParameter.Add(new OracleParameter("p_to", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.ToMail_Batch_Log_File });
@@ -7014,6 +7023,7 @@ namespace Dispatch_System.Controllers
                 return Json(CommonViewModel);
             }
 
+
             CommonViewModel.IsConfirm = false;
             CommonViewModel.IsSuccess = false;
             CommonViewModel.StatusCode = ResponseStatusCode.Error;
@@ -7023,7 +7033,7 @@ namespace Dispatch_System.Controllers
         }
 
 
-        public IActionResult SendEmail(string to = null, string cc = null, string bcc = null, string subject = null, string body = null, string body_html = null, string url = null)
+        public async Task<IActionResult> SendEmail(string to = null, string cc = null, string bcc = null, string subject = null, string body = null, string body_html = null, string url = null)
         {
             if (string.IsNullOrEmpty(subject)) return BadRequest("Enter Subject.");
 
@@ -7064,7 +7074,16 @@ namespace Dispatch_System.Controllers
                         if (!string.IsNullOrEmpty(_url) && _url.Contains("<PREVIOUS_DATE>"))
                             _url = _url.Replace("<PREVIOUS_DATE>", DateTime.Now.AddDays(-1).ToString("dd/MM/yyyy").Replace("-", "/"));
 
-                        byte[] fileData = Task.Run(() => client.GetByteArrayAsync(_url)).Result;
+                        //byte[] fileData = Task.Run(() => client.GetByteArrayAsync(_url)).Result;
+
+                        var browserFetcher = new BrowserFetcher();
+                        await browserFetcher.DownloadAsync();
+
+                        using var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+                        using var page = await browser.NewPageAsync();
+                        await page.GoToAsync(_url); // In case of fonts being loaded from a CDN, use WaitUntilNavigation.Networkidle0 as a second param.
+                        await page.EvaluateExpressionHandleAsync("document.fonts.ready"); // Wait for fonts to be loaded. Omitting this might result in no text rendered in pdf.
+                        byte[] fileData = await page.PdfDataAsync();
 
                         obj.fileData = fileData;
 
