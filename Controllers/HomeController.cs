@@ -7078,7 +7078,7 @@ namespace Dispatch_System.Controllers
 
                         using var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true, Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" } });
                         using var page = await browser.NewPageAsync();
-                        await page.GoToAsync(url, WaitUntilNavigation.Networkidle0);
+                        await page.GoToAsync(_url, WaitUntilNavigation.Networkidle0);
                         await page.EvaluateExpressionHandleAsync("document.fonts.ready");
                         byte[] fileData = await page.PdfDataAsync();
 
