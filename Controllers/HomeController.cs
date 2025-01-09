@@ -7044,7 +7044,7 @@ namespace Dispatch_System.Controllers
             List<(byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName, long id)> list = new();
 
             if (!string.IsNullOrEmpty(url))
-                foreach (var fileUrl in url.Split(';'))
+                foreach (var fileUrl in url.Split("<#>"))
                 {
                     using (HttpClient client = new HttpClient())
                     {
@@ -7053,7 +7053,10 @@ namespace Dispatch_System.Controllers
                         var _url = fileUrl.Split("<>")[1];
 
                         if (!string.IsNullOrEmpty(_url))
+                        {
                             _url = HttpUtility.UrlDecode(_url);
+                            _url = _url.Replace("|", "&");
+                        }
 
                         if (!string.IsNullOrEmpty(_url) && _url.Contains("<CURRENT_DATE>"))
                             _url = _url.Replace("<CURRENT_DATE>", DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/"));
@@ -7081,8 +7084,10 @@ namespace Dispatch_System.Controllers
 
             if (list != null && list.Count > 0)
             {
-                foreach ((byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName, long id) obj in list)
+                for (int i = 0; i < list.Count(); i++)
                 {
+                    (byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName, long id) obj = list[i];
+
                     Int64 id = DateTime.Now.Ticks;
 
                     try
@@ -7097,7 +7102,10 @@ namespace Dispatch_System.Controllers
 
                         var isSuccess = DataContext.ExecuteNonQuery(insertSql, listOracleParameter);
 
-                        id = isSuccess ? id : 0;
+                        obj.id = isSuccess ? id : 0;
+
+                        var item = list[i];
+                        list[i] = (item.fileData, item.contentStream, item.contentType, item.fileDownloadName, id);
                     }
                     catch (Exception ex) { }
 
