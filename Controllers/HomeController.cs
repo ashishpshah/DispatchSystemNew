@@ -6948,10 +6948,10 @@ namespace Dispatch_System.Controllers
                 var browserFetcher = new BrowserFetcher();
                 await browserFetcher.DownloadAsync();
 
-                using var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+                using var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true, Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" } });
                 using var page = await browser.NewPageAsync();
-                await page.GoToAsync(url); // In case of fonts being loaded from a CDN, use WaitUntilNavigation.Networkidle0 as a second param.
-                await page.EvaluateExpressionHandleAsync("document.fonts.ready"); // Wait for fonts to be loaded. Omitting this might result in no text rendered in pdf.
+                await page.GoToAsync(url, WaitUntilNavigation.Networkidle0);
+                await page.EvaluateExpressionHandleAsync("document.fonts.ready");
                 byte[] fileData = await page.PdfDataAsync();
 
                 if (fileData != null && fileData.Length > 0)
@@ -7076,13 +7076,10 @@ namespace Dispatch_System.Controllers
 
                         //byte[] fileData = Task.Run(() => client.GetByteArrayAsync(_url)).Result;
 
-                        var browserFetcher = new BrowserFetcher();
-                        await browserFetcher.DownloadAsync();
-
-                        using var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+                        using var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true, Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" } });
                         using var page = await browser.NewPageAsync();
-                        await page.GoToAsync(_url); // In case of fonts being loaded from a CDN, use WaitUntilNavigation.Networkidle0 as a second param.
-                        await page.EvaluateExpressionHandleAsync("document.fonts.ready"); // Wait for fonts to be loaded. Omitting this might result in no text rendered in pdf.
+                        await page.GoToAsync(url, WaitUntilNavigation.Networkidle0);
+                        await page.EvaluateExpressionHandleAsync("document.fonts.ready");
                         byte[] fileData = await page.PdfDataAsync();
 
                         obj.fileData = fileData;
