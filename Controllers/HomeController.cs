@@ -2489,6 +2489,15 @@ namespace Dispatch_System.Controllers
         {
             try
             {
+                if (!string.IsNullOrEmpty(searchTerm) && searchTerm.Trim().EndsWith("_Error"))
+                {
+                    CommonViewModel.IsSuccess = false;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                    CommonViewModel.Message = "File already proceed.";
+
+                    return Json(CommonViewModel);
+                }
+
                 string logFilePath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch").GetSection("Log_File_Path").Value ?? "");
 
                 string sourceFolderPath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch").GetSection("Source_Folder_Path").Value ?? "");
