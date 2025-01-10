@@ -37,9 +37,8 @@ namespace Dispatch_System.Controllers
                 CommonViewModel.Data1 = new DashboardData();
                 CommonViewModel.Data2 = new DashboardData();
 
-                if (AppHttpContextAccessor.IsCloudDBActive == false)
+                if (AppHttpContextAccessor.IsCloudDBActive == true)
                 {
-
                     List<OracleParameter> oParams = new List<OracleParameter>();
 
                     //oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
@@ -6982,7 +6981,6 @@ namespace Dispatch_System.Controllers
 
                     if (isSuccess == true)
                     {
-
                         listOracleParameter = new List<OracleParameter>();
                         listOracleParameter.Add(new OracleParameter("p_from", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.AdminFromMail });
                         listOracleParameter.Add(new OracleParameter("p_to", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.ToMail_Batch_Log_File });
