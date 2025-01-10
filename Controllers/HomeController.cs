@@ -1,11 +1,15 @@
-﻿using Dispatch_System.Models;
+﻿using DinkToPdf;
+using DinkToPdf.Contracts;
+using Dispatch_System.Models;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Oracle.ManagedDataAccess.Client;
+using PuppeteerSharp;
 using System.Data;
 using System.Diagnostics;
 using System.Dynamic;
@@ -22,8 +26,15 @@ namespace Dispatch_System.Controllers
 {
     public class HomeController : BaseController<ResponseModel<LoginViewModel>>
     {
-
-        public HomeController() { }
+        IConverter converter;
+        public IConfiguration Configuration;
+        IWebHostEnvironment webHostEnvironment;
+        public HomeController(IConverter _converter, IConfiguration configuration, IWebHostEnvironment environment)
+        {
+            converter = _converter;
+            Configuration = configuration;
+            webHostEnvironment = environment;
+        }
 
         #region Loading
 
@@ -6924,51 +6935,72 @@ namespace Dispatch_System.Controllers
         }
 
 
-        public IActionResult SendEmail_BatchLog(string BatchNo = null, string FromDate = null, string ToDate = null)
+        public async Task<IActionResult> SendEmail_BatchLog(string BatchNo = null, string FromDate = null, string ToDate = null)
         {
-            FromDate = string.IsNullOrEmpty(FromDate) ? DateTime.Now.AddDays(-1).ToString("dd/MM/yyyy").Replace("-", "/") :
-                DateTime.ParseExact(FromDate, "dd/MM/yyyy", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/");
-
-            ToDate = string.IsNullOrEmpty(ToDate) ? DateTime.Now.AddDays(-1).ToString("dd/MM/yyyy").Replace("-", "/") :
-                DateTime.ParseExact(ToDate, "dd/MM/yyyy", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/");
-
-            var url = AppHttpContextAccessor.AppBaseUrl + $"/Dispatch/Reports/GetData_BatchLogFile?searchTerm={BatchNo}&FromDate={FromDate}&ToDate={ToDate}&isPrint=true";
-
-            List<(byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName)> list = new();
-
-            using (HttpClient client = new HttpClient())
+            try
             {
+                FromDate = string.IsNullOrEmpty(FromDate) ? DateTime.Now.AddDays(-1).ToString("dd/MM/yyyy").Replace("-", "/") :
+                    DateTime.ParseExact(FromDate, "dd/MM/yyyy", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/");
+
+                ToDate = string.IsNullOrEmpty(ToDate) ? DateTime.Now.AddDays(-1).ToString("dd/MM/yyyy").Replace("-", "/") :
+                    DateTime.ParseExact(ToDate, "dd/MM/yyyy", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/");
+
+                var url = AppHttpContextAccessor.AppBaseUrl + $"/Dispatch/Reports/GetData_BatchLogFile?searchTerm={BatchNo}&FromDate={FromDate}&ToDate={ToDate}&isPrint=true";
+
                 if (!string.IsNullOrEmpty(url))
                     url = HttpUtility.UrlDecode(url);
 
-                byte[] fileData = Task.Run(() => client.GetByteArrayAsync(url)).Result;
+                List<(byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName)> list = new();
 
-                if (fileData != null && fileData.Length > 0)
+                using (HttpClient client = new HttpClient())
                 {
                     (byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName) obj = new();
 
-                    obj.fileData = fileData;
+                    var htmlDoc = Task.Run(() => client.GetStringAsync(url)).Result;
 
-                    using (MemoryStream memoryStream = new MemoryStream(fileData))
+                    var doc = new HtmlToPdfDocument()
                     {
-                        obj.contentStream = memoryStream;
+                        GlobalSettings = {
+                             ColorMode = ColorMode.Color,
+                             Orientation = Orientation.Landscape,
+                             PaperSize = PaperKind.A4Plus,
+                             Margins = new MarginSettings() { Top = 10, Left = 30, Right = 30 }
+                             },
+                        Objects = {
+                                 new ObjectSettings() {
+                                     PagesCount = true,
+                                     HtmlContent = htmlDoc.ToString(),
+                                     WebSettings = { DefaultEncoding = "utf-8" }
+                                 }
+                             }
+                    };
 
-                        obj.fileDownloadName = $"Batch_files_Log_at_{(FromDate == ToDate ? FromDate : FromDate + " to " + ToDate).Replace("/", "-")}.pdf";
-                        obj.contentType = "application/pdf";
+                    obj.fileData = converter.Convert(doc);
+
+                    //return File(stream, contentType, fileName);
+
+                    if (obj.fileData != null && obj.fileData.Length > 0)
+                    {
+                        using (MemoryStream memoryStream = new MemoryStream(obj.fileData))
+                        {
+                            memoryStream.Seek(0, SeekOrigin.Begin);
+
+                            obj.contentStream = memoryStream;
+
+                            obj.fileDownloadName = $"Batch_files_Log_at_{(FromDate == ToDate ? FromDate : FromDate + " to " + ToDate).Replace("/", "-")}.pdf";
+                            obj.contentType = "application/pdf";
+                        }
+
+                        list.Add(obj);
                     }
-
-                    list.Add(obj);
                 }
-            }
 
-            if (list != null && list.Count > 0)
-            {
-                (byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName) obj = list.FirstOrDefault();
-
-                Int64 id = DateTime.Now.Ticks;
-
-                try
+                if (list != null && list.Count > 0)
                 {
+                    (byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName) obj = list.FirstOrDefault();
+
+                    Int64 id = DateTime.Now.Ticks;
+
                     string insertSql = $"INSERT INTO KL_TEMP_EMAIL_ATTACHMENTS (id, file_name,file_data) VALUES (:id,:file_name,:file_data)";
 
                     var listOracleParameter = new List<OracleParameter>();
@@ -6995,11 +7027,171 @@ namespace Dispatch_System.Controllers
                         listOracleParameter.Add(new OracleParameter("p_attachments_blob", OracleDbType.Blob) { Value = null });
                         listOracleParameter.Add(new OracleParameter("p_reply_to", OracleDbType.NVarchar2) { Value = null });
 
-                        var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, false);
+                        var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, true);
 
                     }
+
                 }
-                catch (Exception ex) { }
+
+
+                ////Common.SendEmail($"Batch file(s) Log at {(FromDate == ToDate ? FromDate : FromDate + " to " + ToDate)}", "<h3><b>Good Morning</b></h3> <p><b>PFA</b></p>"
+                ////, AppHttpContextAccessor.ToMail_Batch_Log_File.Replace(" ", "").Replace(";", ",").Split(",").ToArray(), list.Select(x=>(x.contentStream, x.contentType, x.fileDownloadName)).ToList(), true);
+
+                CommonViewModel.IsConfirm = true;
+                CommonViewModel.IsSuccess = true;
+                CommonViewModel.StatusCode = ResponseStatusCode.Success;
+                CommonViewModel.Message = "E-Mail Sending.....";
+
+                return Json(CommonViewModel);
+            }
+            catch (Exception ex)
+            {
+                LogService.LogInsert(GetCurrentAction(), "", ex);
+
+                CommonViewModel.IsSuccess = false;
+                CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                CommonViewModel.Message = ResponseStatusMessage.Error + " | " + JsonConvert.SerializeObject(ex);
+            }
+
+            return Json(CommonViewModel);
+        }
+
+
+        public async Task<IActionResult> SendEmail(string to = null, string cc = null, string bcc = null, string subject = null, string body = null, string body_html = null, string url = null)
+        {
+            try
+            {
+
+                if (string.IsNullOrEmpty(subject)) return BadRequest("Enter Subject.");
+
+                if (!string.IsNullOrEmpty(body_html)) body_html = HttpUtility.UrlDecode(body_html);
+
+                to = to ?? "";
+                cc = cc ?? "";
+                bcc = bcc ?? "";
+
+                to = to.Trim(';').Replace(" ", "").Replace(";", ",");
+                cc = cc.Trim(';').Replace(" ", "").Replace(";", ",");
+                bcc = bcc.Trim(';').Replace(" ", "").Replace(";", ",");
+
+                if (string.IsNullOrEmpty(to)) return BadRequest("Enter to/cc/bcc mail address.");
+
+                if (string.IsNullOrEmpty(body) && string.IsNullOrEmpty(body_html)) return BadRequest("Enter Mail body.");
+
+                List<(byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName, long id)> list = new();
+
+                if (!string.IsNullOrEmpty(url))
+                    foreach (var fileUrl in url.Split("<#>"))
+                    {
+                        using (HttpClient client = new HttpClient())
+                        {
+                            (byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName, long id) obj = new();
+
+                            var _url = fileUrl.Split("<>")[1];
+
+                            if (!string.IsNullOrEmpty(_url))
+                            {
+                                _url = HttpUtility.UrlDecode(_url);
+                                _url = _url.Replace("|", "&");
+                            }
+
+                            if (!string.IsNullOrEmpty(_url) && _url.Contains("<CURRENT_DATE>"))
+                                _url = _url.Replace("<CURRENT_DATE>", DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/"));
+
+                            if (!string.IsNullOrEmpty(_url) && _url.Contains("<PREVIOUS_DATE>"))
+                                _url = _url.Replace("<PREVIOUS_DATE>", DateTime.Now.AddDays(-1).ToString("dd/MM/yyyy").Replace("-", "/"));
+
+                            //byte[] fileData = Task.Run(() => client.GetByteArrayAsync(_url)).Result;
+
+                            var htmlDoc = Task.Run(() => client.GetStringAsync(_url)).Result;
+
+                            var doc = new HtmlToPdfDocument()
+                            {
+                                GlobalSettings = {
+                                     ColorMode = ColorMode.Color,
+                                     Orientation = Orientation.Landscape,
+                                     PaperSize = PaperKind.A4Plus,
+                                     Margins = new MarginSettings() { Top = 10, Left = 30, Right = 30 }
+                                 },
+                                Objects = {
+                                     new ObjectSettings() {
+                                         PagesCount = true,
+                                         HtmlContent = htmlDoc.ToString(),
+                                         WebSettings = { DefaultEncoding = "utf-8" }
+                                     }
+                                 }
+                            };
+
+                            obj.fileData = converter.Convert(doc);
+
+                            using (MemoryStream memoryStream = new MemoryStream(obj.fileData))
+                            {
+                                obj.contentStream = memoryStream;
+
+                                obj.fileDownloadName = fileUrl.Split("<>")[0];
+
+                                if (!string.IsNullOrEmpty(obj.fileDownloadName) && obj.fileDownloadName.Contains("<CURRENT_DATE>"))
+                                    obj.fileDownloadName = obj.fileDownloadName.Replace("<CURRENT_DATE>", DateTime.Now.ToString("yyyyMMdd").Replace("-", "/"));
+
+                                if (!string.IsNullOrEmpty(obj.fileDownloadName) && obj.fileDownloadName.Contains("<PREVIOUS_DATE>"))
+                                    obj.fileDownloadName = obj.fileDownloadName.Replace("<PREVIOUS_DATE>", DateTime.Now.AddDays(-1).ToString("yyyyMMdd").Replace("-", "/"));
+
+
+                                obj.contentType = "application/octet-stream";
+                            }
+
+                            list.Add(obj);
+                        }
+                    }
+
+                var listOracleParameter = new List<OracleParameter>();
+
+                if (list != null && list.Count > 0)
+                {
+                    for (int i = 0; i < list.Count(); i++)
+                    {
+                        (byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName, long id) obj = list[i];
+
+                        Int64 id = DateTime.Now.Ticks;
+
+                        try
+                        {
+                            string insertSql = $"INSERT INTO KL_TEMP_EMAIL_ATTACHMENTS (id, file_name,file_data) VALUES (:id,:file_name,:file_data)";
+
+                            listOracleParameter = new List<OracleParameter>();
+
+                            listOracleParameter.Add(new OracleParameter(":id", OracleDbType.Int64) { Value = id });
+                            listOracleParameter.Add(new OracleParameter(":file_name", OracleDbType.NVarchar2) { Value = obj.fileDownloadName });
+                            listOracleParameter.Add(new OracleParameter(":file_data", OracleDbType.Blob) { Value = obj.fileData });
+
+                            var isSuccess = DataContext.ExecuteNonQuery(insertSql, listOracleParameter);
+
+                            obj.id = isSuccess ? id : 0;
+
+                            var item = list[i];
+                            list[i] = (item.fileData, item.contentStream, item.contentType, item.fileDownloadName, id);
+                        }
+                        catch (Exception ex) { }
+
+                        Thread.Sleep(1000 * 1);
+                    }
+                }
+
+                listOracleParameter = new List<OracleParameter>();
+                listOracleParameter.Add(new OracleParameter("p_from", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.AdminFromMail });
+                listOracleParameter.Add(new OracleParameter("p_to", OracleDbType.NVarchar2) { Value = to });
+                listOracleParameter.Add(new OracleParameter("p_cc", OracleDbType.NVarchar2) { Value = cc });
+                listOracleParameter.Add(new OracleParameter("p_bcc", OracleDbType.NVarchar2) { Value = bcc });
+                listOracleParameter.Add(new OracleParameter("p_subject", OracleDbType.NVarchar2) { Value = subject });
+                listOracleParameter.Add(new OracleParameter("p_text_msg", OracleDbType.NVarchar2) { Value = body });
+                listOracleParameter.Add(new OracleParameter("p_html_msg", OracleDbType.NVarchar2) { Value = body_html });
+                listOracleParameter.Add(new OracleParameter("p_attachment_names", OracleDbType.NVarchar2) { Value = "" });
+                listOracleParameter.Add(new OracleParameter("p_attachment_ids", OracleDbType.NVarchar2) { Value = (list != null && list.Count > 0 ? string.Join(",", list.Select(x => x.id)) : "") });
+                listOracleParameter.Add(new OracleParameter("p_attachments_clob", OracleDbType.Clob) { Value = null });
+                listOracleParameter.Add(new OracleParameter("p_attachments_blob", OracleDbType.Blob) { Value = null });
+                listOracleParameter.Add(new OracleParameter("p_reply_to", OracleDbType.NVarchar2) { Value = null });
+
+                var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, true);
 
                 //Common.SendEmail($"Batch file(s) Log at {(FromDate == ToDate ? FromDate : FromDate + " to " + ToDate)}", "<h3><b>Good Morning</b></h3> <p><b>PFA</b></p>"
                 //, AppHttpContextAccessor.ToMail_Batch_Log_File.Replace(" ", "").Replace(";", ",").Split(",").ToArray(), list.Select(x=>(x.contentStream, x.contentType, x.fileDownloadName)).ToList(), true);
@@ -7009,124 +7201,14 @@ namespace Dispatch_System.Controllers
                 CommonViewModel.StatusCode = ResponseStatusCode.Success;
                 CommonViewModel.Message = "E-Mail Sending.....";
 
-                return Json(CommonViewModel);
             }
-
-            CommonViewModel.IsConfirm = false;
-            CommonViewModel.IsSuccess = false;
-            CommonViewModel.StatusCode = ResponseStatusCode.Error;
-            CommonViewModel.Message = "Error : E-Mail Sending.";
-
-            return Json(CommonViewModel);
-        }
-
-
-        public IActionResult SendEmail(string to = null, string cc = null, string bcc = null, string subject = null, string body = null, string body_html = null, string url = null)
-        {
-            if (string.IsNullOrEmpty(subject)) return BadRequest("Enter Subject.");
-
-            if (!string.IsNullOrEmpty(body_html)) body_html = HttpUtility.UrlDecode(body_html);
-
-            to = to ?? "";
-            cc = cc ?? "";
-            bcc = bcc ?? "";
-
-            to = to.Trim(';').Replace(" ", "").Replace(";", ",");
-            cc = cc.Trim(';').Replace(" ", "").Replace(";", ",");
-            bcc = bcc.Trim(';').Replace(" ", "").Replace(";", ",");
-
-            if (string.IsNullOrEmpty(to)) return BadRequest("Enter to/cc/bcc mail address.");
-
-            if (string.IsNullOrEmpty(body) && string.IsNullOrEmpty(body_html)) return BadRequest("Enter Mail body.");
-
-            List<(byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName, long id)> list = new();
-
-            if (!string.IsNullOrEmpty(url))
-                foreach (var fileUrl in url.Split(';'))
-                {
-                    using (HttpClient client = new HttpClient())
-                    {
-                        (byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName, long id) obj = new();
-
-                        var _url = fileUrl.Split("<>")[1];
-
-                        if (!string.IsNullOrEmpty(_url))
-                            _url = HttpUtility.UrlDecode(_url);
-
-                        if (!string.IsNullOrEmpty(_url) && _url.Contains("<CURRENT_DATE>"))
-                            _url = _url.Replace("<CURRENT_DATE>", DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/"));
-
-                        if (!string.IsNullOrEmpty(_url) && _url.Contains("<PREVIOUS_DATE>"))
-                            _url = _url.Replace("<PREVIOUS_DATE>", DateTime.Now.AddDays(-1).ToString("dd/MM/yyyy").Replace("-", "/"));
-
-                        byte[] fileData = Task.Run(() => client.GetByteArrayAsync(_url)).Result;
-
-                        obj.fileData = fileData;
-
-                        using (MemoryStream memoryStream = new MemoryStream(fileData))
-                        {
-                            obj.contentStream = memoryStream;
-
-                            obj.fileDownloadName = fileUrl.Split("<>")[0];
-                            obj.contentType = "application/octet-stream";
-                        }
-
-                        list.Add(obj);
-                    }
-                }
-
-            var listOracleParameter = new List<OracleParameter>();
-
-            if (list != null && list.Count > 0)
+            catch (Exception ex)
             {
-                foreach ((byte[] fileData, MemoryStream contentStream, string contentType, string? fileDownloadName, long id) obj in list)
-                {
-                    Int64 id = DateTime.Now.Ticks;
-
-                    try
-                    {
-                        string insertSql = $"INSERT INTO KL_TEMP_EMAIL_ATTACHMENTS (id, file_name,file_data) VALUES (:id,:file_name,:file_data)";
-
-                        listOracleParameter = new List<OracleParameter>();
-
-                        listOracleParameter.Add(new OracleParameter(":id", OracleDbType.Int64) { Value = id });
-                        listOracleParameter.Add(new OracleParameter(":file_name", OracleDbType.NVarchar2) { Value = obj.fileDownloadName });
-                        listOracleParameter.Add(new OracleParameter(":file_data", OracleDbType.Blob) { Value = obj.fileData });
-
-                        var isSuccess = DataContext.ExecuteNonQuery(insertSql, listOracleParameter);
-
-                        id = isSuccess ? id : 0;
-                    }
-                    catch (Exception ex) { }
-
-                    Thread.Sleep(1000 * 1);
-                }
+                LogService.LogInsert(GetCurrentAction(), "", ex);
+                CommonViewModel.IsSuccess = false;
+                CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                CommonViewModel.Message = ResponseStatusMessage.Error + " | " + JsonConvert.SerializeObject(ex);
             }
-
-
-            listOracleParameter = new List<OracleParameter>();
-            listOracleParameter.Add(new OracleParameter("p_from", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.AdminFromMail });
-            listOracleParameter.Add(new OracleParameter("p_to", OracleDbType.NVarchar2) { Value = to });
-            listOracleParameter.Add(new OracleParameter("p_cc", OracleDbType.NVarchar2) { Value = cc });
-            listOracleParameter.Add(new OracleParameter("p_bcc", OracleDbType.NVarchar2) { Value = bcc });
-            listOracleParameter.Add(new OracleParameter("p_subject", OracleDbType.NVarchar2) { Value = subject });
-            listOracleParameter.Add(new OracleParameter("p_text_msg", OracleDbType.NVarchar2) { Value = body });
-            listOracleParameter.Add(new OracleParameter("p_html_msg", OracleDbType.NVarchar2) { Value = body_html });
-            listOracleParameter.Add(new OracleParameter("p_attachment_names", OracleDbType.NVarchar2) { Value = "" });
-            listOracleParameter.Add(new OracleParameter("p_attachment_ids", OracleDbType.NVarchar2) { Value = (list != null && list.Count > 0 ? string.Join(",", list.Select(x => x.id)) : "") });
-            listOracleParameter.Add(new OracleParameter("p_attachments_clob", OracleDbType.Clob) { Value = null });
-            listOracleParameter.Add(new OracleParameter("p_attachments_blob", OracleDbType.Blob) { Value = null });
-            listOracleParameter.Add(new OracleParameter("p_reply_to", OracleDbType.NVarchar2) { Value = null });
-
-            var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, false);
-
-            //Common.SendEmail($"Batch file(s) Log at {(FromDate == ToDate ? FromDate : FromDate + " to " + ToDate)}", "<h3><b>Good Morning</b></h3> <p><b>PFA</b></p>"
-            //, AppHttpContextAccessor.ToMail_Batch_Log_File.Replace(" ", "").Replace(";", ",").Split(",").ToArray(), list.Select(x=>(x.contentStream, x.contentType, x.fileDownloadName)).ToList(), true);
-
-            CommonViewModel.IsConfirm = true;
-            CommonViewModel.IsSuccess = true;
-            CommonViewModel.StatusCode = ResponseStatusCode.Success;
-            CommonViewModel.Message = "E-Mail Sending.....";
 
             return Json(CommonViewModel);
 

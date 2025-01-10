@@ -130,7 +130,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="ClosedXML" Version="0.102.1" />
+		<PackageReference Include="DinkPDFGenerator" Version="1.0.0" />
 		<PackageReference Include="EPPlus" Version="7.1.0" />
+		<PackageReference Include="IronPdf.Extensions.Mvc.Core" Version="2025.1.4" />
 		<PackageReference Include="iTextSharp" Version="5.5.13.4" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.25" />
@@ -141,7 +143,9 @@
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.18" />
 		<PackageReference Include="MySql.Data" Version="8.4.0" />
 		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="3.21.130" />
+		<PackageReference Include="PuppeteerSharp" Version="20.0.5" />
 		<PackageReference Include="QRCoder" Version="1.4.3" />
+		<PackageReference Include="Syncfusion.HtmlToPdfConverter.Net.Windows" Version="28.1.38" />
 		<PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
 		<PackageReference Include="ZXing.Net" Version="0.16.9" />
 	</ItemGroup>
@@ -166,6 +170,12 @@
 	    <Generator>ResXFileCodeGenerator</Generator>
 	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
 	  </EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="libwkhtmltox.dll">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 	<!--<ItemGroup>
