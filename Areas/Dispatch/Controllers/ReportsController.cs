@@ -46,10 +46,27 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
         }
 
 
-        public IActionResult Gate_In_Out_Report()
-        {
-            return View();
-        }
+		public IActionResult Gate_In_Out_Report()
+		{
+			List<SelectListItem_Custom> list = new List<SelectListItem_Custom>();
+
+			list.Insert(0, new SelectListItem_Custom("", "-- Select Vehicle --", ""));
+
+			try
+			{
+				DataTable dt = DataContext.ExecuteQuery_SQL("SELECT DISTINCT VEHICLE_NO, GATE_OUT_DT FROM vw_get_gate_in_mda_id ORDER BY GATE_OUT_DT DESC");
+
+				if (dt != null && dt.Rows.Count > 0)
+					foreach (DataRow dr in dt.Rows)
+						list.Add(new SelectListItem_Custom(Convert.ToString(dr["VEHICLE_NO"]), Convert.ToString(dr["VEHICLE_NO"]), ""));
+
+			}
+			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+			CommonViewModel.SelectListItems = list;
+
+			return View(CommonViewModel);
+		}
 
         public ActionResult GetData_Gate_In_Out_Report(JqueryDatatableParam param)
         {

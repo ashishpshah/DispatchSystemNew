@@ -1,4 +1,6 @@
-﻿@{
+﻿@model Dispatch_System.ResponseModel<Dispatch_System.GateIn>
+
+@{
 	ViewData["Title"] = "Report";
 	Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -30,7 +32,13 @@
 										<div class="row no-gutters p-0 m-0">
 											<div class="form-group col-md-3 mx-3">
 												<label class="col-form-label" style="align-content:start">Vehicle Number</label>
-												<input type="text" id="inputSearch" class="form-control form-control-sm" autocomplete="off" />
+												@* <input type="text" id="inputSearch" class="form-control form-control-sm" autocomplete="off" /> *@
+												<select id="inputSearch" class="form-control select2 w-100">
+													@foreach (var item in Model.SelectListItems)
+													{
+														<option value="@item.Value">@item.Text</option>
+													}
+												</select>
 											</div>
 										</div>
 
@@ -38,12 +46,12 @@
 											<div class="form-group col-md-3 mx-3">
 												<label class="col-form-label" style="align-content:start">Date From</label>
 												<input type="text" class="form-control form-control-sm datepicker" id="FromDate"
-													   data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+													   data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@(Convert.ToString(Model.Data1))" autocomplete="off">
 											</div>
 											<div class="form-group col-md-3 mx-3">
 												<label class="col-form-label" style="align-content:start">Date To</label>
 												<input type="text" class="form-control form-control-sm datepicker" id="ToDate"
-													   data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+													   data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@(Convert.ToString(Model.Data2))" autocomplete="off">
 											</div>
 										</div>
 
@@ -95,7 +103,7 @@
 
 
 @section Scripts
-	{
+{
 	<script type="text/javascript">
 
 		$(document).ready(function () {
@@ -107,20 +115,18 @@
 				$('#table_Common_Data').DataTable().destroy();
 			}
 
-			
-
-			$("#table_Common_Data").DataTable({
+			var table = $("#table_Common_Data").DataTable({
 				"destroy": true,
 				"pageLength": 50,
 				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
-				"sAjaxSource": "@Url.Action("GetData_Gate_In_Out_Report","Reports", new { area = "Export"})",
+				"sAjaxSource": "@Url.Action("GetData_Gate_In_Out_Report", "Reports", new { area = "Export" })",
 				"bServerSide": true,
 				"bProcessing": true,
 				"bSearchable": true,
 				"order": [[0, 'asc']],
 				"language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
 				"fnServerParams": function (aoData) {
-					//aoData.push({ "name": "SearchTerm", "value": "" + $('#inputSearch').val() });
+					aoData.push({ "name": "SearchTerm", "value": "" + $('#inputSearch option:selected').val() });
 					aoData.push({ "name": "FromDate", "value": "" + $('#FromDate').val() });
 					aoData.push({ "name": "ToDate", "value": "" + $('#ToDate').val() });
 				},
@@ -151,6 +157,7 @@
 					{ "title": "Loaded Shipper", "data": "loaded_Shipper", "autoWidth": true, "searchable": true, "width": "5%" }
 				],
 			});
+
 		}
 	</script>
 }

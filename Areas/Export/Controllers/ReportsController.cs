@@ -12,7 +12,24 @@ namespace Dispatch_System.Areas.Export.Controllers
 	{
 		public IActionResult Gate_In_Out_Report()
 		{
-			return View();
+			List<SelectListItem_Custom> list = new List<SelectListItem_Custom>();
+
+			list.Insert(0, new SelectListItem_Custom("", "-- Select Vehicle --", ""));
+
+			try
+			{
+				DataTable dt = DataContext.ExecuteQuery_SQL("SELECT DISTINCT VEHICLE_NO, GATE_OUT_DT FROM vw_exp_get_gate_in_mda_id ORDER BY GATE_OUT_DT DESC");
+
+				if (dt != null && dt.Rows.Count > 0)
+					foreach (DataRow dr in dt.Rows)
+						list.Add(new SelectListItem_Custom(Convert.ToString(dr["VEHICLE_NO"]), Convert.ToString(dr["VEHICLE_NO"]), ""));
+
+			}
+			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+			CommonViewModel.SelectListItems = list;
+
+			return View(CommonViewModel);
 		}
 
 		public ActionResult GetData_Gate_In_Out_Report(JqueryDatatableParam param)
@@ -134,7 +151,7 @@ namespace Dispatch_System.Areas.Export.Controllers
 							if (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
 							{
 								var filteredRows = ds.Tables[1].AsEnumerable().Where(row => (long)row.Field<dynamic>("Pallate_Id") == (long)obj.Id);
-								
+
 								if (filteredRows.Any())
 								{
 									DataTable filteredTable = filteredRows.CopyToDataTable();
