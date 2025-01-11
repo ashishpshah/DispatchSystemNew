@@ -300,5 +300,92 @@ namespace Dispatch_System.Areas.Export.Controllers
 			return Json(CommonViewModel);
 		}
 
-	}
+
+        [HttpGet]
+        public IActionResult Get_RFID_Code(string rfidNo, string rfidCode)
+        {
+            RFID obj = null;
+
+            try
+            {
+                List<MySqlParameter> oParams = new List<MySqlParameter>();
+
+                oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = -1 });
+                oParams.Add(new MySqlParameter("P_ISACTIVE", MySqlDbType.VarString) { Value = "" });
+                oParams.Add(new MySqlParameter("P_RFID_NO", MySqlDbType.VarString) { Value = rfidNo });
+                oParams.Add(new MySqlParameter("P_RFID_CODE", MySqlDbType.VarString) { Value = rfidCode });
+                oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+                oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
+                oParams.Add(new MySqlParameter("P_ROLE_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.ROLE_ID) });
+                oParams.Add(new MySqlParameter("P_MENU_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.MENU_ID) });
+
+                if (!string.IsNullOrEmpty(rfidNo) || !string.IsNullOrEmpty(rfidCode))
+                {
+                    var dt = DataContext.ExecuteStoredProcedure_DataTable_SQL("PC_RFID_GET", oParams, true);
+
+                    if (dt != null && dt.Rows.Count > 0)
+                        obj = new RFID()
+                        {
+                            RfidSrno = dt.Rows[0]["SRNO"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["SRNO"]) : "",
+                            RfidCode = dt.Rows[0]["CODE"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["CODE"]) : "",
+                            Status = dt.Rows[0]["STATUS"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["STATUS"]) : ""
+                        };
+
+                    if (obj == null)
+                    {
+                        CommonViewModel.IsConfirm = false;
+                        CommonViewModel.IsSuccess = false;
+                        CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                        CommonViewModel.Message = "No Record Found.";
+
+                        //return Json(CommonViewModel);
+                        obj = new RFID();
+                        obj.ReasonforEdit = CommonViewModel.Message;
+                        return Json(obj);
+                    }
+                    else if (!string.IsNullOrEmpty(obj.Status) && obj.Status.Trim().ToUpper() != "ACTIVE")
+                    {
+                        CommonViewModel.IsConfirm = false;
+                        CommonViewModel.IsSuccess = false;
+                        CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                        CommonViewModel.Message = "This RFID Card is Already Assigned";
+
+                        //return Json(CommonViewModel);
+                        obj.ReasonforEdit = CommonViewModel.Message;
+                        return Json(obj);
+                    }
+                    else if (!string.IsNullOrEmpty(obj.Status) && obj.Status.Trim().ToUpper() == "L")
+                    {
+                        CommonViewModel.IsConfirm = false;
+                        CommonViewModel.IsSuccess = false;
+                        CommonViewModel.StatusCode = ResponseStatusCode.Error;
+                        CommonViewModel.Message = "This RFID Card is Already Lost";
+
+                        //return Json(CommonViewModel);
+                        obj.ReasonforEdit = CommonViewModel.Message;
+                        return Json(obj);
+                    }
+
+
+                    CommonViewModel.IsConfirm = false;
+                    CommonViewModel.IsSuccess = true;
+                    CommonViewModel.StatusCode = ResponseStatusCode.Success;
+
+                    //return Json(CommonViewModel);
+                    return Json(obj);
+                }
+            }
+            catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+            CommonViewModel.IsConfirm = false;
+            CommonViewModel.IsSuccess = false;
+            CommonViewModel.StatusCode = ResponseStatusCode.Error;
+            CommonViewModel.Message = ResponseStatusMessage.Error;
+
+            //return Json(CommonViewModel);
+            obj.ReasonforEdit = CommonViewModel.Message;
+            return Json(obj);
+        }
+
+    }
 }

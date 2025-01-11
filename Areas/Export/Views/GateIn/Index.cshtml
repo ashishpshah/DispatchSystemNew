@@ -792,7 +792,7 @@
 
             $.ajax({
                 type: "GET",
-                url: '@Url.Action("fnGetRfidNoCode", "GateIn", new { area = "Dispatch" })?rfidNo=' + $('#RFID_Serial_Number').val() + '&rfidCode=' + $('#RFID_Number').val(),
+                url: '@Url.Action("Get_RFID_Code", "GateIn", new { area = "Dispatch" })?rfidNo=' + $('#RFID_Serial_Number').val() + '&rfidCode=' + $('#RFID_Number').val(),
                 data: null,
                 contentType: "application/json; charset=utf-8",
                 dataType: "html",

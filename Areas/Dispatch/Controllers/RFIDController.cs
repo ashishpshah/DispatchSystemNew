@@ -19,7 +19,9 @@ namespace Dispatch_System.Areas.Dispatch.Controllers
 
 				oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = 0 });
 				oParams.Add(new MySqlParameter("P_ISACTIVE", MySqlDbType.VarChar) { Value = "" });
-				oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+                oParams.Add(new MySqlParameter("P_RFID_NO", MySqlDbType.VarString) { Value = "" });
+                oParams.Add(new MySqlParameter("P_RFID_CODE", MySqlDbType.VarString) { Value = "" });
+                oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
 				oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
 				oParams.Add(new MySqlParameter("P_ROLE_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.ROLE_ID) });
 				oParams.Add(new MySqlParameter("P_MENU_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.MENU_ID) });
@@ -65,7 +67,9 @@ namespace Dispatch_System.Areas.Dispatch.Controllers
 
 				oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = Id });
 				oParams.Add(new MySqlParameter("P_ISACTIVE", MySqlDbType.VarChar) { Value = "" });
-				oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+                oParams.Add(new MySqlParameter("P_RFID_NO", MySqlDbType.VarString) { Value = "" });
+                oParams.Add(new MySqlParameter("P_RFID_CODE", MySqlDbType.VarString) { Value = "" });
+                oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
 				oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
 				oParams.Add(new MySqlParameter("P_ROLE_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.ROLE_ID) });
 				oParams.Add(new MySqlParameter("P_MENU_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.MENU_ID) });
