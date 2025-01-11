@@ -1,7 +1,7 @@
 ﻿@model List<ShipperBatch>
 
 <div class="row col-12 w-100">
-	<table id="table_Common" class="table table-bordered table-striped w-100 table_Common">
+	<table class="table table-bordered table-striped w-100 table_Common table_Common_QR">
 		<thead>
 			<tr>
 				<th width="3%">Sr. No.</th>
@@ -16,7 +16,7 @@
 			{
 				var i = 1;
 
-				foreach (var item in Model)
+				foreach (var item in Model.Where(x => x.SrNo > 0).OrderByDescending(x => x.SrNo))
 				{
 					<tr>
 						<td width="3%">@i</td>

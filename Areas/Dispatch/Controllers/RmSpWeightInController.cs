@@ -1,8 +1,8 @@
-﻿using Dispatch_System.Infra.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using System.Data;
 using System.Globalization;
+using VendorQRGeneration.Infra.Services;
 
 namespace Dispatch_System.Controllers
 {

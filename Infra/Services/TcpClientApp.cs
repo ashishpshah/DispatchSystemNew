@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 
-namespace Dispatch_System.Infra.Services
+namespace VendorQRGeneration.Infra.Services
 {
 	public static class TcpClientApp
 	{

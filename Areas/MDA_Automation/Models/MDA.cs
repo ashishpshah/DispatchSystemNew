@@ -38,9 +38,9 @@ namespace Dispatch_System
 		public string Driver_Id_Type { get; set; }
 		public string Driver_Id_Number { get; set; }
 		public int mda_order { get; set; }
-        [JsonIgnore] public Int64 sr_no { get; set; }
-        [JsonIgnore] public string prod_cd { get; set; }
-        [JsonIgnore] public string prod_name { get; set; }
+		[JsonIgnore] public Int64 sr_no { get; set; }
+		[JsonIgnore] public string prod_cd { get; set; }
+		[JsonIgnore] public string prod_name { get; set; }
         [JsonIgnore] public string Vehicle_Shippers { get; set; }
         [JsonIgnore] public decimal Required_Shipper { get; set; }
         [JsonIgnore] public decimal Loaded_Shipper { get; set; }
