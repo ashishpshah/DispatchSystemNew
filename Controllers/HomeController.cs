@@ -2556,7 +2556,7 @@ namespace Dispatch_System.Controllers
 
                     var orderedFilePaths = sourceFilePaths.OrderBy(path => path, new CustomFileOrderComparer());
 
-                    foreach (var sourceFilePath in orderedFilePaths.Where(x => !destinationFilePaths.Any(y => y.StartsWith(x))).OrderBy(x => x).ToList())
+                    foreach (var sourceFilePath in orderedFilePaths.Where(x => !x.Trim().Contains("_Error") && !destinationFilePaths.Any(y => y.StartsWith(x))).OrderBy(x => x).ToList())
                     {
                         if (!System.IO.File.Exists(sourceFilePath)) continue;
 
@@ -2769,24 +2769,61 @@ namespace Dispatch_System.Controllers
 
                                         if (listBottleQRCode != null && listBottleQRCode.Count() > 0)
                                         {
-                                            var len = 0;
+                                            //var len = 0;
 
-                                            while (len <= listBottleQRCode.Count())
+                                            //while (len <= listBottleQRCode.Count())
+                                            //{
+                                            //    dt = DataContext.ExecuteQuery_SQL("SELECT bottle_qrcode FROM bottle_qrcode " +
+                                            //        "WHERE bottle_qrcode IN (" + string.Join(", ", listBottleQRCode.Skip(len).Take(300).Select(x => "'" + x.BottleQRCode + "'").ToArray()) + ")");
+
+                                            //    if (dt != null && dt.Rows.Count > 0)
+                                            //    {
+                                            //        var result = listBottleQRCode.Where(item => dt.AsEnumerable().Any(row => row.Field<string>("bottle_qrcode") == item.BottleQRCode))
+                                            //                        .GroupBy(item => item.ShipperQRCode)  // Group by ShipperQRCode
+                                            //                        .Select(group => (group.Key, string.Join(",", group.Select(item => item.BottleQRCode).Distinct()), "DUP_BOTTLE")).ToList();
+
+                                            //        if (result != null && result.Count > 0) listShipperQRCode_Duplicate.AddRange(result);
+                                            //    }
+
+                                            //    len += 300;
+                                            //}
+
+                                            var tasks = new List<Task>();
+
+                                            // Split the list into smaller chunks of 10
+                                            var shippers = listBottleQRCode.GroupBy(item => item.ShipperQRCode).Select(x => x.Key).ToList();
+
+                                            for (int i = 0; i < shippers.Count; i += 10)
                                             {
-                                                dt = DataContext.ExecuteQuery_SQL("SELECT bottle_qrcode FROM bottle_qrcode " +
-                                                    "WHERE bottle_qrcode IN (" + string.Join(", ", listBottleQRCode.Skip(len).Take(300).Select(x => "'" + x.BottleQRCode + "'").ToArray()) + ")");
+                                                var currentBatch = shippers.Skip(i).Take(10).ToList();
 
-                                                if (dt != null && dt.Rows.Count > 0)
+                                                // Create a task for each batch
+                                                var task = Task.Run(() =>
                                                 {
-                                                    var result = listBottleQRCode.Where(item => dt.AsEnumerable().Any(row => row.Field<string>("bottle_qrcode") == item.BottleQRCode))
-                                                                    .GroupBy(item => item.ShipperQRCode)  // Group by ShipperQRCode
-                                                                    .Select(group => (group.Key, string.Join(",", group.Select(item => item.BottleQRCode).Distinct()), "DUP_BOTTLE")).ToList();
+                                                    var groupedResult = listBottleQRCode.Where(x => currentBatch.Any(z => x.ShipperQRCode == z)).Select(x => new { ShipperQRCode = x.ShipperQRCode, BottleQRCode = x.BottleQRCode }).ToList();
 
-                                                    if (result != null && result.Count > 0) listShipperQRCode_Duplicate.AddRange(result);
-                                                }
+                                                    var query = string.Join(", ", groupedResult.Select(x => "'" + x.BottleQRCode + "'").ToArray());
+                                                    var dt = DataContext.ExecuteQuery_SQL("SELECT bottle_qrcode FROM bottle_qrcode WHERE bottle_qrcode IN (" + query + ")");
 
-                                                len += 300;
+                                                    if (dt != null && dt.Rows.Count > 0)
+                                                    {
+                                                        var result = groupedResult
+                                                            .Where(item => dt.AsEnumerable().Any(row => row.Field<string>("bottle_qrcode") == item.BottleQRCode))
+                                                            .GroupBy(item => item.ShipperQRCode)  // Group by ShipperQRCode
+                                                            .Select(group => (group.Key, string.Join(",", group.Select(item => item.BottleQRCode).Distinct()), "DUP_BOTTLE"))
+                                                            .ToList();
+
+                                                        if (result != null && result.Count > 0) lock (listShipperQRCode_Duplicate) { listShipperQRCode_Duplicate.AddRange(result); }
+                                                    }
+
+                                                });
+
+                                                tasks.Add(task); // Add the task to the list
                                             }
+
+                                            // Wait for all tasks to complete
+                                            Task.WhenAll(tasks).Wait();
+
                                         }
 
                                         // Duplicate Bottle QR code Check end
@@ -2812,497 +2849,497 @@ namespace Dispatch_System.Controllers
 
                                         if (shipperData.ShipperQRCode_Data != null && shipperData.ShipperQRCode_Data.Count() > 0)
                                         {
-                                            DataTable dtAvailable = new DataTable();
-                                            DataTable dtShipperQrCode = new DataTable();
-                                            DataTable dtBottleQrCode = new DataTable();
-
-                                            if (string.IsNullOrEmpty(shipperData.PlantCd) || (shipperData.PlantCd.ToLower() == "none" || shipperData.PlantCd.ToLower() == "null"))
-                                                shipperData.PlantCd = plantCode;
-
-                                            var sqlQuery = "";
-                                            bool IsSuccess = false;
-                                            Int64 shipper_Api_Id = 0;
-
-                                            dt = DataContext.ExecuteQuery_SQL($"SELECT COUNT(*) FROM SHIPPER_QRCODE_API WHERE BATCH_NO = '{shipperData.Batch_no}'");
-
-                                            if (dt != null && dt.Rows.Count > 0 && (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt32(dt.Rows[0][0]) : 0) > 0)
-                                            {
-                                                dt = DataContext.ExecuteQuery_SQL($"SELECT SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API WHERE BATCH_NO = '{shipperData.Batch_no}'");
-
-                                                if (dt != null && dt.Rows.Count > 0)
-                                                {
-                                                    shipper_Api_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
-
-                                                    IsSuccess = true;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                dt = DataContext.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
-                                                    $"WHERE LOWER(TABLE_SCHEMA) = '{DataContext.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'shipper_qrcode_api') " +
-                                                    ", TBL_T AS (SELECT IFNULL(MAX(SHIPPER_QRCODE_API_SYSID), 0) + 1 ID FROM shipper_qrcode_api) " +
-                                                    "SELECT IF(X.ID > Z.ID, X.ID, Z.ID) ID " +
-                                                    "FROM TBL_AI X, TBL_T Z");
-
-                                                if (dt != null && dt.Rows.Count > 0)
-                                                    shipper_Api_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
-
-                                                sqlQuery = "INSERT INTO SHIPPER_QRCODE_API (   SHIPPER_QRCODE_API_SYSID, BATCH_NO, MFG_DATE" +
-                                                                ",EXPIRY_DATE, EVENTTIME, PLANT_ID,  CREATED_BY, CREATED_DATETIME,  TOTAL_SHIPPER_QTY" +
-                                                                ", MARKETEDBY, MANUFACTUREDBY, IS_SYNCED, IS_SYNCED_DATETIME) " +
-                                                                "VALUES ( " + shipper_Api_Id + ", '" + shipperData.Batch_no + "' " +
-                                                                ", STR_TO_DATE(REPLACE('" + DateTime.ParseExact(shipperData.Mfg_Date, "yyMMdd", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/") + "', '-', '/'), '%d/%m/%Y')" +
-                                                                ", STR_TO_DATE(REPLACE('" + DateTime.ParseExact(shipperData.Expiry_Date, "yyMMdd", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/") + "', '-', '/'), '%d/%m/%Y')" +
-                                                                ", NOW(), " + plant_id + ", 1, NOW(), " + shipperData.ShipperQRCode_Data.Count() + "" +
-                                                                ",  '" + shipperData.MarketedBy + "', '" + shipperData.ManufacturedBy + "', 1, NOW());";
-
-                                                IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery);
-                                            }
-
-                                            if (IsSuccess == true)
-                                            {
-                                                Int64 shipper_QrCode_Id = 0;
-                                                Int64 shipper_QrCode_Id_Old = 0;
-
-                                                dt = DataContext.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
-                                                    $"WHERE LOWER(TABLE_SCHEMA) = '{DataContext.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'shipper_qrcode') " +
-                                                    ", TBL_T AS (SELECT IFNULL(MAX(SHIPPER_QRCODE_SYSID), 0) + 1 ID FROM SHIPPER_QRCODE) " +
-                                                    "SELECT IF(X.ID > Z.ID, X.ID, Z.ID) ID " +
-                                                    "FROM TBL_AI X, TBL_T Z");
-
-                                                if (dt != null && dt.Rows.Count > 0)
-                                                    shipper_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
+                                            //DataTable dtAvailable = new DataTable();
+                                            //DataTable dtShipperQrCode = new DataTable();
+                                            //DataTable dtBottleQrCode = new DataTable();
+
+                                            //if (string.IsNullOrEmpty(shipperData.PlantCd) || (shipperData.PlantCd.ToLower() == "none" || shipperData.PlantCd.ToLower() == "null"))
+                                            //    shipperData.PlantCd = plantCode;
+
+                                            //var sqlQuery = "";
+                                            //bool IsSuccess = false;
+                                            //Int64 shipper_Api_Id = 0;
+
+                                            //dt = DataContext.ExecuteQuery_SQL($"SELECT COUNT(*) FROM SHIPPER_QRCODE_API WHERE BATCH_NO = '{shipperData.Batch_no}'");
+
+                                            //if (dt != null && dt.Rows.Count > 0 && (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt32(dt.Rows[0][0]) : 0) > 0)
+                                            //{
+                                            //    dt = DataContext.ExecuteQuery_SQL($"SELECT SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API WHERE BATCH_NO = '{shipperData.Batch_no}'");
+
+                                            //    if (dt != null && dt.Rows.Count > 0)
+                                            //    {
+                                            //        shipper_Api_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
+
+                                            //        IsSuccess = true;
+                                            //    }
+                                            //}
+                                            //else
+                                            //{
+                                            //    dt = DataContext.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
+                                            //        $"WHERE LOWER(TABLE_SCHEMA) = '{DataContext.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'shipper_qrcode_api') " +
+                                            //        ", TBL_T AS (SELECT IFNULL(MAX(SHIPPER_QRCODE_API_SYSID), 0) + 1 ID FROM shipper_qrcode_api) " +
+                                            //        "SELECT IF(X.ID > Z.ID, X.ID, Z.ID) ID " +
+                                            //        "FROM TBL_AI X, TBL_T Z");
+
+                                            //    if (dt != null && dt.Rows.Count > 0)
+                                            //        shipper_Api_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
+
+                                            //    sqlQuery = "INSERT INTO SHIPPER_QRCODE_API (   SHIPPER_QRCODE_API_SYSID, BATCH_NO, MFG_DATE" +
+                                            //                    ",EXPIRY_DATE, EVENTTIME, PLANT_ID,  CREATED_BY, CREATED_DATETIME,  TOTAL_SHIPPER_QTY" +
+                                            //                    ", MARKETEDBY, MANUFACTUREDBY, IS_SYNCED, IS_SYNCED_DATETIME) " +
+                                            //                    "VALUES ( " + shipper_Api_Id + ", '" + shipperData.Batch_no + "' " +
+                                            //                    ", STR_TO_DATE(REPLACE('" + DateTime.ParseExact(shipperData.Mfg_Date, "yyMMdd", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/") + "', '-', '/'), '%d/%m/%Y')" +
+                                            //                    ", STR_TO_DATE(REPLACE('" + DateTime.ParseExact(shipperData.Expiry_Date, "yyMMdd", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/") + "', '-', '/'), '%d/%m/%Y')" +
+                                            //                    ", NOW(), " + plant_id + ", 1, NOW(), " + shipperData.ShipperQRCode_Data.Count() + "" +
+                                            //                    ",  '" + shipperData.MarketedBy + "', '" + shipperData.ManufacturedBy + "', 1, NOW());";
+
+                                            //    IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery);
+                                            //}
+
+                                            //if (IsSuccess == true)
+                                            //{
+                                            //    Int64 shipper_QrCode_Id = 0;
+                                            //    Int64 shipper_QrCode_Id_Old = 0;
+
+                                            //    dt = DataContext.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
+                                            //        $"WHERE LOWER(TABLE_SCHEMA) = '{DataContext.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'shipper_qrcode') " +
+                                            //        ", TBL_T AS (SELECT IFNULL(MAX(SHIPPER_QRCODE_SYSID), 0) + 1 ID FROM SHIPPER_QRCODE) " +
+                                            //        "SELECT IF(X.ID > Z.ID, X.ID, Z.ID) ID " +
+                                            //        "FROM TBL_AI X, TBL_T Z");
+
+                                            //    if (dt != null && dt.Rows.Count > 0)
+                                            //        shipper_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
 
-                                                dtShipperQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM SHIPPER_QRCODE LIMIT 0");
+                                            //    dtShipperQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM SHIPPER_QRCODE LIMIT 0");
 
-                                                for (int i = 0; i < shipperData.ShipperQRCode_Data.Count(); i++)
-                                                {
-                                                    shipper_QrCode_Id_Old = 0;
-
-                                                    if (!string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].OldShipperQRCode))
-                                                    {
-                                                        var dt_0 = DataContext.ExecuteQuery_SQL("SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE WHERE SHIPPER_QRCODE = '" + shipperData.ShipperQRCode_Data[i].OldShipperQRCode + "' AND PLANT_ID = " + plant_id + " LIMIT 1");
-
-                                                        if (dt_0 != null && dt_0.Rows.Count > 0)
-                                                            shipper_QrCode_Id_Old = (dt_0.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt_0.Rows[0][0]) : 0);
-
-                                                    }
-
-                                                    DataRow newRow = dtShipperQrCode.NewRow();
-
-                                                    shipperData.ShipperQRCode_Data[i].Id = shipper_QrCode_Id + i;
-
-                                                    newRow[0] = shipperData.ShipperQRCode_Data[i].Id;
-                                                    newRow[1] = shipperData.ShipperQRCode_Data[i].ShipperQRCode;
-                                                    newRow[2] = shipperData.ShipperQRCode_Data[i].BottleQRCode.Count();
-                                                    newRow[3] = "a";
-                                                    newRow[4] = shipperData.ShipperQRCode_Data[i].Action;
-                                                    newRow[5] = shipper_QrCode_Id_Old;
-                                                    newRow[6] = shipper_Api_Id;
-                                                    newRow[7] = 0;
-                                                    newRow[8] = plant_id;
-                                                    newRow[9] = user_id;
-                                                    newRow[10] = currentDateTime.ToString();
-                                                    newRow[11] = null;
-                                                    newRow[12] = 0;
-                                                    newRow[13] = 0;
-                                                    newRow[14] = currentDateTime.ToString();
-                                                    newRow[15] = currentDateTime.ToString();
-
-                                                    dtShipperQrCode.Rows.Add(newRow);
-                                                }
-
-
-                                                Int64 bottle_QrCode_Id = 0;
-
-                                                dt = DataContext.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
-                                                    $"WHERE LOWER(TABLE_SCHEMA) = '{DataContext.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'bottle_qrcode') " +
-                                                    ", TBL_T AS (SELECT IFNULL(MAX(bottle_qrcode_sysId), 0) + 1 ID FROM bottle_qrcode) " +
-                                                    "SELECT IF(X.ID > Z.ID, X.ID, Z.ID) ID " +
-                                                    "FROM TBL_AI X, TBL_T Z");
+                                            //    for (int i = 0; i < shipperData.ShipperQRCode_Data.Count(); i++)
+                                            //    {
+                                            //        shipper_QrCode_Id_Old = 0;
+
+                                            //        if (!string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].OldShipperQRCode))
+                                            //        {
+                                            //            var dt_0 = DataContext.ExecuteQuery_SQL("SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE WHERE SHIPPER_QRCODE = '" + shipperData.ShipperQRCode_Data[i].OldShipperQRCode + "' AND PLANT_ID = " + plant_id + " LIMIT 1");
+
+                                            //            if (dt_0 != null && dt_0.Rows.Count > 0)
+                                            //                shipper_QrCode_Id_Old = (dt_0.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt_0.Rows[0][0]) : 0);
+
+                                            //        }
+
+                                            //        DataRow newRow = dtShipperQrCode.NewRow();
+
+                                            //        shipperData.ShipperQRCode_Data[i].Id = shipper_QrCode_Id + i;
+
+                                            //        newRow[0] = shipperData.ShipperQRCode_Data[i].Id;
+                                            //        newRow[1] = shipperData.ShipperQRCode_Data[i].ShipperQRCode;
+                                            //        newRow[2] = shipperData.ShipperQRCode_Data[i].BottleQRCode.Count();
+                                            //        newRow[3] = "a";
+                                            //        newRow[4] = shipperData.ShipperQRCode_Data[i].Action;
+                                            //        newRow[5] = shipper_QrCode_Id_Old;
+                                            //        newRow[6] = shipper_Api_Id;
+                                            //        newRow[7] = 0;
+                                            //        newRow[8] = plant_id;
+                                            //        newRow[9] = user_id;
+                                            //        newRow[10] = currentDateTime.ToString();
+                                            //        newRow[11] = null;
+                                            //        newRow[12] = 0;
+                                            //        newRow[13] = 0;
+                                            //        newRow[14] = currentDateTime.ToString();
+                                            //        newRow[15] = currentDateTime.ToString();
+
+                                            //        dtShipperQrCode.Rows.Add(newRow);
+                                            //    }
+
+
+                                            //    Int64 bottle_QrCode_Id = 0;
+
+                                            //    dt = DataContext.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
+                                            //        $"WHERE LOWER(TABLE_SCHEMA) = '{DataContext.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'bottle_qrcode') " +
+                                            //        ", TBL_T AS (SELECT IFNULL(MAX(bottle_qrcode_sysId), 0) + 1 ID FROM bottle_qrcode) " +
+                                            //        "SELECT IF(X.ID > Z.ID, X.ID, Z.ID) ID " +
+                                            //        "FROM TBL_AI X, TBL_T Z");
 
-                                                if (dt != null && dt.Rows.Count > 0)
-                                                    bottle_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
+                                            //    if (dt != null && dt.Rows.Count > 0)
+                                            //        bottle_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
 
 
-                                                dtBottleQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM BOTTLE_QRCODE LIMIT 0");
+                                            //    dtBottleQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM BOTTLE_QRCODE LIMIT 0");
 
-                                                for (int x = 0; x < shipperData.ShipperQRCode_Data.Count(); x++)
-                                                {
-                                                    long productId = 0;
+                                            //    for (int x = 0; x < shipperData.ShipperQRCode_Data.Count(); x++)
+                                            //    {
+                                            //        long productId = 0;
 
-                                                    for (int i = 0; i < shipperData.ShipperQRCode_Data[x].BottleQRCode.Count(); i++)
-                                                    {
-                                                        if (productId == 0)
-                                                            productId = listProduct.Where(y => shipperData.ShipperQRCode_Data[x].BottleQRCode[i].Contains(y.GTIN)).Select(y => y.Id).FirstOrDefault();
+                                            //        for (int i = 0; i < shipperData.ShipperQRCode_Data[x].BottleQRCode.Count(); i++)
+                                            //        {
+                                            //            if (productId == 0)
+                                            //                productId = listProduct.Where(y => shipperData.ShipperQRCode_Data[x].BottleQRCode[i].Contains(y.GTIN)).Select(y => y.Id).FirstOrDefault();
 
-                                                        DataRow newRow = dtBottleQrCode.NewRow();
+                                            //            DataRow newRow = dtBottleQrCode.NewRow();
 
-                                                        newRow[0] = bottle_QrCode_Id;
-                                                        newRow[1] = shipperData.ShipperQRCode_Data[x].BottleQRCode[i];
-                                                        newRow[2] = productId;
-                                                        newRow[3] = "a";
-                                                        newRow[4] = shipperData.ShipperQRCode_Data[x].Id;
-                                                        newRow[5] = plant_id;
-                                                        newRow[6] = user_id;
-                                                        newRow[7] = currentDateTime.ToString();
-                                                        newRow[8] = 0;
-                                                        newRow[9] = "t";
-                                                        newRow[10] = "t";
-                                                        newRow[11] = 0;
+                                            //            newRow[0] = bottle_QrCode_Id;
+                                            //            newRow[1] = shipperData.ShipperQRCode_Data[x].BottleQRCode[i];
+                                            //            newRow[2] = productId;
+                                            //            newRow[3] = "a";
+                                            //            newRow[4] = shipperData.ShipperQRCode_Data[x].Id;
+                                            //            newRow[5] = plant_id;
+                                            //            newRow[6] = user_id;
+                                            //            newRow[7] = currentDateTime.ToString();
+                                            //            newRow[8] = 0;
+                                            //            newRow[9] = "t";
+                                            //            newRow[10] = "t";
+                                            //            newRow[11] = 0;
 
-                                                        dtBottleQrCode.Rows.Add(newRow);
+                                            //            dtBottleQrCode.Rows.Add(newRow);
 
-                                                        bottle_QrCode_Id = bottle_QrCode_Id + 1;
-                                                    }
+                                            //            bottle_QrCode_Id = bottle_QrCode_Id + 1;
+                                            //        }
 
-                                                }
+                                            //    }
 
 
-                                                // Insert Shipper QR Code in SQL Database
+                                            //    // Insert Shipper QR Code in SQL Database
 
-                                                if (dtShipperQrCode != null && dtShipperQrCode.Rows.Count > 0)
-                                                {
-                                                    dtAvailable = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
-                                                                    $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id}");
+                                            //    if (dtShipperQrCode != null && dtShipperQrCode.Rows.Count > 0)
+                                            //    {
+                                            //        dtAvailable = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
+                                            //                        $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id}");
 
-                                                    int startIndex = 0;
+                                            //        int startIndex = 0;
 
-                                                    while (startIndex < dtShipperQrCode.Rows.Count)
-                                                    {
-                                                        DataTable nextBatch = dtShipperQrCode.AsEnumerable().Skip(startIndex).Take(1000).CopyToDataTable();
+                                            //        while (startIndex < dtShipperQrCode.Rows.Count)
+                                            //        {
+                                            //            DataTable nextBatch = dtShipperQrCode.AsEnumerable().Skip(startIndex).Take(1000).CopyToDataTable();
 
-                                                        var table_RowsInSqlNotInOracle = dtShipperQrCode.Clone();
+                                            //            var table_RowsInSqlNotInOracle = dtShipperQrCode.Clone();
 
-                                                        var rowsInSqlNotInOracle = from row2 in nextBatch.AsEnumerable()
-                                                                                   join row1 in dtAvailable.AsEnumerable()
-                                                                                   on new { SHIPPER_QRCODE = row2.Field<string>("SHIPPER_QRCODE") }
-                                                                                   equals new { SHIPPER_QRCODE = row1.Field<string>("SHIPPER_QRCODE") }
-                                                                                   into gj
-                                                                                   from subRow in gj.DefaultIfEmpty()
-                                                                                   where subRow == null
-                                                                                   select row2;
+                                            //            var rowsInSqlNotInOracle = from row2 in nextBatch.AsEnumerable()
+                                            //                                       join row1 in dtAvailable.AsEnumerable()
+                                            //                                       on new { SHIPPER_QRCODE = row2.Field<string>("SHIPPER_QRCODE") }
+                                            //                                       equals new { SHIPPER_QRCODE = row1.Field<string>("SHIPPER_QRCODE") }
+                                            //                                       into gj
+                                            //                                       from subRow in gj.DefaultIfEmpty()
+                                            //                                       where subRow == null
+                                            //                                       select row2;
 
-                                                        foreach (var row in rowsInSqlNotInOracle)
-                                                            table_RowsInSqlNotInOracle.ImportRow(row);
+                                            //            foreach (var row in rowsInSqlNotInOracle)
+                                            //                table_RowsInSqlNotInOracle.ImportRow(row);
 
-                                                        if (table_RowsInSqlNotInOracle != null && table_RowsInSqlNotInOracle.Rows.Count > 0)
-                                                        {
-                                                            sqlQuery = "INSERT INTO SHIPPER_QRCODE (SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION, SHIPPER_QRCODE_API_SYSID, PLANT_ID, CREATED_BY, CREATED_DATETIME, EVENTTIME, IS_SYNCED, IS_SYNCED_DATETIME) ";
-
-                                                            var sqlQuery_Select = "";
-
-                                                            foreach (DataRow dr in table_RowsInSqlNotInOracle.Rows)
-                                                            {
-                                                                if ((dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0) > 0)
-                                                                {
-                                                                    sqlQuery_Select += $"SELECT {(dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0)} SHIPPER_QRCODE_SYSID" +
-                                                                        $", '{(dr["SHIPPER_QRCODE"] != DBNull.Value ? Convert.ToString(dr["SHIPPER_QRCODE"]) : "")}' SHIPPER_QRCODE" +
-                                                                        $", {(dr["TOTAL_BOTTLES_QTY"] != DBNull.Value ? Convert.ToInt64(dr["TOTAL_BOTTLES_QTY"]) : 0)} TOTAL_BOTTLES_QTY" +
-                                                                        $", '{(dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "")}' STATUS" +
-                                                                        $", '{(dr["ACTION"] != DBNull.Value ? Convert.ToString(dr["ACTION"]) : "")}' ACTION" +
-                                                                        $", {shipper_Api_Id} SHIPPER_QRCODE_API_SYSID" +
-                                                                        $", {plant_id} PLANT_ID" +
-                                                                        $", {user_id} CREATED_BY" +
-                                                                        $", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') CREATED_DATETIME" +
-                                                                        $", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') EVENTTIME" +
-                                                                        $", 1, NOW() " +
-                                                                        $" FROM DUAL UNION ";
-                                                                }
-                                                            }
+                                            //            if (table_RowsInSqlNotInOracle != null && table_RowsInSqlNotInOracle.Rows.Count > 0)
+                                            //            {
+                                            //                sqlQuery = "INSERT INTO SHIPPER_QRCODE (SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION, SHIPPER_QRCODE_API_SYSID, PLANT_ID, CREATED_BY, CREATED_DATETIME, EVENTTIME, IS_SYNCED, IS_SYNCED_DATETIME) ";
+
+                                            //                var sqlQuery_Select = "";
+
+                                            //                foreach (DataRow dr in table_RowsInSqlNotInOracle.Rows)
+                                            //                {
+                                            //                    if ((dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0) > 0)
+                                            //                    {
+                                            //                        sqlQuery_Select += $"SELECT {(dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0)} SHIPPER_QRCODE_SYSID" +
+                                            //                            $", '{(dr["SHIPPER_QRCODE"] != DBNull.Value ? Convert.ToString(dr["SHIPPER_QRCODE"]) : "")}' SHIPPER_QRCODE" +
+                                            //                            $", {(dr["TOTAL_BOTTLES_QTY"] != DBNull.Value ? Convert.ToInt64(dr["TOTAL_BOTTLES_QTY"]) : 0)} TOTAL_BOTTLES_QTY" +
+                                            //                            $", '{(dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "")}' STATUS" +
+                                            //                            $", '{(dr["ACTION"] != DBNull.Value ? Convert.ToString(dr["ACTION"]) : "")}' ACTION" +
+                                            //                            $", {shipper_Api_Id} SHIPPER_QRCODE_API_SYSID" +
+                                            //                            $", {plant_id} PLANT_ID" +
+                                            //                            $", {user_id} CREATED_BY" +
+                                            //                            $", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') CREATED_DATETIME" +
+                                            //                            $", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') EVENTTIME" +
+                                            //                            $", 1, NOW() " +
+                                            //                            $" FROM DUAL UNION ";
+                                            //                    }
+                                            //                }
 
-                                                            if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
-                                                                sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+                                            //                if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+                                            //                    sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
 
-                                                            sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
+                                            //                sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
 
-                                                            IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
-                                                        }
+                                            //                IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+                                            //            }
 
-                                                        startIndex += 1000;
-                                                    }
+                                            //            startIndex += 1000;
+                                            //        }
 
-                                                }
+                                            //    }
 
 
-                                                // Insert Shipper QR Code in SQL Database
+                                            //    // Insert Shipper QR Code in SQL Database
 
-                                                if (dtBottleQrCode != null && dtBottleQrCode.Rows.Count > 0)
-                                                {
-                                                    dtAvailable = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, BOTTLE_QRCODE FROM BOTTLE_QRCODE " +
-                                                                $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_SYSID " +
-                                                                $"IN (SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE " +
-                                                                $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id})");
-
-                                                    const int chunkSize = 5000;
-                                                    const int subChunkSize = 1000;
+                                            //    if (dtBottleQrCode != null && dtBottleQrCode.Rows.Count > 0)
+                                            //    {
+                                            //        dtAvailable = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, BOTTLE_QRCODE FROM BOTTLE_QRCODE " +
+                                            //                    $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_SYSID " +
+                                            //                    $"IN (SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE " +
+                                            //                    $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id})");
+
+                                            //        const int chunkSize = 5000;
+                                            //        const int subChunkSize = 1000;
 
-                                                    int numberOfChunks = (int)Math.Ceiling((double)dtBottleQrCode.Rows.Count / chunkSize);
-                                                    var chunkTasks = new List<Task>();
+                                            //        int numberOfChunks = (int)Math.Ceiling((double)dtBottleQrCode.Rows.Count / chunkSize);
+                                            //        var chunkTasks = new List<Task>();
 
-                                                    for (int chunkIndex = 0; chunkIndex < numberOfChunks; chunkIndex++)
-                                                    {
-                                                        int chunkStartIndex = chunkIndex * chunkSize;
-                                                        DataTable chunkDataTable = dtBottleQrCode.AsEnumerable().Skip(chunkStartIndex).Take(chunkSize).CopyToDataTable();
+                                            //        for (int chunkIndex = 0; chunkIndex < numberOfChunks; chunkIndex++)
+                                            //        {
+                                            //            int chunkStartIndex = chunkIndex * chunkSize;
+                                            //            DataTable chunkDataTable = dtBottleQrCode.AsEnumerable().Skip(chunkStartIndex).Take(chunkSize).CopyToDataTable();
 
-                                                        var subChunkTasks = new List<Task>();
+                                            //            var subChunkTasks = new List<Task>();
 
-                                                        int numberOfSubChunks = (int)Math.Ceiling((double)chunkDataTable.Rows.Count / subChunkSize);
+                                            //            int numberOfSubChunks = (int)Math.Ceiling((double)chunkDataTable.Rows.Count / subChunkSize);
 
-                                                        for (int subChunkIndex = 0; subChunkIndex < numberOfSubChunks; subChunkIndex++)
-                                                        {
-                                                            int subChunkStartIndex = subChunkIndex * subChunkSize;
+                                            //            for (int subChunkIndex = 0; subChunkIndex < numberOfSubChunks; subChunkIndex++)
+                                            //            {
+                                            //                int subChunkStartIndex = subChunkIndex * subChunkSize;
 
-                                                            DataTable subChunk = chunkDataTable.AsEnumerable().Skip(subChunkStartIndex).Take(subChunkSize).CopyToDataTable();
+                                            //                DataTable subChunk = chunkDataTable.AsEnumerable().Skip(subChunkStartIndex).Take(subChunkSize).CopyToDataTable();
 
-                                                            var table_RowsInSqlNotInOracle = dtBottleQrCode.Clone();
+                                            //                var table_RowsInSqlNotInOracle = dtBottleQrCode.Clone();
 
-                                                            var rowsInSqlNotInOracle = from row2 in subChunk.AsEnumerable()
-                                                                                       join row1 in dtAvailable.AsEnumerable()
-                                                                                       on new { BOTTLE_QRCODE = row2.Field<string>("BOTTLE_QRCODE") }
-                                                                                       equals new { BOTTLE_QRCODE = row1.Field<string>("BOTTLE_QRCODE") }
-                                                                                       into gj
-                                                                                       from subRow in gj.DefaultIfEmpty()
-                                                                                       where subRow == null
-                                                                                       select row2;
+                                            //                var rowsInSqlNotInOracle = from row2 in subChunk.AsEnumerable()
+                                            //                                           join row1 in dtAvailable.AsEnumerable()
+                                            //                                           on new { BOTTLE_QRCODE = row2.Field<string>("BOTTLE_QRCODE") }
+                                            //                                           equals new { BOTTLE_QRCODE = row1.Field<string>("BOTTLE_QRCODE") }
+                                            //                                           into gj
+                                            //                                           from subRow in gj.DefaultIfEmpty()
+                                            //                                           where subRow == null
+                                            //                                           select row2;
 
-                                                            foreach (var row in rowsInSqlNotInOracle)
-                                                                table_RowsInSqlNotInOracle.ImportRow(row);
+                                            //                foreach (var row in rowsInSqlNotInOracle)
+                                            //                    table_RowsInSqlNotInOracle.ImportRow(row);
 
-                                                            var task = Task.Run(() =>
-                                                            {
-                                                                if (table_RowsInSqlNotInOracle != null && table_RowsInSqlNotInOracle.Rows.Count > 0)
-                                                                {
-                                                                    var sqlQuery_Insert = "INSERT INTO BOTTLE_QRCODE (BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE, PRODUCT_ID, STATUS, SHIPPER_QRCODE_SYSID, PLANT_ID, CREATED_BY, CREATED_DATETIME, IS_SYNCED, IS_SYNCED_DATETIME) ";
-
-                                                                    var sqlQuery_Select = "";
-
-                                                                    foreach (DataRow dr in table_RowsInSqlNotInOracle.Rows)
-                                                                    {
-                                                                        if ((dr["BOTTLE_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["BOTTLE_QRCODE_SYSID"]) : 0) > 0)
-                                                                        {
-                                                                            sqlQuery_Select += $"SELECT {(dr["BOTTLE_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["BOTTLE_QRCODE_SYSID"]) : 0)} BOTTLE_QRCODE_SYSID" +
-                                                                                $", '{(dr["BOTTLE_QRCODE"] != DBNull.Value ? Convert.ToString(dr["BOTTLE_QRCODE"]) : "")}' BOTTLE_QRCODE" +
-                                                                                $", {(dr["PRODUCT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PRODUCT_ID"]) : 0)} PRODUCT_ID" +
-                                                                                $", '{(dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "")}' STATUS" +
-                                                                                $", {(dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0)} SHIPPER_QRCODE_SYSID" +
-                                                                                $", {plant_id} PLANT_ID" +
-                                                                                $", {user_id} CREATED_BY" +
-                                                                                $", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') CREATED_DATETIME " +
-                                                                                $", 1, NOW() " +
-                                                                                $" FROM DUAL UNION ";
-                                                                        }
-                                                                    }
-
-                                                                    if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
-                                                                        sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+                                            //                var task = Task.Run(() =>
+                                            //                {
+                                            //                    if (table_RowsInSqlNotInOracle != null && table_RowsInSqlNotInOracle.Rows.Count > 0)
+                                            //                    {
+                                            //                        var sqlQuery_Insert = "INSERT INTO BOTTLE_QRCODE (BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE, PRODUCT_ID, STATUS, SHIPPER_QRCODE_SYSID, PLANT_ID, CREATED_BY, CREATED_DATETIME, IS_SYNCED, IS_SYNCED_DATETIME) ";
+
+                                            //                        var sqlQuery_Select = "";
+
+                                            //                        foreach (DataRow dr in table_RowsInSqlNotInOracle.Rows)
+                                            //                        {
+                                            //                            if ((dr["BOTTLE_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["BOTTLE_QRCODE_SYSID"]) : 0) > 0)
+                                            //                            {
+                                            //                                sqlQuery_Select += $"SELECT {(dr["BOTTLE_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["BOTTLE_QRCODE_SYSID"]) : 0)} BOTTLE_QRCODE_SYSID" +
+                                            //                                    $", '{(dr["BOTTLE_QRCODE"] != DBNull.Value ? Convert.ToString(dr["BOTTLE_QRCODE"]) : "")}' BOTTLE_QRCODE" +
+                                            //                                    $", {(dr["PRODUCT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PRODUCT_ID"]) : 0)} PRODUCT_ID" +
+                                            //                                    $", '{(dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "")}' STATUS" +
+                                            //                                    $", {(dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0)} SHIPPER_QRCODE_SYSID" +
+                                            //                                    $", {plant_id} PLANT_ID" +
+                                            //                                    $", {user_id} CREATED_BY" +
+                                            //                                    $", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') CREATED_DATETIME " +
+                                            //                                    $", 1, NOW() " +
+                                            //                                    $" FROM DUAL UNION ";
+                                            //                            }
+                                            //                        }
+
+                                            //                        if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+                                            //                            sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
 
-                                                                    sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
-
-                                                                    IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery_Insert + sqlQuery_Select);
-                                                                }
-                                                            });
+                                            //                        sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
+
+                                            //                        IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery_Insert + sqlQuery_Select);
+                                            //                    }
+                                            //                });
 
-                                                            subChunkTasks.Add(task);
-                                                        }
+                                            //                subChunkTasks.Add(task);
+                                            //            }
 
-                                                        var chunkTask = Task.WhenAll(subChunkTasks);
-                                                        chunkTasks.Add(chunkTask);
-                                                    }
+                                            //            var chunkTask = Task.WhenAll(subChunkTasks);
+                                            //            chunkTasks.Add(chunkTask);
+                                            //        }
 
-                                                    Task.WhenAll(chunkTasks).Wait();
-                                                }
+                                            //        Task.WhenAll(chunkTasks).Wait();
+                                            //    }
 
-                                            }
+                                            //}
 
-                                            if (IsSuccess == true)
-                                            {
-                                                try { user_id = Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch_CreatedBy_Demo").Value) ? 0 : user_id; }
-                                                catch { }
+                                            //if (IsSuccess == true)
+                                            //{
+                                            //    try { user_id = Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch_CreatedBy_Demo").Value) ? 0 : user_id; }
+                                            //    catch { }
 
-                                                dt = DataContext.ExecuteQuery($"SELECT SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API WHERE PLANT_ID = {plant_id} AND BATCH_NO = '{shipperData.Batch_no}'");
+                                            //    dt = DataContext.ExecuteQuery($"SELECT SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API WHERE PLANT_ID = {plant_id} AND BATCH_NO = '{shipperData.Batch_no}'");
 
-                                                if (dt == null || dt.Rows.Count == 0 || (dt != null && dt.Rows.Count > 0 && (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt32(dt.Rows[0][0]) : 0) != shipper_Api_Id))
-                                                {
-                                                    sqlQuery = "INSERT INTO SHIPPER_QRCODE_API (SHIPPER_QRCODE_API_SYSID, BATCH_NO, MFG_DATE" +
-                                                            ",EXPIRY_DATE, EVENTTIME, PLANT_ID,  CREATED_BY, CREATED_DATETIME,  TOTAL_SHIPPER_QTY" +
-                                                            ", MARKETEDBY, MANUFACTUREDBY) " +
-                                                            "VALUES ( " + shipper_Api_Id + ", '" + shipperData.Batch_no + "'" +
-                                                            ", TO_DATE(REPLACE('" + DateTime.ParseExact(shipperData.Mfg_Date, "yyMMdd", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/") + "', '-', '/'), 'DD/MM/YYYY')" +
-                                                            ", TO_DATE(REPLACE('" + DateTime.ParseExact(shipperData.Expiry_Date, "yyMMdd", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/") + "', '-', '/'), 'DD/MM/YYYY')" +
-                                                            ", SYSDATE, " + plant_id + ", " + user_id + ", SYSDATE, " + shipperData.ShipperQRCode_Data.Count() + "" +
-                                                            ",  '" + shipperData.MarketedBy + "', '" + shipperData.ManufacturedBy + "' )";
+                                            //    if (dt == null || dt.Rows.Count == 0 || (dt != null && dt.Rows.Count > 0 && (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt32(dt.Rows[0][0]) : 0) != shipper_Api_Id))
+                                            //    {
+                                            //        sqlQuery = "INSERT INTO SHIPPER_QRCODE_API (SHIPPER_QRCODE_API_SYSID, BATCH_NO, MFG_DATE" +
+                                            //                ",EXPIRY_DATE, EVENTTIME, PLANT_ID,  CREATED_BY, CREATED_DATETIME,  TOTAL_SHIPPER_QTY" +
+                                            //                ", MARKETEDBY, MANUFACTUREDBY) " +
+                                            //                "VALUES ( " + shipper_Api_Id + ", '" + shipperData.Batch_no + "'" +
+                                            //                ", TO_DATE(REPLACE('" + DateTime.ParseExact(shipperData.Mfg_Date, "yyMMdd", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/") + "', '-', '/'), 'DD/MM/YYYY')" +
+                                            //                ", TO_DATE(REPLACE('" + DateTime.ParseExact(shipperData.Expiry_Date, "yyMMdd", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/") + "', '-', '/'), 'DD/MM/YYYY')" +
+                                            //                ", SYSDATE, " + plant_id + ", " + user_id + ", SYSDATE, " + shipperData.ShipperQRCode_Data.Count() + "" +
+                                            //                ",  '" + shipperData.MarketedBy + "', '" + shipperData.ManufacturedBy + "' )";
 
-                                                    IsSuccess = DataContext.ExecuteNonQuery(sqlQuery);
-                                                }
+                                            //        IsSuccess = DataContext.ExecuteNonQuery(sqlQuery);
+                                            //    }
 
 
-                                                dtAvailable = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
-                                                                $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id}");
+                                            //    dtAvailable = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
+                                            //                    $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id}");
 
-                                                int startIndex = 0;
+                                            //    int startIndex = 0;
 
-                                                while (startIndex < dtShipperQrCode.Rows.Count)
-                                                {
-                                                    DataTable nextBatch = dtShipperQrCode.AsEnumerable().Skip(startIndex).Take(1000).CopyToDataTable();
+                                            //    while (startIndex < dtShipperQrCode.Rows.Count)
+                                            //    {
+                                            //        DataTable nextBatch = dtShipperQrCode.AsEnumerable().Skip(startIndex).Take(1000).CopyToDataTable();
 
-                                                    var table_RowsInSqlNotInOracle_Shipper = dtShipperQrCode.Clone();
+                                            //        var table_RowsInSqlNotInOracle_Shipper = dtShipperQrCode.Clone();
 
-                                                    var rowsInSqlNotInOracle_Shipper = from row2 in nextBatch.AsEnumerable()
-                                                                                       join row1 in dtAvailable.AsEnumerable()
-                                                                                       on new { SHIPPER_QRCODE = row2.Field<string>("SHIPPER_QRCODE") }
-                                                                                       equals new { SHIPPER_QRCODE = row1.Field<string>("SHIPPER_QRCODE") }
-                                                                                       into gj
-                                                                                       from subRow in gj.DefaultIfEmpty()
-                                                                                       where subRow == null
-                                                                                       select row2;
-
-                                                    foreach (var row in rowsInSqlNotInOracle_Shipper)
-                                                        table_RowsInSqlNotInOracle_Shipper.ImportRow(row);
-
-                                                    if (table_RowsInSqlNotInOracle_Shipper != null && table_RowsInSqlNotInOracle_Shipper.Rows.Count > 0)
-                                                    {
-                                                        sqlQuery = "INSERT INTO SHIPPER_QRCODE (SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION, SHIPPER_QRCODE_API_SYSID, PLANT_ID, CREATED_BY, CREATED_DATETIME, EVENTTIME) ";
-
-                                                        var sqlQuery_Select = "";
-
-                                                        foreach (DataRow dr in table_RowsInSqlNotInOracle_Shipper.Rows)
-                                                        {
-                                                            if ((dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0) > 0)
-                                                            {
-                                                                sqlQuery_Select += $"SELECT {(dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0)} SHIPPER_QRCODE_SYSID" +
-                                                                    $", '{(dr["SHIPPER_QRCODE"] != DBNull.Value ? Convert.ToString(dr["SHIPPER_QRCODE"]) : "")}' SHIPPER_QRCODE" +
-                                                                    $", {(dr["TOTAL_BOTTLES_QTY"] != DBNull.Value ? Convert.ToInt64(dr["TOTAL_BOTTLES_QTY"]) : 0)} TOTAL_BOTTLES_QTY" +
-                                                                    $", '{(dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "")}' STATUS" +
-                                                                    $", '{(dr["ACTION"] != DBNull.Value ? Convert.ToString(dr["ACTION"]) : "")}' ACTION" +
-                                                                    $", {shipper_Api_Id} SHIPPER_QRCODE_API_SYSID" +
-                                                                    $", {plant_id} PLANT_ID" +
-                                                                    $", {user_id} CREATED_BY" +
-                                                                    $", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') CREATED_DATETIME" +
-                                                                    $", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') EVENTTIME " +
-                                                                    $" FROM DUAL UNION ";
-                                                            }
-                                                        }
+                                            //        var rowsInSqlNotInOracle_Shipper = from row2 in nextBatch.AsEnumerable()
+                                            //                                           join row1 in dtAvailable.AsEnumerable()
+                                            //                                           on new { SHIPPER_QRCODE = row2.Field<string>("SHIPPER_QRCODE") }
+                                            //                                           equals new { SHIPPER_QRCODE = row1.Field<string>("SHIPPER_QRCODE") }
+                                            //                                           into gj
+                                            //                                           from subRow in gj.DefaultIfEmpty()
+                                            //                                           where subRow == null
+                                            //                                           select row2;
+
+                                            //        foreach (var row in rowsInSqlNotInOracle_Shipper)
+                                            //            table_RowsInSqlNotInOracle_Shipper.ImportRow(row);
+
+                                            //        if (table_RowsInSqlNotInOracle_Shipper != null && table_RowsInSqlNotInOracle_Shipper.Rows.Count > 0)
+                                            //        {
+                                            //            sqlQuery = "INSERT INTO SHIPPER_QRCODE (SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION, SHIPPER_QRCODE_API_SYSID, PLANT_ID, CREATED_BY, CREATED_DATETIME, EVENTTIME) ";
+
+                                            //            var sqlQuery_Select = "";
+
+                                            //            foreach (DataRow dr in table_RowsInSqlNotInOracle_Shipper.Rows)
+                                            //            {
+                                            //                if ((dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0) > 0)
+                                            //                {
+                                            //                    sqlQuery_Select += $"SELECT {(dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0)} SHIPPER_QRCODE_SYSID" +
+                                            //                        $", '{(dr["SHIPPER_QRCODE"] != DBNull.Value ? Convert.ToString(dr["SHIPPER_QRCODE"]) : "")}' SHIPPER_QRCODE" +
+                                            //                        $", {(dr["TOTAL_BOTTLES_QTY"] != DBNull.Value ? Convert.ToInt64(dr["TOTAL_BOTTLES_QTY"]) : 0)} TOTAL_BOTTLES_QTY" +
+                                            //                        $", '{(dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "")}' STATUS" +
+                                            //                        $", '{(dr["ACTION"] != DBNull.Value ? Convert.ToString(dr["ACTION"]) : "")}' ACTION" +
+                                            //                        $", {shipper_Api_Id} SHIPPER_QRCODE_API_SYSID" +
+                                            //                        $", {plant_id} PLANT_ID" +
+                                            //                        $", {user_id} CREATED_BY" +
+                                            //                        $", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') CREATED_DATETIME" +
+                                            //                        $", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') EVENTTIME " +
+                                            //                        $" FROM DUAL UNION ";
+                                            //                }
+                                            //            }
 
-                                                        if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
-                                                            sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
-
-                                                        sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
-
-                                                        IsSuccess = DataContext.ExecuteNonQuery(sqlQuery + sqlQuery_Select);
-                                                    }
-
-                                                    startIndex += 1000;
-
-                                                }
-
-                                                dtAvailable = DataContext.ExecuteQuery("SELECT PLANT_ID, BOTTLE_QRCODE FROM BOTTLE_QRCODE " +
-                                                            $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_SYSID " +
-                                                            $"IN (SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE " +
-                                                            $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id})");
-
-
-                                                const int chunkSize = 5000;
-                                                const int subChunkSize = 1000;
-
-                                                int numberOfChunks = (int)Math.Ceiling((double)dtBottleQrCode.Rows.Count / chunkSize);
-                                                var chunkTasks = new List<Task>();
-
-                                                for (int chunkIndex = 0; chunkIndex < numberOfChunks; chunkIndex++)
-                                                {
-                                                    int chunkStartIndex = chunkIndex * chunkSize;
-                                                    DataTable chunkDataTable = dtBottleQrCode.AsEnumerable().Skip(chunkStartIndex).Take(chunkSize).CopyToDataTable();
-
-                                                    var subChunkTasks = new List<Task>();
-
-                                                    int numberOfSubChunks = (int)Math.Ceiling((double)chunkDataTable.Rows.Count / subChunkSize);
-
-                                                    for (int subChunkIndex = 0; subChunkIndex < numberOfSubChunks; subChunkIndex++)
-                                                    {
-                                                        int subChunkStartIndex = subChunkIndex * subChunkSize;
-
-                                                        DataTable subChunk = chunkDataTable.AsEnumerable().Skip(subChunkStartIndex).Take(subChunkSize).CopyToDataTable();
-
-                                                        var table_RowsInSqlNotInOracle = dtBottleQrCode.Clone();
-
-                                                        var rowsInSqlNotInOracle = from row2 in subChunk.AsEnumerable()
-                                                                                   join row1 in dtAvailable.AsEnumerable()
-                                                                                   on new { BOTTLE_QRCODE = row2.Field<string>("BOTTLE_QRCODE") }
-                                                                                   equals new { BOTTLE_QRCODE = row1.Field<string>("BOTTLE_QRCODE") }
-                                                                                   into gj
-                                                                                   from subRow in gj.DefaultIfEmpty()
-                                                                                   where subRow == null
-                                                                                   select row2;
-
-                                                        foreach (var row in rowsInSqlNotInOracle)
-                                                            table_RowsInSqlNotInOracle.ImportRow(row);
-
-                                                        var task = Task.Run(() =>
-                                                        {
-                                                            if (table_RowsInSqlNotInOracle != null && table_RowsInSqlNotInOracle.Rows.Count > 0)
-                                                            {
-                                                                var sqlQuery_Insert = "INSERT INTO BOTTLE_QRCODE (BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE, PRODUCT_ID, STATUS, SHIPPER_QRCODE_SYSID, PLANT_ID, CREATED_BY, CREATED_DATETIME) ";
-
-                                                                var sqlQuery_Select = "";
-
-                                                                foreach (DataRow dr in table_RowsInSqlNotInOracle.Rows)
-                                                                {
-                                                                    if ((dr["BOTTLE_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["BOTTLE_QRCODE_SYSID"]) : 0) > 0)
-                                                                    {
-                                                                        sqlQuery_Select += $"SELECT {(dr["BOTTLE_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["BOTTLE_QRCODE_SYSID"]) : 0)} BOTTLE_QRCODE_SYSID" +
-                                                                            $", '{(dr["BOTTLE_QRCODE"] != DBNull.Value ? Convert.ToString(dr["BOTTLE_QRCODE"]) : "")}' BOTTLE_QRCODE" +
-                                                                            $", {(dr["PRODUCT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PRODUCT_ID"]) : 0)} PRODUCT_ID" +
-                                                                            $", '{(dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "")}' STATUS" +
-                                                                            $", {(dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0)} SHIPPER_QRCODE_SYSID" +
-                                                                            $", {plant_id} PLANT_ID" +
-                                                                            $", {user_id} CREATED_BY" +
-                                                                            $", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') CREATED_DATETIME " +
-                                                                            $" FROM DUAL UNION ";
-                                                                    }
-                                                                }
-
-                                                                if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
-                                                                    sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
-
-                                                                sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
-
-                                                                IsSuccess = DataContext.ExecuteNonQuery(sqlQuery_Insert + sqlQuery_Select);
-                                                            }
-                                                        });
-
-                                                        subChunkTasks.Add(task);
-                                                    }
-
-                                                    var chunkTask = Task.WhenAll(subChunkTasks);
-                                                    chunkTasks.Add(chunkTask);
-                                                }
-
-                                                Task.WhenAll(chunkTasks).Wait();
-
-                                            }
-
-                                            if (shipperData != null && !string.IsNullOrEmpty(shipperData.Batch_no))
-                                            {
-                                                sqlQuery = "UPDATE SHIPPER_QRCODE_API API JOIN ( SELECT SHIPPER_QRCODE_API_SYSID, IFNULL(COUNT(*), 0) AS CNT " +
-                                                    $"FROM SHIPPER_QRCODE WHERE (PLANT_ID, SHIPPER_QRCODE_API_SYSID) " +
-                                                    $"IN ( SELECT DISTINCT PLANT_ID, SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API " +
-                                                    $"WHERE PLANT_ID = {plant_id} AND BATCH_NO = '{shipperData.Batch_no}' ) " +
-                                                    "GROUP BY SHIPPER_QRCODE_API_SYSID) QC ON API.SHIPPER_QRCODE_API_SYSID = QC.SHIPPER_QRCODE_API_SYSID " +
-                                                    "SET API.total_shipper_qty = IFNULL(QC.CNT, 0) " +
-                                                    $"WHERE API.PLANT_ID = {plant_id} AND API.BATCH_NO = '{shipperData.Batch_no}' ";
-
-                                                IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery);
-
-                                                sqlQuery = "UPDATE SHIPPER_QRCODE_API API SET API.TOTAL_SHIPPER_QTY = ( SELECT NVL(COUNT(*), 0) " +
-                                                    "FROM SHIPPER_QRCODE QC WHERE (QC.PLANT_ID, QC.SHIPPER_QRCODE_API_SYSID) " +
-                                                    "IN ( SELECT DISTINCT SQA.PLANT_ID, SQA.SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API SQA " +
-                                                    $"WHERE SQA.PLANT_ID = {plant_id} AND SQA.BATCH_NO = '{shipperData.Batch_no}' ) " +
-                                                    "AND QC.SHIPPER_QRCODE_API_SYSID = API.SHIPPER_QRCODE_API_SYSID) " +
-                                                    $"WHERE API.PLANT_ID = {plant_id} AND API.BATCH_NO = '{shipperData.Batch_no}' ";
-
-                                                IsSuccess = DataContext.ExecuteNonQuery(sqlQuery);
-
-                                            }
+                                            //            if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+                                            //                sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+                                            //            sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
+
+                                            //            IsSuccess = DataContext.ExecuteNonQuery(sqlQuery + sqlQuery_Select);
+                                            //        }
+
+                                            //        startIndex += 1000;
+
+                                            //    }
+
+                                            //    dtAvailable = DataContext.ExecuteQuery("SELECT PLANT_ID, BOTTLE_QRCODE FROM BOTTLE_QRCODE " +
+                                            //                $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_SYSID " +
+                                            //                $"IN (SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE " +
+                                            //                $"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id})");
+
+
+                                            //    const int chunkSize = 5000;
+                                            //    const int subChunkSize = 1000;
+
+                                            //    int numberOfChunks = (int)Math.Ceiling((double)dtBottleQrCode.Rows.Count / chunkSize);
+                                            //    var chunkTasks = new List<Task>();
+
+                                            //    for (int chunkIndex = 0; chunkIndex < numberOfChunks; chunkIndex++)
+                                            //    {
+                                            //        int chunkStartIndex = chunkIndex * chunkSize;
+                                            //        DataTable chunkDataTable = dtBottleQrCode.AsEnumerable().Skip(chunkStartIndex).Take(chunkSize).CopyToDataTable();
+
+                                            //        var subChunkTasks = new List<Task>();
+
+                                            //        int numberOfSubChunks = (int)Math.Ceiling((double)chunkDataTable.Rows.Count / subChunkSize);
+
+                                            //        for (int subChunkIndex = 0; subChunkIndex < numberOfSubChunks; subChunkIndex++)
+                                            //        {
+                                            //            int subChunkStartIndex = subChunkIndex * subChunkSize;
+
+                                            //            DataTable subChunk = chunkDataTable.AsEnumerable().Skip(subChunkStartIndex).Take(subChunkSize).CopyToDataTable();
+
+                                            //            var table_RowsInSqlNotInOracle = dtBottleQrCode.Clone();
+
+                                            //            var rowsInSqlNotInOracle = from row2 in subChunk.AsEnumerable()
+                                            //                                       join row1 in dtAvailable.AsEnumerable()
+                                            //                                       on new { BOTTLE_QRCODE = row2.Field<string>("BOTTLE_QRCODE") }
+                                            //                                       equals new { BOTTLE_QRCODE = row1.Field<string>("BOTTLE_QRCODE") }
+                                            //                                       into gj
+                                            //                                       from subRow in gj.DefaultIfEmpty()
+                                            //                                       where subRow == null
+                                            //                                       select row2;
+
+                                            //            foreach (var row in rowsInSqlNotInOracle)
+                                            //                table_RowsInSqlNotInOracle.ImportRow(row);
+
+                                            //            var task = Task.Run(() =>
+                                            //            {
+                                            //                if (table_RowsInSqlNotInOracle != null && table_RowsInSqlNotInOracle.Rows.Count > 0)
+                                            //                {
+                                            //                    var sqlQuery_Insert = "INSERT INTO BOTTLE_QRCODE (BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE, PRODUCT_ID, STATUS, SHIPPER_QRCODE_SYSID, PLANT_ID, CREATED_BY, CREATED_DATETIME) ";
+
+                                            //                    var sqlQuery_Select = "";
+
+                                            //                    foreach (DataRow dr in table_RowsInSqlNotInOracle.Rows)
+                                            //                    {
+                                            //                        if ((dr["BOTTLE_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["BOTTLE_QRCODE_SYSID"]) : 0) > 0)
+                                            //                        {
+                                            //                            sqlQuery_Select += $"SELECT {(dr["BOTTLE_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["BOTTLE_QRCODE_SYSID"]) : 0)} BOTTLE_QRCODE_SYSID" +
+                                            //                                $", '{(dr["BOTTLE_QRCODE"] != DBNull.Value ? Convert.ToString(dr["BOTTLE_QRCODE"]) : "")}' BOTTLE_QRCODE" +
+                                            //                                $", {(dr["PRODUCT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PRODUCT_ID"]) : 0)} PRODUCT_ID" +
+                                            //                                $", '{(dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "")}' STATUS" +
+                                            //                                $", {(dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0)} SHIPPER_QRCODE_SYSID" +
+                                            //                                $", {plant_id} PLANT_ID" +
+                                            //                                $", {user_id} CREATED_BY" +
+                                            //                                $", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') CREATED_DATETIME " +
+                                            //                                $" FROM DUAL UNION ";
+                                            //                        }
+                                            //                    }
+
+                                            //                    if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+                                            //                        sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+                                            //                    sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
+
+                                            //                    IsSuccess = DataContext.ExecuteNonQuery(sqlQuery_Insert + sqlQuery_Select);
+                                            //                }
+                                            //            });
+
+                                            //            subChunkTasks.Add(task);
+                                            //        }
+
+                                            //        var chunkTask = Task.WhenAll(subChunkTasks);
+                                            //        chunkTasks.Add(chunkTask);
+                                            //    }
+
+                                            //    Task.WhenAll(chunkTasks).Wait();
+
+                                            //}
+
+                                            //if (shipperData != null && !string.IsNullOrEmpty(shipperData.Batch_no))
+                                            //{
+                                            //    sqlQuery = "UPDATE SHIPPER_QRCODE_API API JOIN ( SELECT SHIPPER_QRCODE_API_SYSID, IFNULL(COUNT(*), 0) AS CNT " +
+                                            //        $"FROM SHIPPER_QRCODE WHERE (PLANT_ID, SHIPPER_QRCODE_API_SYSID) " +
+                                            //        $"IN ( SELECT DISTINCT PLANT_ID, SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API " +
+                                            //        $"WHERE PLANT_ID = {plant_id} AND BATCH_NO = '{shipperData.Batch_no}' ) " +
+                                            //        "GROUP BY SHIPPER_QRCODE_API_SYSID) QC ON API.SHIPPER_QRCODE_API_SYSID = QC.SHIPPER_QRCODE_API_SYSID " +
+                                            //        "SET API.total_shipper_qty = IFNULL(QC.CNT, 0) " +
+                                            //        $"WHERE API.PLANT_ID = {plant_id} AND API.BATCH_NO = '{shipperData.Batch_no}' ";
+
+                                            //    IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery);
+
+                                            //    sqlQuery = "UPDATE SHIPPER_QRCODE_API API SET API.TOTAL_SHIPPER_QTY = ( SELECT NVL(COUNT(*), 0) " +
+                                            //        "FROM SHIPPER_QRCODE QC WHERE (QC.PLANT_ID, QC.SHIPPER_QRCODE_API_SYSID) " +
+                                            //        "IN ( SELECT DISTINCT SQA.PLANT_ID, SQA.SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API SQA " +
+                                            //        $"WHERE SQA.PLANT_ID = {plant_id} AND SQA.BATCH_NO = '{shipperData.Batch_no}' ) " +
+                                            //        "AND QC.SHIPPER_QRCODE_API_SYSID = API.SHIPPER_QRCODE_API_SYSID) " +
+                                            //        $"WHERE API.PLANT_ID = {plant_id} AND API.BATCH_NO = '{shipperData.Batch_no}' ";
+
+                                            //    IsSuccess = DataContext.ExecuteNonQuery(sqlQuery);
+
+                                            //}
 
                                         }
                                     }
@@ -3364,7 +3401,6 @@ namespace Dispatch_System.Controllers
                                     string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFilePath);
                                     string fileExtension = Path.GetExtension(sourceFilePath);
                                     int counter = 1;
-
                                     while (System.IO.File.Exists(destinationFilePath))
                                     {
                                         string newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
@@ -3373,20 +3409,19 @@ namespace Dispatch_System.Controllers
                                         counter++;
                                     }
 
-                                    System.IO.File.Copy(sourceFilePath, destinationFilePath);
-                                    System.IO.File.Delete(sourceFilePath);
-
                                     fileNameWithoutExtension = Path.GetFileNameWithoutExtension(destinationFilePath);
                                     fileExtension = Path.GetExtension(destinationFilePath);
 
-                                    destinationFilePath = Path.Combine(destinationFolderPath, $"{fileNameWithoutExtension}_Success{fileExtension}");
-                                    errorFilePath = Path.Combine(errorFolderPath, $"{fileNameWithoutExtension}_Error{fileExtension}");
+                                    destinationFilePath = Path.Combine(destinationFolderPath, $"{fileNameWithoutExtension}{fileExtension}");
+                                    errorFilePath = Path.Combine(errorFolderPath, $"{fileNameWithoutExtension}_{DateTime.Now.ToString("yyyyMMddHHmmsss")}_Error{fileExtension}");
 
                                     if (shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0)
                                         Task.Run(() =>
                                         {
                                             try
                                             {
+                                                if (!System.IO.File.Exists(destinationFilePath)) System.IO.File.Create(destinationFolderPath).Dispose();
+
                                                 filteredShipperData["ShipperQRCode_Data"] = JArray.FromObject(shipperQRCodeData_Success);
 
                                                 string updatedJson = filteredShipperData.ToString(Formatting.Indented); /*JsonConvert.SerializeObject(shipperData, Formatting.Indented);*/
@@ -3403,6 +3438,8 @@ namespace Dispatch_System.Controllers
                                         {
                                             try
                                             {
+                                                if (!System.IO.File.Exists(errorFilePath)) System.IO.File.Create(errorFilePath).Dispose();
+
                                                 filteredShipperData["ShipperQRCode_Data"] = JArray.FromObject(shipperQRCodeData_Duplicate);
 
                                                 string updatedJson = filteredShipperData.ToString(Formatting.Indented); /*JsonConvert.SerializeObject(shipperData_Error, Formatting.Indented);*/
@@ -3412,6 +3449,11 @@ namespace Dispatch_System.Controllers
                                             }
                                             catch { }
                                         });
+
+
+                                    //System.IO.File.Copy(sourceFilePath, destinationFilePath);
+                                    System.IO.File.Delete(sourceFilePath);
+
                                 }
                                 catch (Exception ex) { }
                             }
@@ -3427,50 +3469,50 @@ namespace Dispatch_System.Controllers
                             if (listShipperQRCode_Duplicate.Any(x => x.Type == "DUP_SHIPPER"))
                             {
                                 error += $" | Shipper QR Code - Duplicate : Count = {listShipperQRCode_Duplicate.Count(x => x.Type == "DUP_SHIPPER")} ";
-                                error += $" | Shipper QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "DUP_SHIPPER").Select((x, index) => $"{(index + 1).ToString().PadLeft(4, ' ')}. {x.QRCode}").ToArray())} ";
+                                error += $" | Shipper QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "DUP_SHIPPER").Select(x => "<S>" + x.QRCode).ToArray())} ";
                             }
                             if (listShipperQRCode_Duplicate.Any(x => x.Type == "BOTTLE_CNT_SHIPPER"))
                             {
                                 error += $" | Shipper QR Code - not contain 24 bottles : Count = {listShipperQRCode_Duplicate.Count(x => x.Type == "BOTTLE_CNT_SHIPPER")} ";
-                                error += $" | Shipper QR Code - not contain 24 bottles : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "BOTTLE_CNT_SHIPPER").Select((x, index) => $"{(index + 1).ToString().PadLeft(4, ' ')}. {x.QRCode}").ToArray())} ";
+                                error += $" | Shipper QR Code - not contain 24 bottles : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "BOTTLE_CNT_SHIPPER").Select(x => "<S>" + x.QRCode).ToArray())} ";
                             }
 
                             if (listShipperQRCode_Duplicate.Any(x => x.Type == "DUP_BOTTLE"))
                             {
                                 error += $" | Bottle QR Code - Duplicate : Count = {listShipperQRCode_Duplicate.Count(x => x.Type == "DUP_BOTTLE")} ";
-                                error += $" | Bottle QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "DUP_BOTTLE").Select((x, index) => $"{(index + 1).ToString().PadLeft(4, ' ')}. {x.QRCode}").ToArray())} ";
+                                error += $" | Bottle QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "DUP_BOTTLE").Select(x => "<S>" + x.QRCode + "<B>" + x.BottleQRCodes).ToArray())} ";
                             }
                             if (listShipperQRCode_Duplicate.Any(x => x.Type == "LEN_BOTTLE"))
                             {
                                 error += $" | Bottle QR Code - length issue : Count = {listShipperQRCode_Duplicate.Count(x => x.Type == "LEN_BOTTLE")} ";
-                                error += $" | Bottle QR Code - length issue : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "LEN_BOTTLE").Select((x, index) => $"{(index + 1).ToString().PadLeft(4, ' ')}. {x.QRCode}").ToArray())} ";
+                                error += $" | Bottle QR Code - length issue : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "LEN_BOTTLE").Select(x => "<S>" + x.QRCode + "<B>" + x.BottleQRCodes).ToArray())} ";
                             }
                         }
-
+                        //$"{(index + 1).ToString().PadLeft(4, ' ')}. {x.QRCode}"
 
                         if (string.IsNullOrEmpty(error))
                         {
-                            if (!System.IO.Directory.Exists(destinationFolderPath))
-                                System.IO.Directory.CreateDirectory(destinationFolderPath);
+                            //if (!System.IO.Directory.Exists(destinationFolderPath))
+                            //    System.IO.Directory.CreateDirectory(destinationFolderPath);
 
-                            string destinationFilePath = Path.Combine(destinationFolderPath, fileName);
+                            //string destinationFilePath = Path.Combine(destinationFolderPath, fileName);
 
-                            int counter = 1;
-                            while (System.IO.File.Exists(destinationFilePath))
-                            {
-                                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFilePath);
-                                string fileExtension = Path.GetExtension(sourceFilePath);
-                                string newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
+                            //int counter = 1;
+                            //while (System.IO.File.Exists(destinationFilePath))
+                            //{
+                            //    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFilePath);
+                            //    string fileExtension = Path.GetExtension(sourceFilePath);
+                            //    string newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
 
-                                destinationFilePath = Path.Combine(destinationFolderPath, newFileName);
-                                counter++;
-                            }
+                            //    destinationFilePath = Path.Combine(destinationFolderPath, newFileName);
+                            //    counter++;
+                            //}
 
-                            System.IO.File.Copy(sourceFilePath, destinationFilePath);
+                            //System.IO.File.Copy(sourceFilePath, destinationFilePath);
 
-                            System.IO.File.Delete(sourceFilePath);
+                            //System.IO.File.Delete(sourceFilePath);
 
-                            Write_Log(fileName + " => " + destinationFilePath, logFilePath);
+                            //Write_Log(fileName + " => " + destinationFilePath, logFilePath);
                         }
                         else
                         {
@@ -3479,27 +3521,27 @@ namespace Dispatch_System.Controllers
                             Write_Log(fileName + " => " + error, logFilePath);
                             errors.Add(fileName + " => " + error);
 
-                            if (!System.IO.Directory.Exists(errorFolderPath))
-                                System.IO.Directory.CreateDirectory(errorFolderPath);
+                            //if (!System.IO.Directory.Exists(errorFolderPath))
+                            //    System.IO.Directory.CreateDirectory(errorFolderPath);
 
-                            string errorFilePath = Path.Combine(errorFolderPath, Path.GetFileName(sourceFilePath));
+                            //string errorFilePath = Path.Combine(errorFolderPath, Path.GetFileName(sourceFilePath));
 
-                            int counter = 1;
-                            while (System.IO.File.Exists(errorFilePath))
-                            {
-                                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFilePath);
-                                string fileExtension = Path.GetExtension(sourceFilePath);
-                                string newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
+                            //int counter = 1;
+                            //while (System.IO.File.Exists(errorFilePath))
+                            //{
+                            //    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFilePath);
+                            //    string fileExtension = Path.GetExtension(sourceFilePath);
+                            //    string newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
 
-                                errorFilePath = Path.Combine(errorFolderPath, newFileName);
-                                counter++;
-                            }
+                            //    errorFilePath = Path.Combine(errorFolderPath, newFileName);
+                            //    counter++;
+                            //}
 
-                            System.IO.File.Copy(sourceFilePath, errorFilePath);
+                            //System.IO.File.Copy(sourceFilePath, errorFilePath);
 
-                            System.IO.File.Delete(sourceFilePath);
+                            //System.IO.File.Delete(sourceFilePath);
 
-                            Write_Log(fileName + " => " + errorFilePath, logFilePath);
+                            //Write_Log(fileName + " => " + errorFilePath, logFilePath);
                         }
 
                         try

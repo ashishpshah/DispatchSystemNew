@@ -83,10 +83,60 @@ else
 
                     if (!string.IsNullOrEmpty(item.Remark))
                     {
-                        <tr><td>&nbsp;</td><td colspan="8">@item.Remark</td></tr>
+                        <tr><td>&nbsp;</td><td colspan="8">
+                                @{
+                                    var strRemarks = item.Remark.Contains(" | SUMMARY : ") ? item.Remark.Split(" | SUMMARY : ")[1] : "";
+
+                                    if (!string.IsNullOrEmpty(strRemarks))
+                                    {
+                                        var listRemark = strRemarks.Split('|').Where(x=>!string.IsNullOrEmpty(x.Trim())).Select(x=>x.TrimStart().TrimEnd()).ToList();
+                                        
+                                        if(listRemark!=null&& listRemark.Count() > 0)
+                                        {
+                                            <dl class="row">
+                                            @for (int i = 0; i < listRemark.Count(); i++)
+                                            {
+                                                  <dt class="col-sm-3">@listRemark[i].Split(':')[0]</dt>
+                                                    <dd class="col-sm-9 row">@{
+
+                                                            if (Convert.ToString(listRemark[i].Split(':')[1]).Contains("<S>"))
+                                                            {
+                                                                foreach (var shipperQR in Convert.ToString(listRemark[i].Split(':')[1]).Split("<S>").ToList())
+                                                                {                                                                    
+                                                                    if (!string.IsNullOrEmpty(shipperQR) && shipperQR.Contains("<B>"))
+                                                                    {
+                                                                        <dt class="col-sm-3">@((shipperQR.Split("<B>")[0]).Replace("<S>", ""))</dt>
+                                                                        <dd class="col-sm-9 row pl-2">
+
+                                                                        @foreach (var bottleQR in (shipperQR.Replace((shipperQR.Split("<B>")[0]), "").Split("<B>").ToList()))
+                                                                        {   
+                                                                            if (!string.IsNullOrEmpty(bottleQR))
+                                                                            {
+                                                                                <span>@bottleQR</span>
+                                                                            }
+                                                                        }
+                                                                        </dd>
+                                                                        <br />
+                                                                    }
+                                                                    else if (!string.IsNullOrEmpty(shipperQR))
+                                                                    {
+                                                                        <span>@shipperQR.Replace("<S>", "")</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>@Convert.ToString(listRemark[i].Split(':')[1]).TrimStart()</span>
+                                                            }
+                                                  }</dd>
+                                            }
+                                            </dl>
+                                        }
+                                    }
+                                }
+                            </td></tr>
                         <tr><td colspan="9">&nbsp;</td></tr>
                     }
-
                 }
             </tbody>
 
