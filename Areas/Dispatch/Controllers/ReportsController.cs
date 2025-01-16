@@ -1039,10 +1039,10 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
                 PageTitle_Secondary = "File Name / Batch No. : " + searchTerm;
 
             if (!string.IsNullOrEmpty(FromDate))
-                PageTitle_Secondary += $"{(!string.IsNullOrEmpty(PageTitle_Secondary) ? " and " : "")}From Date : {FromDate.ToUpper()}";
+                PageTitle_Secondary += $"{(!string.IsNullOrEmpty(PageTitle_Secondary) ? " " : "")}From Date : {FromDate.ToUpper()}";
 
             if (!string.IsNullOrEmpty(ToDate))
-                PageTitle_Secondary += $"{(!string.IsNullOrEmpty(PageTitle_Secondary) ? " and " : "")}To Date : {ToDate.ToUpper()}";
+                PageTitle_Secondary += $"{(!string.IsNullOrEmpty(PageTitle_Secondary) ? " " : "")}To : {ToDate.ToUpper()}";
 
             if (isPrint == true)
                 return View("_Partial_BatchLogFile", (searchTerm, PageTitle_Secondary, PlantName, FromDate, ToDate, result, isPrint));
