@@ -152,8 +152,8 @@
                                                 <td hidden></td>
                                                 <td hidden><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[ZX].Id" value="0" maxlength="50" autocomplete="off"></td>
                                                 <td hidden><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[ZX].VPO_Id" maxlength="50" autocomplete="off"></td>
-                                                <td><input type="text" class="form-control form-control-sm text-center" name="listVendorPoDtls[ZX].LineNo" maxlength="50" autocomplete="off" readonly></td>
-                                                <td><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[ZX].LineDesc" maxlength="50" autocomplete="off"></td>
+                                                <td><input type="text" class="form-control form-control-sm text-center" name="listVendorPoDtls[ZX].LineNo" autocomplete="off" readonly></td>
+                                                <td><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[ZX].LineDesc" autocomplete="off"></td>
                                                 <td>
                                                     <input type="text" class="form-control form-control-sm d-none" id="listVendorPoDtls[ZX]_UOM" name="listVendorPoDtls[ZX].UOM" autocomplete="off">
 
@@ -167,10 +167,10 @@
                                                         }
                                                     </select>
                                                 </td>
-                                                <td><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[ZX].LineQty" maxlength="50" autocomplete="off"></td>
-                                                <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[ZX].Adjusted_Qty" maxlength="50" autocomplete="off"></td>
-                                                <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[ZX].Amendment_Qty" maxlength="50" autocomplete="off"></td>
-                                                <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[ZX].Remark" maxlength="50" autocomplete="off"></td>
+                                                <td><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[ZX].LineQty" autocomplete="off"></td>
+                                                <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[ZX].Adjusted_Qty" autocomplete="off"></td>
+                                                <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[ZX].Amendment_Qty" autocomplete="off"></td>
+                                                <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[ZX].Remark" autocomplete="off"></td>
                                                 <td>
                                                     <div class="btn-group">
                                                         <button type="button" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"
@@ -188,8 +188,8 @@
                                                         <td hidden></td>
                                                         <td hidden><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].Id" value="@Model.Obj.listVendorPoDtls[i].Id" maxlength="50" autocomplete="off"></td>
                                                         <td hidden><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].VPO_Id" value="@Model.Obj.listVendorPoDtls[i].VPO_Id" maxlength="50" autocomplete="off"></td>
-                                                        <td><input type="text" class="form-control form-control-sm text-center" name="listVendorPoDtls[@i].LineNo" value="@Model.Obj.listVendorPoDtls[i].LineNo" maxlength="50" autocomplete="off" readonly></td>
-                                                        <td><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].LineDesc" value="@Model.Obj.listVendorPoDtls[i].LineDesc" maxlength="50" autocomplete="off"></td>
+                                                        <td><input type="text" class="form-control form-control-sm text-center" name="listVendorPoDtls[@i].LineNo" value="@Model.Obj.listVendorPoDtls[i].LineNo" autocomplete="off" readonly></td>
+                                                        <td><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].LineDesc" value="@Model.Obj.listVendorPoDtls[i].LineDesc" autocomplete="off"></td>
                                                         @*<td><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].UOM" value="@Model.Obj.listVendorPoDtls[i].UOM" maxlength="50" autocomplete="off"></td>*@
                                                         <td>
                                                             <input type="text" class="form-control form-control-sm d-none" id="listVendorPoDtls[@i]_UOM" name="listVendorPoDtls[@i].UOM" value="@Model.Obj.listVendorPoDtls[i].UOM" autocomplete="off">
@@ -212,10 +212,10 @@
                                                                 }
                                                             </select>
                                                         </td>
-                                                        <td><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[@i].LineQty" value="@Model.Obj.listVendorPoDtls[i].LineQty" maxlength="50" autocomplete="off"></td>
-                                                        <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[@i].Adjusted_Qty" value="@Model.Obj.listVendorPoDtls[i].Adjusted_Qty" maxlength="50" autocomplete="off"></td>
-                                                        <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[@i].Amendment_Qty" value="@Model.Obj.listVendorPoDtls[i].Amendment_Qty" maxlength="50" autocomplete="off"></td>
-                                                        <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].Remark" value="@Model.Obj.listVendorPoDtls[i].Remark" maxlength="50" autocomplete="off"></td>
+                                                        <td><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[@i].LineQty" value="@Model.Obj.listVendorPoDtls[i].LineQty" autocomplete="off"></td>
+                                                        <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[@i].Adjusted_Qty" value="@Model.Obj.listVendorPoDtls[i].Adjusted_Qty" autocomplete="off"></td>
+                                                        <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm isNumberKey_Decimal" name="listVendorPoDtls[@i].Amendment_Qty" value="@Model.Obj.listVendorPoDtls[i].Amendment_Qty" autocomplete="off"></td>
+                                                        <td @(Model.Obj.Id == 0 ? "hidden" : "")><input type="text" class="form-control form-control-sm" name="listVendorPoDtls[@i].Remark" value="@Model.Obj.listVendorPoDtls[i].Remark" autocomplete="off"></td>
                                                         <td>
                                                             <div class="btn-group">
                                                                 <button type="button" onclick="fnDelete_Row('@i');" class="btn btn-danger btn-sm btn-flat ml-2" data-toggle="tooltip" data-placement="top" title="Delete"> <i class="far fa-trash-alt"></i> </button>
