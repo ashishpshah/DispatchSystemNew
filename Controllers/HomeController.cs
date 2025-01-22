@@ -246,18 +246,18 @@ namespace Dispatch_System.Controllers
 
 						user = new User();
 
-						user.Id = ds.Tables[0].Rows[0]["ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["ID"]) : 0;
-						//user.Unit_Code = ds.Tables[0].Rows[0]["UNIT_CODE"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[0]["UNIT_CODE"]) : 0;
-						user.Plant_Id = ds.Tables[0].Rows[0]["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["PLANT_ID"]) : 0;
-						user.Role_Id = ds.Tables[0].Rows[0]["ROLE_ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["ROLE_ID"]) : 0;
-						user.First_Name = ds.Tables[0].Rows[0]["FIRST_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["FIRST_NAME"]) : "";
-						user.Last_Name = ds.Tables[0].Rows[0]["LAST_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["LAST_NAME"]) : "";
-						user.Username = ds.Tables[0].Rows[0]["USER_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["USER_NAME"]) : "";
-						user.Plant_Name = ds.Tables[0].Rows[0]["PLANT_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["PLANT_NAME"]) : "";
-						user.Role_Name = ds.Tables[0].Rows[0]["ROLE_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["ROLE_NAME"]) : "";
-						user.Is_Active = ds.Tables[0].Rows[0]["ISACTIVE"] != DBNull.Value ? Convert.ToBoolean(ds.Tables[0].Rows[0]["ISACTIVE"]) : false;
-						user.Is_Admin = ds.Tables[0].Rows[0]["ISADMIN"] != DBNull.Value ? Convert.ToBoolean(ds.Tables[0].Rows[0]["ISADMIN"]) : false;
-					}
+                        user.Id = ds.Tables[0].Rows[0]["ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["ID"]) : 0;
+                        user.Unit_Code = ds.Tables[0].Rows[0]["UNIT_CODE"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[0]["UNIT_CODE"]) : 0;
+                        user.Plant_Id = ds.Tables[0].Rows[0]["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["PLANT_ID"]) : 0;
+                        user.Role_Id = ds.Tables[0].Rows[0]["ROLE_ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["ROLE_ID"]) : 0;
+                        user.First_Name = ds.Tables[0].Rows[0]["FIRST_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["FIRST_NAME"]) : "";
+                        user.Last_Name = ds.Tables[0].Rows[0]["LAST_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["LAST_NAME"]) : "";
+                        user.Username = ds.Tables[0].Rows[0]["USER_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["USER_NAME"]) : "";
+                        user.Plant_Name = ds.Tables[0].Rows[0]["PLANT_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["PLANT_NAME"]) : "";
+                        user.Role_Name = ds.Tables[0].Rows[0]["ROLE_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["ROLE_NAME"]) : "";
+                        user.Is_Active = ds.Tables[0].Rows[0]["ISACTIVE"] != DBNull.Value ? Convert.ToBoolean(ds.Tables[0].Rows[0]["ISACTIVE"]) : false;
+                        user.Is_Admin = ds.Tables[0].Rows[0]["ISADMIN"] != DBNull.Value ? Convert.ToBoolean(ds.Tables[0].Rows[0]["ISADMIN"]) : false;
+                    }
 
 					if (user == null)
 					{
@@ -275,20 +275,20 @@ namespace Dispatch_System.Controllers
 						CommonViewModel.StatusCode = ResponseStatusCode.Error;
 						CommonViewModel.Message = "Your account is deactive. Please contact administration.";
 
-						return Json(CommonViewModel);
-					}
-					else if (user != null && user.Is_Active == true)
-					{
-						Common.Set_Session_Int(SessionKey.USER_ID, user.Id);
-						//Common.Set_Session_Int(SessionKey.UNIT_CODE, user.Unit_Code);
-						Common.Set_Session_Int(SessionKey.PLANT_ID, user.Plant_Id);
-						Common.Set_Session_Int(SessionKey.ROLE_ID, user.Role_Id);
-						Common.Set_Session(SessionKey.USER_NAME, user.Fullname);
-						Common.Set_Session(SessionKey.PLANT_NAME, user.Plant_Name);
-						Common.Set_Session(SessionKey.ROLE_NAME, user.Role_Name);
-						Common.Set_Session_Int(SessionKey.ROLE_ADMIN, (user.Is_Admin ? 1 : 0));
-						Common.Set_Session("CheckPassword", viewModel.Password ?? string.Empty);
-						Common.Set_Session("LoginFlag", "U");
+                        return Json(CommonViewModel);
+                    }
+                    else if (user != null && user.Is_Active == true)
+                    {
+                        Common.Set_Session_Int(SessionKey.USER_ID, user.Id);
+                        Common.Set_Session_Int(SessionKey.UNIT_CODE, user.Unit_Code);
+                        Common.Set_Session_Int(SessionKey.PLANT_ID, user.Plant_Id);
+                        Common.Set_Session_Int(SessionKey.ROLE_ID, user.Role_Id);
+                        Common.Set_Session(SessionKey.USER_NAME, user.Fullname);
+                        Common.Set_Session(SessionKey.PLANT_NAME, user.Plant_Name);
+                        Common.Set_Session(SessionKey.ROLE_NAME, user.Role_Name);
+                        Common.Set_Session_Int(SessionKey.ROLE_ADMIN, (user.Is_Admin ? 1 : 0));
+                        Common.Set_Session("CheckPassword", viewModel.Password ?? string.Empty);
+                        Common.Set_Session("LoginFlag", "U");
 
 						List<Menu> menus = new List<Menu>();
 

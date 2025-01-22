@@ -314,7 +314,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
                     try
                     {
-                        StringContent? content = new StringContent("{\"token\" : \"3369708919812376\",\"serviceID\" : \"50004\", \"P_PO_NUM\" : \"" + PoNo + "\", \"P_UNIT_CODE\" : \"" + Common.Get_Session_Int(SessionKey.UNIT_CODE) + "\"}", null, "application/json");
+                        StringContent? content = new StringContent("{\"token\" : \"3369708919812376\",\"serviceID\" : \"50007\", \"P_PO_NUM\" : \"" + PoNo + "\", \"P_UNIT_CODE\" : \"" + Common.Get_Session_Int(SessionKey.UNIT_CODE) + "\"}", null, "application/json");
 
                         request.Content = content;
 
@@ -328,17 +328,17 @@ namespace Dispatch_System.Areas.Admin.Controllers
                             {
                                 JToken objData = JObject.Parse(responseContent);
 
-                                if (objData != null && objData["GetPOHdr"] != null)
+                                if (objData != null && objData["GetPOHdrs"] != null)
                                 {
                                     CommonViewModel.Obj = new VendorPO()
                                     {
-                                        PoNo = objData["GetPOHdr"][0]["po_number"] != null ? Convert.ToString(objData["GetPOHdr"][0]["po_number"]) : null,
-                                        PoDate = objData["GetPOHdr"][0]["po_date"] != null ? DateTime.ParseExact(Convert.ToString(objData["GetPOHdr"][0]["po_date"]), "yyyy-MM-dd HH:mm:ss.s", CultureInfo.InvariantCulture) : null,
-                                        PoDate_Text = objData["GetPOHdr"][0]["po_date"] != null ? DateTime.ParseExact(Convert.ToString(objData["GetPOHdr"][0]["po_date"]), "yyyy-MM-dd HH:mm:ss.s", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/") : null,
-                                        PoDesc = objData["GetPOHdr"][0]["po_header_desc"] != null ? Convert.ToString(objData["GetPOHdr"][0]["po_header_desc"]) : "",
-                                        VendorCode = objData["GetPOHdr"][0]["vendor_code"] != null ? Convert.ToInt64(objData["GetPOHdr"][0]["vendor_code"]) : null,
-                                        VendorName = objData["GetPOHdr"][0]["vendor_name"] != null ? Convert.ToString(objData["GetPOHdr"][0]["vendor_name"]) : null,
-                                        VendorSite = objData["GetPOHdr"][0]["vendor_site_code"] != null ? Convert.ToString(objData["GetPOHdr"][0]["vendor_site_code"]) : null
+                                        PoNo = objData["GetPOHdrs"][0]["po_number"] != null ? Convert.ToString(objData["GetPOHdrs"][0]["po_number"]) : null,
+                                        PoDate = objData["GetPOHdrs"][0]["po_date"] != null ? DateTime.ParseExact(Convert.ToString(objData["GetPOHdrs"][0]["po_date"]), "yyyy-MM-dd HH:mm:ss.s", CultureInfo.InvariantCulture) : null,
+                                        PoDate_Text = objData["GetPOHdrs"][0]["po_date"] != null ? DateTime.ParseExact(Convert.ToString(objData["GetPOHdrs"][0]["po_date"]), "yyyy-MM-dd HH:mm:ss.s", CultureInfo.InvariantCulture).ToString("dd/MM/yyyy").Replace("-", "/") : null,
+                                        PoDesc = objData["GetPOHdrs"][0]["po_header_desc"] != null ? Convert.ToString(objData["GetPOHdrs"][0]["po_header_desc"]) : "",
+                                        VendorCode = objData["GetPOHdrs"][0]["vendor_code"] != null ? Convert.ToInt64(objData["GetPOHdrs"][0]["vendor_code"]) : null,
+                                        VendorName = objData["GetPOHdrs"][0]["vendor_name"] != null ? Convert.ToString(objData["GetPOHdrs"][0]["vendor_name"]) : null,
+                                        VendorSite = objData["GetPOHdrs"][0]["vendor_site_code"] != null ? Convert.ToString(objData["GetPOHdrs"][0]["vendor_site_code"]) : null
                                     };
                                 }
                             }
@@ -361,7 +361,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
                             client = new HttpClient();
                             request = new HttpRequestMessage(HttpMethod.Post, AppHttpContextAccessor.API_Url);
 
-                            content = new StringContent("{\"token\" : \"3369708919812376\",\"serviceID\" : \"50005\", \"P_PO_NUM\" : \"" + PoNo + "\", \"P_UNIT_CODE\" : \"" + Common.Get_Session_Int(SessionKey.UNIT_CODE) + "\"}", null, "application/json");
+                            content = new StringContent("{\"token\" : \"3369708919812376\",\"serviceID\" : \"50008\", \"P_PO_NUM\" : \"" + PoNo + "\", \"P_UNIT_CODE\" : \"" + Common.Get_Session_Int(SessionKey.UNIT_CODE) + "\"}", null, "application/json");
 
                             request.Content = content;
 
@@ -375,11 +375,11 @@ namespace Dispatch_System.Areas.Admin.Controllers
                                 {
                                     JToken objData = JObject.Parse(responseContent);
 
-                                    if (objData != null && objData["GetPODtl"] != null)
+                                    if (objData != null && objData["GetPODtls"] != null)
                                     {
                                         CommonViewModel.Obj.listVendorPoDtls = new List<VendorPoDtls>();
 
-                                        foreach (JToken item in objData["GetPODtl"])
+                                        foreach (JToken item in objData["GetPODtls"])
                                         {
                                             try
                                             {
