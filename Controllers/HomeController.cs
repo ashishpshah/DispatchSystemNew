@@ -247,7 +247,7 @@ namespace Dispatch_System.Controllers
 						user = new User();
 
                         user.Id = ds.Tables[0].Rows[0]["ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["ID"]) : 0;
-                        user.Unit_Code = ds.Tables[0].Rows[0]["UNIT_CODE"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[0]["UNIT_CODE"]) : 0;
+                        user.Unit_Code = ds.Tables[0].Rows[0]["UNIT_CODE"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["UNIT_CODE"]) : "";
                         user.Plant_Id = ds.Tables[0].Rows[0]["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["PLANT_ID"]) : 0;
                         user.Role_Id = ds.Tables[0].Rows[0]["ROLE_ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["ROLE_ID"]) : 0;
                         user.First_Name = ds.Tables[0].Rows[0]["FIRST_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["FIRST_NAME"]) : "";
@@ -280,7 +280,7 @@ namespace Dispatch_System.Controllers
                     else if (user != null && user.Is_Active == true)
                     {
                         Common.Set_Session_Int(SessionKey.USER_ID, user.Id);
-                        Common.Set_Session_Int(SessionKey.UNIT_CODE, user.Unit_Code);
+                        Common.Set_Session(SessionKey.UNIT_CODE, user.Unit_Code);
                         Common.Set_Session_Int(SessionKey.PLANT_ID, user.Plant_Id);
                         Common.Set_Session_Int(SessionKey.ROLE_ID, user.Role_Id);
                         Common.Set_Session(SessionKey.USER_NAME, user.Fullname);
@@ -613,7 +613,7 @@ namespace Dispatch_System.Controllers
 					user = new User();
 
 					user.Id = ds.Tables[0].Rows[0]["ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["ID"]) : 0;
-					user.Unit_Code = ds.Tables[0].Rows[0]["UNIT_CODE"] != DBNull.Value ? Convert.ToInt64(ds.Tables[0].Rows[0]["UNIT_CODE"]) : 0;
+					user.Unit_Code = ds.Tables[0].Rows[0]["UNIT_CODE"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["UNIT_CODE"]) : "";
 					user.Plant_Id = ds.Tables[0].Rows[0]["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["PLANT_ID"]) : 0;
 					user.Role_Id = ds.Tables[0].Rows[0]["ROLE_ID"] != DBNull.Value ? Convert.ToInt32(ds.Tables[0].Rows[0]["ROLE_ID"]) : 0;
 					user.First_Name = ds.Tables[0].Rows[0]["FIRST_NAME"] != DBNull.Value ? Convert.ToString(ds.Tables[0].Rows[0]["FIRST_NAME"]) : "";
@@ -646,7 +646,7 @@ namespace Dispatch_System.Controllers
 				else if (user != null && user.Is_Active == true)
 				{
 					Common.Set_Session_Int(SessionKey.USER_ID, user.Id);
-					Common.Set_Session_Int(SessionKey.UNIT_CODE, user.Unit_Code);
+					Common.Set_Session(SessionKey.UNIT_CODE, user.Unit_Code);
 					Common.Set_Session_Int(SessionKey.PLANT_ID, id);
 					Common.Set_Session_Int(SessionKey.ROLE_ID, user.Role_Id);
 					Common.Set_Session(SessionKey.USER_NAME, user.Fullname);
@@ -5457,7 +5457,7 @@ namespace Dispatch_System.Controllers
 				}
 				else
 				{
-					body_html += "<br /><br /> <b> No Batch Data are available to uploaded on Cloud Database. <b/> <br /><br />";
+					body_html += "<br /><b> No Batch Data are available to uploaded on Cloud Database. <b/> <br /><br /><br /> <br /> <br /> ";
 				}
 
 				listOracleParameter = new List<OracleParameter>();

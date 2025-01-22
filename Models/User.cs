@@ -10,7 +10,7 @@ namespace Dispatch_System
         public string First_Name { get; set; }
         public string Middle_Name { get; set; }
         public string Last_Name { get; set; }
-        public long Unit_Code { get; set; }
+        public string Unit_Code { get; set; }
         public long Plant_Id { get; set; }
         public long Role_Id { get; set; }
         public string Plant_Name { get; set; }
