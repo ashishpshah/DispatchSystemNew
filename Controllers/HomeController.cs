@@ -4656,7 +4656,8 @@ namespace Dispatch_System.Controllers
 							IsSuccess = DataContext.ExecuteNonQuery(sqlQuery);
 						}
 
-						if (IsSuccess == true)
+						//if (IsSuccess == true)
+						if (true)
 						{
 							dtShipperQrCode = DataContext.ExecuteQuery_SQL($"SELECT PLANT_ID, SHIPPER_QRCODE_API_SYSID, SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION" +
 								$", OLD_SHIPPER_QRCODE_SYSID, PALLET_QRCODE_API_SYSID" +
@@ -4710,7 +4711,8 @@ namespace Dispatch_System.Controllers
 
 						}
 
-						if (IsSuccess == true)
+						//if (IsSuccess == true)
+						if (true)
 						{
 							var dtBottleQrCode_Oracle = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE_SYSID, BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE " +
 								$"FROM BOTTLE_QRCODE WHERE PLANT_ID = {plant_id} " +
