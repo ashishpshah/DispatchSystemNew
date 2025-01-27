@@ -2787,41 +2787,43 @@ namespace Dispatch_System.Controllers
 											//    len += 300;
 											//}
 
-											var tasks = new List<Task>();
+											//var tasks = new List<Task>();
 
 											// Split the list into smaller chunks of 10
 											var shippers = listBottleQRCode.GroupBy(item => item.ShipperQRCode).Select(x => x.Key).ToList();
 
-											for (int i = 0; i < shippers.Count; i += 10)
+											for (int i = 0; i < shippers.Count; i += 20)
 											{
-												var currentBatch = shippers.Skip(i).Take(10).ToList();
+												var currentBatch = shippers.Skip(i).Take(20).ToList();
 
 												// Create a task for each batch
-												var task = Task.Run(() =>
+												//var task = Task.Run(() =>
+												//{
+												var groupedResult = listBottleQRCode.Where(x => currentBatch.Any(z => x.ShipperQRCode == z))
+												.Select(x => new { ShipperQRCode = x.ShipperQRCode, BottleQRCode = x.BottleQRCode }).ToList();
+
+												var query = string.Join(", ", groupedResult.Select(x => "'" + x.BottleQRCode + "'").ToArray());
+												var dtBottleQRCode_ = DataContext.ExecuteQuery_SQL("SELECT bottle_qrcode FROM bottle_qrcode WHERE bottle_qrcode IN (" + query + ")");
+
+												if (dtBottleQRCode_ != null && dtBottleQRCode_.Rows.Count > 0)
 												{
-													var groupedResult = listBottleQRCode.Where(x => currentBatch.Any(z => x.ShipperQRCode == z)).Select(x => new { ShipperQRCode = x.ShipperQRCode, BottleQRCode = x.BottleQRCode }).ToList();
+													var result = groupedResult
+														.Where(item => dtBottleQRCode_.AsEnumerable().Any(row => row.Field<string>("bottle_qrcode") == item.BottleQRCode))
+														.GroupBy(item => item.ShipperQRCode)  // Group by ShipperQRCode
+														.Select(group => (group.Key, string.Join(",", group.Select(item => item.BottleQRCode).Distinct()), "DUP_BOTTLE"))
+														.ToList();
 
-													var query = string.Join(", ", groupedResult.Select(x => "'" + x.BottleQRCode + "'").ToArray());
-													var dt = DataContext.ExecuteQuery_SQL("SELECT bottle_qrcode FROM bottle_qrcode WHERE bottle_qrcode IN (" + query + ")");
+													if (result != null && result.Count > 0) 
+														lock (listShipperQRCode_Duplicate) { listShipperQRCode_Duplicate.AddRange(result); }
+												}
 
-													if (dt != null && dt.Rows.Count > 0)
-													{
-														var result = groupedResult
-															.Where(item => dt.AsEnumerable().Any(row => row.Field<string>("bottle_qrcode") == item.BottleQRCode))
-															.GroupBy(item => item.ShipperQRCode)  // Group by ShipperQRCode
-															.Select(group => (group.Key, string.Join(",", group.Select(item => item.BottleQRCode).Distinct()), "DUP_BOTTLE"))
-															.ToList();
+												//});
 
-														if (result != null && result.Count > 0) lock (listShipperQRCode_Duplicate) { listShipperQRCode_Duplicate.AddRange(result); }
-													}
-
-												});
-
-												tasks.Add(task); // Add the task to the list
+												//tasks.Add(task); // Add the task to the list
 											}
 
-											// Wait for all tasks to complete
-											Task.WhenAll(tasks).Wait();
+											//// Wait for all tasks to complete
+											//Task.WhenAll(tasks).Wait();
 
 										}
 
