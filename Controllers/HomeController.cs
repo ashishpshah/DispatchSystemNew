@@ -3384,11 +3384,25 @@ namespace Dispatch_System.Controllers
 
 							var filteredShipperData = obj.ToObject<JObject>();
 
-							var shipperQRCodeData_Success = filteredShipperData["ShipperQRCode_Data"]
-													.Where(x => !listShipperQRCode_Duplicate.Any(z => z.QRCode.Contains(Convert.ToString(x["ShipperQRCode"])))).ToList<JToken>();
+							//List<JToken> shipperQRCodeData_Success = filteredShipperData["ShipperQRCode_Data"]
+							//						.Where(x => !listShipperQRCode_Duplicate.Any(z => z.QRCode.Contains(Convert.ToString(x["ShipperQRCode"])))).ToList<JToken>();
 
-							var shipperQRCodeData_Duplicate = filteredShipperData["ShipperQRCode_Data"]
-													.Where(x => listShipperQRCode_Duplicate.Any(z => z.QRCode.Contains(Convert.ToString(x["ShipperQRCode"])))).ToList<JToken>();
+							//List<JToken> shipperQRCodeData_Duplicate = filteredShipperData["ShipperQRCode_Data"]
+							//						.Where(x => listShipperQRCode_Duplicate.Any(z => z.QRCode.Contains(Convert.ToString(x["ShipperQRCode"])))).ToList<JToken>();
+							
+							List<JToken> shipperQRCodeData_Success = new List<JToken>();
+
+							List<JToken> shipperQRCodeData_Duplicate = new List<JToken>();
+
+							if (listShipperQRCode_Duplicate != null && listShipperQRCode_Duplicate.Count > 0)
+							{
+								shipperQRCodeData_Success = filteredShipperData["ShipperQRCode_Data"]
+														.Where(x => !listShipperQRCode_Duplicate.Any(z => z.QRCode.Contains(Convert.ToString(x["ShipperQRCode"])))).ToList<JToken>();
+
+								shipperQRCodeData_Duplicate = filteredShipperData["ShipperQRCode_Data"]
+														.Where(x => listShipperQRCode_Duplicate.Any(z => z.QRCode.Contains(Convert.ToString(x["ShipperQRCode"])))).ToList<JToken>();
+							}
+							else shipperQRCodeData_Success = filteredShipperData["ShipperQRCode_Data"].ToList<JToken>();
 
 							try
 							{
