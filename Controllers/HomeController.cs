@@ -3374,7 +3374,11 @@ namespace Dispatch_System.Controllers
 
 						(string fileName, string fileUploadStatus) = (Path.GetFileName(sourceFilePath), "Completed");
 
-						if (!string.IsNullOrEmpty(Convert.ToString(fileContent)))
+                        List<JToken> shipperQRCodeData_Success = new List<JToken>();
+
+                        List<JToken> shipperQRCodeData_Duplicate = new List<JToken>();
+
+                        if (!string.IsNullOrEmpty(Convert.ToString(fileContent)))
 						{
 							string fileContent_Str = Convert.ToString(fileContent);
 
@@ -3391,10 +3395,6 @@ namespace Dispatch_System.Controllers
 
 							//List<JToken> shipperQRCodeData_Duplicate = filteredShipperData["ShipperQRCode_Data"]
 							//						.Where(x => listShipperQRCode_Duplicate.Any(z => z.QRCode.Contains(Convert.ToString(x["ShipperQRCode"])))).ToList<JToken>();
-
-							List<JToken> shipperQRCodeData_Success = new List<JToken>();
-
-							List<JToken> shipperQRCodeData_Duplicate = new List<JToken>();
 
 							if (listShipperQRCode_Duplicate != null && listShipperQRCode_Duplicate.Count > 0)
 							{
@@ -3524,7 +3524,7 @@ namespace Dispatch_System.Controllers
 												$"VALUES ( '{fileName.Substring(0, fileName.Length - (fileName.Length - fileName.LastIndexOf('.')))}'" +
 												$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
 												$", STR_TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
-												$", {(shipperData.ShipperQRCode_Data.Count() * 24)}, '{fileUploadStatus}'" +
+												$", {(shipperQRCodeData_Success.Count() * 24)}, '{fileUploadStatus}'" +
 												$", '{error}' );";
 
 							var result = DataContext.ExecuteNonQuery_SQL(query_File);
