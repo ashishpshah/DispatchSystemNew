@@ -3389,7 +3389,7 @@ namespace Dispatch_System.Controllers
 
 							//List<JToken> shipperQRCodeData_Duplicate = filteredShipperData["ShipperQRCode_Data"]
 							//						.Where(x => listShipperQRCode_Duplicate.Any(z => z.QRCode.Contains(Convert.ToString(x["ShipperQRCode"])))).ToList<JToken>();
-							
+
 							List<JToken> shipperQRCodeData_Success = new List<JToken>();
 
 							List<JToken> shipperQRCodeData_Duplicate = new List<JToken>();
@@ -3427,39 +3427,41 @@ namespace Dispatch_System.Controllers
 								errorFilePath = Path.Combine(errorFolderPath, $"{fileNameWithoutExtension}_{DateTime.Now.ToString("yyyyMMddHHmmsss")}_Error{fileExtension}");
 
 								if (shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0)
-									Task.Run(() =>
+									try
 									{
-										try
-										{
-											if (!System.IO.File.Exists(destinationFilePath)) System.IO.File.Create(destinationFolderPath).Dispose();
+										if (!System.IO.File.Exists(destinationFilePath)) System.IO.File.Create(destinationFolderPath).Dispose();
 
-											filteredShipperData["ShipperQRCode_Data"] = JArray.FromObject(shipperQRCodeData_Success);
+										filteredShipperData["ShipperQRCode_Data"] = JArray.FromObject(shipperQRCodeData_Success);
 
-											string updatedJson = filteredShipperData.ToString(Formatting.Indented); /*JsonConvert.SerializeObject(shipperData, Formatting.Indented);*/
+										string updatedJson = filteredShipperData.ToString(Formatting.Indented); /*JsonConvert.SerializeObject(shipperData, Formatting.Indented);*/
 
-											System.IO.File.WriteAllText(destinationFilePath, updatedJson);
+										System.IO.File.WriteAllText(destinationFilePath, updatedJson);
 
-											Write_Log(fileName + " => " + destinationFilePath, logFilePath);
-										}
-										catch { }
-									});
+										Write_Log(fileName + " => " + destinationFilePath, logFilePath);
+									}
+									catch (Exception ex)
+									{
+										Write_Log(Environment.NewLine + $"{fileName} => {destinationFilePath} => File Not Created." + Environment.NewLine, logFilePath);
+										LogService.LogInsert(GetCurrentAction(), "", ex);
+									}
 
 								if (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0)
-									Task.Run(() =>
+									try
 									{
-										try
-										{
-											if (!System.IO.File.Exists(errorFilePath)) System.IO.File.Create(errorFilePath).Dispose();
+										if (!System.IO.File.Exists(errorFilePath)) System.IO.File.Create(errorFilePath).Dispose();
 
-											filteredShipperData["ShipperQRCode_Data"] = JArray.FromObject(shipperQRCodeData_Duplicate);
+										filteredShipperData["ShipperQRCode_Data"] = JArray.FromObject(shipperQRCodeData_Duplicate);
 
-											string updatedJson = filteredShipperData.ToString(Formatting.Indented); /*JsonConvert.SerializeObject(shipperData_Error, Formatting.Indented);*/
-											System.IO.File.WriteAllText(errorFilePath, updatedJson);
+										string updatedJson = filteredShipperData.ToString(Formatting.Indented); /*JsonConvert.SerializeObject(shipperData_Error, Formatting.Indented);*/
+										System.IO.File.WriteAllText(errorFilePath, updatedJson);
 
-											Write_Log(fileName + " => " + errorFilePath, logFilePath);
-										}
-										catch { }
-									});
+										Write_Log(fileName + " => " + errorFilePath, logFilePath);
+									}
+									catch (Exception ex)
+									{
+										Write_Log(Environment.NewLine + $"{fileName} => {errorFilePath} => File Not Created." + Environment.NewLine, logFilePath);
+										LogService.LogInsert(GetCurrentAction(), "", ex);
+									}
 
 
 								//System.IO.File.Copy(sourceFilePath, destinationFilePath);
