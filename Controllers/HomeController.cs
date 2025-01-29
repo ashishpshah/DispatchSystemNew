@@ -3473,7 +3473,8 @@ namespace Dispatch_System.Controllers
 
 
 								//System.IO.File.Copy(sourceFilePath, destinationFilePath);
-								//if (fileDelete == true) System.IO.File.Delete(sourceFilePath);
+								//if (fileDelete == true)
+								System.IO.File.Delete(sourceFilePath);
 
 							}
 							catch (Exception ex) { }
