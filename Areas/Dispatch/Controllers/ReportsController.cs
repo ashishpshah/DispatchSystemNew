@@ -468,7 +468,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 
 					string[] sourceFilePaths = Directory.GetFiles(sourceFolderPath, "*.json", SearchOption.AllDirectories);
 
-					//if (sourceFilePaths != null && sourceFilePaths.Length > 0) sourceFilePaths = sourceFilePaths.Where(path => !path.Contains("_Error")).ToArray();
+					if (sourceFilePaths != null && sourceFilePaths.Length > 0) sourceFilePaths = sourceFilePaths.Where(path => !path.Contains("_Error")).ToArray();
 
 					if (sourceFilePaths != null && sourceFilePaths.Length > 0 && sourceFilePaths.Any(x => x.Contains(searchTerm)))
 					{
