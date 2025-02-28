@@ -5757,6 +5757,885 @@ namespace Dispatch_System.Controllers
 			}
 			catch (Exception ex) { }
 		}
+
+
+		public async Task<IActionResult> SyncData_CloudToLocal(string tableName, int PlantId = 4, string PlantCode = "KL0")
+		{
+			DataTable dtSql = null;
+			DataTable dtOracle = null;
+			//DataTable table_RowsInOracleNotInSql = null;
+
+			if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "BOTTLE_QRCODE")
+			{
+				dtOracle = DataContext.ExecuteQuery("SELECT BOTTLE_QRCODE_SYSID FROM BOTTLE_QRCODE WHERE BOTTLE_QRCODE_SYSID > 11952500 AND PLANT_ID = " + PlantId);
+
+				//dtSql = DataContext.ExecuteQuery_SQL("SELECT BOTTLE_QRCODE_SYSID FROM BOTTLE_QRCODE WHERE YEAR(created_datetime) = 2025 AND PLANT_ID = " + PlantId);
+
+				var listOracle = (from row in dtOracle.AsEnumerable() select Convert.ToInt64(row["BOTTLE_QRCODE_SYSID"])).ToList();
+
+				//var listSql = (from row in dtSql.AsEnumerable() select Convert.ToInt64(row["BOTTLE_QRCODE_SYSID"])).ToList();
+
+				//var result = listOracle.Except(listSql).ToList();
+				var result = listOracle.ToList();
+
+				int startIndex = 0;
+				SemaphoreSlim semaphore = new SemaphoreSlim(5);
+				List<Task> tasks = new List<Task>();
+
+				while (startIndex < result.Count)
+				{
+					var ids = result.Skip(startIndex).Take(800).ToList();
+
+					tasks.Add(Task.Run(async () =>
+					{
+						await semaphore.WaitAsync();
+
+						try
+						{
+							var _dtSql = DataContext.ExecuteQuery_SQL("SELECT BOTTLE_QRCODE_SYSID FROM BOTTLE_QRCODE WHERE YEAR(created_datetime) = 2025 AND bottle_qrcode_sysId IN (" + string.Join(",", ids.ToArray()) + ") ");
+
+							var listSql = (from row in _dtSql.AsEnumerable() select Convert.ToInt64(row["BOTTLE_QRCODE_SYSID"])).ToList();
+
+							var _result = ids.Except(listSql).ToList();
+							DataTable nextBatch = DataContext.ExecuteQuery("SELECT BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE, PRODUCT_ID, STATUS, SHIPPER_QRCODE_SYSID, QR_REQUEST_ID, QR_REQUEST_FILE_NO, CURRENT_HOLDER_TYPE, CURRENT_HOLDER_SYS_ID, PLANT_ID, CREATED_BY, CREATED_DATETIME " +
+													"FROM BOTTLE_QRCODE WHERE TO_NUMBER(TO_CHAR(created_datetime, 'YYYY')) = 2025 AND PLANT_ID = " + PlantId + " AND BOTTLE_QRCODE_SYSID IN (" + string.Join(",", _result.ToArray()) + ")");
+
+							if (nextBatch != null && nextBatch.Rows.Count > 0)
+							{
+								var sqlQuery = "INSERT INTO BOTTLE_QRCODE ( BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE, PRODUCT_ID, STATUS, SHIPPER_QRCODE_SYSID, QR_REQUEST_ID, QR_REQUEST_FILE_NO, CURRENT_HOLDER_TYPE, CURRENT_HOLDER_SYS_ID, PLANT_ID, CREATED_BY, CREATED_DATETIME ) ";
+
+								var sqlQuery_Select = "";
+
+								foreach (DataRow dr in nextBatch.Rows)
+								{
+									sqlQuery_Select += $"SELECT {(dr["BOTTLE_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["BOTTLE_QRCODE_SYSID"]) : 0)} BOTTLE_QRCODE_SYSID" +
+										$", '{(dr["BOTTLE_QRCODE"] != DBNull.Value ? Convert.ToString(dr["BOTTLE_QRCODE"]) : "")}' BOTTLE_QRCODE" +
+										$", {(dr["PRODUCT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PRODUCT_ID"]) : 0)} PRODUCT_ID" +
+										$", '{(dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "")}' STATUS" +
+										$", {(dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt32(dr["SHIPPER_QRCODE_SYSID"]) : 0)} SHIPPER_QRCODE_SYSID" +
+										$", {(dr["QR_REQUEST_ID"] != DBNull.Value ? Convert.ToInt32(dr["QR_REQUEST_ID"]) : 0)} QR_REQUEST_ID" +
+										$", '{(dr["QR_REQUEST_FILE_NO"] != DBNull.Value ? Convert.ToString(dr["QR_REQUEST_FILE_NO"]) : "")}' QR_REQUEST_FILE_NO" +
+										$", '{(dr["CURRENT_HOLDER_TYPE"] != DBNull.Value ? Convert.ToString(dr["CURRENT_HOLDER_TYPE"]) : "")}' CURRENT_HOLDER_TYPE" +
+										$", {(dr["CURRENT_HOLDER_SYS_ID"] != DBNull.Value ? Convert.ToInt32(dr["CURRENT_HOLDER_SYS_ID"]) : 0)} CURRENT_HOLDER_SYS_ID" +
+										$", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+										$", {(dr["CREATED_BY"] != DBNull.Value ? Convert.ToInt32(dr["CREATED_BY"]) : 0)} CREATED_BY" +
+										$", {(dr["CREATED_DATETIME"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["CREATED_DATETIME"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} CREATED_DATETIME" +
+										$" FROM DUAL UNION ";
+								}
+
+								if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+									sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+								sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
+
+								var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+							}
+
+						}
+						catch (Exception ex)
+						{
+
+						}
+						finally
+						{
+							semaphore.Release();
+						}
+					}));
+
+					startIndex += 800;
+				}
+
+				await Task.WhenAll(tasks);
+			}
+
+			//if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "SHIPPER_QRCODE")
+			//{
+			//    dtOracle = DataContext.ExecuteQuery("SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE WHERE PLANT_ID = " + PlantId);
+
+			//    dtSql = DataContext.ExecuteQuery_SQL("SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE WHERE PLANT_ID = " + PlantId);
+
+			//    var listOracle = (from row in dtOracle.AsEnumerable() select Convert.ToInt64(row["SHIPPER_QRCODE_SYSID"])).ToList();
+
+			//    var listSql = (from row in dtSql.AsEnumerable() select Convert.ToInt64(row["SHIPPER_QRCODE_SYSID"])).ToList();
+
+			//    var result = listOracle.Except(listSql).ToList();
+
+			//    int startIndex = 0;
+			//    SemaphoreSlim semaphore = new SemaphoreSlim(10);  // Limit to 10 concurrent tasks
+			//    List<Task> tasks = new List<Task>();
+
+			//    while (startIndex < result.Count)
+			//    {
+			//        var ids = result.Skip(startIndex).Take(500).ToList();
+
+			//        // Add task for the batch processing
+			//        tasks.Add(Task.Run(async () =>
+			//        {
+			//            await semaphore.WaitAsync();  // Acquire a slot for concurrent execution
+
+			//            try
+			//            {
+			//                DataTable nextBatch = DataContext.ExecuteQuery("SELECT SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION, OLD_SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE_API_SYSID, PALLET_QRCODE_API_SYSID, CURRENT_HOLDER_TYPE, CURRENT_HOLDER_SYS_ID, EVENTTIME, PLANT_ID, CREATED_BY, CREATED_DATETIME " +
+			//                                        "FROM SHIPPER_QRCODE WHERE PLANT_ID = " + PlantId + " AND SHIPPER_QRCODE_SYSID IN (" + string.Join(",", ids.ToArray()) + ")");
+
+			//                if (nextBatch != null && nextBatch.Rows.Count > 0)
+			//                {
+			//                    var sqlQuery = "INSERT INTO SHIPPER_QRCODE ( shipper_qrcode_sysId, shipper_qrcode, total_bottles_qty, status, action, old_shipper_qrcode_sysId, shipper_qrcode_api_sysId, pallet_qrcode_api_sysId, Current_Holder_Type, Current_Holder_SYS_ID, EventTime, plant_id, created_by, created_datetime ) ";
+
+			//                    var sqlQuery_Select = "";
+
+			//                    foreach (DataRow dr in nextBatch.Rows)
+			//                    {
+			//                        sqlQuery_Select += $"SELECT {(dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0)} SHIPPER_QRCODE_SYSID" +
+			//                            $", '{(dr["SHIPPER_QRCODE"] != DBNull.Value ? Convert.ToString(dr["SHIPPER_QRCODE"]) : "")}' SHIPPER_QRCODE" +
+			//                            $", {(dr["TOTAL_BOTTLES_QTY"] != DBNull.Value ? Convert.ToInt32(dr["TOTAL_BOTTLES_QTY"]) : 0)} TOTAL_BOTTLES_QTY" +
+			//                            $", '{(dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "")}' STATUS" +
+			//                            $", '{(dr["ACTION"] != DBNull.Value ? Convert.ToString(dr["ACTION"]) : "")}' ACTION" +
+			//                            $", {(dr["OLD_SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt32(dr["OLD_SHIPPER_QRCODE_SYSID"]) : 0)} OLD_SHIPPER_QRCODE_SYSID" +
+			//                            $", {(dr["SHIPPER_QRCODE_API_SYSID"] != DBNull.Value ? Convert.ToInt32(dr["SHIPPER_QRCODE_API_SYSID"]) : 0)} SHIPPER_QRCODE_API_SYSID" +
+			//                            $", {(dr["PALLET_QRCODE_API_SYSID"] != DBNull.Value ? Convert.ToInt32(dr["PALLET_QRCODE_API_SYSID"]) : 0)} PALLET_QRCODE_API_SYSID" +
+			//                            $", '{(dr["CURRENT_HOLDER_TYPE"] != DBNull.Value ? Convert.ToString(dr["CURRENT_HOLDER_TYPE"]) : "")}' CURRENT_HOLDER_TYPE" +
+			//                            $", {(dr["CURRENT_HOLDER_SYS_ID"] != DBNull.Value ? Convert.ToInt32(dr["CURRENT_HOLDER_SYS_ID"]) : 0)} CURRENT_HOLDER_SYS_ID" +
+			//                            $", {(dr["EVENTTIME"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["EVENTTIME"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} EVENTTIME" +
+			//                            $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+			//                            $", {(dr["CREATED_BY"] != DBNull.Value ? Convert.ToInt32(dr["CREATED_BY"]) : 0)} CREATED_BY" +
+			//                            $", {(dr["CREATED_DATETIME"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["CREATED_DATETIME"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} CREATED_DATETIME" +
+			//                            $" FROM DUAL UNION ";
+			//                    }
+
+			//                    if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+			//                        sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+			//                    sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X WHERE X.SHIPPER_QRCODE_SYSID NOT IN (SELECT DISTINCT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE)";
+
+			//                    var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+			//                }
+
+			//            }
+			//            finally
+			//            {
+			//                semaphore.Release();  // Release the slot for another task
+			//            }
+			//        }));
+
+			//        startIndex += 500;
+			//    }
+
+			//    // Wait for all tasks to complete
+			//    await Task.WhenAll(tasks);
+			//}
+
+			//if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "SHIPPER_QRCODE_API")
+			//{
+			//    dtOracle = DataContext.ExecuteQuery("SELECT SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API WHERE PLANT_ID = " + PlantId);
+
+			//    dtSql = DataContext.ExecuteQuery_SQL("SELECT SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API WHERE PLANT_ID = " + PlantId);
+
+			//    var listOracle = (from row in dtOracle.AsEnumerable() select Convert.ToInt64(row["SHIPPER_QRCODE_API_SYSID"])).ToList();
+
+			//    var listSql = (from row in dtSql.AsEnumerable() select Convert.ToInt64(row["SHIPPER_QRCODE_API_SYSID"])).ToList();
+
+			//    var result = listOracle.Except(listSql).ToList();
+
+			//    int startIndex = 0;
+			//    SemaphoreSlim semaphore = new SemaphoreSlim(10);  // Limit to 10 concurrent tasks
+			//    List<Task> tasks = new List<Task>();
+
+			//    while (startIndex < result.Count)
+			//    {
+			//        var ids = result.Skip(startIndex).Take(500).ToList();
+
+			//        // Add task for the batch processing
+			//        tasks.Add(Task.Run(async () =>
+			//        {
+			//            await semaphore.WaitAsync();  // Acquire a slot for concurrent execution
+
+			//            try
+			//            {
+			//                DataTable nextBatch = DataContext.ExecuteQuery("SELECT SHIPPER_QRCODE_API_SYSID, BATCH_NO, MFG_DATE, EXPIRY_DATE, EVENTTIME, RESPONSE_STATUS, TOTAL_SHIPPER_QTY, CURRENT_HOLDER_TYPE, CURRENT_HOLDER_SYS_ID, MARKETEDBY, MANUFACTUREDBY, PRODUCT_CODE, PLANT_ID, CREATED_BY, CREATED_DATETIME " +
+			//                                        "FROM SHIPPER_QRCODE_API WHERE PLANT_ID = " + PlantId + " AND SHIPPER_QRCODE_API_SYSID IN (" + string.Join(",", ids.ToArray()) + ")");
+
+			//                if (nextBatch != null && nextBatch.Rows.Count > 0)
+			//                {
+			//                    var sqlQuery = "INSERT INTO SHIPPER_QRCODE_API ( shipper_qrcode_api_sysId, batch_no, mfg_date, expiry_date, eventtime, response_status, total_shipper_qty, Current_Holder_Type, Current_Holder_SYS_ID, MarketedBy, ManufacturedBy, Product_Code, PLANT_ID, CREATED_BY, CREATED_DATETIME ) ";
+
+			//                    var sqlQuery_Select = "";
+
+			//                    foreach (DataRow dr in nextBatch.Rows)
+			//                    {
+			//                        sqlQuery_Select += $"SELECT {(dr["SHIPPER_QRCODE_API_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_API_SYSID"]) : 0)} SHIPPER_QRCODE_API_SYSID" +
+			//                            $", '{(dr["BATCH_NO"] != DBNull.Value ? Convert.ToString(dr["BATCH_NO"]) : "")}' BATCH_NO" +
+			//                            $", {(dr["MFG_DATE"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["MFG_DATE"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} MFG_DATE" +
+			//                            $", {(dr["EXPIRY_DATE"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["EXPIRY_DATE"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} EXPIRY_DATE" +
+			//                            $", {(dr["EVENTTIME"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["EVENTTIME"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} EVENTTIME" +
+			//                            $", '{(dr["RESPONSE_STATUS"] != DBNull.Value ? Convert.ToString(dr["RESPONSE_STATUS"]) : "")}' RESPONSE_STATUS" +
+			//                            $", {(dr["TOTAL_SHIPPER_QTY"] != DBNull.Value ? Convert.ToInt32(dr["TOTAL_SHIPPER_QTY"]) : 0)} TOTAL_SHIPPER_QTY" +
+			//                            $", '{(dr["CURRENT_HOLDER_TYPE"] != DBNull.Value ? Convert.ToString(dr["CURRENT_HOLDER_TYPE"]) : "")}' CURRENT_HOLDER_TYPE" +
+			//                            $", {(dr["CURRENT_HOLDER_SYS_ID"] != DBNull.Value ? Convert.ToInt32(dr["CURRENT_HOLDER_SYS_ID"]) : 0)} CURRENT_HOLDER_SYS_ID" +
+			//                            $", '{(dr["MARKETEDBY"] != DBNull.Value ? Convert.ToString(dr["MARKETEDBY"]) : "")}' MARKETEDBY" +
+			//                            $", '{(dr["ManufacturedBy"] != DBNull.Value ? Convert.ToString(dr["ManufacturedBy"]) : "")}' ManufacturedBy" +
+			//                            $", '{(dr["PRODUCT_CODE"] != DBNull.Value ? Convert.ToString(dr["PRODUCT_CODE"]) : "")}' PRODUCT_CODE" +
+			//                            $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+			//                            $", {(dr["CREATED_BY"] != DBNull.Value ? Convert.ToInt32(dr["CREATED_BY"]) : 0)} CREATED_BY" +
+			//                            $", {(dr["CREATED_DATETIME"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["CREATED_DATETIME"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} CREATED_DATETIME" +
+			//                            $" FROM DUAL UNION ";
+			//                    }
+
+			//                    if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+			//                        sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+			//                    sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X WHERE X.SHIPPER_QRCODE_API_SYSID NOT IN (SELECT DISTINCT SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API)";
+
+			//                    var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+			//                }
+
+			//            }
+			//            finally
+			//            {
+			//                semaphore.Release();  // Release the slot for another task
+			//            }
+			//        }));
+
+			//        startIndex += 500;
+			//    }
+
+			//    // Wait for all tasks to complete
+			//    await Task.WhenAll(tasks);
+			//}
+
+			//if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "SHIPPER_QR_CODE_FILE_UPLOAD_STATUS")
+			//{
+			//    dtOracle = DataContext.ExecuteQuery($"SELECT FILEUPLOADNAME, TO_CHAR(STARTDATE, 'YYYYMMDDHH24MM') STARTDATE, TO_CHAR(ENDDATE, 'YYYYMMDDHH24MM') ENDDATE FROM SHIPPER_QR_CODE_FILE_UPLOAD_STATUS WHERE PLANTCODE = '{PlantCode}'");
+
+			//    dtSql = DataContext.ExecuteQuery_SQL($"SELECT FILEUPLOADNAME, DATE_FORMAT(STARTDATE, '%Y%m%d%H%i') AS STARTDATE, DATE_FORMAT(ENDDATE, '%Y%m%d%H%i') AS ENDDATE FROM SHIPPER_QR_CODE_FILE_UPLOAD_STATUS");
+
+			//    // Extract the lists of records with FILEUPLOADNAME, STARTDATE, and ENDDATE
+			//    var listOracle = (from row in dtOracle.AsEnumerable()
+			//                      select new
+			//                      {
+			//                          FILEUPLOADNAME = Convert.ToString(row["FILEUPLOADNAME"]),
+			//                          STARTDATE = Convert.ToString(row["STARTDATE"]),
+			//                          ENDDATE = Convert.ToString(row["ENDDATE"])
+			//                      }).ToList();
+
+			//    var listSql = (from row in dtSql.AsEnumerable()
+			//                   select new
+			//                   {
+			//                       FILEUPLOADNAME = Convert.ToString(row["FILEUPLOADNAME"]),
+			//                       STARTDATE = Convert.ToString(row["STARTDATE"]),
+			//                       ENDDATE = Convert.ToString(row["ENDDATE"])
+			//                   }).ToList();
+			//    var result = listOracle.Where(oracleRecord => !listSql.Any(sqlRecord =>
+			//                    sqlRecord.FILEUPLOADNAME == oracleRecord.FILEUPLOADNAME &&
+			//                    sqlRecord.STARTDATE == oracleRecord.STARTDATE &&
+			//                    sqlRecord.ENDDATE == oracleRecord.ENDDATE)).ToList();
+
+			//    int startIndex = 0;
+			//    SemaphoreSlim semaphore = new SemaphoreSlim(10);
+			//    List<Task> tasks = new List<Task>();
+
+			//    while (startIndex < result.Count)
+			//    {
+			//        var ids = result.Skip(startIndex).Take(500).ToList();
+
+			//        tasks.Add(Task.Run(async () =>
+			//        {
+			//            await semaphore.WaitAsync(); 
+
+			//            try
+			//            {
+			//                var conditions = ids.Select(r =>
+			//                                        $"(FILEUPLOADNAME = '{r.FILEUPLOADNAME}' AND TO_CHAR(STARTDATE, 'YYYYMMDDHH24MM') = '{r.STARTDATE}' AND  TO_CHAR(ENDDATE, 'YYYYMMDDHH24MM') = '{r.ENDDATE}')"
+			//                                    ).ToList();
+
+			//                string whereClause = string.Join(" OR ", conditions);
+
+			//                DataTable nextBatch = DataContext.ExecuteQuery("SELECT FILEUPLOADNAME, STARTDATE, ENDDATE, QRCODECOUNT, FILESTATUS, REMARK, IS_REWORK " +
+			//                                        $"FROM SHIPPER_QR_CODE_FILE_UPLOAD_STATUS WHERE PLANTCODE = '{PlantCode}' AND ({whereClause})");
+
+			//                if (nextBatch != null && nextBatch.Rows.Count > 0)
+			//                {
+			//                    var sqlQuery = "INSERT INTO SHIPPER_QR_CODE_FILE_UPLOAD_STATUS ( FILEUPLOADNAME, STARTDATE, ENDDATE, QRCODECOUNT, FILESTATUS, REMARK, is_rework ) ";
+
+			//                    var sqlQuery_Select = "";
+
+			//                    foreach (DataRow dr in nextBatch.Rows)
+			//                    {
+			//                        sqlQuery_Select += $"SELECT '{(dr["FILEUPLOADNAME"] != DBNull.Value ? Convert.ToString(dr["FILEUPLOADNAME"]) : "")}' FILEUPLOADNAME" +
+			//                            $", {(dr["STARTDATE"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["STARTDATE"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} STARTDATE" +
+			//                            $", {(dr["ENDDATE"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["ENDDATE"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} ENDDATE" +
+			//                            $", {(dr["QRCODECOUNT"] != DBNull.Value ? Convert.ToInt32(dr["QRCODECOUNT"]) : 0)} QRCODECOUNT" +
+			//                            $", '{(dr["FILESTATUS"] != DBNull.Value ? Convert.ToString(dr["FILESTATUS"]) : "")}' FILESTATUS" +
+			//                            $", '{(dr["REMARK"] != DBNull.Value ? Convert.ToString(dr["REMARK"]) : "")}' REMARK" +
+			//                            $", {(dr["IS_REWORK"] != DBNull.Value ? Convert.ToInt32(dr["IS_REWORK"]) : 0)} IS_REWORK" +
+			//                            $" FROM DUAL UNION ";
+			//                    }
+
+			//                    if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+			//                        sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+			//                    sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X WHERE X.FILEUPLOADNAME NOT IN (SELECT DISTINCT FILEUPLOADNAME FROM SHIPPER_QR_CODE_FILE_UPLOAD_STATUS)";
+
+			//                    var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+			//                }
+
+			//            }
+			//            finally
+			//            {
+			//                semaphore.Release();  // Release the slot for another task
+			//            }
+			//        }));
+
+			//        startIndex += 500;
+			//    }
+
+			//    // Wait for all tasks to complete
+			//    await Task.WhenAll(tasks);
+			//}
+
+			//if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "MDA_SEQUENCE")
+			//{
+			//    dtOracle = DataContext.ExecuteQuery("SELECT MDA_SEQ_SYS_ID FROM MDA_SEQUENCE WHERE PLANT_ID = " + PlantId);
+
+			//    dtSql = DataContext.ExecuteQuery_SQL("SELECT MDA_SEQ_SYS_ID FROM MDA_SEQUENCE WHERE PLANT_ID = " + PlantId);
+
+			//    var listOracle = (from row in dtOracle.AsEnumerable() select Convert.ToInt64(row["MDA_SEQ_SYS_ID"])).ToList();
+
+			//    var listSql = (from row in dtSql.AsEnumerable() select Convert.ToInt64(row["MDA_SEQ_SYS_ID"])).ToList();
+
+			//    var result = listOracle.Except(listSql).ToList();
+
+			//    int startIndex = 0;
+			//    SemaphoreSlim semaphore = new SemaphoreSlim(10);  // Limit to 10 concurrent tasks
+			//    List<Task> tasks = new List<Task>();
+
+			//    while (startIndex < result.Count)
+			//    {
+			//        var ids = result.Skip(startIndex).Take(500).ToList();
+
+			//        // Add task for the batch processing
+			//        tasks.Add(Task.Run(async () =>
+			//        {
+			//            await semaphore.WaitAsync();  // Acquire a slot for concurrent execution
+
+			//            try
+			//            {
+			//                DataTable nextBatch = DataContext.ExecuteQuery("SELECT MDA_SEQ_SYS_ID, GATE_SYS_ID, MDA_SYS_ID, MDA_SEQUENCE_NO, MDA_STATUS, MDA_REASON, MDA_REMARK, PLANT_ID, CREATED_BY_ID, CREATED_DATETIME, IS_POSTED, MDA_STATUS_DATETIME " +
+			//                                        "FROM MDA_SEQUENCE WHERE PLANT_ID = " + PlantId + " AND MDA_SEQ_SYS_ID IN (" + string.Join(",", ids.ToArray()) + ")");
+
+			//                if (nextBatch != null && nextBatch.Rows.Count > 0)
+			//                {
+			//                    var sqlQuery = "INSERT INTO MDA_SEQUENCE ( MDA_Seq_SYS_ID, GATE_SYS_ID, MDA_SYS_ID, MDA_Sequence_No, MDA_STATUS, MDA_REASON, MDA_REMARK, PLANT_ID, Created_BY_ID, Created_DateTime, IS_POSTED, MDA_STATUS_DATETIME ) ";
+
+			//                    var sqlQuery_Select = "";
+
+			//                    foreach (DataRow dr in nextBatch.Rows)
+			//                    {
+			//                        sqlQuery_Select += $"SELECT {(dr["MDA_SEQ_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SEQ_SYS_ID"]) : 0)} MDA_SEQ_SYS_ID" +
+			//                            $", {(dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0)} GATE_SYS_ID" +
+			//                            $", {(dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0)} MDA_SYS_ID" +
+			//                            $", {(dr["MDA_SEQUENCE_NO"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SEQUENCE_NO"]) : 0)} MDA_SEQUENCE_NO" +
+			//                            $", '{(dr["MDA_STATUS"] != DBNull.Value ? Convert.ToString(dr["MDA_STATUS"]) : "")}' MDA_STATUS" +
+			//                            $", '{(dr["MDA_REASON"] != DBNull.Value ? Convert.ToString(dr["MDA_REASON"]) : "")}' MDA_REASON" +
+			//                            $", '{(dr["MDA_REMARK"] != DBNull.Value ? Convert.ToString(dr["MDA_REMARK"]) : "")}' MDA_REMARK" +
+			//                            $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+			//                            $", {(dr["Created_BY_ID"] != DBNull.Value ? Convert.ToInt32(dr["Created_BY_ID"]) : 0)} Created_BY_ID" +
+			//                            $", {(dr["Created_DateTime"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["Created_DateTime"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} Created_DateTime" +
+			//                            $", {(dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt32(dr["IS_POSTED"]) : 0)} IS_POSTED" +
+			//                            $", {(dr["MDA_STATUS_DATETIME"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["MDA_STATUS_DATETIME"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} MDA_STATUS_DATETIME" +
+			//                            $" FROM DUAL UNION ";
+			//                    }
+
+			//                    if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+			//                        sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+			//                    sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X WHERE X.MDA_SEQ_SYS_ID NOT IN (SELECT DISTINCT MDA_SEQ_SYS_ID FROM MDA_SEQUENCE)";
+
+			//                    var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+			//                }
+
+			//            }
+			//            finally
+			//            {
+			//                semaphore.Release();  // Release the slot for another task
+			//            }
+			//        }));
+
+			//        startIndex += 500;
+			//    }
+
+			//    // Wait for all tasks to complete
+			//    await Task.WhenAll(tasks);
+			//}
+
+			//if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "MDA_REQUISITION_DATA")
+			//{
+			//    dtOracle = DataContext.ExecuteQuery("SELECT MDA_REQ_SYS_ID FROM MDA_REQUISITION_DATA WHERE PLANT_ID = " + PlantId);
+
+			//    dtSql = DataContext.ExecuteQuery_SQL("SELECT MDA_REQ_SYS_ID FROM MDA_REQUISITION_DATA WHERE PLANT_ID = " + PlantId);
+
+			//    var listOracle = (from row in dtOracle.AsEnumerable() select Convert.ToInt64(row["MDA_REQ_SYS_ID"])).ToList();
+
+			//    var listSql = (from row in dtSql.AsEnumerable() select Convert.ToInt64(row["MDA_REQ_SYS_ID"])).ToList();
+
+			//    var result = listOracle.Except(listSql).ToList();
+
+			//    int startIndex = 0;
+
+			//    while (startIndex < result.Count)
+			//    {
+			//        var ids = result.Skip(startIndex).Take(500).ToList();
+
+			//        DataTable nextBatch = DataContext.ExecuteQuery("SELECT MDA_REQ_SYS_ID, GATE_SYS_ID, MDA_SYS_ID, PROD_SYS_ID, TRUCK_NO, MDA_NO, MDA_DATE, SKU_CODE, SKU_NAME, BOTTLE_QTY, CARTON_QTY, LOADING_BAY, LOADING_BAY_SYS_ID, SKU_ORDER, STATUS_CODE, LOADING_STATUS, LOADED_QTY, SHORT_QTY, ADDITIONAL_QTY, REASON, PLANT_ID, LOADING_PROGRESS, LOADED_ITEM, API_RESULT, API_REMARK, IS_POSTED, LOAD_IN_TIME, LOAD_OUT_TIME " +
+			//            "FROM MDA_REQUISITION_DATA WHERE PLANT_ID = " + PlantId + " AND MDA_REQ_SYS_ID IN (" + string.Join(",", ids.ToArray()) + ")");
+
+			//        if (nextBatch != null && nextBatch.Rows.Count > 0)
+			//        {
+			//            var sqlQuery = "INSERT INTO MDA_REQUISITION_DATA ( MDA_REQ_SYS_ID, GATE_SYS_ID, MDA_SYS_ID, PROD_SYS_ID, TRUCK_NO, MDA_NO, MDA_DATE, SKU_CODE, SKU_NAME, BOTTLE_QTY, CARTON_QTY, LOADING_BAY, LOADING_BAY_SYS_ID" +
+			//                ", SKU_ORDER, STATUS_CODE, LOADING_STATUS, LOADED_QTY, SHORT_QTY, ADDITIONAL_QTY, REASON, PLANT_ID, LOADING_PROGRESS, LOADED_ITEM, API_RESULT, API_REMARK, IS_POSTED, LOAD_IN_TIME, LOAD_OUT_TIME ) ";
+
+			//            var sqlQuery_Select = "";
+
+			//            foreach (DataRow dr in nextBatch.Rows)
+			//            {
+			//                sqlQuery_Select += $"SELECT {(dr["MDA_REQ_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_REQ_SYS_ID"]) : 0)} MDA_REQ_SYS_ID" +
+			//                    $", {(dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0)} GATE_SYS_ID" +
+			//                    $", {(dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0)} MDA_SYS_ID" +
+			//                    $", {(dr["PROD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["PROD_SYS_ID"]) : 0)} PROD_SYS_ID" +
+			//                    $", '{(dr["TRUCK_NO"] != DBNull.Value ? Convert.ToString(dr["TRUCK_NO"]) : "")}' TRUCK_NO" +
+			//                    $", '{(dr["MDA_NO"] != DBNull.Value ? Convert.ToString(dr["MDA_NO"]) : "")}' MDA_NO" +
+			//                    $", {(dr["MDA_DATE"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["MDA_DATE"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} MDA_DATE" +
+			//                    $", '{(dr["SKU_CODE"] != DBNull.Value ? Convert.ToString(dr["SKU_CODE"]) : "")}' SKU_CODE" +
+			//                    $", '{(dr["SKU_NAME"] != DBNull.Value ? Convert.ToString(dr["SKU_NAME"]) : "")}' SKU_NAME" +
+			//                    $", {(dr["BOTTLE_QTY"] != DBNull.Value ? Convert.ToInt64(dr["BOTTLE_QTY"]) : 0)} BOTTLE_QTY" +
+			//                    $", {(dr["CARTON_QTY"] != DBNull.Value ? Convert.ToInt64(dr["CARTON_QTY"]) : 0)} CARTON_QTY" +
+			//                    $", '{(dr["LOADING_BAY"] != DBNull.Value ? Convert.ToString(dr["LOADING_BAY"]) : "")}' LOADING_BAY" +
+			//                    $", {(dr["LOADING_BAY_SYS_ID"] != DBNull.Value ? Convert.ToInt32(dr["LOADING_BAY_SYS_ID"]) : 0)} LOADING_BAY_SYS_ID " +
+			//                    $", {(dr["SKU_ORDER"] != DBNull.Value ? Convert.ToInt64(dr["SKU_ORDER"]) : 0)} SKU_ORDER" +
+			//                    $", '{(dr["STATUS_CODE"] != DBNull.Value ? Convert.ToString(dr["STATUS_CODE"]) : "")}' STATUS_CODE" +
+			//                    $", '{(dr["LOADING_STATUS"] != DBNull.Value ? Convert.ToString(dr["LOADING_STATUS"]) : "")}' LOADING_STATUS" +
+			//                    $", {(dr["LOADED_QTY"] != DBNull.Value ? Convert.ToInt64(dr["LOADED_QTY"]) : 0)} LOADED_QTY" +
+			//                    $", {(dr["SHORT_QTY"] != DBNull.Value ? Convert.ToInt64(dr["SHORT_QTY"]) : 0)} SHORT_QTY" +
+			//                    $", {(dr["ADDITIONAL_QTY"] != DBNull.Value ? Convert.ToInt64(dr["ADDITIONAL_QTY"]) : 0)} ADDITIONAL_QTY" +
+			//                    $", '{(dr["REASON"] != DBNull.Value ? Convert.ToString(dr["REASON"]) : "")}' REASON" +
+			//                    $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+			//                    $", '{(dr["LOADING_PROGRESS"] != DBNull.Value ? Convert.ToString(dr["LOADING_PROGRESS"]) : "")}' LOADING_PROGRESS" +
+			//                    $", {(dr["LOADED_ITEM"] != DBNull.Value ? Convert.ToInt64(dr["LOADED_ITEM"]) : 0)} LOADED_ITEM" +
+			//                    $", '{(dr["API_RESULT"] != DBNull.Value ? Convert.ToString(dr["API_RESULT"]) : "")}' API_RESULT" +
+			//                    $", '{(dr["API_REMARK"] != DBNull.Value ? Convert.ToString(dr["API_REMARK"]) : "")}' API_REMARK" +
+			//                    $", {(dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt32(dr["IS_POSTED"]) : 0)} IS_POSTED " +
+			//                    $", {(dr["LOAD_IN_TIME"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["LOAD_IN_TIME"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} LOAD_IN_TIME" +
+			//                    $", {(dr["LOAD_OUT_TIME"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["LOAD_OUT_TIME"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} LOAD_OUT_TIME" +
+			//                    $" FROM DUAL UNION ";
+			//            }
+
+			//            if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+			//                sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+			//            sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X WHERE X.MDA_REQ_SYS_ID NOT IN (SELECT DISTINCT MDA_REQ_SYS_ID FROM MDA_REQUISITION_DATA)";
+
+			//            var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+			//        }
+
+			//        startIndex += 500;
+			//    }
+
+			//}
+
+			//if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "MDA_LOADING")
+			//{
+			//    dtOracle = DataContext.ExecuteQuery("SELECT MDA_LOD_SYS_ID FROM MDA_LOADING WHERE PLANT_ID = " + PlantId);
+
+			//    dtSql = DataContext.ExecuteQuery_SQL("SELECT MDA_LOD_SYS_ID FROM MDA_LOADING WHERE PLANT_ID = " + PlantId);
+
+			//    var listOracle = (from row in dtOracle.AsEnumerable() select Convert.ToInt64(row["MDA_LOD_SYS_ID"])).ToList();
+
+			//    var listSql = (from row in dtSql.AsEnumerable() select Convert.ToInt64(row["MDA_LOD_SYS_ID"])).ToList();
+
+			//    var result = listOracle.Except(listSql).ToList();
+
+			//    int startIndex = 0;
+
+			//    while (startIndex < result.Count)
+			//    {
+			//        var ids = result.Skip(startIndex).Take(500).ToList();
+
+			//        DataTable nextBatch = DataContext.ExecuteQuery("SELECT MDA_LOD_SYS_ID, GATE_SYS_ID, MDA_SYS_ID, PROD_SYS_ID, REQUIRED_SHIPPER, LOADED_SHIPPER, SHIPPER_QR_CODE, IS_MANUAL_SCAN, CREATED_BY_ID, CREATED_DATETIME, PLANT_ID, IS_POSTED, ENTRY_TIME " +
+			//            "FROM MDA_LOADING WHERE PLANT_ID = " + PlantId + " AND MDA_LOD_SYS_ID IN (" + string.Join(",", ids.ToArray()) + ")");
+
+			//        if (nextBatch != null && nextBatch.Rows.Count > 0)
+			//        {
+			//            var sqlQuery = "INSERT INTO MDA_LOADING ( MDA_LOD_SYS_ID, GATE_SYS_ID, MDA_SYS_ID, PROD_SYS_ID, REQUIRED_SHIPPER, LOADED_SHIPPER, SHIPPER_QR_CODE, IS_MANUAL_SCAN, PLANT_ID, CREATED_BY_ID, CREATED_DATETIME, IS_POSTED, ENTRY_TIME ) ";
+
+			//            var sqlQuery_Select = "";
+
+			//            foreach (DataRow dr in nextBatch.Rows)
+			//            {
+			//                sqlQuery_Select += $"SELECT {(dr["MDA_LOD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_LOD_SYS_ID"]) : 0)} MDA_LOD_SYS_ID" +
+			//                    $", {(dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0)} GATE_SYS_ID" +
+			//                    $", {(dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0)} MDA_SYS_ID" +
+			//                    $", {(dr["PROD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["PROD_SYS_ID"]) : 0)} PROD_SYS_ID" +
+			//                    $", {(dr["REQUIRED_SHIPPER"] != DBNull.Value ? Convert.ToInt64(dr["REQUIRED_SHIPPER"]) : 0)} REQUIRED_SHIPPER" +
+			//                    $", {(dr["LOADED_SHIPPER"] != DBNull.Value ? Convert.ToInt64(dr["LOADED_SHIPPER"]) : 0)} LOADED_SHIPPER" +
+			//                    $", '{(dr["SHIPPER_QR_CODE"] != DBNull.Value ? Convert.ToString(dr["SHIPPER_QR_CODE"]) : "")}' SHIPPER_QR_CODE" +
+			//                    $", {(dr["IS_MANUAL_SCAN"] != DBNull.Value ? Convert.ToInt32(dr["IS_MANUAL_SCAN"]) : 0)} IS_MANUAL_SCAN " +
+			//                    $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+			//                    $", {(dr["Created_BY_ID"] != DBNull.Value ? Convert.ToInt32(dr["Created_BY_ID"]) : 0)} Created_BY_ID" +
+			//                    $", STR_TO_DATE('{(dr["Created_DateTime"] != DBNull.Value ? Convert.ToDateTime(dr["Created_DateTime"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') Created_DateTime" +
+			//                    $", {(dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt32(dr["IS_POSTED"]) : 0)} IS_POSTED " +
+			//                    $", {(dr["ENTRY_TIME"] != DBNull.Value ? "STR_TO_DATE('" + Convert.ToDateTime(dr["ENTRY_TIME"]).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-") + "', '%d-%m-%Y %H:%i:%s')" : "NULL")} ENTRY_TIME" +
+			//                    $" FROM DUAL UNION ";
+			//            }
+
+			//            if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+			//                sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+			//            sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X WHERE X.MDA_LOD_SYS_ID NOT IN (SELECT DISTINCT MDA_LOD_SYS_ID FROM MDA_LOADING)";
+
+			//            var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+			//        }
+
+			//        startIndex += 500;
+			//    }
+
+			//}
+
+			//if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "MDA_INVOICE_QR")
+			//{
+			//    dtOracle = DataContext.ExecuteQuery("SELECT MDAINVQR_SYS_ID, GATE_SYS_ID, MDA_SYS_ID, MDA_NO, INVOICEQRCODE, BASE64INVQRCODE, CREATED_BY_ID, CREATED_DATETIME, PLANT_ID, IS_POSTED, IS_DISPATCHED " +
+			//        "FROM MDA_INVOICE_QR WHERE PLANT_ID = " + PlantId);
+
+			//    dtSql = DataContext.ExecuteQuery_SQL("SELECT MDAInvQr_SYS_ID, GATE_SYS_ID, MDA_SYS_ID, MDA_NO, INVOICEQrCODE, BASE64InvQrCode, Created_BY_ID, Created_DateTime, PLANT_ID, IS_POSTED, IS_DISPATCHED " +
+			//        "FROM MDA_INVOICE_QR WHERE PLANT_ID = " + PlantId);
+
+			//    table_RowsInOracleNotInSql = dtOracle.Clone();
+
+			//    var rowsInOracleNotInSql = from row1 in dtOracle.AsEnumerable() where !dtSql.AsEnumerable().Any(row2 => Convert.ToInt64(row2["MDAInvQr_SYS_ID"]) == Convert.ToInt64(row1["MDAInvQr_SYS_ID"])) select row1;
+
+			//    foreach (var row in rowsInOracleNotInSql)
+			//        table_RowsInOracleNotInSql.ImportRow(row);
+
+			//    int startIndex = 0;
+
+			//    while (startIndex < table_RowsInOracleNotInSql.Rows.Count)
+			//    {
+			//        DataTable nextBatch = table_RowsInOracleNotInSql.AsEnumerable().Skip(startIndex).Take(100).CopyToDataTable();
+
+			//        if (nextBatch != null && nextBatch.Rows.Count > 0)
+			//        {
+			//            var sqlQuery = "INSERT INTO MDA_INVOICE_QR ( MDAInvQr_SYS_ID, GATE_SYS_ID, MDA_SYS_ID, MDA_NO, INVOICEQrCODE, BASE64InvQrCode, PLANT_ID, Created_BY_ID, Created_DateTime, IS_POSTED, IS_DISPATCHED ) ";
+
+			//            var sqlQuery_Select = "";
+
+			//            foreach (DataRow dr in nextBatch.Rows)
+			//            {
+			//                sqlQuery_Select += $"SELECT {(dr["MDAInvQr_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDAInvQr_SYS_ID"]) : 0)} MDAInvQr_SYS_ID" +
+			//                    $", {(dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0)} GATE_SYS_ID" +
+			//                    $", {(dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0)} MDA_SYS_ID" +
+			//                    $", '{(dr["MDA_NO"] != DBNull.Value ? Convert.ToString(dr["MDA_NO"]) : "")}' MDA_NO" +
+			//                    $", '{(dr["INVOICEQrCODE"] != DBNull.Value ? Convert.ToString(dr["INVOICEQrCODE"]) : "")}' INVOICEQrCODE" +
+			//                    $", '{(dr["BASE64InvQrCode"] != DBNull.Value ? Convert.ToString(dr["BASE64InvQrCode"]) : "")}' BASE64InvQrCode" +
+			//                    $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+			//                    $", {(dr["Created_BY_ID"] != DBNull.Value ? Convert.ToInt32(dr["Created_BY_ID"]) : 0)} Created_BY_ID" +
+			//                    $", STR_TO_DATE('{(dr["Created_DateTime"] != DBNull.Value ? Convert.ToDateTime(dr["Created_DateTime"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') Created_DateTime" +
+			//                    $", {(dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt32(dr["IS_POSTED"]) : 0)} IS_POSTED " +
+			//                    $", {(dr["IS_DISPATCHED"] != DBNull.Value ? Convert.ToInt32(dr["IS_DISPATCHED"]) : 0)} IS_DISPATCHED " +
+			//                    $" FROM DUAL UNION ";
+			//            }
+
+			//            if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+			//                sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+			//            sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X WHERE X.MDAInvQr_SYS_ID NOT IN (SELECT DISTINCT MDAInvQr_SYS_ID FROM MDA_INVOICE_QR)";
+
+			//            var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+			//        }
+
+			//        startIndex += 100;
+			//    }
+
+			//}
+
+			//if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "MDA_DETAIL")
+			//{
+			//    dtOracle = DataContext.ExecuteQuery("SELECT MDA_DTL_SYS_ID, MDA_SYS_ID, MDA_NO, PROD_SNO, MDA_DT, PROD_SYS_ID, SHIPMENT_NO, BAG_NOS, NETT_QTY, GROSS_QTY, PLANT_ID, CREATED_DATETIME, IS_POSTED " +
+			//        "FROM MDA_DETAIL WHERE PLANT_ID = " + PlantId);
+
+			//    dtSql = DataContext.ExecuteQuery_SQL("SELECT MDA_DTL_SYS_ID, MDA_SYS_ID, MDA_NO, PROD_SNO, MDA_DT, PROD_SYS_ID, SHIPMENT_NO, BAG_NOS, NETT_QTY, GROSS_QTY, PLANT_ID, Created_DateTime, IS_POSTED " +
+			//        "FROM MDA_DETAIL WHERE PLANT_ID = " + PlantId);
+
+			//    table_RowsInOracleNotInSql = dtOracle.Clone();
+
+			//    var rowsInOracleNotInSql = from row1 in dtOracle.AsEnumerable() where !dtSql.AsEnumerable().Any(row2 => Convert.ToInt64(row2["MDA_DTL_SYS_ID"]) == Convert.ToInt64(row1["MDA_DTL_SYS_ID"])) select row1;
+
+			//    foreach (var row in rowsInOracleNotInSql)
+			//        table_RowsInOracleNotInSql.ImportRow(row);
+
+			//    int startIndex = 0;
+
+			//    while (startIndex < table_RowsInOracleNotInSql.Rows.Count)
+			//    {
+			//        DataTable nextBatch = table_RowsInOracleNotInSql.AsEnumerable().Skip(startIndex).Take(100).CopyToDataTable();
+
+			//        if (nextBatch != null && nextBatch.Rows.Count > 0)
+			//        {
+			//            var sqlQuery = "INSERT INTO MDA_DETAIL ( MDA_DTL_SYS_ID, MDA_SYS_ID, MDA_NO, PROD_SNO, MDA_DT, PROD_SYS_ID, SHIPMENT_NO, BAG_NOS, NETT_QTY, GROSS_QTY, PLANT_ID, Created_DateTime, IS_POSTED ) ";
+
+			//            var sqlQuery_Select = "";
+
+			//            foreach (DataRow dr in nextBatch.Rows)
+			//            {
+			//                sqlQuery_Select += $"SELECT {(dr["MDA_DTL_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_DTL_SYS_ID"]) : 0)} MDA_DTL_SYS_ID" +
+			//                    $", {(dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0)} MDA_SYS_ID" +
+			//                    $", '{(dr["MDA_NO"] != DBNull.Value ? Convert.ToString(dr["MDA_NO"]) : "")}' MDA_NO" +
+			//                    $", {(dr["PROD_SNO"] != DBNull.Value ? Convert.ToInt64(dr["PROD_SNO"]) : 0)} PROD_SNO" +
+			//                    $", STR_TO_DATE('{(dr["MDA_DT"] != DBNull.Value ? Convert.ToDateTime(dr["MDA_DT"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') MDA_DT" +
+			//                    $", {(dr["PROD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["PROD_SYS_ID"]) : 0)} PROD_SYS_ID" +
+			//                    $", {(dr["SHIPMENT_NO"] != DBNull.Value ? Convert.ToInt64(dr["SHIPMENT_NO"]) : 0)} SHIPMENT_NO" +
+			//                    $", {(dr["BAG_NOS"] != DBNull.Value ? Convert.ToInt32(dr["BAG_NOS"]) : 0)} BAG_NOS" +
+			//                    $", {(dr["NETT_QTY"] != DBNull.Value ? Convert.ToInt32(dr["NETT_QTY"]) : 0)} NETT_QTY" +
+			//                    $", {(dr["GROSS_QTY"] != DBNull.Value ? Convert.ToInt32(dr["GROSS_QTY"]) : 0)} GROSS_QTY" +
+			//                    $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+			//                    $", STR_TO_DATE('{(dr["Created_DateTime"] != DBNull.Value ? Convert.ToDateTime(dr["Created_DateTime"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') Created_DateTime" +
+			//                    $", {(dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt32(dr["IS_POSTED"]) : 0)} IS_POSTED " +
+			//                    $" FROM DUAL UNION ";
+			//            }
+
+			//            if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+			//                sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+			//            sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X WHERE X.MDA_DTL_SYS_ID NOT IN (SELECT DISTINCT MDA_DTL_SYS_ID FROM MDA_DETAIL)";
+
+			//            var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+			//        }
+
+			//        startIndex += 100;
+			//    }
+
+			//}
+
+			//if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "MDA_HEADER")
+			//{
+			//    dtOracle = DataContext.ExecuteQuery("SELECT MDA_SYS_ID, MDA_NO, DI_NO, PLANT_CD, MDA_DT, TRANS_SYS_ID, WH_CD, PARTY_NAME, DRIVER, VEHICLE_NO, MOBILE_NO, DIST, BAG_NOS, NETT_QTY, GROSS_QTY, ECHIT_NO, GST_NO, OUT_TIME, PLANT_ID, CREATED_DATETIME, IS_POSTED, DESP_PLACE " +
+			//        "FROM MDA_HEADER WHERE PLANT_ID = " + PlantId);
+
+			//    dtSql = DataContext.ExecuteQuery_SQL("SELECT MDA_SYS_ID, MDA_NO, DI_NO, PLANT_CD, MDA_DT, TRANS_SYS_ID, WH_CD, PARTY_NAME, DRIVER, VEHICLE_NO, MOBILE_NO, DIST, BAG_NOS, NETT_QTY, GROSS_QTY, ECHIT_NO, GST_NO, OUT_TIME, PLANT_ID, Created_DateTime, IS_POSTED, desp_place " +
+			//        "FROM MDA_HEADER WHERE PLANT_ID = " + PlantId);
+
+			//    table_RowsInOracleNotInSql = dtOracle.Clone();
+
+			//    var rowsInOracleNotInSql = from row1 in dtOracle.AsEnumerable()
+			//                               where !dtSql.AsEnumerable().Any(row2 => Convert.ToInt64(row2["MDA_SYS_ID"]) == Convert.ToInt64(row1["MDA_SYS_ID"]))
+			//                               select row1;
+
+			//    foreach (var row in rowsInOracleNotInSql)
+			//        table_RowsInOracleNotInSql.ImportRow(row);
+
+			//    int startIndex = 0;
+
+			//    while (startIndex < table_RowsInOracleNotInSql.Rows.Count)
+			//    {
+			//        DataTable nextBatch = table_RowsInOracleNotInSql.AsEnumerable().Skip(startIndex).Take(100).CopyToDataTable();
+
+			//        if (nextBatch != null && nextBatch.Rows.Count > 0)
+			//        {
+			//            var sqlQuery = "INSERT INTO MDA_HEADER ( MDA_SYS_ID, MDA_NO, DI_NO, PLANT_CD, MDA_DT, TRANS_SYS_ID, WH_CD, PARTY_NAME, DRIVER, VEHICLE_NO, MOBILE_NO, DIST, BAG_NOS, NETT_QTY, GROSS_QTY, ECHIT_NO, GST_NO, OUT_TIME, PLANT_ID, Created_DateTime, IS_POSTED, desp_place ) ";
+
+			//            var sqlQuery_Select = "";
+
+			//            foreach (DataRow dr in nextBatch.Rows)
+			//            {
+			//                sqlQuery_Select += $"SELECT {(dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0)} MDA_SYS_ID" +
+			//                    $", '{(dr["MDA_NO"] != DBNull.Value ? Convert.ToString(dr["MDA_NO"]) : "")}' MDA_NO" +
+			//                    $", '{(dr["DI_NO"] != DBNull.Value ? Convert.ToString(dr["DI_NO"]) : "")}' DI_NO" +
+			//                    $", '{(dr["PLANT_CD"] != DBNull.Value ? Convert.ToString(dr["PLANT_CD"]) : "")}' PLANT_CD" +
+			//                    $", STR_TO_DATE('{(dr["MDA_DT"] != DBNull.Value ? Convert.ToDateTime(dr["MDA_DT"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') MDA_DT" +
+			//                    $", {(dr["TRANS_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["TRANS_SYS_ID"]) : 0)} TRANS_SYS_ID" +
+			//                    $", '{(dr["WH_CD"] != DBNull.Value ? Convert.ToString(dr["WH_CD"]) : "")}' WH_CD" +
+			//                    $", '{(dr["PARTY_NAME"] != DBNull.Value ? Convert.ToString(dr["PARTY_NAME"]) : "")}' PARTY_NAME" +
+			//                    $", '{(dr["DRIVER"] != DBNull.Value ? Convert.ToString(dr["DRIVER"]) : "")}' DRIVER" +
+			//                    $", '{(dr["VEHICLE_NO"] != DBNull.Value ? Convert.ToString(dr["VEHICLE_NO"]) : "")}' VEHICLE_NO" +
+			//                    $", '{(dr["MOBILE_NO"] != DBNull.Value ? Convert.ToString(dr["MOBILE_NO"]) : "")}' MOBILE_NO" +
+			//                    $", {(dr["DIST"] != DBNull.Value ? Convert.ToInt32(dr["DIST"]) : 0)} DIST" +
+			//                    $", {(dr["BAG_NOS"] != DBNull.Value ? Convert.ToInt32(dr["BAG_NOS"]) : 0)} BAG_NOS" +
+			//                    $", {(dr["NETT_QTY"] != DBNull.Value ? Convert.ToInt32(dr["NETT_QTY"]) : 0)} NETT_QTY" +
+			//                    $", {(dr["GROSS_QTY"] != DBNull.Value ? Convert.ToInt32(dr["GROSS_QTY"]) : 0)} GROSS_QTY" +
+			//                    $", '{(dr["ECHIT_NO"] != DBNull.Value ? Convert.ToString(dr["ECHIT_NO"]) : "")}' ECHIT_NO" +
+			//                    $", '{(dr["GST_NO"] != DBNull.Value ? Convert.ToString(dr["GST_NO"]) : "")}' GST_NO" +
+			//                    $", STR_TO_DATE('{(dr["OUT_TIME"] != DBNull.Value ? Convert.ToDateTime(dr["OUT_TIME"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') OUT_TIME" +
+			//                    $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+			//                    $", STR_TO_DATE('{(dr["Created_DateTime"] != DBNull.Value ? Convert.ToDateTime(dr["Created_DateTime"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') Created_DateTime" +
+			//                    $", {(dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt32(dr["IS_POSTED"]) : 0)} IS_POSTED " +
+			//                    $", '{(dr["desp_place"] != DBNull.Value ? Convert.ToString(dr["desp_place"]) : "")}' desp_place " +
+			//                    $" FROM DUAL UNION ";
+			//            }
+
+			//            if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+			//                sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+			//            sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X WHERE X.MDA_SYS_ID NOT IN (SELECT DISTINCT MDA_SYS_ID FROM MDA_HEADER)";
+
+			//            var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+			//        }
+
+			//        startIndex += 100;
+			//    }
+
+			//}
+
+			//if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "FG_GATE_IN_OUT")
+			//{
+			//    dtOracle = DataContext.ExecuteQuery("SELECT GATE_SYS_ID, GATE_IN_DT, GATE_OUT_DT, INWARD_SYS_ID, MDA_SYS_ID, TRUCK_NO" +
+			//        ", DRIVER_ID_TYPE, DRIVER_ID_NUMBER, DRIVER_NAME, DRIVER_CONTACT, DRIVER_CHANGED, DRIVER_NAME_NEW, DRIVER_CONTACT_NEW" +
+			//        ", TRUCK_VALIDATION, RFSYSID, VERIFIED_DOCUMENTS, RFID_RECEIVE, VERIFIED_OFFICER_ID, CANCEL_GATE_IN, CANCEL_GATE_REASON" +
+			//        ", GATE_SYS_ID_OLD, IS_GOODS_TRANSFER, STATION_ID, PLANT_ID, CREATED_BY_ID, CREATED_DATETIME, IS_POSTED, MDA_SYS_IDS " +
+			//        "FROM FG_GATE_IN_OUT WHERE PLANT_ID = " + PlantId);
+
+			//    dtSql = DataContext.ExecuteQuery_SQL("SELECT GATE_SYS_ID, GATE_IN_DT, GATE_OUT_DT, INWARD_SYS_ID, MDA_SYS_ID, TRUCK_NO" +
+			//        ", DRIVER_ID_TYPE, DRIVER_ID_NUMBER, DRIVER_NAME, DRIVER_CONTACT, DRIVER_CHANGED, DRIVER_NAME_NEW, DRIVER_CONTACT_NEW" +
+			//        ", TRUCK_VALIDATION, RFSYSID, VERIFIED_DOCUMENTS, RFID_RECEIVE, VERIFIED_OFFICER_ID, CANCEL_GATE_IN, CANCEL_GATE_REASON" +
+			//        ", GATE_SYS_ID_OLD, IS_GOODS_TRANSFER, STATION_ID, PLANT_ID, Created_BY_ID, Created_DateTime, IS_POSTED, MDA_SYS_IDS " +
+			//        "FROM FG_GATE_IN_OUT WHERE PLANT_ID = " + PlantId);
+
+			//    table_RowsInOracleNotInSql = dtOracle.Clone();
+
+			//    var rowsInOracleNotInSql = from row1 in dtOracle.AsEnumerable()
+			//                               where !dtSql.AsEnumerable().Any(row2 => Convert.ToInt64(row2["GATE_SYS_ID"]) == Convert.ToInt64(row1["GATE_SYS_ID"]))
+			//                               select row1;
+
+			//    foreach (var row in rowsInOracleNotInSql)
+			//        table_RowsInOracleNotInSql.ImportRow(row);
+
+			//    int startIndex = 0;
+
+			//    while (startIndex < table_RowsInOracleNotInSql.Rows.Count)
+			//    {
+			//        DataTable nextBatch = table_RowsInOracleNotInSql.AsEnumerable().Skip(startIndex).Take(100).CopyToDataTable();
+
+			//        if (nextBatch != null && nextBatch.Rows.Count > 0)
+			//        {
+			//            var sqlQuery = "INSERT INTO FG_GATE_IN_OUT ( GATE_SYS_ID, GATE_IN_DT, GATE_OUT_DT, INWARD_SYS_ID, MDA_SYS_ID, TRUCK_NO" +
+			//        ", DRIVER_ID_TYPE, DRIVER_ID_NUMBER, DRIVER_NAME, DRIVER_CONTACT, DRIVER_CHANGED, DRIVER_NAME_NEW, DRIVER_CONTACT_NEW" +
+			//        ", TRUCK_VALIDATION, RFSYSID, VERIFIED_DOCUMENTS, RFID_RECEIVE, VERIFIED_OFFICER_ID, CANCEL_GATE_IN, CANCEL_GATE_REASON" +
+			//        ", GATE_SYS_ID_OLD, IS_GOODS_TRANSFER, STATION_ID, PLANT_ID, Created_BY_ID, Created_DateTime, IS_POSTED, MDA_SYS_IDS ) ";
+
+			//            var sqlQuery_Select = "";
+
+			//            foreach (DataRow dr in nextBatch.Rows)
+			//            {
+			//                sqlQuery_Select += $"SELECT {(dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0)} GATE_SYS_ID" +
+			//                    $", STR_TO_DATE('{(dr["GATE_IN_DT"] != DBNull.Value ? Convert.ToDateTime(dr["GATE_IN_DT"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') GATE_IN_DT" +
+			//                    $", STR_TO_DATE('{(dr["GATE_OUT_DT"] != DBNull.Value ? Convert.ToDateTime(dr["GATE_OUT_DT"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') GATE_OUT_DT" +
+			//                    $", {(dr["INWARD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["INWARD_SYS_ID"]) : 0)} INWARD_SYS_ID" +
+			//                    $", {(dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0)} MDA_SYS_ID" +
+			//                    $", '{(dr["TRUCK_NO"] != DBNull.Value ? Convert.ToString(dr["TRUCK_NO"]) : "")}' TRUCK_NO" +
+			//                    $", '{(dr["DRIVER_ID_TYPE"] != DBNull.Value ? Convert.ToString(dr["DRIVER_ID_TYPE"]) : "")}' DRIVER_ID_TYPE" +
+			//                    $", '{(dr["DRIVER_ID_NUMBER"] != DBNull.Value ? Convert.ToString(dr["DRIVER_ID_NUMBER"]) : "")}' DRIVER_ID_NUMBER" +
+			//                    $", '{(dr["DRIVER_NAME"] != DBNull.Value ? Convert.ToString(dr["DRIVER_NAME"]) : "")}' DRIVER_NAME" +
+			//                    $", '{(dr["DRIVER_CONTACT"] != DBNull.Value ? Convert.ToString(dr["DRIVER_CONTACT"]) : "")}' DRIVER_CONTACT" +
+			//                    $", {(dr["DRIVER_CHANGED"] != DBNull.Value ? Convert.ToInt32(dr["DRIVER_CHANGED"]) : 0)} DRIVER_CHANGED" +
+			//                    $", '{(dr["DRIVER_NAME_NEW"] != DBNull.Value ? Convert.ToString(dr["DRIVER_NAME_NEW"]) : "")}' DRIVER_NAME_NEW" +
+			//                    $", '{(dr["DRIVER_CONTACT_NEW"] != DBNull.Value ? Convert.ToString(dr["DRIVER_CONTACT_NEW"]) : "")}' DRIVER_CONTACT_NEW" +
+			//                    $", {(dr["TRUCK_VALIDATION"] != DBNull.Value ? Convert.ToInt32(dr["TRUCK_VALIDATION"]) : 0)} TRUCK_VALIDATION" +
+			//                    $", {(dr["RFSYSID"] != DBNull.Value ? Convert.ToInt32(dr["RFSYSID"]) : 0)} RFSYSID" +
+			//                    $", {(dr["VERIFIED_DOCUMENTS"] != DBNull.Value ? Convert.ToInt32(dr["VERIFIED_DOCUMENTS"]) : 0)} VERIFIED_DOCUMENTS" +
+			//                    $", {(dr["RFID_RECEIVE"] != DBNull.Value ? Convert.ToInt32(dr["RFID_RECEIVE"]) : 0)} RFID_RECEIVE" +
+			//                    $", '{(dr["VERIFIED_OFFICER_ID"] != DBNull.Value ? Convert.ToString(dr["VERIFIED_OFFICER_ID"]) : "")}' VERIFIED_OFFICER_ID" +
+			//                    $", {(dr["CANCEL_GATE_IN"] != DBNull.Value ? Convert.ToInt32(dr["CANCEL_GATE_IN"]) : 0)} CANCEL_GATE_IN" +
+			//                    $", '{(dr["CANCEL_GATE_REASON"] != DBNull.Value ? Convert.ToString(dr["CANCEL_GATE_REASON"]) : "")}' CANCEL_GATE_REASON" +
+			//                    $", {(dr["GATE_SYS_ID_OLD"] != DBNull.Value ? Convert.ToInt32(dr["GATE_SYS_ID_OLD"]) : 0)} GATE_SYS_ID_OLD" +
+			//                    $", {(dr["IS_GOODS_TRANSFER"] != DBNull.Value ? Convert.ToInt32(dr["IS_GOODS_TRANSFER"]) : 0)} IS_GOODS_TRANSFER" +
+			//                    $", {(dr["STATION_ID"] != DBNull.Value ? Convert.ToInt32(dr["STATION_ID"]) : 0)} STATION_ID" +
+			//                    $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+			//                    $", {(dr["Created_BY_ID"] != DBNull.Value ? Convert.ToInt32(dr["Created_BY_ID"]) : 0)} Created_BY_ID" +
+			//                    $", STR_TO_DATE('{(dr["Created_DateTime"] != DBNull.Value ? Convert.ToDateTime(dr["Created_DateTime"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') Created_DateTime" +
+			//                    $", {(dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt32(dr["IS_POSTED"]) : 0)} IS_POSTED" +
+			//                    $", '{(dr["MDA_SYS_IDS"] != DBNull.Value ? Convert.ToString(dr["MDA_SYS_IDS"]) : "")}' MDA_SYS_IDS " +
+			//                    $" FROM DUAL UNION ";
+			//            }
+
+			//            if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+			//                sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+			//            sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
+
+			//            var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+			//        }
+
+			//        startIndex += 100;
+			//    }
+
+			//}
+
+			//if (!string.IsNullOrEmpty(tableName) && tableName.ToUpper() == "FG_WEIGHMENT_DETAIL")
+			//{
+			//    dtOracle = DataContext.ExecuteQuery("SELECT WT_SYS_ID, GATE_SYS_ID, GROSS_WT, GROSS_WT_DT, GROSS_WT_MANUALLY, GROSS_WT_NOTE, TARE_WT, TARE_WT_DT, TARE_WT_MANUALLY, TARE_WT_NOTE, NET_WT, OUT_OF_TOLERANCE_WT, TOLERANCE_WT, ALLOW_TOLERANCE_WT, STATION_ID, PLANT_ID, CREATED_BY_ID, CREATED_DATETIME, IS_POSTED " +
+			//        "FROM FG_WEIGHMENT_DETAIL WHERE PLANT_ID = " + PlantId);
+
+			//    dtSql = DataContext.ExecuteQuery_SQL("SELECT WT_SYS_ID, GATE_SYS_ID, GROSS_WT, GROSS_WT_DT, GROSS_WT_MANUALLY, GROSS_WT_NOTE, TARE_WT, TARE_WT_DT, TARE_WT_MANUALLY, TARE_WT_NOTE, NET_WT, OUT_OF_TOLERANCE_WT, TOLERANCE_WT, ALLOW_TOLERANCE_WT, STATION_ID, PLANT_ID, Created_BY_ID, Created_DateTime, IS_POSTED " +
+			//        "FROM FG_WEIGHMENT_DETAIL WHERE PLANT_ID = " + PlantId);
+
+			//    table_RowsInOracleNotInSql = dtOracle.Clone();
+
+			//    var rowsInOracleNotInSql = from row1 in dtOracle.AsEnumerable()
+			//                               where !dtSql.AsEnumerable().Any(row2 => Convert.ToInt64(row2["WT_SYS_ID"]) == Convert.ToInt64(row1["WT_SYS_ID"]))
+			//                               select row1;
+
+			//    foreach (var row in rowsInOracleNotInSql)
+			//        table_RowsInOracleNotInSql.ImportRow(row);
+
+			//    int startIndex = 0;
+
+			//    while (startIndex < table_RowsInOracleNotInSql.Rows.Count)
+			//    {
+			//        DataTable nextBatch = table_RowsInOracleNotInSql.AsEnumerable().Skip(startIndex).Take(100).CopyToDataTable();
+
+			//        if (nextBatch != null && nextBatch.Rows.Count > 0)
+			//        {
+			//            var sqlQuery = "INSERT INTO FG_WEIGHMENT_DETAIL ( WT_SYS_ID, GATE_SYS_ID, GROSS_WT, GROSS_WT_DT, GROSS_WT_MANUALLY, GROSS_WT_NOTE, TARE_WT, TARE_WT_DT, TARE_WT_MANUALLY, TARE_WT_NOTE, NET_WT, OUT_OF_TOLERANCE_WT, TOLERANCE_WT, ALLOW_TOLERANCE_WT, STATION_ID, PLANT_ID, Created_BY_ID, Created_DateTime, IS_POSTED ) ";
+
+			//            var sqlQuery_Select = "";
+
+			//            foreach (DataRow dr in nextBatch.Rows)
+			//            {
+			//                sqlQuery_Select += $"SELECT {(dr["WT_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["WT_SYS_ID"]) : 0)} WT_SYS_ID" +
+			//                    $", {(dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0)} GATE_SYS_ID" +
+			//                    $", {(dr["GROSS_WT"] != DBNull.Value ? Convert.ToDouble(dr["GROSS_WT"]) : 0)} GROSS_WT" +
+			//                    $", STR_TO_DATE('{(dr["GROSS_WT_DT"] != DBNull.Value ? Convert.ToDateTime(dr["GROSS_WT_DT"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') GROSS_WT_DT" +
+			//                    $", {(dr["GROSS_WT_MANUALLY"] != DBNull.Value ? Convert.ToInt64(dr["GROSS_WT_MANUALLY"]) : 0)} GROSS_WT_MANUALLY" +
+			//                    $", '{(dr["GROSS_WT_NOTE"] != DBNull.Value ? Convert.ToString(dr["GROSS_WT_NOTE"]) : "")}' GROSS_WT_NOTE" +
+			//                    $", {(dr["TARE_WT"] != DBNull.Value ? Convert.ToDouble(dr["TARE_WT"]) : 0)} TARE_WT" +
+			//                    $", STR_TO_DATE('{(dr["TARE_WT_DT"] != DBNull.Value ? Convert.ToDateTime(dr["TARE_WT_DT"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') TARE_WT_DT" +
+			//                    $", {(dr["TARE_WT_MANUALLY"] != DBNull.Value ? Convert.ToInt64(dr["TARE_WT_MANUALLY"]) : 0)} TARE_WT_MANUALLY" +
+			//                    $", '{(dr["TARE_WT_NOTE"] != DBNull.Value ? Convert.ToString(dr["TARE_WT_NOTE"]) : "")}' TARE_WT_NOTE" +
+			//                    $", {(dr["NET_WT"] != DBNull.Value ? Convert.ToDouble(dr["NET_WT"]) : 0)} NET_WT" +
+			//                    $", {(dr["OUT_OF_TOLERANCE_WT"] != DBNull.Value ? Convert.ToInt32(dr["OUT_OF_TOLERANCE_WT"]) : 0)} OUT_OF_TOLERANCE_WT" +
+			//                    $", {(dr["TOLERANCE_WT"] != DBNull.Value ? Convert.ToDouble(dr["TOLERANCE_WT"]) : 0)} TOLERANCE_WT" +
+			//                    $", {(dr["ALLOW_TOLERANCE_WT"] != DBNull.Value ? Convert.ToInt32(dr["ALLOW_TOLERANCE_WT"]) : 0)} ALLOW_TOLERANCE_WT" +
+			//                    $", {(dr["STATION_ID"] != DBNull.Value ? Convert.ToInt32(dr["STATION_ID"]) : 0)} STATION_ID" +
+			//                    $", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0)} PLANT_ID" +
+			//                    $", {(dr["Created_BY_ID"] != DBNull.Value ? Convert.ToInt32(dr["Created_BY_ID"]) : 0)} Created_BY_ID" +
+			//                    $", STR_TO_DATE('{(dr["Created_DateTime"] != DBNull.Value ? Convert.ToDateTime(dr["Created_DateTime"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm:ss").Replace("/", "-")}', '%d-%m-%Y %H:%i:%s') Created_DateTime" +
+			//                    $", {(dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt32(dr["IS_POSTED"]) : 0)} IS_POSTED " +
+			//                    $" FROM DUAL UNION ";
+			//            }
+
+			//            if (!string.IsNullOrEmpty(sqlQuery_Select) && sqlQuery_Select.Contains("DUAL UNION"))
+			//                sqlQuery_Select = sqlQuery_Select.Substring(0, (sqlQuery_Select.Length - (sqlQuery_Select.Length - sqlQuery_Select.LastIndexOf("UNION"))));
+
+			//            sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
+
+			//            var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+			//        }
+
+			//        startIndex += 100;
+			//    }
+
+			//}
+
+			return Ok();
+		}
+
 	}
 
 }

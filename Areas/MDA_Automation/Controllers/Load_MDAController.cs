@@ -10,7 +10,7 @@ using VendorQRGeneration.Infra.Services;
 
 namespace Dispatch_System.Areas.Admin.Controllers
 {
-    [Area("MDA_Automation")]
+	[Area("MDA_Automation")]
 	public class Load_MDAController : BaseController<ResponseModel<MDA>>
 	{
 		private readonly SocketBackgroundTask _socketBackgroundTask;
@@ -26,8 +26,8 @@ namespace Dispatch_System.Areas.Admin.Controllers
 		{
 			try
 			{
-				//if (_socketBackgroundTask.IsRunning())
-				_socketBackgroundTask.StopWork();
+				if (_socketBackgroundTask.IsRunning())
+					_socketBackgroundTask.StopWork();
 				_sharedDataService.ClearScanData();
 			}
 			catch (Exception ex) { }
@@ -40,7 +40,8 @@ namespace Dispatch_System.Areas.Admin.Controllers
 		{
 			try
 			{
-				_socketBackgroundTask.StopWork();
+				if (_socketBackgroundTask.IsRunning())
+					_socketBackgroundTask.StopWork();
 				_sharedDataService.ClearScanData();
 			}
 			catch (Exception ex) { }
@@ -80,7 +81,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 				if (dt == null || dt.Rows.Count == 0)
 					LogService.LogInsert(GetCurrentAction(), "No any Records from PC_LOAD_MDA_GET_NEW | Gate_In_Out_Id : " + 0 + ", MDA_Id : " + 0 + ", searchTerm : " + searchTerm + "", null);
 			}
-			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "Get MDA", ex); }
+			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
 
 			if (list != null && list.Count > 0)
 				if (!string.IsNullOrEmpty(type) && type == "S") return Json(list);
@@ -94,7 +95,8 @@ namespace Dispatch_System.Areas.Admin.Controllers
 		{
 			try
 			{
-				_socketBackgroundTask.StopWork();
+				if (_socketBackgroundTask.IsRunning())
+					_socketBackgroundTask.StopWork();
 				_sharedDataService.ClearScanData();
 			}
 			catch (Exception ex) { }
@@ -112,6 +114,29 @@ namespace Dispatch_System.Areas.Admin.Controllers
 				oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
 
 				DataTable dt = DataContext.ExecuteStoredProcedure_DataTable_SQL("PC_LOAD_MDA_GET_NEW", oParams);
+
+				//if (dt != null && dt.Rows.Count > 0)
+				//	objMDA = new MDA_Header()
+				//	{
+				//		Id = dt.Rows[0]["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["MDA_SYS_ID"]) : 0,
+				//		GateInOut_Id = dt.Rows[0]["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["GATE_SYS_ID"]) : 0,
+				//		Trans_Sys_Id = dt.Rows[0]["TRANS_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["TRANS_SYS_ID"]) : 0,
+				//		Vehicle_No = dt.Rows[0]["VEHICLE_NO"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["VEHICLE_NO"]) : "",
+				//		Mda_No = dt.Rows[0]["MDA_No"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["MDA_No"]) : "",
+				//		Plant_Cd = dt.Rows[0]["Plant_CD"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Plant_CD"]) : "",
+				//		//Mda_Dt = dt.Rows[0]["MDA_DT"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["MDA_DT"]) : "",
+				//		Driver = dt.Rows[0]["DRIVER_NAME"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["DRIVER_NAME"]) : "",
+				//		Mobile_No = dt.Rows[0]["DRIVER_CONTACT"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["DRIVER_CONTACT"]) : "",
+				//		Wh_Cd = dt.Rows[0]["Wh_Cd"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["Wh_Cd"]) : "",
+				//		Party_Name = dt.Rows[0]["PARTY_NAME"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["PARTY_NAME"]) : "",
+				//		tptr_cd = dt.Rows[0]["tptr_cd"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["tptr_cd"]) : "",
+				//		tptr_name = dt.Rows[0]["tptr_name"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["tptr_name"]) : "",
+				//		Desp_Place = dt.Rows[0]["DESP_PLACE"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["DESP_PLACE"]) : "",
+				//		Bag_Nos = dt.Rows[0]["Bag_Nos"] != DBNull.Value ? Convert.ToDecimal(dt.Rows[0]["Bag_Nos"]) : 0,
+				//		Nett_Qty = dt.Rows[0]["Nett_Qty"] != DBNull.Value ? Convert.ToDecimal(dt.Rows[0]["Nett_Qty"]) : 0,
+				//		Gross_Qty = dt.Rows[0]["Gross_Qty"] != DBNull.Value ? Convert.ToDecimal(dt.Rows[0]["Gross_Qty"]) : 0,
+				//		Dist = dt.Rows[0]["DIST"] != DBNull.Value ? Convert.ToInt64(dt.Rows[0]["DIST"]) : 0
+				//	};
 
 				if (dt != null && dt.Rows.Count > 0)
 					foreach (DataRow dr in dt.Rows)
@@ -150,21 +175,13 @@ namespace Dispatch_System.Areas.Admin.Controllers
 				if (dt == null || dt.Rows.Count == 0)
 					LogService.LogInsert(GetCurrentAction(), "No any Records from PC_LOAD_MDA_GET_NEW | Gate_In_Out_Id : " + Gate_In_Out_Id + ", MDA_Id : " + MDA_Id + ", searchTerm : " + searchTerm + "", null);
 			}
-			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "Load MDA Dtls", ex); }
-
-			if (listMDA_Dtls == null) listMDA_Dtls = new List<MDA_Dtls>();
+			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
 
 			if (listMDA_Dtls != null) listMDA_Dtls = listMDA_Dtls.OrderBy(x => x.mda_order).ToList();
 
-			if (MDA_Id > 0 && listMDA_Dtls != null && listMDA_Dtls.Count() > 0)
-			{
-				try { _socketBackgroundTask.SetMDA(listMDA_Dtls.FirstOrDefault()); } catch { }
-
-				try { _socketBackgroundTask.SendToPrinter(listMDA_Dtls.FirstOrDefault().mda_order.ToString(), listMDA_Dtls.FirstOrDefault().Party_Name.ToString(), listMDA_Dtls.FirstOrDefault().Desp_Place.ToString()); } catch { }
-			}
-
 			return Json(listMDA_Dtls);
 		}
+
 
 		[HttpGet]
 		public IActionResult Partial_ViewQR(long mda_id = 0, long gatein_id = 0, long prod_id = 0, string type = "")
@@ -190,15 +207,13 @@ namespace Dispatch_System.Areas.Admin.Controllers
 								&& (!string.IsNullOrEmpty(type) && type == "R" ? ((dr["LOG_Type"] != DBNull.Value ? Convert.ToString(dr["LOG_Type"]) : "") == "R" ? true : false) : true))
 								list.Add(new ShipperBatch()
 								{
-									SrNo = dr["SrNo"] != DBNull.Value ? Convert.ToInt64(dr["SrNo"]) : 0,
-									Id = dr["Id"] != DBNull.Value ? Convert.ToInt64(dr["Id"]) : 0,
 									ShipperQRCode = dr["QRCODE"] != DBNull.Value ? Convert.ToString(dr["QRCODE"]) : "",
 									Status = dr["LOG_Type"] != DBNull.Value ? Convert.ToString(dr["LOG_Type"]) : "",
 									Reject_Reason = dr["REJECT_REASON"] != DBNull.Value ? Convert.ToString(dr["REJECT_REASON"]) : ""
 								});
 
 				}
-				catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "Partial View QR", ex); }
+				catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
 			}
 
 			list = list == null ? new List<ShipperBatch>() : list;
@@ -206,16 +221,10 @@ namespace Dispatch_System.Areas.Admin.Controllers
 			return PartialView("_Partial_ViewQR", list);
 		}
 
+
 		[HttpGet]
 		public IActionResult Check_MDA_Update(long MDA_Id = 0, long GateInOut_Id = 0, bool isConfirm_Update = false)
 		{
-			try
-			{
-				_socketBackgroundTask.StopWork();
-				_sharedDataService.ClearScanData();
-			}
-			catch (Exception ex) { }
-
 			var isUpdate = false;
 
 			if (GateInOut_Id > 0 && MDA_Id > 0)
@@ -297,36 +306,6 @@ namespace Dispatch_System.Areas.Admin.Controllers
 									isUpdate = true;
 
 								if (objMDA_Header["GROSS_QTY"] != null && ((JValue)objMDA_Header["GROSS_QTY"]).Value != null && Convert.ToInt32(((JValue)objMDA_Header["GROSS_QTY"]).Value).ToString().Trim() != objMDA.Gross_Qty.ToString())
-									isUpdate = true;
-
-								if (objMDA_Header["TPTR_CD"] != null && ((JValue)objMDA_Header["TPTR_CD"]).Value != null
-									&& Convert.ToString(((JValue)objMDA_Header["TPTR_CD"]).Value).ToString().Trim() != objMDA.tptr_cd.ToString())
-									isUpdate = true;
-
-								if (objMDA_Header["TPTR_NAME"] != null && ((JValue)objMDA_Header["TPTR_NAME"]).Value != null
-									&& Convert.ToString(((JValue)objMDA_Header["TPTR_NAME"]).Value).ToString().ToUpper().Trim() != objMDA.tptr_name.ToUpper().ToString())
-									isUpdate = true;
-
-								if (objMDA_Header["WH_CD"] != null && ((JValue)objMDA_Header["WH_CD"]).Value != null
-									&& Convert.ToString(((JValue)objMDA_Header["WH_CD"]).Value).ToString().ToUpper().Trim() != objMDA.Wh_Cd.ToUpper().ToString())
-									isUpdate = true;
-
-								if (objMDA_Header["PARTY_NAME"] != null && ((JValue)objMDA_Header["PARTY_NAME"]).Value != null
-									&& Convert.ToString(((JValue)objMDA_Header["PARTY_NAME"]).Value).ToString().ToUpper().Trim() != objMDA.Party_Name.ToUpper().ToString())
-									isUpdate = true;
-
-								if (objMDA_Header["DRIVER"] != null && ((JValue)objMDA_Header["DRIVER"]).Value != null
-									&& Convert.ToString(((JValue)objMDA_Header["DRIVER"]).Value).ToString().ToUpper().Trim() != objMDA.Driver.ToUpper().ToString())
-									isUpdate = true;
-
-								if (objMDA_Header["MOBILE_NO"] != null && ((JValue)objMDA_Header["MOBILE_NO"]).Value != null
-									&& Convert.ToString(((JValue)objMDA_Header["MOBILE_NO"]).Value).ToString().ToUpper().Trim() != objMDA.Mobile_No.ToUpper().ToString())
-									isUpdate = true;
-
-								if (objMDA_Header["DESP_PLACE"] != null && ((JValue)objMDA_Header["DESP_PLACE"]).Value != null && Convert.ToString(((JValue)objMDA_Header["DESP_PLACE"]).Value).ToString().Trim() != objMDA.Desp_Place.ToString())
-									isUpdate = true;
-
-								if (objMDA_Header["DIST"] != null && ((JValue)objMDA_Header["DIST"]).Value != null && Convert.ToDecimal(((JValue)objMDA_Header["DIST"]).Value.ToString().Trim()) != objMDA.Dist)
 									isUpdate = true;
 
 								//isUpdate = true;
@@ -439,7 +418,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 						}
 					}
 				}
-				catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "Check MDA Update", ex); isUpdate = false; }
+				catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); isUpdate = false; }
 			}
 
 			CommonViewModel.IsConfirm = true;
@@ -451,6 +430,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 			return Json(CommonViewModel);
 		}
+
 
 		[HttpPost]
 		public async Task<JsonResult> AddQty(MDA_Dtls viewModel)
@@ -506,9 +486,9 @@ namespace Dispatch_System.Areas.Admin.Controllers
 				if (dt != null && dt.Rows.Count > 0)
 				{
 					var client = new HttpClient();
-					var request = new HttpRequestMessage(HttpMethod.Post, $"{AppHttpContextAccessor.API_Url_WMS.TrimEnd('/')}/DeliveryOrder");
+					var request = new HttpRequestMessage(HttpMethod.Post, "http://10.23.91.31/IFFCOKLLDELIVERYAPI/api/IFFCO/DeliveryOrder");
 
-					request.Headers.Add("Authorization", $"Basic {AppHttpContextAccessor.API_Authorization_WMS}");
+					request.Headers.Add("Authorization", "Basic SUZGQ09LTEw6SUZGQzBLTExAMjAyMw==");
 
 					if (viewModel.Is_BypassWMS == false)
 						try
@@ -634,9 +614,9 @@ namespace Dispatch_System.Areas.Admin.Controllers
 						//_socketBackgroundTask.SendToPrinter(dt.Rows[0]["MDA_ORDER"].ToString(), dt.Rows[0]["PARTY_NAME"].ToString(), dt.Rows[0]["DESP_PLACE"].ToString());
 
 						var client = new HttpClient();
-						var request = new HttpRequestMessage(HttpMethod.Post, $"{AppHttpContextAccessor.API_Url_WMS.TrimEnd('/')}/Product");
+						var request = new HttpRequestMessage(HttpMethod.Post, "http://10.23.91.31/IFFCOKLLDELIVERYAPI/api/IFFCO/Product");
 
-						request.Headers.Add("Authorization", $"Basic {AppHttpContextAccessor.API_Authorization_WMS}");
+						request.Headers.Add("Authorization", "Basic SUZGQ09LTEw6SUZGQzBLTExAMjAyMw==");
 
 						try
 						{
@@ -678,13 +658,15 @@ namespace Dispatch_System.Areas.Admin.Controllers
 									//}
 
 								}
+
 							}
+
 						}
 						catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
 
-						request = new HttpRequestMessage(HttpMethod.Post, $"{AppHttpContextAccessor.API_Url_WMS.TrimEnd('/')}/DeliveryOrder");
+						request = new HttpRequestMessage(HttpMethod.Post, "http://10.23.91.31/IFFCOKLLDELIVERYAPI/api/IFFCO/DeliveryOrder");
 
-						request.Headers.Add("Authorization", $"Basic {AppHttpContextAccessor.API_Authorization_WMS}");
+						request.Headers.Add("Authorization", "Basic SUZGQ09LTEw6SUZGQzBLTExAMjAyMw==");
 
 						try
 						{
@@ -692,7 +674,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 							foreach (DataRow dr in dt.Rows)
 							{
-								var mda_date = DateTime.ParseExact(dr["MDA_DT"].ToString(), "dd/MM/yyyy", CultureInfo.InvariantCulture);
+								var mda_date = DateTime.ParseExact(dr["MDA_DT"].ToString(), "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
 
 								DataRow[] filteredRows = dt.AsEnumerable()
 									.Where(row => row.Field<Int32>("GATE_SYS_ID") == viewModel.GateInOut_Id
@@ -703,7 +685,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 								{
 									listObj.Add("{\"TRUCK NO\": \"" + dr["VEHICLE_NO"] + "\",\"MDA NO\": \"" + dr["MDA_NO"] + "\",\"MDA DATE\": \"" + mda_date.ToString("yyyy-MM-dd HH:mm:ss") + "\"" +
 										",\"DEL TYPE\": \"D\",\"SKU CODE\": \"" + filteredRows[i]["SKU_CODE"] + "\",\"SKU NAME\": \"" + filteredRows[i]["SKU_NAME"] + "\"" +
-										",\"BOTTLE QTY\": \"" + Convert.ToInt32(filteredRows[i]["BAG_NOS"]) + "\",\"CARTON QTY\": \"" + Convert.ToInt32(filteredRows[i]["REQUIRED_SHIPPER"]) + "\"" +
+										",\"BOTTLE QTY\": \"" + Convert.ToInt32(filteredRows[i]["BAG_NOS"]) + "\",\"CARTON QTY\": \"" + Convert.ToInt32(filteredRows[i]["SHIP_PER_PALLET"]) + "\"" +
 										",\"LOADING BAY\": \"" + AppHttpContextAccessor.Loading_Bay + "\",\"ORDER\": \"1\",\"STATUS CODE\": \"10\"\r\n}");
 								}
 
@@ -915,20 +897,18 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 								_sharedDataService.ClearScanData();
 
-								//if (dt != null && dt.Rows.Count > 0)
-								//_sharedDataService.AddOrUpdate(list.AsEnumerable().OrderBy(x => x.SrNo)
-								//	.Select(x => (x.SrNo, x.ShipperQRCode, (x.Batch_no == "S" ? "OK" : "NOK"), x.Id, requiredShipper, loaddedShipper, rejectShipper)).ToList());
-
 								if (dt != null && dt.Rows.Count > 0)
 									_sharedDataService.AddOrUpdate(list.AsEnumerable().OrderBy(x => x.SrNo)
-										.Select(x => (x.ShipperQRCode, (x.Batch_no == "S" ? "OK" : "NOK"), x.Id, requiredShipper, loaddedShipper, rejectShipper)).ToList());
+										.Select(x => (x.SrNo, x.ShipperQRCode, (x.Batch_no == "S" ? "OK" : "NOK"), x.Id, requiredShipper, loaddedShipper, rejectShipper)).ToList());
 
-								//isRunning = _socketBackgroundTask.IsRunning();
+								isRunning = _socketBackgroundTask.IsRunning();
 
-								//if (!isRunning) 
-								await _socketBackgroundTask.StartWork();
+								////if (!isRunning) 
+								//await _socketBackgroundTask.StartWork();
 
-								Thread.Sleep(1000);
+								//Thread.Sleep(Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "1") * 1000);
+
+								Task.Run(() => _socketBackgroundTask.StartWork()).Wait();
 							}
 							else
 							{
@@ -986,7 +966,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
-		public async Task<JsonResult> UpdateProgress(long seqNo = 0, string missingNo = null)
+		public async Task<JsonResult> UpdateProgress(long seqNo = 0)
 		{
 			try
 			{
@@ -995,68 +975,24 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 				CommonViewModel.Data5 = _socketBackgroundTask.IsRunning();
 
-				List<(long key, string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)>
-					list = new List<(long key, string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)>();
-
-				if (_sharedDataService.GetScanData() != null && _sharedDataService.GetScanData().Count() > 0)
-				{
-					try
+				if (_socketBackgroundTask.IsRunning())
+					CommonViewModel.Data1 = _sharedDataService.GetScanData().Where(x => x.Key > seqNo).Select(x => new
 					{
-						if (!string.IsNullOrEmpty(missingNo))
-						{
-							string[] missingNumbers = missingNo.Split('|');
-
-							long[] missingNumbersLong = missingNumbers.Select(long.Parse).ToArray();
-
-							list = _sharedDataService.GetScanData().Where(x => missingNumbersLong.Contains(x.Key))
-								.Select(kvp => (key: kvp.Key, qr_code: kvp.Value.qr_code, flag: kvp.Value.flag, id: kvp.Value.id, requiredShipper: kvp.Value.requiredShipper, loaddedShipper: kvp.Value.loaddedShipper, rejectShipper: kvp.Value.rejectShipper))
-								.ToList().OrderByDescending(x => x.key).ToList();
-						}
-					}
-					catch { }
-
-					var listCurrent = _sharedDataService.GetScanData().Where(x => x.Key > seqNo)
-						.Select(kvp => (key: kvp.Key, qr_code: kvp.Value.qr_code, flag: kvp.Value.flag, id: kvp.Value.id, requiredShipper: kvp.Value.requiredShipper, loaddedShipper: kvp.Value.loaddedShipper, rejectShipper: kvp.Value.rejectShipper))
-						.OrderByDescending(x => x.key).ToList();
-
-					if (list == null)
-						list = new List<(long key, string qr_code, string flag, long id, long requiredShipper, long loaddedShipper, long rejectShipper)>();
-
-					if (listCurrent != null && listCurrent.Count() > 0)
-						list.InsertRange(0, listCurrent);
-
-					CommonViewModel.Data1 = list.Select(x => new
-					{
-						No = x.key,
-						Text = x.qr_code,
-						Success = x.flag,
-						Id = x.id,
-						//RequiredShipper = x.requiredShipper,
-						//LoaddedShipper = x.loaddedShipper,
-						//RejectShipper = x.rejectShipper
+						No = x.Key,
+						Text = x.Value.qr_code,
+						Success = x.Value.flag,
+						Id = x.Value.id,
+						RequiredShipper = x.Value.requiredShipper,
+						LoaddedShipper = x.Value.loaddedShipper,
+						RejectShipper = x.Value.rejectShipper
 					}).ToList();
-
-					var obj = (_sharedDataService != null && _sharedDataService.GetScanData().Count() > 0
-								? _sharedDataService.GetScanData().OrderByDescending(x => x.Key)
-								.Select(x => (x.Key, x.Value.qr_code, x.Value.flag, x.Value.id, x.Value.requiredShipper, x.Value.loaddedShipper, x.Value.rejectShipper))
-								.FirstOrDefault() : default);
-
-					CommonViewModel.Data2 = new
-					{
-						No = obj != default ? obj.Key : 0,
-						RequiredShipper = obj != default ? obj.requiredShipper : 0,
-						LoaddedShipper = obj != default ? obj.loaddedShipper : 0,
-						RejectShipper = obj != default ? obj.rejectShipper : 0,
-						IsCompleted = list.Any(x => x.flag == "COMPLETED")
-					};
-
-				}
 				else
 					CommonViewModel.Message = _socketBackgroundTask.ErrorMessage();
 
 				try
 				{
-					if (_socketBackgroundTask.GetMDA() != null && list != default && list.Any(x => x.flag == "COMPLETED"))
+					if (_socketBackgroundTask.GetMDA() != null && CommonViewModel.Data1 != null
+						&& Convert.ToString(CommonViewModel.Data1.Success) == "COMPLETED")
 					{
 						var oParams = new List<MySqlParameter>();
 
@@ -1119,22 +1055,23 @@ namespace Dispatch_System.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
-		public async Task<JsonResult> StopLoading(MDA_Dtls viewModel = null)
+		public async Task<JsonResult> StopLoading(MDA_Dtls viewModel)
 		{
 			try
 			{
 				//if (_socketBackgroundTask.IsRunning())
 				_socketBackgroundTask.StopWork();
 
-				if (viewModel != null && viewModel.GateInOut_Id > 0 && viewModel.Mda_Id > 0)
+				var objMDA = new MDA_Header();
+				var listMDA_Dtls = new List<MDA_Dtls>();
+
+				if (viewModel.GateInOut_Id > 0 && viewModel.Mda_Id > 0)
 				{
-					//var objMDA = new MDA_Header();
-					//var listMDA_Dtls = new List<MDA_Dtls>();
 
 					//var client = new HttpClient();
-					//var request = new HttpRequestMessage(HttpMethod.Post, $"{AppHttpContextAccessor.API_Url_WMS.TrimEnd('/')}/DeliveryOrder");
+					//var request = new HttpRequestMessage(HttpMethod.Post, "http://10.23.91.31/IFFCOKLLDELIVERYAPI/api/IFFCO/DeliveryOrder");
 
-					//request.Headers.Add("Authorization", $"Basic {AppHttpContextAccessor.API_Authorization_WMS}");
+					//request.Headers.Add("Authorization", "Basic SUZGQ09LTEw6SUZGQzBLTExAMjAyMw==");
 
 					//try
 					//{
@@ -1224,8 +1161,8 @@ namespace Dispatch_System.Areas.Admin.Controllers
 		{
 			try
 			{
-				//if (_socketBackgroundTask.IsRunning())
-				_socketBackgroundTask.StopWork();
+				if (_socketBackgroundTask.IsRunning())
+					_socketBackgroundTask.StopWork();
 
 				//_sharedDataService.ClearScanData();
 
@@ -1246,9 +1183,9 @@ namespace Dispatch_System.Areas.Admin.Controllers
 					if (dt != null && dt.Rows.Count > 0)
 					{
 						var client = new HttpClient();
-						var request = new HttpRequestMessage(HttpMethod.Post, $"{AppHttpContextAccessor.API_Url_WMS.TrimEnd('/')}/DeliveryOrder");
+						var request = new HttpRequestMessage(HttpMethod.Post, "http://10.23.91.31/IFFCOKLLDELIVERYAPI/api/IFFCO/DeliveryOrder");
 
-						request.Headers.Add("Authorization", $"Basic {AppHttpContextAccessor.API_Authorization_WMS}");
+						request.Headers.Add("Authorization", "Basic SUZGQ09LTEw6SUZGQzBLTExAMjAyMw==");
 
 						try
 						{
@@ -1403,12 +1340,14 @@ namespace Dispatch_System.Areas.Admin.Controllers
 			return Json(CommonViewModel);
 		}
 
+
+
 		[HttpGet]
-		public IActionResult Check_QR_Code(string srNo = null, long mda_id = 0, long mda_dtls_id = 0, long gatein_id = 0, long prod_id = 0, string qr_code = "", string missingNo = null)
+		public IActionResult Check_QR_Code(long mda_id = 0, long mda_dtls_id = 0, long gatein_id = 0, long prod_id = 0, string qr_code = "")
 		{
 			try
 			{
-				try { _socketBackgroundTask.StopWork(); } catch (Exception ex) { }
+				_socketBackgroundTask.StopWork();
 
 				if (gatein_id > 0 && mda_id > 0 && !string.IsNullOrEmpty(qr_code))
 				{
@@ -1424,15 +1363,6 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 					//var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_SHIPPER_QRCODE_GET_NEW", oParams, true);
 
-					var obj = _socketBackgroundTask.GetMDA();
-
-					if (obj == null)
-					{
-						obj = new MDA_Dtls() { Id = mda_dtls_id, GateInOut_Id = gatein_id, Mda_Id = mda_id, Prod_Sys_Id = prod_id };
-
-						_socketBackgroundTask.SetMDA(obj);
-					}
-
 					var PLANT_ID = Common.Get_Session_Int(SessionKey.PLANT_ID);
 
 					if (PLANT_ID <= 0) PLANT_ID = AppHttpContextAccessor.PlantId;
@@ -1441,10 +1371,10 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 					oParams.Add(new MySqlParameter("P_LOADING_BAY", MySqlDbType.VarString) { Value = AppHttpContextAccessor.Loading_Bay });
 					oParams.Add(new MySqlParameter("P_QR_CODE", MySqlDbType.VarString) { Value = qr_code });
-					oParams.Add(new MySqlParameter("P_GATE_SYS_ID", MySqlDbType.Int64) { Value = obj.GateInOut_Id });
-					oParams.Add(new MySqlParameter("P_MDA_SYS_ID", MySqlDbType.Int64) { Value = obj.Mda_Id });
-					oParams.Add(new MySqlParameter("P_MDA_DTL_SYS_ID", MySqlDbType.Int64) { Value = obj.Id });
-					oParams.Add(new MySqlParameter("P_PROD_SYS_ID", MySqlDbType.Int64) { Value = obj.Prod_Sys_Id });
+					oParams.Add(new MySqlParameter("P_GATE_SYS_ID", MySqlDbType.Int64) { Value = gatein_id });
+					oParams.Add(new MySqlParameter("P_MDA_SYS_ID", MySqlDbType.Int64) { Value = mda_id });
+					oParams.Add(new MySqlParameter("P_MDA_DTL_SYS_ID", MySqlDbType.Int64) { Value = mda_dtls_id });
+					oParams.Add(new MySqlParameter("P_PROD_SYS_ID", MySqlDbType.Int64) { Value = prod_id });
 					oParams.Add(new MySqlParameter("P_IS_MANUAL_SCAN", MySqlDbType.Int64) { Value = 0 });
 					oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = PLANT_ID });
 
@@ -1454,49 +1384,30 @@ namespace Dispatch_System.Areas.Admin.Controllers
 					long loaddedShipper = Convert.ToInt64(response.Split("#")[2]);
 					long rejectShipper = Convert.ToInt64(response.Split("#")[3]);
 
-					//_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, response.Split("#")[0].ToString(), (long)Id, requiredShipper, loaddedShipper, rejectShipper);
-					srNo = _sharedDataService.AddOrUpdate(qr_code, response.Split("#")[0].ToString(), (long)Id, requiredShipper, loaddedShipper, rejectShipper).ToString();
-
-					List<(long key, string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)>
-						list = new List<(long key, string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)>();
-
-					if (_sharedDataService != null && _sharedDataService.GetScanData().Count() > 0
-						&& !string.IsNullOrEmpty(srNo) && Int64.TryParse(srNo, out Int64 SrNo) && SrNo > 0)
-						list = _sharedDataService.GetScanData().Where(x => x.Key == SrNo).Select(x => (x.Key, x.Value.qr_code, x.Value.flag, x.Value.id, x.Value.requiredShipper, x.Value.loaddedShipper, x.Value.rejectShipper)).ToList();
-
-					//response = response.Split("#")[0].ToString();
+					response = response.Split("#")[0].ToString();
 
 					CommonViewModel.IsConfirm = !IsSuccess;
 					CommonViewModel.IsSuccess = IsSuccess;
 					CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
 					CommonViewModel.Message = response;
 
-					//CommonViewModel.Data1 = new
-					//{
-					//	SrNo = _sharedDataService != null && _sharedDataService.GetScanData().Count() > 0
-					//			? _sharedDataService.GetScanData().Max(x => x.Key) : 0,
-					//	No = Id,
-					//	Text = qr_code,
-					//	Success = response,
-					//	Id = Id,
-					//	RequiredShipper = requiredShipper,
-					//	LoaddedShipper = loaddedShipper,
-					//	RejectShipper = rejectShipper
-					//};
+					Console.WriteLine($"Response = {response}, RequiredShipper = {requiredShipper}, LoaddedShipper = {loaddedShipper}, RejectShipper = {rejectShipper}");
+
+					CommonViewModel.Data1 = new
+					{
+						No = Id,
+						Text = qr_code,
+						Success = response,
+						RequiredShipper = requiredShipper,
+						LoaddedShipper = loaddedShipper,
+						RejectShipper = rejectShipper
+					};
 
 					try
 					{
-						if (requiredShipper <= loaddedShipper)
+						if (CommonViewModel.Data1 != null && requiredShipper <= loaddedShipper)
 						{
-							//CommonViewModel.Data1.Success = "COMPLETED";
-
-							srNo = _sharedDataService.AddOrUpdate(qr_code, "COMPLETED", (long)Id, requiredShipper, loaddedShipper, rejectShipper).ToString();
-
-							if (_sharedDataService != null && _sharedDataService.GetScanData().Count() > 0
-								&& !string.IsNullOrEmpty(srNo) && Int64.TryParse(srNo, out SrNo) && SrNo > 0)
-								list.Add(_sharedDataService.GetScanData().Where(x => x.Key == SrNo).Select(x => (x.Key, x.Value.qr_code, x.Value.flag, x.Value.id, x.Value.requiredShipper, x.Value.loaddedShipper, x.Value.rejectShipper)).FirstOrDefault());
-
-							LogService.LogInsert("Load MDA " + AppHttpContextAccessor.Loading_Bay, "MDA Completed | MDA Id : " + obj.Mda_Id + " Gate In/Out Id : " + obj.GateInOut_Id);
+							CommonViewModel.Data1.Success = "COMPLETED";
 
 							oParams = new List<MySqlParameter>();
 
@@ -1514,55 +1425,6 @@ namespace Dispatch_System.Areas.Admin.Controllers
 						}
 					}
 					catch { }
-
-
-					//if (_sharedDataService.GetScanData() != null && _sharedDataService.GetScanData().Count() > 0)
-					//{
-					//	try
-					//	{
-					//		if (!string.IsNullOrEmpty(missingNo))
-					//		{
-					//			string[] missingNumbers = missingNo.Split('|');
-
-					//			long[] missingNumbersLong = missingNumbers.Select(long.Parse).ToArray();
-
-					//			list = _sharedDataService.GetScanData().Where(x => missingNumbersLong.Contains(x.Key))
-					//				.Select(kvp => (key: kvp.Key, qr_code: kvp.Value.qr_code, flag: kvp.Value.flag, id: kvp.Value.id, requiredShipper: kvp.Value.requiredShipper, loaddedShipper: kvp.Value.loaddedShipper, rejectShipper: kvp.Value.rejectShipper))
-					//				.ToList().OrderByDescending(x => x.key).ToList();
-					//		}
-					//	}
-					//	catch { }
-
-					//}
-
-
-					CommonViewModel.Data2 = new
-					{
-						No = (long)(_sharedDataService != null && _sharedDataService.GetScanData().Count() > 0
-								? _sharedDataService.GetScanData().Max(x => x.Key) : 0),
-						RequiredShipper = requiredShipper,
-						LoaddedShipper = loaddedShipper,
-						RejectShipper = rejectShipper,
-						IsCompleted = list.Any(x => x.flag == "COMPLETED")
-					};
-
-					if (list != null && list.Count() > 0)
-						CommonViewModel.Data1 = list.Select(x => new
-						{
-							No = x.key,
-							Text = x.qr_code,
-							Success = x.flag,
-							Id = x.id,
-							RequiredShipper = x.requiredShipper,
-							LoaddedShipper = x.loaddedShipper,
-							RejectShipper = x.rejectShipper
-						}).ToList();
-					else
-					{
-						CommonViewModel.IsSuccess = false;
-						CommonViewModel.StatusCode = ResponseStatusCode.Error;
-						CommonViewModel.Message = ResponseStatusMessage.Error;
-					}
 
 					return Json(CommonViewModel);
 				}
@@ -1616,13 +1478,9 @@ namespace Dispatch_System.Areas.Admin.Controllers
 					loaddedShipper = (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["LOADED_SHIPPER"] != DBNull.Value) ? Convert.ToInt64(dt.Rows[0]["LOADED_SHIPPER"]) : 0;
 					rejectShipper = (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["REJECT_SHIPPER"] != DBNull.Value) ? Convert.ToInt64(dt.Rows[0]["REJECT_SHIPPER"]) : 0;
 
-					//if (dt != null && dt.Rows.Count > 0)
-					//	_sharedDataService.AddOrUpdate(list.AsEnumerable().OrderBy(x => x.SrNo)
-					//		.Select(x => (x.SrNo, x.ShipperQRCode, (x.Batch_no == "S" ? "OK" : "NOK"), x.Id, requiredShipper, loaddedShipper, rejectShipper)).ToList());
-
 					if (dt != null && dt.Rows.Count > 0)
 						_sharedDataService.AddOrUpdate(list.AsEnumerable().OrderBy(x => x.SrNo)
-							.Select(x => (x.ShipperQRCode, (x.Batch_no == "S" ? "OK" : "NOK"), x.Id, requiredShipper, loaddedShipper, rejectShipper)).ToList());
+							.Select(x => (x.SrNo, x.ShipperQRCode, (x.Batch_no == "S" ? "OK" : "NOK"), x.Id, requiredShipper, loaddedShipper, rejectShipper)).ToList());
 
 				}
 				catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
@@ -1630,41 +1488,30 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 			list = list == null ? new List<ShipperBatch>() : list;
 
-			return Json(new
-			{
-				No = _sharedDataService != null && _sharedDataService.GetScanData().Count() > 0
-				? _sharedDataService.GetScanData().Max(x => x.Key) : 0,
-				RequiredShipper = requiredShipper,
-				LoaddedShipper = loaddedShipper,
-				RejectShipper = rejectShipper,
-				DataList = list
-			});
+			return Json(new { No = list != null && list.Count() > 0 ? list.Max(x => x.SrNo) : 0, RequiredShipper = requiredShipper, LoaddedShipper = loaddedShipper, RejectShipper = rejectShipper, DataList = list });
 		}
 
 		[HttpGet]
-		public IActionResult Delete_QR_Code(string srNo = null, string qr_code = null, string qr_code_type = null, long mda_id = 0, long mda_dtls_id = 0, long gatein_id = 0, long prod_id = 0, string missingNo = null)
+		public IActionResult Delete_QR_Code(string qr_code = null, string qr_code_type = null, long mda_id = 0, long gatein_id = 0, long prod_id = 0, long id = 0)
 		{
+			_socketBackgroundTask.StopWork();
+
 			long requiredShipper = 0;
 			long loaddedShipper = 0;
 			long rejectShipper = 0;
 
 			try
 			{
-				if (gatein_id > 0 && mda_id > 0 && !string.IsNullOrEmpty(srNo)
-					&& Int64.TryParse(srNo, out Int64 SrNo) && SrNo > 0
-					&& _sharedDataService.GetScanData().Any(x => x.Key == SrNo))
+				if (gatein_id > 0 && mda_id > 0 && !string.IsNullOrEmpty(qr_code))
 				{
-					var obj = _sharedDataService.GetScanData().Where(x => x.Key == SrNo).FirstOrDefault();
-
 					List<MySqlParameter> oParams = new List<MySqlParameter>();
 
 					oParams.Add(new MySqlParameter("P_GATE_SYS_ID", MySqlDbType.Int64) { Value = gatein_id });
 					oParams.Add(new MySqlParameter("P_MDA_SYS_ID", MySqlDbType.Int64) { Value = mda_id });
-					oParams.Add(new MySqlParameter("P_MDA_DTL_SYS_ID", MySqlDbType.Int64) { Value = mda_dtls_id });
+					oParams.Add(new MySqlParameter("P_MDA_DTL_SYS_ID", MySqlDbType.Int64) { Value = 0 });
 					oParams.Add(new MySqlParameter("P_PROD_SYS_ID", MySqlDbType.Int64) { Value = prod_id });
 
-					oParams.Add(new MySqlParameter("P_QR_CODE_ID", MySqlDbType.Int64) { Value = obj.Value.id });
-
+					oParams.Add(new MySqlParameter("P_QR_CODE_ID", MySqlDbType.Int64) { Value = id });
 					oParams.Add(new MySqlParameter("P_QR_CODE_TYPE", MySqlDbType.VarString) { Value = qr_code_type });
 					oParams.Add(new MySqlParameter("P_QR_CODE", MySqlDbType.VarString) { Value = qr_code });
 
@@ -1678,117 +1525,35 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 					response = response.Contains('#') ? response.Split("#")[0].ToString() : response;
 
-					if (IsSuccess == true)
-					{
-						_sharedDataService.RemoveByKey(obj.Key);
-
-						obj = _sharedDataService.GetScanData().OrderByDescending(x => x.Key).FirstOrDefault();
-
-						(string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)
-							last = (obj.Value.qr_code, obj.Value.flag, obj.Value.id, requiredShipper, loaddedShipper, rejectShipper);
-
-						_sharedDataService.UpdateByKey(obj.Key, last);
-					}
-
 					CommonViewModel.IsConfirm = !IsSuccess;
 					CommonViewModel.IsSuccess = IsSuccess;
 					CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
 					CommonViewModel.Message = response;
 
-					List<(long key, string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)>
-						list = new List<(long key, string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)>();
-
-					if (_sharedDataService.GetScanData() != null && _sharedDataService.GetScanData().Count() > 0)
+					CommonViewModel.Data1 = new
 					{
-						try
-						{
-							if (!string.IsNullOrEmpty(missingNo))
-							{
-								string[] missingNumbers = missingNo.Split('|');
-
-								long[] missingNumbersLong = missingNumbers.Select(long.Parse).ToArray();
-
-								list = _sharedDataService.GetScanData().Where(x => missingNumbersLong.Contains(x.Key))
-									.Select(kvp => (key: kvp.Key, qr_code: kvp.Value.qr_code, flag: kvp.Value.flag, id: kvp.Value.id, requiredShipper: kvp.Value.requiredShipper, loaddedShipper: kvp.Value.loaddedShipper, rejectShipper: kvp.Value.rejectShipper))
-									.ToList().OrderByDescending(x => x.key).ToList();
-							}
-						}
-						catch { }
-
-					}
-
-					if (list == null)
-						list = new List<(long key, string qr_code, string flag, long id, long requiredShipper, long loaddedShipper, long rejectShipper)>();
-
-					list.Insert(0, (0, "", "", (long)(_sharedDataService != null && _sharedDataService.GetScanData().Count() > 0
-							? _sharedDataService.GetScanData().Max(x => x.Key) : 0), requiredShipper, loaddedShipper, rejectShipper));
-
-					CommonViewModel.Data1 = list.Select(x => new
-					{
-						SrNo = srNo,
-						No = x.key,
-						Text = x.qr_code,
-						Success = x.flag,
-						Id = x.id,
-						//RequiredShipper = x.requiredShipper,
-						//LoaddedShipper = x.loaddedShipper,
-						//RejectShipper = x.rejectShipper
-					}).ToList();
-
-					var obj_ = (_sharedDataService != null && _sharedDataService.GetScanData().Count() > 0
-								? _sharedDataService.GetScanData().OrderByDescending(x => x.Key)
-								.Select(x => (x.Key, x.Value.qr_code, x.Value.flag, x.Value.id, x.Value.requiredShipper, x.Value.loaddedShipper, x.Value.rejectShipper))
-								.FirstOrDefault() : default);
-
-					CommonViewModel.Data2 = new
-					{
-						No = obj_ != default ? obj.Key : 0,
 						RequiredShipper = requiredShipper,
 						LoaddedShipper = loaddedShipper,
-						RejectShipper = rejectShipper,
-						IsCompleted = list.Any(x => x.flag == "COMPLETED")
+						RejectShipper = rejectShipper
 					};
 
-
-					//CommonViewModel.Data1 = new
-					//{
-					//	SrNo = srNo,
-					//	No = _sharedDataService != null && _sharedDataService.GetScanData().Count() > 0
-					//		? _sharedDataService.GetScanData().Max(x => x.Key) : 0,
-					//	RequiredShipper = requiredShipper,
-					//	LoaddedShipper = loaddedShipper,
-					//	RejectShipper = rejectShipper
-					//};
-
 					return Json(CommonViewModel);
+
+					//CommonViewModel.IsSuccess = true;
+					//CommonViewModel.StatusCode = ResponseStatusCode.Success;
+					//CommonViewModel.Message = ResponseStatusMessage.Success;
+
+					//return Json(CommonViewModel);
 				}
 
 			}
-			catch (Exception ex)
-			{
-				LogService.LogInsert(GetCurrentAction(), $"Delete QR Code | Gate In Id : {gatein_id} | MDA Id : {mda_id}", ex);
-			}
+			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
 
 			CommonViewModel.IsSuccess = false;
 			CommonViewModel.StatusCode = ResponseStatusCode.Error;
-			CommonViewModel.Message = ResponseStatusMessage.Error + " Issue from Database.";
+			CommonViewModel.Message = ResponseStatusMessage.Error;
 
 			return Json(CommonViewModel);
-		}
-
-		[HttpGet]
-		public IActionResult RemoveShipperFromTestMDA()
-		{
-			try { DataContext.ExecuteStoredProcedure_SQL("PC_REMOVE_SHIPPER_FROM_TEST_MDA", null, false); } catch (Exception ex) { }
-
-			return Json(null);
-		}
-
-		public IActionResult SendToPrinter(string V1 = "Test-V1", string V2 = "Test-V1", string V3 = "Test-V1")
-		{
-			try { _socketBackgroundTask.SendToPrinter(V1, V2, V3); } catch (Exception ex) { }
-
-			return Json(null);
 		}
 
 	}

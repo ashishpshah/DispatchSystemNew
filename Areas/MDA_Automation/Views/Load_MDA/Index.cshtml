@@ -160,8 +160,7 @@
 														@*<th hidden width="0%"></th>*@
 													</tr>
 												</thead>
-												<tbody>
-												</tbody>
+												<tbody style="font-size: 1rem !important;"></tbody>
 											</table>
 										</div>
 									</div>
@@ -221,7 +220,7 @@
 									</div>
 								</div>
 							</div>
-							<div class="row no-gutters p-0 m-0" id="div_Scan_QR_Code" style="display: none;">
+							<div class="row no-gutters p-0 m-0" id="div_Scan_QR_Code" style="margin: 1rem 0.75rem 0rem 0.75rem !important;display: none;">
 								<div class="col-4">
 									<div class="card direct-chat direct-chat-warning">
 										<div class="card-header">
@@ -257,7 +256,7 @@
 										</div>
 										<div class="card-footer">
 											<div class="d-flex flex-row justify-content-between">
-												<h5 class="card-title text-bold">Count : <span id="span_Total_Scan_QR_Code" data-cntReq="" data-cnt="" data-last=""></span></h5>
+												<h5 class="card-title text-bold">Total Scan : <span id="span_Total_Scan_QR_Code" data-cntReq="" data-cnt="" data-last=""></span></h5>
 												<button type="button" onclick="fnClick_Delete_QR_Code(this, 'A', 'ul_Scan_QR_Code')" class="btn btn-xs btn-outline-danger btn-flat float-right px-2 d-none"><i class="far fa-trash-alt"></i></button>
 											</div>
 										</div>
@@ -285,7 +284,7 @@
 										</div>
 										<div class="card-footer">
 											<div class="d-flex flex-row justify-content-between">
-												<h5 class="card-title text-bold">Count : <span id="span_Total_Accepted_QR_Code" data-cnt="" style="font-size: 1.2rem !important;"></span></h5>
+												<h5 class="card-title text-bold">Success : <span id="span_Total_Accepted_QR_Code" data-cnt="" style="font-size: 1.3rem !important;padding-left: .5rem !important;"></span></h5>
 												<button type="button" onclick="fnClick_Delete_QR_Code(this, 'S', 'ul_Accepted_QR_Code')" class="btn btn-xs btn-outline-danger btn-flat float-right px-2 d-none"><i class="far fa-trash-alt"></i></button>
 											</div>
 										</div>
@@ -310,7 +309,7 @@
 										</div>
 										<div class="card-footer">
 											<div class="d-flex flex-row justify-content-between">
-												<h5 class="card-title text-bold">Count : <span id="span_Total_Rejected_QR_Code" data-cnt=""></span></h5>
+												<h5 class="card-title text-bold">Rejected : <span id="span_Total_Rejected_QR_Code" data-cnt=""></span></h5>
 												<button type="button" onclick="fnClick_Delete_QR_Code(this, 'R', 'ul_Rejected_QR_Code')" class="btn btn-xs btn-outline-danger btn-flat float-right px-2 d-none"><i class="far fa-trash-alt"></i></button>
 											</div>
 										</div>
@@ -350,23 +349,6 @@
 
 		var updateProgress_Interval = null;
 		var isUpdateProgress_Interval = false;
-
-		// Function to call before prompting the user
-		function beforeUnloadFunction() {
-			// Call a URL in the background
-			fetch('@Url.Action("StopLoading", "Load_MDA", new { area = "MDA_Automation" })', {
-				method: 'POST',
-			}).catch((error) => {
-				console.error('Error sending request:', error);
-			});
-		}
-
-		$(document).ready(function () {
-			$(window).on('beforeunload', function (event) {
-				beforeUnloadFunction();
-				return "Are you sure you want to leave this page?";
-			});
-		});
 
 		function fnLoad_MDA_Dtls() {
 			ShowLoader(true);
@@ -488,6 +470,7 @@
 						$(tableDtls.rows(i).nodes().to$()).attr('id', 'tr_' + $data[i].gateInOut_Id + '_' + $data[i].mda_Id);
 						$(tableDtls.rows(i).nodes().to$()).attr('data-mdaid', $data[i].mda_Id);
 						$(tableDtls.rows(i).nodes().to$()).attr('data-gateinoutid', $data[i].gateInOut_Id);
+						$(tableDtls.rows(i).nodes().to$()).attr('data-prodsysid', $data[i].prod_Sys_Id);
 
 						if ($data[i].is_Posted == true) {
 							tableDtls.rows(i).nodes().to$().addClass('row-disabled');
@@ -577,7 +560,7 @@
 						&& typeof MDA_Id != 'undefined' && MDA_Id != null && !isNaN(parseFloat(MDA_Id)) && parseFloat(MDA_Id) > 0) {
 
 						ShowLoader(true);
-
+						
 						$.ajax({
 							type: "GET",
 							url: '@Url_RootToController/Load_MDA_Dtls?MDA_Id=' + MDA_Id + '&Gate_In_Out_Id=' + Gate_In_Out_Id,
@@ -587,7 +570,7 @@
 							success: function (response) {
 
 								setTimeout(function () {
-
+									
 									if (typeof response != 'undefined' && response != null && response.length > 0) {
 
 										$('#btnRequisitionWMS').prop('disabled', false);
@@ -641,10 +624,8 @@
 										$('html, body').animate({ scrollTop: $("div#divMDADtls").offset().top - 50 }, 1000);
 
 										fnGet_Scan_Code_History();
-
 									}
-
-									ShowLoader(false);
+									else ShowLoader(false);
 
 								}, 1000);
 
@@ -658,6 +639,15 @@
 						});
 					}
 				}
+			}
+			else
+			{
+
+				var MDA_Id = $(this).attr('data-mdaid');
+				var Gate_In_Out_Id = $(this).attr('data-gateinoutid');
+				var Prod_Sys_Id = $(this).attr('data-prodsysid');
+
+				fnShow_Modal('@Url.Action("Partial_ViewQR", "Load_MDA", new { area = "MDA_Automation" })?type=&mda_id=' + MDA_Id + '&mda_dtls_id=0&prod_id=' + Prod_Sys_Id + '&gatein_id=' + Gate_In_Out_Id, 'View All QR Codes', true, 'html', false);
 			}
 
 			return false;
@@ -714,6 +704,7 @@
 		$(document).on('click', '#btnSendToPrinter', function (e) {
 			e.preventDefault();
 
+
 			var selectedData = tableDtls.rows('.bg-info').data();
 
 			if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
@@ -741,6 +732,7 @@
 
 		$(document).on('click', '#btnRequisitionWMS', function (e) {
 			e.preventDefault();
+
 
 			var selectedData = tableDtls.rows('.bg-info').data();
 
@@ -1016,6 +1008,7 @@
 				// $('#input_Scan_QR_Code').val('');
 				// $('#input_temp_Scan_QR_Code').val('');
 
+
 				updateProgress();
 
 			}
@@ -1064,165 +1057,142 @@
 
 		function updateProgress() {
 
-			// var srnoArray = $('#ul_Accepted_QR_Code li span').map(function () { return parseInt($(this).attr('data-srno'), 10); })
-			// 	.get().filter(Number.isInteger);
+			$.post('@Url.Action("UpdateProgress", "Load_MDA", new { area = "MDA_Automation" })?seqNo=' + $('#span_Total_Scan_QR_Code').attr('data-last'), function ($response) {
 
-			// var minSrno = Math.min(...srnoArray);
-			// var maxSrno = Math.max(...srnoArray);
+				if (typeof $response.data1 != 'undefined' && $response.data1 != null && $response.data1.length >= 1) {
+					$.each($response.data1, function (i, ele) {
 
-			// var allNumbers = Array.from({ length: maxSrno - minSrno + 1 }, (_, i) => minSrno + i);
+						//if ((ele['success'] === 'OK' || ele['success'] === 'NOK') && ele['text'].indexOf('(') > -1)
+						if ((ele['success'] === 'OK' || ele['success'] === 'NOK'))
+							if (ele['success'] === 'OK') {
+								var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['no'] + '" data-type="S" class="float-left text-success text-bold">'
+									+ ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'S\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-			// var missingNumbers = allNumbers.filter(num => !srnoArray.includes(num));
+								$('#ul_Scan_QR_Code').prepend(html);
+								$('#ul_Accepted_QR_Code').prepend(html);
 
-			// var srnoArray_Reject = $('#ul_Rejected_QR_Code li span').map(function () { return parseInt($(this).attr('data-srno'), 10); })
-			// 	.get().filter(Number.isInteger);
+								$('#input_Scan_QR_Code').val('');
+								$('#input_temp_Scan_QR_Code').val('');
 
-			// minSrno = Math.min(...srnoArray_Reject);
-			// maxSrno = Math.max(...srnoArray_Reject);
+								//fnCalculate_QR_Code();
+							}
+							else {
+								var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['no'] + '" data-type="R" class="float-left text-danger text-bold">'
+									+ ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'R\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-			// allNumbers = Array.from({ length: maxSrno - minSrno + 1 }, (_, i) => minSrno + i);
+								$('#ul_Scan_QR_Code').prepend(html);
+								$('#ul_Rejected_QR_Code').prepend(html);
 
-			// var missingNumbers_Rejected = allNumbers.filter(num => !srnoArray_Reject.includes(num));
+								$('#input_Scan_QR_Code').val('');
+								$('#input_temp_Scan_QR_Code').val('');
 
-			// if (missingNumbers == null) missingNumbers = [];
-
-			// if (missingNumbers_Rejected != null) missingNumbers = missingNumbers.concat(missingNumbers_Rejected);
-
-			// var missingNumbersJoined = missingNumbers.join('|');
-			var missingNumbersJoined = "";
-
-			$.post('@Url.Action("UpdateProgress", "Load_MDA", new { area = "MDA_Automation" })' +
-				'?seqNo=' + $('#span_Total_Scan_QR_Code').attr('data-last') + '&missingNo=' + missingNumbersJoined, function ($response) {
-
-					if (typeof $response.data2 != 'undefined' && $response.data2 != null) {
-
-						$('#span_Total_Scan_QR_Code').attr('data-last', $response.data2['no']);
-						$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data2['requiredShipper']);
-						$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data2['loaddedShipper']);
-						$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data2['loaddedShipper']);
-						$('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data2['rejectShipper']);
-
-						fnCalculate_QR_Code();
-					}
-
-					if (typeof $response.data1 != 'undefined' && $response.data1 != null && $response.data1.length >= 1) {
-
-						$.each($response.data1, function (i, ele) {
-
-							if ((ele['success'] === 'OK' || ele['success'] === 'NOK'))
-								if (ele['success'] === 'OK' && $('ul#ul_Accepted_QR_Code li span[data-srno="' + ele['no'] + '"]').length <= 0) {
-									var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['no'] + '" data-srno="' + ele['no'] + '" data-type="S" class="float-left text-success text-bold">'
-										+ ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'S\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
-
-									$('#ul_Scan_QR_Code').prepend(html);
-									$('#ul_Accepted_QR_Code').prepend(html);
-
-									$('#input_Scan_QR_Code').val('');
-									$('#input_temp_Scan_QR_Code').val('');
-
-									//fnCalculate_QR_Code();
-								}
-								else if (ele['success'] === 'NOK' && $('ul#ul_Rejected_QR_Code li span[data-srno="' + ele['no'] + '"]').length <= 0) {
-									var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['no'] + '" data-srno="' + ele['no'] + '" data-type="R" class="float-left text-danger text-bold">'
-										+ ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'R\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
-
-									$('#ul_Scan_QR_Code').prepend(html);
-									$('#ul_Rejected_QR_Code').prepend(html);
-
-									$('#input_Scan_QR_Code').val('');
-									$('#input_temp_Scan_QR_Code').val('');
-
-									//fnCalculate_QR_Code();
-								}
-								else {
-
-									$response.data5 == false;
-
-									$('#btnRequisitionWMS').prop('disabled', true);
-									$('#btnBypassWMS').prop('disabled', true);
-									$('#btnStartLoading').prop('disabled', false);
-									$('#btnPauseConveyor').prop('disabled', true);
-									$('#btnStopConveyor').prop('disabled', true);
-									$('#btnEmergencyStopConveyor').prop('disabled', true);
-									$('#btnFinish').prop('disabled', false);
-
-									$('#divManualEntry').css('display', 'none');
-									$('#btnManualEntry').prop('disabled', true);
-
-									$('#input_temp_Scan_QR_Code').css('display', 'none');
-									$('#input_Scan_QR_Code').prop('disabled', true);
-									$('#input_temp_Scan_QR_Code').prop('disabled', true);
-									$('#input_Scan_QR_Code').val('');
-									$('#input_temp_Scan_QR_Code').val('');
-
-								}
-
-						});
-
-						fnCalculate_QR_Code();
-					}
-
-
-					if (typeof $response.data2 != 'undefined' && $response.data2 != null) {
-
-						if ($response.data2['isCompleted'] == true) {
-
-							setTimeout(function () {
-
-								stopProgress(true, false);
-
-							}, 5 * 1000);
-
-							CommonConfirmed_Success("MDA Loading Completed.", fnLoad_MDA_Dtls, []);
-
-						}
+								//fnCalculate_QR_Code();
+							}
 						else {
-							$('#divManualEntry').css('display', 'flex');
-							$('#btnManualEntry').prop('disabled', false);
+
+							$response.data5 == false;
+
+							$('#btnRequisitionWMS').prop('disabled', true);
+							$('#btnBypassWMS').prop('disabled', true);
+							$('#btnStartLoading').prop('disabled', false);
+							$('#btnPauseConveyor').prop('disabled', true);
+							$('#btnStopConveyor').prop('disabled', true);
+							$('#btnEmergencyStopConveyor').prop('disabled', true);
+							$('#btnFinish').prop('disabled', false);
+
+							$('#divManualEntry').css('display', 'none');
+							$('#btnManualEntry').prop('disabled', true);
+
+							$('#input_temp_Scan_QR_Code').css('display', 'none');
+							$('#input_Scan_QR_Code').prop('disabled', true);
+							$('#input_temp_Scan_QR_Code').prop('disabled', true);
 							$('#input_Scan_QR_Code').val('');
 							$('#input_temp_Scan_QR_Code').val('');
+
+
+							if (ele['success'] === 'COMPLETED') {
+
+
+
+								setTimeout(function () {
+
+									stopProgress(true, false);
+
+								}, parseInt('@(Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "3"))') * 2 * 1000);
+
+								CommonConfirmed_Success("MDA Loading Completed.", fnLoad_MDA_Dtls, []);
+
+							}
+							else {
+								$('#divManualEntry').css('display', 'flex');
+								$('#btnManualEntry').prop('disabled', false);
+								$('#input_Scan_QR_Code').val('');
+								$('#input_temp_Scan_QR_Code').val('');
+							}
 						}
-					}
+
+						if (typeof ele['no'] != 'undefined' && parseInt(ele['no']) > 0) {
+							$('#span_Total_Scan_QR_Code').attr('data-last', ele['no']);
+						}
+
+						$('#span_Total_Scan_QR_Code').attr('data-cntReq', ele['requiredShipper']);
+						$('#span_Total_Scan_QR_Code').attr('data-cnt', ele['loaddedShipper']);
+						$('#span_Total_Accepted_QR_Code').attr('data-cnt', ele['loaddedShipper']);
+						$('#span_Total_Rejected_QR_Code').attr('data-cnt', ele['rejectShipper']);
+
+						fnCalculate_QR_Code();
+					})
+				}
 
 
-					if ($response.data5 === true) {
 
-						$('#btnRequisitionWMS').prop('disabled', true);
-						$('#btnBypassWMS').prop('disabled', true);
-						$('#btnStartLoading').prop('disabled', true);
-						$('#btnPauseConveyor').prop('disabled', false);
-						$('#btnStopConveyor').prop('disabled', false);
-						$('#btnEmergencyStopConveyor').prop('disabled', true);
-						$('#btnFinish').prop('disabled', false);
+				// If task is not completed, continue polling
+				if ($response.data5 === true) {
 
-						setTimeout(updateProgress, 1000); // Poll every 1 second
-					}
-					else {
+					$('#btnRequisitionWMS').prop('disabled', true);
+					$('#btnBypassWMS').prop('disabled', true);
+					$('#btnStartLoading').prop('disabled', true);
+					$('#btnPauseConveyor').prop('disabled', false);
+					$('#btnStopConveyor').prop('disabled', false);
+					$('#btnEmergencyStopConveyor').prop('disabled', true);
+					$('#btnFinish').prop('disabled', false);
 
-						$('#btnRequisitionWMS').prop('disabled', true);
-						$('#btnBypassWMS').prop('disabled', true);
-						$('#btnStartLoading').prop('disabled', false);
-						$('#btnPauseConveyor').prop('disabled', true);
-						$('#btnStopConveyor').prop('disabled', true);
-						$('#btnEmergencyStopConveyor').prop('disabled', true);
-						$('#btnFinish').prop('disabled', false);
+					setTimeout(updateProgress, 800); // Poll every 1 second
+				}
+				else {
 
-						CommonAlert_Success("Stop Loading.");
-					}
+					$('#btnRequisitionWMS').prop('disabled', true);
+					$('#btnBypassWMS').prop('disabled', true);
+					$('#btnStartLoading').prop('disabled', false);
+					$('#btnPauseConveyor').prop('disabled', true);
+					$('#btnStopConveyor').prop('disabled', true);
+					$('#btnEmergencyStopConveyor').prop('disabled', true);
+					$('#btnFinish').prop('disabled', false);
 
-				});
+				}
+
+
+
+				// if ($response.data5 !== true) {
+				//     if (updateProgress_Interval) {
+				//         clearInterval(updateProgress_Interval);
+				//         updateProgress_Interval = null;
+				//     }
+				// }
+			});
 		}
 
 		function startProgress() {
 
 			if (isUpdateProgress_Interval && updateProgress_Interval) {
-				updateProgress_Interval = setInterval(function () { updateProgress(); }, 1000);
+				updateProgress_Interval = setInterval(function () { updateProgress(); }, 800);
 			}
 		}
 
 		function stopProgress($isStop, $isAlert) {
 
 			$.post('@Url.Action("StopProgress", "Load_MDA", new { area = "MDA_Automation" })?IsStop=' + $isStop, function ($response) {
+
 
 				if ($response.statusCode === 1) {
 
@@ -1265,7 +1235,6 @@
 				success: function (response) {
 
 					fnClear_MDA();
-
 					ShowLoader(true);
 
 					if (typeof response == 'undefined' || response == null || response == 'null' || response.length <= 0) {
@@ -1311,6 +1280,7 @@
 									CommonAlert_Error("No any record(s) found");
 
 							} catch { ShowLoader(false); }
+
 
 						}, 1000);
 
@@ -1466,8 +1436,6 @@
 
 		function fnClick_ManualEntry() {
 
-			stopProgress(true, false);
-
 			var selectedData = tableDtls.rows('.bg-info').data();
 
 			if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
@@ -1491,6 +1459,8 @@
 				$('#btnEmergencyStopConveyor').prop('disabled', true);
 				$('#btnFinish').prop('disabled', false);
 
+				stopProgress(true, false);
+
 			}
 			else CommonAlert_Error("Please select MDA Details data");
 
@@ -1507,8 +1477,6 @@
 
 		function fnGet_Scan_Code_History() {
 
-			ShowLoader(true);
-
 			var truck_no = $('#Truck_No').val();
 			var mda_id = $('#input_MDA_Id').val();
 			var mda_dtls_id = $('#input_MDA_DTLS_Id').val();
@@ -1519,6 +1487,12 @@
 			if (typeof mda_id != 'undefined' && mda_id != null) {
 
 				ShowLoader(true);
+
+				// $('#ul_Scan_QR_Code').html('');
+				// $('#ul_Accepted_QR_Code').html('');
+				// $('#ul_Rejected_QR_Code').html('');
+
+				
 
 				$.ajax({
 					type: "GET",
@@ -1531,27 +1505,39 @@
 
 							if (typeof response != 'undefined' && response != null && typeof response['dataList'] != 'undefined' && response['dataList'] != null && response['dataList'].length > 0) {
 
+								
+
 								$.each(response['dataList'].sort(function (x, y) { return x.srNo - y.srNo; }), function (i, obj) {
 
 									try {
 
-										if (obj.batch_no === "S" && $('ul#ul_Accepted_QR_Code li span[data-srno="' + obj.srNo + '"]').length <= 0) {
+										if (obj.batch_no === "S") {
 
-											var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + obj.id + '" data-srno="' + obj.srNo + '" data-type="S" class="float-left text-success text-bold"> ' + obj.shipperQRCode + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'S\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+											var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + obj.id + '" data-type="S" class="float-left text-success text-bold"> ' + obj.shipperQRCode + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'S\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-											$('#ul_Scan_QR_Code').prepend(html);
-											$('#ul_Accepted_QR_Code').prepend(html);
+											var exists = $('#ul_Scan_QR_Code li span[data-id="' + obj.id + '"]').length > 0;
+											if (!exists)
+												$('#ul_Scan_QR_Code').prepend(html);
+
+											exists = $('#ul_Accepted_QR_Code li span[data-id="' + obj.id + '"]').length > 0;
+											if (!exists)
+												$('#ul_Accepted_QR_Code').prepend(html);
 
 											$('#input_Scan_QR_Code').val('');
 											$('#input_temp_Scan_QR_Code').val('');
 
 										}
-										else if (obj.batch_no === "R" && $('ul#ul_Rejected_QR_Code li span[data-srno="' + obj.srNo + '"]').length <= 0) {
+										else {
 
-											var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + obj.id + '" data-srno="' + obj.srNo + '" data-type="R" class="float-left text-danger text-bold"> ' + obj.shipperQRCode + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'R\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+											var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + obj.id + '" data-type="R" class="float-left text-danger text-bold"> ' + obj.shipperQRCode + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'R\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-											$('#ul_Scan_QR_Code').prepend(html);
-											$('#ul_Rejected_QR_Code').prepend(html);
+											var exists = $('#ul_Scan_QR_Code li span[data-id="' + obj.id + '"]').length > 0;
+											if (!exists)
+												$('#ul_Scan_QR_Code').prepend(html);
+
+											exists = $('#ul_Rejected_QR_Code li span[data-id="' + obj.id + '"]').length > 0;
+											if (!exists)
+												$('#ul_Rejected_QR_Code').prepend(html);
 
 											$('#input_Scan_QR_Code').val('');
 											$('#input_temp_Scan_QR_Code').val('');
@@ -1560,15 +1546,18 @@
 									} catch { }
 
 								});
-							}
 
-							fnCalculate_QR_Code();
+							}
 
 							$('#span_Total_Scan_QR_Code').attr('data-last', response['no']);
 							$('#span_Total_Scan_QR_Code').attr('data-cntReq', response['requiredShipper']);
 							$('#span_Total_Scan_QR_Code').attr('data-cnt', response['loaddedShipper']);
 							$('#span_Total_Accepted_QR_Code').attr('data-cnt', response['loaddedShipper']);
 							$('#span_Total_Rejected_QR_Code').attr('data-cnt', response['rejectShipper']);
+
+							fnCalculate_QR_Code();
+
+							
 
 							var RequiredShipper = $('#span_Total_Scan_QR_Code').attr('data-cntReq');
 							var LoaddedShipper = $('#span_Total_Accepted_QR_Code').attr('data-cnt');
@@ -1583,6 +1572,8 @@
 							if (typeof LoaddedShipper != 'undefined' && LoaddedShipper != null && LoaddedShipper.trim().length > 0 && parseInt(LoaddedShipper.trim()) > 0)
 								LoaddedShipper = parseInt(LoaddedShipper.trim());
 							else LoaddedShipper = 0;
+
+							
 
 							if (LoaddedShipper >= RequiredShipper) {
 								CommonAlert_Success("MDA Loading Completed.");
@@ -1610,8 +1601,6 @@
 
 							}
 
-							fnCalculate_QR_Code();
-
 							ShowLoader(false);
 
 						}, 1000);
@@ -1637,6 +1626,7 @@
 
 			ShowLoader(true);
 
+
 			var selectedData = tableDtls.rows('.bg-info').data();
 
 			if (typeof selectedData != 'undefined' && selectedData != null && selectedData.length >= 1
@@ -1658,39 +1648,13 @@
 				var prod_id = $('#input_Prod_Sys_Id').val();
 				var gatein_id = $('#input_GateInOut_Id').val();
 
+
+
 				if (qr_code.length >= 30 && qr_code.length <= 50) {
-
-					var srNo = $('#span_Total_Scan_QR_Code').attr('data-last');
-
-					// var srnoArray = $('#ul_Accepted_QR_Code li span').map(function () { return parseInt($(this).attr('data-srno'), 10); })
-					// 	.get().filter(Number.isInteger);
-
-					// var minSrno = Math.min(...srnoArray);
-					// var maxSrno = Math.max(...srnoArray);
-
-					// var allNumbers = Array.from({ length: maxSrno - minSrno + 1 }, (_, i) => minSrno + i);
-
-					// var missingNumbers = allNumbers.filter(num => !srnoArray.includes(num));
-
-					// var srnoArray_Reject = $('#ul_Rejected_QR_Code li span').map(function () { return parseInt($(this).attr('data-srno'), 10); })
-					// 	.get().filter(Number.isInteger);
-
-					// minSrno = Math.min(...srnoArray_Reject);
-					// maxSrno = Math.max(...srnoArray_Reject);
-
-					// allNumbers = Array.from({ length: maxSrno - minSrno + 1 }, (_, i) => minSrno + i);
-
-					// var missingNumbers_Rejected = allNumbers.filter(num => !srnoArray_Reject.includes(num));
-
-					// if (missingNumbers == null) missingNumbers = [];
-
-					// if (missingNumbers_Rejected != null) missingNumbers = missingNumbers.concat(missingNumbers_Rejected);
-
-					//var missingNumbersJoined = missingNumbers.join('|');
 
 					$.ajax({
 						type: "GET",
-						url: '@Url.Action("Check_QR_Code", "Load_MDA")?srNo=' + srNo + '&qr_code=' + qr_code + '&mda_id=' + mda_id + '&mda_dtls_id=' + mda_dtls_id + '&prod_id=' + prod_id + '&gatein_id=' + gatein_id, //+ '&missingNo=' + missingNumbersJoined, //+ '&loaded_shipper=' + loaded_shipper,
+						url: '@Url.Action("Check_QR_Code", "Load_MDA")?qr_code=' + qr_code + '&mda_id=' + mda_id + '&mda_dtls_id=' + mda_dtls_id + '&prod_id=' + prod_id + '&gatein_id=' + gatein_id, //+ '&loaded_shipper=' + loaded_shipper,
 						data: null,
 						contentType: "application/json; charset=utf-8",
 						dataType: "json",
@@ -1700,70 +1664,92 @@
 
 								try {
 
-									if (typeof $response.data2 != 'undefined' && $response.data2 != null) {
 
-										$('#span_Total_Scan_QR_Code').attr('data-last', $response.data2['no']);
-										$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data2['requiredShipper']);
-										$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data2['loaddedShipper']);
-										$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data2['loaddedShipper']);
-										$('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data2['rejectShipper']);
+									if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
 
-										fnCalculate_QR_Code();
-									}
+										//if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK') && $response.data1['text'].indexOf('(') > -1)
+										if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK'))
+											if ($response.data1['success'] === 'OK') {
+												var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['no'] + '" data-type="S" class="float-left text-success text-bold">'
+													+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-									if (typeof $response.data1 != 'undefined' && $response.data1 != null && $response.data1.length >= 1) {
+												$('#ul_Scan_QR_Code').prepend(html);
+												$('#ul_Accepted_QR_Code').prepend(html);
 
-										$.each($response.data1, function (i, ele) {
+												$('#input_Scan_QR_Code').val('');
+												$('#input_temp_Scan_QR_Code').val('');
 
-											if ((ele['success'] === 'OK' || ele['success'] === 'NOK'))
-												if (ele['success'] === 'OK' && $('ul#ul_Accepted_QR_Code li span[data-srno="' + ele['no'] + '"]').length <= 0) {
-													var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['no'] + '" data-srno="' + ele['no'] + '" data-type="S" class="float-left text-success text-bold">'
-														+ ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'S\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+												//fnCalculate_QR_Code();
+											}
+											else {
+												var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['no'] + '" data-type="R" class="float-left text-danger text-bold">'
+													+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
-													$('#ul_Scan_QR_Code').prepend(html);
-													$('#ul_Accepted_QR_Code').prepend(html);
+												$('#ul_Scan_QR_Code').prepend(html);
+												$('#ul_Rejected_QR_Code').prepend(html);
 
-													$('#input_Scan_QR_Code').val('');
-													$('#input_temp_Scan_QR_Code').val('');
-												}
-												else if (ele['success'] === 'NOK' && $('ul#ul_Rejected_QR_Code li span[data-srno="' + ele['no'] + '"]').length <= 0) {
-													var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['no'] + '" data-srno="' + ele['no'] + '" data-type="R" class="float-left text-danger text-bold">'
-														+ ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'R\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
+												$('#input_Scan_QR_Code').val('');
+												$('#input_temp_Scan_QR_Code').val('');
 
-													$('#ul_Scan_QR_Code').prepend(html);
-													$('#ul_Rejected_QR_Code').prepend(html);
+												//fnCalculate_QR_Code();
+											}
+										else {
 
-													$('#input_Scan_QR_Code').val('');
-													$('#input_temp_Scan_QR_Code').val('');
-												}
-										});
+											$response.data5 == false;
 
-									}
+											$('#btnRequisitionWMS').prop('disabled', true);
+											$('#btnBypassWMS').prop('disabled', true);
+											$('#btnStartLoading').prop('disabled', false);
+											$('#btnPauseConveyor').prop('disabled', true);
+											$('#btnStopConveyor').prop('disabled', true);
+											$('#btnEmergencyStopConveyor').prop('disabled', true);
+											$('#btnFinish').prop('disabled', false);
 
-									if (typeof $response.data2 != 'undefined' && $response.data2 != null) {
+											$('#divManualEntry').css('display', 'none');
+											$('#btnManualEntry').prop('disabled', true);
 
-										if ($response.data2['isCompleted'] == true) {
+											$('#input_temp_Scan_QR_Code').css('display', 'none');
+											$('#input_Scan_QR_Code').prop('disabled', true);
+											$('#input_temp_Scan_QR_Code').prop('disabled', true);
+											$('#input_Scan_QR_Code').val('');
+											$('#input_temp_Scan_QR_Code').val('');
 
-											setTimeout(function () {
+
+											if ($response.data1['success'] === 'COMPLETED') {
+
+
 
 												stopProgress(true, false);
 
-											}, 5 * 1000);
+												CommonConfirmed_Success("MDA Loading Completed.", fnLoad_MDA_Dtls, []);
 
-											CommonConfirmed_Success("MDA Loading Completed.", fnLoad_MDA_Dtls, []);
+											}
+											else {
+												$('#divManualEntry').css('display', 'flex');
+												$('#btnManualEntry').prop('disabled', false);
+												$('#input_Scan_QR_Code').val('');
+												$('#input_temp_Scan_QR_Code').val('');
+											}
+										}
 
-										}
-										else {
-											$('#divManualEntry').css('display', 'flex');
-											$('#btnManualEntry').prop('disabled', false);
-											$('#input_Scan_QR_Code').val('');
-											$('#input_temp_Scan_QR_Code').val('');
-										}
+										$('#span_Total_Scan_QR_Code').attr('data-last', $response.data1['no']);
+										$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
+										$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+										$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
+										$('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
+
+										fnGet_Scan_Code_History();
+
+										//fnCalculate_QR_Code();
+
+
+										setTimeout(function () {
+											$('#input_Scan_QR_Code').focus();
+										}, 1000);
+
 									}
 
 								} catch { }
-
-								fnCalculate_QR_Code();
 
 								ShowLoader(false);
 
@@ -1795,7 +1781,6 @@
 			if ($('#table_MDA_Dtls tbody tr.bg-info').length > 0) {
 
 				try {
-					var iffco_url = '@AppHttpContextAccessor.IFFCO_Domain.TrimEnd('/');';
 					var input_Scanner = $(this).val();
 
 					if (typeof input_Scanner != 'undefined' && input_Scanner != null && input_Scanner.length > 0) {
@@ -1804,8 +1789,7 @@
 
 						var arrayStr = input_Scanner.split('/');
 
-						if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0
-							&& input_Scanner.indexOf('/') > -1 && input_Scanner.indexOf(iffco_url) > -1) {
+						if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0 && input_Scanner.indexOf('/') > -1) {
 
 							var qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
 
@@ -1834,6 +1818,8 @@
 			var RequiredShipper = $('#span_Total_Scan_QR_Code').attr('data-cntReq');
 			var LoaddedShipper = $('#span_Total_Accepted_QR_Code').attr('data-cnt');
 			var RejectShipper = $('#span_Total_Rejected_QR_Code').attr('data-cnt');
+
+			
 
 			if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0) { }
 			else { RequiredShipper = $('#table_MDA_Dtls tbody tr#tr_MDA_' + $('#input_MDA_Id').val() + ' td.Required_Shipper').text(); }
@@ -1866,6 +1852,7 @@
 
 		function fnClear_QR_Code() {
 
+
 			$('#Loaded_Shipper').val('');
 			$('#Loaded_Shipper').trigger('change');
 
@@ -1891,12 +1878,14 @@
 			$('#span_Total_Accepted_QR_Code').html('0');
 			$('#span_Total_Rejected_QR_Code').html('0');
 
+
 			$('#table_MDA_Dtls tbody tr.bg-info').removeClass('bg-info');
+
 
 		}
 
-		function fnClick_AddQty(gate_inout_id, mda_id, mda_dtls_id, mda_no, prod_id, prd_cd, prd_desc, customer, bag_Nos, carton_Qty, loaded_Qty) {
 
+		function fnClick_AddQty(gate_inout_id, mda_id, mda_dtls_id, mda_no, prod_id, prd_cd, prd_desc, customer, bag_Nos, carton_Qty, loaded_Qty) {
 			if ((typeof mda_dtls_id != 'undefined' && mda_dtls_id != null && mda_dtls_id.length > 0)
 				&& (typeof mda_id != 'undefined' && mda_id != null && mda_id.length > 0)
 				&& (typeof prod_id != 'undefined' && prod_id != null && prod_id.length > 0)) {
@@ -1969,6 +1958,7 @@
 			}
 		}
 
+
 		function fnClick_Delete_QR_Code($this, $type, $id) {
 
 			if ((typeof $this != 'undefined' && $this != null && typeof $($this).parent().find('span') != 'undefined'
@@ -2001,49 +1991,39 @@
 
 					if (result != null && result.isConfirmed == true) {
 
-						if ((typeof $id != 'undefined' && $id != null && $id.length > 0) && $('#' + $id + ' li span').length > 0) {
+						// if ((typeof $id != 'undefined' && $id != null && $id.length > 0) && $('#' + $id + ' li span').length > 0) {
 
-							//$('#' + $id + ' li span').each(function (i, ele) {
+						// 	//$('#' + $id + ' li span').each(function (i, ele) {
 
-							//	var id = $(ele).attr('data-id');
-							//	var type = $(ele).attr('data-type');
+						// 	//	var id = $(ele).attr('data-id');
+						// 	//	var type = $(ele).attr('data-type');
 
-							//	if (qr_codes.indexOf(id + ',' + type) < 0)
-							//		qr_codes.push(id + ',' + type);
-							//});
+						// 	//	if (qr_codes.indexOf(id + ',' + type) < 0)
+						// 	//		qr_codes.push(id + ',' + type);
+						// 	//});
 
-							//qr_codes.push($type);
+						// 	//qr_codes.push($type);
 
-							ajaxDelete_QR_Codes(qr_codes, $type, $id, null);
-						}
-						else if ((typeof $this != 'undefined' && $this != null && typeof $($this).parent().find('span') != 'undefined'
-							&& $($this).parent().find('span') != null && $($this).parent().find('span').length > 0)) {
-							var id = $($this).parent().find('span').attr('data-id');
-							var type = $($this).parent().find('span').attr('data-type');
-							var qr_code = $($this).parent().find('span').text().trim();
+						// 	ajaxDelete_QR_Codes(qr_codes, $type, $id, null, null);
+						// }
+						// else if ((typeof $this != 'undefined' && $this != null && typeof $($this).parent().find('span') != 'undefined'
+						// 	&& $($this).parent().find('span') != null && $($this).parent().find('span').length > 0)) {
+						var qr_code_id = $($this).parent().find('span').attr('data-id');
+						var type = $($this).parent().find('span').attr('data-type');
+						var qr_code = $($this).parent().find('span').text().trim();
 
-							//qr_codes.push(id + ',' + type);
-
-							//qr_codes.push(qr_code);
-
-							ajaxDelete_QR_Codes(qr_code, $type, $id, $this);
-						}
+						ajaxDelete_QR_Codes(qr_code, type, $id, $this, qr_code_id);
+						// }
 
 					}
 				});
 			}
 
-			//$('#table_MDA_Dtls tr:eq(' + (table.row(table.rows('.bg-info')).index() - 1) + ')').trigger('click');
 		}
 
-		function ajaxDelete_QR_Codes(qr_code, $type, $id, $this) {
+		function ajaxDelete_QR_Codes(qr_code, $type, $id, $this, $qr_code_id) {
 
 			if (typeof $type != 'undefined' && $type != null && $type != '') {
-
-				var srNo = '0';
-
-				if (typeof $this != 'undefined' && $this != null)
-					srNo = $($this).parent().find('span').attr('data-srno');
 
 				var truck_no = $('#Truck_No').val();
 				var mda_id = $('#input_MDA_Id').val();
@@ -2054,36 +2034,9 @@
 
 				ShowLoader(true);
 
-				// var srnoArray = $('#ul_Accepted_QR_Code li span').map(function () { return parseInt($(this).attr('data-srno'), 10); })
-				// 	.get().filter(Number.isInteger);
-
-				// var minSrno = Math.min(...srnoArray);
-				// var maxSrno = Math.max(...srnoArray);
-
-				// var allNumbers = Array.from({ length: maxSrno - minSrno + 1 }, (_, i) => minSrno + i);
-
-				// var missingNumbers = allNumbers.filter(num => !srnoArray.includes(num));
-
-				// var srnoArray_Reject = $('#ul_Rejected_QR_Code li span').map(function () { return parseInt($(this).attr('data-srno'), 10); })
-				// 	.get().filter(Number.isInteger);
-
-				// minSrno = Math.min(...srnoArray_Reject);
-				// maxSrno = Math.max(...srnoArray_Reject);
-
-				// allNumbers = Array.from({ length: maxSrno - minSrno + 1 }, (_, i) => minSrno + i);
-
-				// var missingNumbers_Rejected = allNumbers.filter(num => !srnoArray_Reject.includes(num));
-
-				// if (missingNumbers == null) missingNumbers = [];
-
-				// if (missingNumbers_Rejected != null) missingNumbers = missingNumbers.concat(missingNumbers_Rejected);
-
-				// var missingNumbersJoined = missingNumbers.join('|');
-				var missingNumbersJoined = "";
-
 				$.ajax({
 					type: "GET",
-					url: '@Url.Action("Delete_QR_Code", "Load_MDA")?srNo=' + srNo + '&qr_code=' + qr_code + '&qr_code_type=' + $type + '&mda_id=' + mda_id + '&mda_dtls_id=' + mda_dtls_id + '&prod_id=' + prod_id + '&gatein_id=' + gatein_id + '&missingNo=' + missingNumbersJoined,
+					url: '@Url.Action("Delete_QR_Code", "Load_MDA")?qr_code=' + qr_code + '&qr_code_type=' + $type + '&mda_id=' + mda_id + '&prod_id=' + prod_id + '&gatein_id=' + gatein_id + '&id=' + $qr_code_id,
 					data: null,
 					contentType: "application/json; charset=utf-8",
 					dataType: "json",
@@ -2092,104 +2045,43 @@
 						setTimeout(function () {
 
 							try {
-
 								debugger;
-								var $response = response;
-
-								if (typeof $response.data2 != 'undefined' && $response.data2 != null) {
-
-									$('#span_Total_Scan_QR_Code').attr('data-last', $response.data2['no']);
-									$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data2['requiredShipper']);
-									$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data2['loaddedShipper']);
-									$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data2['loaddedShipper']);
-									$('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data2['rejectShipper']);
-
-									fnCalculate_QR_Code();
-								}
-
-								debugger;
-								if (typeof response != 'undefined' && response != null && response.statusCode === 1) {
-
-									if (typeof response.data1 != 'undefined' && response.data1 != null
-										&& typeof response.data1[0]['srNo'] != 'undefined' && response.data1[0]['srNo'] != null
-										&& response.data1[0]['srNo'] != '' && parseInt(response.data1[0]['srNo']) > 0) {
-										$('#div_Scan_QR_Code ul li span[data-srno="' + response.data1[0]['srNo'] + '"]').closest('li').remove();
-										$('#ul_Accepted_QR_Code ul li span[data-srno="' + response.data1[0]['srNo'] + '"]').closest('li').remove();
-										$('#ul_Rejected_QR_Code ul li span[data-srno="' + response.data1[0]['srNo'] + '"]').closest('li').remove();
+								if (response.statusCode === 1) {
+									if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length > 0) {
+										$('#div_Scan_QR_Code ul li span[data-id="' + $qr_code_id + '"]:contains("' + qr_code + '")').closest('li').remove();
+										$('#ul_Accepted_QR_Code ul li span[data-id="' + $qr_code_id + '"]:contains("' + qr_code + '")').closest('li').remove();
+										$('#ul_Rejected_QR_Code ul li span[data-id="' + $qr_code_id + '"]:contains("' + qr_code + '")').closest('li').remove();
+									} else if (typeof $type != 'undefined' && $type != null && $type.length > 0 && $type == 'A') {
+										$('#div_Scan_QR_Code ul li').remove();
+										$('#ul_Accepted_QR_Code ul li').remove();
+										$('#ul_Rejected_QR_Code ul li').remove();
 									}
+									else if (typeof $type != 'undefined' && $type != null && $type.length > 0) {
+										$('#div_Scan_QR_Code ul li span[data-type="' + $type + '"]').closest('li').remove();
+										if ($type == 'S')
+											$('#ul_Accepted_QR_Code ul li').remove();
+										else if ($type == 'R')
+											$('#ul_Rejected_QR_Code ul li').remove();
+									}
+
+
 								}
 								else {
 									CommonAlert_Error(response.message);
 								}
 
-								debugger;
-								if (typeof $response.data2 != 'undefined' && $response.data2 != null) {
+								
 
-									if ($response.data2['isCompleted'] == true) {
+								$('#span_Total_Scan_QR_Code').attr('data-cntReq', response.data1['requiredShipper']);
+								$('#span_Total_Scan_QR_Code').attr('data-cnt', response.data1['loaddedShipper']);
+								$('#span_Total_Accepted_QR_Code').attr('data-cnt', response.data1['loaddedShipper']);
+								$('#span_Total_Rejected_QR_Code').attr('data-cnt', response.data1['rejectShipper']);
 
-										setTimeout(function () {
+								fnGet_Scan_Code_History();
 
-											stopProgress(true, false);
-
-										}, 5 * 1000);
-
-										CommonConfirmed_Success("MDA Loading Completed.", fnLoad_MDA_Dtls, []);
-
-									}
-									else {
-										$('#divManualEntry').css('display', 'flex');
-										$('#btnManualEntry').prop('disabled', false);
-										$('#input_Scan_QR_Code').val('');
-										$('#input_temp_Scan_QR_Code').val('');
-									}
-								}
-
-								// 	fnCalculate_QR_Code();
+								//fnCalculate_QR_Code();
 
 							} catch { }
-
-
-							try {
-
-								debugger;
-								if (typeof $response.data1 != 'undefined' && $response.data1 != null && $response.data1.length >= 1) {
-
-									$.each($response.data1, function (i, ele) {
-
-										//if ((ele['success'] === 'OK' || ele['success'] === 'NOK') && ele['text'].indexOf('(') > -1)
-										if ((ele['success'] === 'OK' || ele['success'] === 'NOK'))
-											if (ele['success'] === 'OK' && $('ul#ul_Accepted_QR_Code li span[data-srno="' + ele['no'] + '"]').length <= 0) {
-												var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['no'] + '" data-srno="' + ele['no'] + '" data-type="S" class="float-left text-success text-bold">'
-													+ ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'S\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
-
-												$('#ul_Scan_QR_Code').prepend(html);
-												$('#ul_Accepted_QR_Code').prepend(html);
-
-												$('#input_Scan_QR_Code').val('');
-												$('#input_temp_Scan_QR_Code').val('');
-
-												//fnCalculate_QR_Code();
-											}
-											else if (ele['success'] === 'NOK' && $('ul#ul_Rejected_QR_Code li span[data-srno="' + ele['no'] + '"]').length <= 0) {
-												var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['no'] + '" data-srno="' + ele['no'] + '" data-type="R" class="float-left text-danger text-bold">'
-													+ ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'R\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
-
-												$('#ul_Scan_QR_Code').prepend(html);
-												$('#ul_Rejected_QR_Code').prepend(html);
-
-												$('#input_Scan_QR_Code').val('');
-												$('#input_temp_Scan_QR_Code').val('');
-
-												//fnCalculate_QR_Code();
-											}
-
-									})
-
-								}
-
-							} catch { }
-
-							fnCalculate_QR_Code();
 
 							ShowLoader(false);
 

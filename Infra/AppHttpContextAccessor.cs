@@ -53,6 +53,7 @@ namespace Dispatch_System
 		public static string API_Authorization_WMS => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("API_Authorization_WMS").Value);
 		public static string Invoice_QR_Image_URL_Domain => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Invoice_QR_Image_URL_Domain").Value);
 		public static string PlantCode => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("PlantCode").Value);
+		public static string PlantName => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("PlantName").Value);
 		public static Int64 PlantId => Convert.ToInt64(AppHttpContextAccessor.AppConfiguration.GetSection("PlantId").Value);
 		public static string Vendor_Portal_Url => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Vendor_Portal_Url").Value);
 		public static string IFFCO_Domain => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("IFFCO_Domain").Value);

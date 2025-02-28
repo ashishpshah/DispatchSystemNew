@@ -83,6 +83,10 @@
 		<Content Remove="Areas\Export\Views\CancleGateIn\_Partial_MDA_.cshtml" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Remove="Areas\MDA_Automation_Old.zip" />
+	</ItemGroup>
+
 
 
 	<ItemGroup>

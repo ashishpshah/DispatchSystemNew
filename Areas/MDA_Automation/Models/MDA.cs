@@ -41,11 +41,11 @@ namespace Dispatch_System
 		[JsonIgnore] public Int64 sr_no { get; set; }
 		[JsonIgnore] public string prod_cd { get; set; }
 		[JsonIgnore] public string prod_name { get; set; }
-        [JsonIgnore] public string Vehicle_Shippers { get; set; }
-        [JsonIgnore] public decimal Required_Shipper { get; set; }
-        [JsonIgnore] public decimal Loaded_Shipper { get; set; }
-        [JsonIgnore] public decimal Expected_Shipper { get; set; }
-    }
+		[JsonIgnore] public string Vehicle_Shippers { get; set; }
+		[JsonIgnore] public decimal Required_Shipper { get; set; }
+		[JsonIgnore] public decimal Loaded_Shipper { get; set; }
+		[JsonIgnore] public decimal Expected_Shipper { get; set; }
+	}
 
 	public class MDA_Status
 	{
