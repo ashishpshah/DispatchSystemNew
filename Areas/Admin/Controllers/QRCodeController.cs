@@ -1017,9 +1017,11 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 						textBody = textBody + System.Environment.NewLine + System.Environment.NewLine;
 
-						textBody = textBody + $"Password: {Common.Decrypt(obj.Password)}";
+                        //textBody = textBody + $"Password: {Common.Decrypt(obj.Password)}";
 
-						textBody = textBody + System.Environment.NewLine + System.Environment.NewLine;
+                        textBody = textBody + $"Password: ******";
+
+                        textBody = textBody + System.Environment.NewLine + System.Environment.NewLine;
 
 						textBody = textBody + $"URL: {AppHttpContextAccessor.Vendor_Portal_Url}";
 
