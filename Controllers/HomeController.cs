@@ -3425,15 +3425,17 @@ namespace Dispatch_System.Controllers
 								fileNameWithoutExtension = Path.GetFileNameWithoutExtension(destinationFilePath);
 								fileExtension = Path.GetExtension(destinationFilePath);
 
-								destinationFilePath = Path.Combine(destinationFolderPath, $"{fileNameWithoutExtension}{fileExtension}");
-								errorFilePath = Path.Combine(errorFolderPath, $"{fileNameWithoutExtension}_{DateTime.Now.ToString("yyyyMMddHHmmsss")}_Error{fileExtension}");
+								destinationFilePath = Path.Combine(destinationFolderPath, $"{fileNameWithoutExtension}_{DateTime.Now.ToString("yyyyMMdd_HHmmsss")}{fileExtension}");
+								errorFilePath = Path.Combine(errorFolderPath, $"{fileNameWithoutExtension}_{DateTime.Now.ToString("yyyyMMdd_HHmmsss")}_Error{fileExtension}");
 
-								//var fileDelete = true;
+								var fileDelete = true;
 
 								if (shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0)
 									try
 									{
-										if (!System.IO.File.Exists(destinationFilePath)) System.IO.File.Create(destinationFolderPath).Dispose();
+										if (!System.IO.File.Exists(destinationFilePath))
+											try { fileDelete = false; System.IO.File.Create(destinationFolderPath).Dispose(); fileDelete = true; }
+											catch { fileDelete = false; System.IO.File.Copy(sourceFilePath, destinationFilePath); fileDelete = true; }
 
 										filteredShipperData["ShipperQRCode_Data"] = JArray.FromObject(shipperQRCodeData_Success);
 
@@ -3442,39 +3444,45 @@ namespace Dispatch_System.Controllers
 										System.IO.File.WriteAllText(destinationFilePath, updatedJson);
 
 										Write_Log(fileName + " => " + destinationFilePath, logFilePath);
+
+										fileDelete = true;
 									}
 									catch (Exception ex)
 									{
-										//fileDelete = false;
+										fileDelete = false;
 
 										Write_Log(Environment.NewLine + $"{fileName} => {destinationFilePath} => File Not Created." + Environment.NewLine, logFilePath);
 										LogService.LogInsert(GetCurrentAction(), "", ex);
 									}
 
+								var fileDelete_ = true;
+
 								if (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0)
 									try
 									{
-										if (!System.IO.File.Exists(errorFilePath)) System.IO.File.Create(errorFilePath).Dispose();
+										if (!System.IO.File.Exists(errorFilePath))
+											try { fileDelete_ = false; System.IO.File.Create(errorFilePath).Dispose(); fileDelete_ = true; }
+											catch { fileDelete_ = false; System.IO.File.Copy(sourceFilePath, errorFilePath); fileDelete_ = true; }
 
 										filteredShipperData["ShipperQRCode_Data"] = JArray.FromObject(shipperQRCodeData_Duplicate);
 
 										string updatedJson = filteredShipperData.ToString(Formatting.Indented); /*JsonConvert.SerializeObject(shipperData_Error, Formatting.Indented);*/
+
 										System.IO.File.WriteAllText(errorFilePath, updatedJson);
 
 										Write_Log(fileName + " => " + errorFilePath, logFilePath);
+
+										fileDelete_ = true;
 									}
 									catch (Exception ex)
 									{
-										//fileDelete = false;
+										fileDelete_ = false;
 
 										Write_Log(Environment.NewLine + $"{fileName} => {errorFilePath} => File Not Created." + Environment.NewLine, logFilePath);
 										LogService.LogInsert(GetCurrentAction(), "", ex);
 									}
 
-
-								//System.IO.File.Copy(sourceFilePath, destinationFilePath);
-								//if (fileDelete == true)
-								System.IO.File.Delete(sourceFilePath);
+								if (fileDelete == true && fileDelete_ == true) System.IO.File.Delete(sourceFilePath);
 
 							}
 							catch (Exception ex) { }

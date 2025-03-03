@@ -84,7 +84,7 @@
 				background: #414850;
 				border-radius: 3px;
 				padding: 12px 0px;
-				width: 100%;
+				width: 100% !important;
 				border: none;
 				font-size: 20px;
 				color: #fff;
@@ -141,35 +141,35 @@
 		}
 
 		.animation_loader {
-            border: 16px solid #f3f3f3;
-            border-radius: 50%;
+			border: 16px solid #f3f3f3;
+			border-radius: 50%;
 			border-top: 16px solid #29a349;
 			border-bottom: 16px solid #29a349;
-            width: 120px;
-            height: 120px;
-            -webkit-animation: spin 2s linear infinite;
-            animation: spin 2s linear infinite;
-        }
+			width: 120px;
+			height: 120px;
+			-webkit-animation: spin 2s linear infinite;
+			animation: spin 2s linear infinite;
+		}
 
-        @@-webkit-keyframes spin {
-            0% {
-                -webkit-transform: rotate(0deg);
-            }
+		@@-webkit-keyframes spin {
+			0% {
+				-webkit-transform: rotate(0deg);
+			}
 
-            100% {
-                -webkit-transform: rotate(360deg);
-            }
-        }
+			100% {
+				-webkit-transform: rotate(360deg);
+			}
+		}
 
-        @@keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
+		@@keyframes spin {
+			0% {
+				transform: rotate(0deg);
+			}
 
-            100% {
-                transform: rotate(360deg);
-            }
-        }
+			100% {
+				transform: rotate(360deg);
+			}
+		}
 
 		.toggle-hide-show {
 			position: relative;
@@ -218,6 +218,36 @@
 						@* <button type="button" class="btn_login green" onclick="validateform()">Log in</button> *@
 					</div>
 				</div>
+				<br />
+				<div class="row">
+					<div class="col-12 text-center">
+						<h6>- OR -</h6>
+					</div>
+				</div>
+
+				@if (AppHttpContextAccessor.IsMultiPlant == true)
+				{
+					if (!string.IsNullOrEmpty(AppHttpContextAccessor.PlantName) && AppHttpContextAccessor.PlantName == "NFP3"
+					&& !string.IsNullOrEmpty(AppHttpContextAccessor.Loading_Bay) && AppHttpContextAccessor.Loading_Bay == "DLA04")
+					{
+						<br />
+						<div class="row btn_bottom">
+							<div class="col-6 offset-sm-3">
+								<a class="btn btn_login green" href="http://10.23.91.13:85/PlantLogin"><b>NFP 2</b></a>
+							</div>
+						</div>
+					}
+					else
+					{
+						<br />
+						<div class="row btn_bottom">
+							<div class="col-6 offset-sm-3">
+								<a class="btn btn_login green" href="http://10.23.91.18/PlantLogin"><b>NFP 3</b></a>
+							</div>
+						</div>
+					}
+				}
+
 			</div>
 		</div>
 	</form>

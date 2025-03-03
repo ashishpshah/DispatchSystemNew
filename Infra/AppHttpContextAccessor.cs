@@ -70,6 +70,9 @@ namespace Dispatch_System
 		public static bool EnableSsl => Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("Email_Configuration").GetSection("EnableSsl").Value);
 		public static string MailPassword => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Email_Configuration").GetSection("Password").Value);
 
+
+		public static bool IsMultiPlant => (_iConfig.GetChildren().Where(c => c.Key.Contains("ConnectionString_SQL")).Count() > 1);
+
 		//public static List<UserMenuAccess> GetUserMenuAccesses() => UserMenuAccess;
 		//public static List<UserMenuAccess> GetUserMenuPermission() => UserMenuPermission;
 
@@ -108,6 +111,7 @@ namespace Dispatch_System
 
 			return list;
 		}
+
 	}
 
 	public class StartsNumericConstraint : IRouteConstraint
