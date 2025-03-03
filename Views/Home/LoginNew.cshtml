@@ -213,39 +213,49 @@
 
 				<div class="row btn_bottom">
 					<div class="col-6 offset-sm-3">
-						@*<input type="submit" class="btn_login green btnSubmit" value="Log in" />*@
 						<button type="button" class="btn_login green" onclick="fnSubmitForm('formLogin')">Log in</button>
-						@* <button type="button" class="btn_login green" onclick="validateform()">Log in</button> *@
-					</div>
-				</div>
-				<br />
-				<div class="row">
-					<div class="col-12 text-center">
-						<h6>- OR -</h6>
 					</div>
 				</div>
 
-				@if (AppHttpContextAccessor.IsMultiPlant == true)
+				@if (!string.IsNullOrEmpty(AppHttpContextAccessor.Login_Redirect_URL) && AppHttpContextAccessor.Login_Redirect_URL.Contains("<#>"))
 				{
-					if (!string.IsNullOrEmpty(AppHttpContextAccessor.PlantName) && AppHttpContextAccessor.PlantName == "NFP3"
-					&& !string.IsNullOrEmpty(AppHttpContextAccessor.Loading_Bay) && AppHttpContextAccessor.Loading_Bay == "DLA04")
+					List<(string PlantName, string URL)> _list = new List<(string PlantName, string URL)>();
+
+					try
 					{
-						<br />
-						<div class="row btn_bottom">
-							<div class="col-6 offset-sm-3">
-								<a class="btn btn_login green" href="http://10.23.91.13:85/PlantLogin"><b>NFP 2</b></a>
-							</div>
-						</div>
+						var entries = AppHttpContextAccessor.Login_Redirect_URL.Split("<#>");
+
+						foreach (var entry in entries)
+						{
+							var parts = entry.Trim().Split("<@>");
+							if (parts.Length == 2 && !((parts[0]).Replace(" ", "").Contains(AppHttpContextAccessor.PlantName.Split(':')[0])))
+							{
+								_list.Add((parts[0], parts[1]));
+							}
+						}
+
+						if (_list != null && _list.Count() > 0)
+						{
+							foreach ((string PlantName, string URL) item in _list)
+							{
+								<br />
+								<div class="row">
+									<div class="col-12 text-center">
+										<h6>- OR -</h6>
+									</div>
+								</div>
+
+								<br />
+								<div class="row btn_bottom">
+									<div class="col-6 offset-sm-3">
+										<a class="btn btn_login green" href="@item.URL"><b>@item.PlantName</b></a>
+									</div>
+								</div>
+							}
+						}
 					}
-					else
-					{
-						<br />
-						<div class="row btn_bottom">
-							<div class="col-6 offset-sm-3">
-								<a class="btn btn_login green" href="http://10.23.91.18/PlantLogin"><b>NFP 3</b></a>
-							</div>
-						</div>
-					}
+					catch { }
+
 				}
 
 			</div>

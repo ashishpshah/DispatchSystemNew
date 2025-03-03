@@ -231,12 +231,12 @@
 		}
 
 		/* table.dataTable tr th.select-checkbox.selected::after {
-																											content: "✔";
-																											margin-top: -11px;
-																											margin-left: -4px;
-																											text-align: center;
-																											text-shadow: rgb(176, 190, 217) 1px 1px, rgb(176, 190, 217) -1px -1px, rgb(176, 190, 217) 1px -1px, rgb(176, 190, 217) -1px 1px;
-																										} */
+																															content: "✔";
+																															margin-top: -11px;
+																															margin-left: -4px;
+																															text-align: center;
+																															text-shadow: rgb(176, 190, 217) 1px 1px, rgb(176, 190, 217) -1px -1px, rgb(176, 190, 217) 1px -1px, rgb(176, 190, 217) -1px 1px;
+																														} */
 	</style>
 
 	@RenderSection("Styles", required: false)
@@ -276,14 +276,9 @@
 			}
 
 			<ul class="navbar-nav ml-auto text-white">
-				@if (AppHttpContextAccessor.IsMultiPlant == true && !string.IsNullOrEmpty(AppHttpContextAccessor.PlantName) && AppHttpContextAccessor.PlantName == "NFP3"
-									&& !string.IsNullOrEmpty(AppHttpContextAccessor.Loading_Bay) && AppHttpContextAccessor.Loading_Bay == "DLA04")
+				@if (!string.IsNullOrEmpty(AppHttpContextAccessor.PlantName))
 				{
-					<li class="nav-item"> <span class="nav-link text-white"><b>NFP 3</b></span> </li>
-				}
-				else if (AppHttpContextAccessor.IsMultiPlant == true)
-				{
-					<li class="nav-item"> <span class="nav-link text-white"><b>NFP 2</b></span> </li>
+					<li class="nav-item"> <span class="nav-link text-white"><b>@(AppHttpContextAccessor.PlantName.Split(':')[1])</b></span> </li>
 				}
 
 				<li class="nav-item dropdown user-menu">

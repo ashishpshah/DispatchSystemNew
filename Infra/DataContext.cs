@@ -16,15 +16,8 @@ namespace Dispatch_System
 	public static class DataContext
 	{
 		public static string _connectionString_Oracle = AppHttpContextAccessor.AppConfiguration.GetSection("ConnectionString_Oracle").Value;
-		public static string _connectionString_SQL = AppHttpContextAccessor.AppConfiguration.GetSection("ConnectionString_SQL").Value;
-
-		static DataContext()
-		{
-			if (!string.IsNullOrEmpty(AppHttpContextAccessor.PlantName) && AppHttpContextAccessor.PlantName == "NFP3"
-				&& !string.IsNullOrEmpty(AppHttpContextAccessor.Loading_Bay) && AppHttpContextAccessor.Loading_Bay == "DLA04")
-				_connectionString_SQL = AppHttpContextAccessor.AppConfiguration.GetSection("ConnectionString_SQL_1") != null
-					? AppHttpContextAccessor.AppConfiguration.GetSection("ConnectionString_SQL_1").Value : "";
-		}
+		public static string _connectionString_SQL = (!string.IsNullOrEmpty(AppHttpContextAccessor.PlantName) && AppHttpContextAccessor.PlantName.Split(':')[0] == "NFP3") ?
+		AppHttpContextAccessor.AppConfiguration.GetSection("ConnectionString_SQL_1").Value : AppHttpContextAccessor.AppConfiguration.GetSection("ConnectionString_SQL").Value;
 
 		public static string Get_DbSchemaName_SQL()
 		{

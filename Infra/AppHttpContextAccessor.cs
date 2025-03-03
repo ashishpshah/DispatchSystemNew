@@ -54,6 +54,7 @@ namespace Dispatch_System
 		public static string Invoice_QR_Image_URL_Domain => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Invoice_QR_Image_URL_Domain").Value);
 		public static string PlantCode => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("PlantCode").Value);
 		public static string PlantName => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("PlantName").Value);
+		public static string Login_Redirect_URL => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Login_Redirect_URL").Value);
 		public static Int64 PlantId => Convert.ToInt64(AppHttpContextAccessor.AppConfiguration.GetSection("PlantId").Value);
 		public static string Vendor_Portal_Url => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Vendor_Portal_Url").Value);
 		public static string IFFCO_Domain => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("IFFCO_Domain").Value);
@@ -70,8 +71,6 @@ namespace Dispatch_System
 		public static bool EnableSsl => Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("Email_Configuration").GetSection("EnableSsl").Value);
 		public static string MailPassword => Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Email_Configuration").GetSection("Password").Value);
 
-
-		public static bool IsMultiPlant => (_iConfig.GetChildren().Where(c => c.Key.Contains("ConnectionString_SQL")).Count() > 1);
 
 		//public static List<UserMenuAccess> GetUserMenuAccesses() => UserMenuAccess;
 		//public static List<UserMenuAccess> GetUserMenuPermission() => UserMenuPermission;
