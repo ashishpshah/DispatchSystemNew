@@ -1,12 +1,15 @@
 ﻿using Dispatch_System.Controllers;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json.Linq;
 using System.Data;
 using System.Globalization;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using VendorQRGeneration.Infra.Services;
+using ZXing.QrCode.Internal;
 
 namespace Dispatch_System.Areas.Admin.Controllers
 {
@@ -1494,8 +1497,6 @@ namespace Dispatch_System.Areas.Admin.Controllers
 		[HttpGet]
 		public IActionResult Delete_QR_Code(string qr_code = null, string qr_code_type = null, long mda_id = 0, long gatein_id = 0, long prod_id = 0, long id = 0)
 		{
-			_socketBackgroundTask.StopWork();
-
 			long requiredShipper = 0;
 			long loaddedShipper = 0;
 			long rejectShipper = 0;
@@ -1554,6 +1555,14 @@ namespace Dispatch_System.Areas.Admin.Controllers
 			CommonViewModel.Message = ResponseStatusMessage.Error;
 
 			return Json(CommonViewModel);
+		}
+
+		[HttpGet]
+		public IActionResult RemoveShipperFromTestMDA()
+		{
+			try { DataContext.ExecuteStoredProcedure_SQL("PC_REMOVE_SHIPPER_FROM_TEST_MDA", null, false); } catch (Exception ex) { }
+
+			return Json(null);
 		}
 
 	}

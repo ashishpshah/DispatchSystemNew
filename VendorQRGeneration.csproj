@@ -65,6 +65,7 @@
 	  <Compile Remove="Infra\ChatHub.cs" />
 	  <Compile Remove="Infra\DataContext - Copy.cs" />
 	  <Compile Remove="Infra\Services\SocketBackgroundTask - Copy.cs" />
+	  <Compile Remove="Infra\Services\SocketBackgroundTask1.cs" />
 	  <Compile Remove="Infra\Services\SocketBackgroundTask_Working.cs" />
 	</ItemGroup>
 

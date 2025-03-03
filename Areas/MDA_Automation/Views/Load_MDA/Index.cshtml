@@ -470,7 +470,6 @@
 						$(tableDtls.rows(i).nodes().to$()).attr('id', 'tr_' + $data[i].gateInOut_Id + '_' + $data[i].mda_Id);
 						$(tableDtls.rows(i).nodes().to$()).attr('data-mdaid', $data[i].mda_Id);
 						$(tableDtls.rows(i).nodes().to$()).attr('data-gateinoutid', $data[i].gateInOut_Id);
-						$(tableDtls.rows(i).nodes().to$()).attr('data-prodsysid', $data[i].prod_Sys_Id);
 
 						if ($data[i].is_Posted == true) {
 							tableDtls.rows(i).nodes().to$().addClass('row-disabled');
@@ -639,15 +638,6 @@
 						});
 					}
 				}
-			}
-			else
-			{
-
-				var MDA_Id = $(this).attr('data-mdaid');
-				var Gate_In_Out_Id = $(this).attr('data-gateinoutid');
-				var Prod_Sys_Id = $(this).attr('data-prodsysid');
-
-				fnShow_Modal('@Url.Action("Partial_ViewQR", "Load_MDA", new { area = "MDA_Automation" })?type=&mda_id=' + MDA_Id + '&mda_dtls_id=0&prod_id=' + Prod_Sys_Id + '&gatein_id=' + Gate_In_Out_Id, 'View All QR Codes', true, 'html', false);
 			}
 
 			return false;

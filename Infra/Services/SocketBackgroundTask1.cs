@@ -231,6 +231,7 @@ namespace VendorQRGeneration.Infra.Services
 					var receivedData = Encoding.UTF8.GetString(_buffer, 0, received);
 
 					Write_Log($"{Environment.NewLine}Socket server received message Before Split : \"{receivedData}\"");
+					Console.WriteLine($"{Environment.NewLine}Socket server received message Before Split : \"{receivedData}\"");
 
 					receivedData = receivedData.Trim().Replace(" ", "");
 
@@ -274,8 +275,8 @@ namespace VendorQRGeneration.Infra.Services
 						receivedData = receivedData.Replace("MCIDEL", "");
 						receivedData = receivedData.Replace("MCSTART", "");
 						receivedData = receivedData.Replace("MCSTOP", "");
-						//receivedData = receivedData.Replace("<#>", "");
-						//receivedData = receivedData.Replace("<@>", "");
+						receivedData = receivedData.Replace("<#>", "");
+						receivedData = receivedData.Replace("<@>", "");
 
 					}
 
@@ -327,24 +328,18 @@ namespace VendorQRGeneration.Infra.Services
 						&& !receivedData.Trim().ToUpper().Replace(" ", "").Contains("MCSTART")
 					)
 					{
-						if (!string.IsNullOrEmpty(_receivedData_Prev.QRCode)
-							&& receivedData == _receivedData_Prev.QRCode
-							&& (_receivedData_Prev.Ticks - DateTime.Now.Ticks) < 100000000)
-						{
-							Thread.Sleep(1000);
-
-							Write_Log($"ReceivedData : {receivedData} before 10 sec ");
-
-							receivedData = "";
-
-							//clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
-							continue;
-						}
+						//if (!string.IsNullOrEmpty(_receivedData_Prev.QRCode)
+						//    && _receivedData_Prev.QRCode == receivedData
+						//    && (_receivedData_Prev.Ticks - DateTime.Now.Ticks) < 100000000)
+						//{
+						//    //clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
+						//    continue;
+						//}
 
 						var (IsSuccess, response, Id) = (false, "NOK", 0M);
 
 						if (!string.IsNullOrEmpty(receivedData)
-							&& receivedData.Trim().ToUpper().Replace(" ", "").Contains("<#>"))
+							&& receivedData.Trim().ToUpper().Replace(" ", "") == "<#>")
 						{
 							clientSocket.Send(Encoding.ASCII.GetBytes("<#>"));
 
@@ -357,7 +352,7 @@ namespace VendorQRGeneration.Infra.Services
 							continue;
 						}
 						else if (!string.IsNullOrEmpty(receivedData)
-							&& receivedData.Trim().ToUpper().Replace(" ", "").Contains("<@>"))
+							&& receivedData.Trim().ToUpper().Replace(" ", "") == "<@>")
 						{
 							Write_Log($"ReceivedData : {receivedData} | <@> Response : continue");
 
@@ -433,6 +428,7 @@ namespace VendorQRGeneration.Infra.Services
 						}
 
 						Write_Log($"Response : {response}");
+						Console.WriteLine($"Response : {response}");
 
 						try
 						{
@@ -482,6 +478,7 @@ namespace VendorQRGeneration.Infra.Services
 										clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
 
 										Write_Log($"Response : {response}");
+										Console.WriteLine($"Response : {response}");
 
 										Thread.Sleep(1000);
 										clientSocket.Send(Encoding.ASCII.GetBytes("<#>"));
@@ -502,6 +499,7 @@ namespace VendorQRGeneration.Infra.Services
 									clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
 
 									Write_Log($"Response : {response}");
+									Console.WriteLine($"Response : {response}");
 
 									Thread.Sleep(1000);
 									clientSocket.Send(Encoding.ASCII.GetBytes("<#>"));
@@ -522,6 +520,7 @@ namespace VendorQRGeneration.Infra.Services
 								clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
 
 								Write_Log($"Response : {response}");
+								Console.WriteLine($"Response : {response}");
 
 								Thread.Sleep(1000);
 								clientSocket.Send(Encoding.ASCII.GetBytes("<#>"));
@@ -529,6 +528,7 @@ namespace VendorQRGeneration.Infra.Services
 							}
 
 							Write_Log($"Error: {JsonConvert.SerializeObject(_ex)}");
+							Console.WriteLine($"Error: {JsonConvert.SerializeObject(_ex)}");
 						}
 					}
 
