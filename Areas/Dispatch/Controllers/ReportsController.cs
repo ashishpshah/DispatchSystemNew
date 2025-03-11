@@ -1128,12 +1128,16 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
             {
                 try
                 {
-                    var oParams = new List<OracleParameter>();
+                    var plant_id = Common.Get_Session_Int(SessionKey.PLANT_ID);
 
-                    oParams.Add(new OracleParameter("P_SEARCHTERM", OracleDbType.NVarchar2) { Value = searchTerm });
-                    oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+                    plant_id = plant_id <= 0 ? AppHttpContextAccessor.PlantId : plant_id;
 
-                    dt = DataContext.ExecuteStoredProcedure_DataTable("PC_REPORT_KNOW_BOTTLE", oParams, true);
+                    //var oParams = new List<OracleParameter>();
+
+                    //oParams.Add(new OracleParameter("P_SEARCHTERM", OracleDbType.NVarchar2) { Value = searchTerm });
+                    //oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+
+                    dt = DataContext.ExecuteQuery($"SELECT * FROM BOTTLE_QRCODE WHERE PLANT_ID = {plant_id} AND BOTTLE_QRCODE = '{searchTerm}'");
 
                     //CommonViewModel.Data1 = (dt != null && dt.Rows.Count > 0) && dt.Rows[0]["PLANT_NAME"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["PLANT_NAME"]) : null;
                 }
