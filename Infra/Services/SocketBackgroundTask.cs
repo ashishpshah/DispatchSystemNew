@@ -223,6 +223,9 @@ namespace VendorQRGeneration.Infra.Services
 					if (clientSocket == null || !IsConnected(clientSocket))
 					{
 						_isRunning = false;
+
+						Write_Log($"{Environment.NewLine}Socket server disconnected.");
+
 						return;
 					}
 
@@ -280,7 +283,6 @@ namespace VendorQRGeneration.Infra.Services
 					}
 
 					Write_Log($"Socket server received message After Split : \"{receivedData}\"");
-					Console.WriteLine($"Socket server received message After Split : \"{receivedData}\"");
 
 					if (!_isRunning && !_isStopSignal && !string.IsNullOrEmpty(receivedData)
 						&& (receivedData.Trim().ToUpper().Replace(" ", "").Contains("MCSTART")
@@ -319,7 +321,11 @@ namespace VendorQRGeneration.Infra.Services
 					}
 					else if (_isRunning && _isStopSignal && !string.IsNullOrEmpty(receivedData)
 						&& !receivedData.Trim().ToUpper().Replace(" ", "").Contains("MCSTOP"))
+					{
+						Write_Log($"Stop Signal");
+
 						continue;
+					}
 
 					if (_isRunning && !_isStopSignal && !string.IsNullOrEmpty(receivedData)
 						&& !receivedData.Trim().ToUpper().Replace(" ", "").Contains("MCIDEL")
@@ -333,7 +339,7 @@ namespace VendorQRGeneration.Infra.Services
 						{
 							Thread.Sleep(1000);
 
-							Write_Log($"ReceivedData : {receivedData} before 10 sec ");
+							Write_Log($"ReceivedData : {receivedData} before 10 sec | Response : continue");
 
 							receivedData = "";
 
@@ -346,7 +352,7 @@ namespace VendorQRGeneration.Infra.Services
 						if (!string.IsNullOrEmpty(receivedData)
 							&& receivedData.Trim().ToUpper().Replace(" ", "").Contains("<#>"))
 						{
-							clientSocket.Send(Encoding.ASCII.GetBytes("<#>"));
+							clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 							Thread.Sleep(1000);
 
@@ -365,9 +371,7 @@ namespace VendorQRGeneration.Infra.Services
 
 							_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), "##########", "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
 
-							//clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
-
-							clientSocket.Send(Encoding.ASCII.GetBytes("<@>"));
+							clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 							Thread.Sleep(1000);
 
@@ -375,28 +379,6 @@ namespace VendorQRGeneration.Infra.Services
 
 							continue;
 						}
-						//else if (!string.IsNullOrEmpty(receivedData)
-						//	&& _sharedDataService.GetScanData()
-						//	.Any(x => x.Value.flag == "OK" && x.Value.qr_code == receivedData.Trim().ToUpper().Replace(" ", "")))
-						//{
-						//	////mda.Carton_Qty = (long)mda.Carton_Qty + 1;
-
-						//	////_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
-
-						//	//clientSocket.Send(Encoding.ASCII.GetBytes("OK"));
-
-						//	//receivedData = "";
-
-						//	//Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
-
-						//	_isStopSignal = true;
-
-						//	clientSocket.Send(Encoding.ASCII.GetBytes("STOP"));
-
-						//	Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
-
-						//	continue;
-						//}
 						else if (MDA_QR_Scan_Response_Demo)
 						{
 							string[] arrayResponse = new string[] { "OK", "NOK" };
@@ -466,7 +448,7 @@ namespace VendorQRGeneration.Infra.Services
 									}
 
 									Thread.Sleep(1000);
-									clientSocket.Send(Encoding.ASCII.GetBytes("<#>"));
+									clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 								}
 								else
@@ -484,7 +466,7 @@ namespace VendorQRGeneration.Infra.Services
 										Write_Log($"Response : {response}");
 
 										Thread.Sleep(1000);
-										clientSocket.Send(Encoding.ASCII.GetBytes("<#>"));
+										clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 									}
 								}
@@ -504,7 +486,7 @@ namespace VendorQRGeneration.Infra.Services
 									Write_Log($"Response : {response}");
 
 									Thread.Sleep(1000);
-									clientSocket.Send(Encoding.ASCII.GetBytes("<#>"));
+									clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 								}
 							}
@@ -524,7 +506,7 @@ namespace VendorQRGeneration.Infra.Services
 								Write_Log($"Response : {response}");
 
 								Thread.Sleep(1000);
-								clientSocket.Send(Encoding.ASCII.GetBytes("<#>"));
+								clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 							}
 

@@ -1,0 +1,174 @@
+﻿@model string
+
+@{
+	ViewData["Title"] = "Check Bottle QR Code on Cloud";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="content-header bg-gradient-green" style="border-radius: 0.25rem">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-12" style="text-align:center;">
+
+				<h3 class="font-weight-bold">Check Bottle QR Code on Cloud</h3>
+
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="content p-0">
+	<div class="container-fluid p-0">
+		<div class="row no-gutters">
+			<div class="col-12 card">
+				<div class="card-body pb-0">
+					<div class="panel-divider">
+						<span>Search Details</span>
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-10 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+								<div class="form-horizontal">
+									<div class="card-body py-1 px-0">
+
+										<div class="form-group row">
+
+											<label for="inputSearch" class="col-sm-2 col-form-label text-right">QR Code No.</label>
+											<div class="col-sm-3">
+												<input type="text" id="inputSearch" class="form-control form-control-sm" autocomplete="off" />
+											</div>
+
+											<div class="col-sm-3 ml-1">
+												<button type="button" class="btn btn-info btn-sm btn-flat" onclick="fnClick_Search()">Search</button>
+											</div>
+
+										</div>
+
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="panel-divider">
+
+						<span>Result</span>
+
+						<div class="row no-gutters p-0 m-0">
+							<div class="col-12 card card-primary p-0 m-0 shadow-none" style="margin: 0rem !important;">
+								<div class="card-body py-1 px-0" id="divShow_Result">
+
+									<div class="alert alert-danger alert-dismissible d-none">
+										<h5 class="m-0"><i class="icon fas fa-ban"></i> <span></span></h5>
+									</div>
+
+									@* <div class="alert alert-success alert-dismissible">
+									<h5 class="m-0"><i class="icon fas fa-check"></i> Alert!</h5>
+									</div> *@
+
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+@section Scripts {
+	<script type="text/javascript">
+
+		$(document).on('input', '#inputSearch', function (e) {
+			e.preventDefault();
+
+			debugger;
+
+			try {
+
+				$('#divShow_Result .alert span').text('Alert!');
+
+				$('#divShow_Result .alert').removeClass('alert-danger');
+				$('#divShow_Result .alert i').removeClass('fa-ban');
+
+				$('#divShow_Result .alert').removeClass('alert-success');
+				$('#divShow_Result .alert i').removeClass('fa-check');
+
+				$('#divShow_Result .alert').addClass('alert-danger');
+				$('#divShow_Result .alert i').addClass('fa-ban');
+
+				$('#divShow_Result .alert').addClass('d-none');
+
+				var input_Scanner = $(this).val();
+
+				if (typeof input_Scanner != 'undefined' && input_Scanner != null && input_Scanner.length > 0 && input_Scanner.indexOf('/') > -1) {
+
+					var arrayStr = input_Scanner.split('/');
+
+					if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0) {
+
+						var qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
+
+						if (typeof qr_code != 'undefined' && qr_code != null && qr_code.length > 0) {
+
+							$('#inputSearch').val(qr_code).trigger('change');
+
+						}
+					}
+					// else {
+					// 	$('#inputSearch').val(input_Scanner).trigger('change');
+					// }
+				}
+			} catch { }
+		});
+
+		function fnClick_Search() {
+
+			var searchTerm = $('#inputSearch').val();
+
+			if (typeof searchTerm != 'undefined' && searchTerm != null && searchTerm.length > 0) {
+
+				ShowLoader(true);
+
+				$.ajax({
+					type: "GET",
+					url: '@Url.Action("GetData_QR_Code", "Reports", new { area = "Dispatch" })?searchTerm=' + searchTerm,
+					data: null,
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+					success: function (response) {
+
+						setTimeout(function () {
+							debugger;
+							ShowLoader(false);
+
+							$('#divShow_Result .alert span').text(response["data2"]);
+
+							$('#divShow_Result .alert').removeClass('alert-danger');
+							$('#divShow_Result .alert i').removeClass('fa-ban');
+
+							$('#divShow_Result .alert').removeClass('alert-success');
+							$('#divShow_Result .alert i').removeClass('fa-check');
+
+							if (response["data1"] == true) {
+								$('#divShow_Result .alert').addClass('alert-success');
+								$('#divShow_Result .alert i').addClass('fa-check');
+							}
+							else {
+								$('#divShow_Result .alert').addClass('alert-danger');
+								$('#divShow_Result .alert i').addClass('fa-ban');
+							}
+
+							$('#divShow_Result .alert').removeClass('d-none');
+
+						}, 1000);
+
+					},
+					failure: function (response) { ShowLoader(false); CommonAlert_Error(null) },
+					error: function (response) { ShowLoader(false); CommonAlert_Error(null) }
+				});
+			}
+
+		}
+	</script>
+}
