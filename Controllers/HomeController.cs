@@ -3494,30 +3494,30 @@ namespace Dispatch_System.Controllers
 
                             if (listShipperQRCode_Duplicate.Any(x => x.Type == "DUP_SHIPPER"))
                             {
-                                error += $" | Shipper QR Code - Duplicate : Count = {listShipperQRCode_Duplicate.Count(x => x.Type == "DUP_SHIPPER")} ";
+                                error += $" | Shipper QR Code - Duplicate : Count = {listShipperQRCode_Duplicate.Where(x => x.Type == "DUP_SHIPPER").SelectMany(x => x.QRCode.Split(',')).Count()} ";
                                 error += $" | Shipper QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "DUP_SHIPPER").Select(x => "<S>" + x.QRCode).ToArray())} ";
                             }
 
                             if (listShipperQRCode_Duplicate.Any(x => x.Type == "BOTTLE_CNT_SHIPPER"))
                             {
-                                error += $" | Shipper QR Code - not contain 24 bottles : Count = {listShipperQRCode_Duplicate.Count(x => x.Type == "BOTTLE_CNT_SHIPPER")} ";
+                                error += $" | Shipper QR Code - not contain 24 bottles : Count = {listShipperQRCode_Duplicate.Where(x => x.Type == "BOTTLE_CNT_SHIPPER").SelectMany(x => x.QRCode.Split(',')).Count()} ";
                                 error += $" | Shipper QR Code - not contain 24 bottles : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "BOTTLE_CNT_SHIPPER").Select(x => "<S>" + x.QRCode).ToArray())} ";
                             }
 
                             if (listShipperQRCode_Duplicate.Any(x => x.Type == "DUP_BOTTLE"))
                             {
-                                error += $" | Bottle QR Code - Duplicate : Count = {listShipperQRCode_Duplicate.Count(x => x.Type == "DUP_BOTTLE")} ";
+                                error += $" | Bottle QR Code - Duplicate : Count = {listShipperQRCode_Duplicate.Where(x => x.Type == "DUP_BOTTLE").SelectMany(x => x.BottleQRCodes.Split(',')).Count()} ";
                                 error += $" | Bottle QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "DUP_BOTTLE").Select(x => "<S>" + x.QRCode + "<B>" + x.BottleQRCodes).ToArray())} ";
                             }
                             if (listShipperQRCode_Duplicate.Any(x => x.Type == "LEN_BOTTLE"))
                             {
-                                error += $" | Bottle QR Code - length issue : Count = {listShipperQRCode_Duplicate.Count(x => x.Type == "LEN_BOTTLE")} ";
+                                error += $" | Bottle QR Code - length issue : Count = {listShipperQRCode_Duplicate.Where(x => x.Type == "LEN_BOTTLE").SelectMany(x => x.BottleQRCodes.Split(',')).Count()} ";
                                 error += $" | Bottle QR Code - length issue : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type == "LEN_BOTTLE").Select(x => "<S>" + x.QRCode + "<B>" + x.BottleQRCodes).ToArray())} ";
                             }
 
                             if (listShipperQRCode_Duplicate.Any(x => x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE"))
                             {
-                                error += $" | Shipper QR Code - issue : Count = {listShipperQRCode_Duplicate.Count(x => x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE")} ";
+                                error += $" | Shipper QR Code - issue : Count = {listShipperQRCode_Duplicate.Where(x => x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE").SelectMany(x => x.QRCodes.Split(',')).Count()} ";
                                 error += $" | Shipper QR Code - issue : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE").Select(x => "<S>" + x.QRCode).ToArray())} ";
                             }
                         }
