@@ -469,27 +469,25 @@ namespace Dispatch_System.Areas.Dispatch.Controllers
 
 				CommonViewModel.RedirectURL = Url.Content("~/") + GetCurrentControllerUrl() + "/Index";
 
-				if (IsSuccess)
+
+				List<(long Gate_In_Out_Id, long MDA_Id)> listId = new List<(long Gate_In_Out_Id, long MDA_Id)>();
+
+				if (dt != null && dt.Rows.Count > 0)
+					foreach (DataRow dr in dt.Rows)
+						listId.Add((dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0, dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0));
+
+				if (listId != null && listId.Count() > 0)
 				{
-					List<(long Gate_In_Out_Id, long MDA_Id)> listId = new List<(long Gate_In_Out_Id, long MDA_Id)>();
-
-					if (dt != null && dt.Rows.Count > 0)
-						foreach (DataRow dr in dt.Rows)
-							listId.Add((dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0, dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0));
-
-					if (listId != null && listId.Count() > 0)
-					{
-						Task.Run(async () => await DataContext.SyncData_LocalToCloud("FG_GATE_IN_OUT", listId.Select(x => x.Gate_In_Out_Id).ToList(), null));
-						Task.Run(async () => await DataContext.SyncData_LocalToCloud("FG_WEIGHMENT_DETAIL", listId.Select(x => x.Gate_In_Out_Id).ToList(), null));
-						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_HEADER", null, listId.Select(x => x.MDA_Id).ToList()));
-						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_DETAIL", null, listId.Select(x => x.MDA_Id).ToList()));
-						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_LOADING", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_REQUISITION_DATA", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_SEQUENCE", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_INVOICE_QR", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_ADD_QTY_REQUEST", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_LOADING", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-					}
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("FG_GATE_IN_OUT", listId.Select(x => x.Gate_In_Out_Id).ToList(), null));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("FG_WEIGHMENT_DETAIL", listId.Select(x => x.Gate_In_Out_Id).ToList(), null));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_HEADER", null, listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_DETAIL", null, listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_LOADING", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_REQUISITION_DATA", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_SEQUENCE", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_INVOICE_QR", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_ADD_QTY_REQUEST", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_LOADING", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
 				}
 
 			}

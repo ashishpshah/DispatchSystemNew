@@ -5462,7 +5462,7 @@ namespace Dispatch_System.Controllers
                 }
                 else
                 {
-                    body_html += "<br /><b> No Batch Data are available to uploaded on Cloud Database. <b/> <br /><br /><br /> <br /> <br /> ";
+                    body_html += "<br /><b> No batch data is available for upload to the cloud database. <b/> <br /><br /><br /> <br /> <br /> ";
                 }
 
                 listOracleParameter = new List<OracleParameter>();
