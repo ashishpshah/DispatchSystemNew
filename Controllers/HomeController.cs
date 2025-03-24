@@ -3541,7 +3541,7 @@ namespace Dispatch_System.Controllers
                                                     $", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
                                                     $", STR_TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
                                                     $", {(shipperQRCodeData_Success.Count() * 24)}, 'Completed'" +
-                                                    $", '{error}' );";
+                                                    $", '' );";
 
                                 var result = DataContext.ExecuteNonQuery_SQL(query_File);
                             }
