@@ -3536,6 +3536,8 @@ namespace Dispatch_System.Controllers
 
                             if (shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0)
                             {
+                                destinationFilePath = Path.GetFileName(destinationFilePath);
+
                                 query_File = $"INSERT INTO SHIPPER_QR_CODE_FILE_UPLOAD_STATUS (FILEUPLOADNAME, STARTDATE, ENDDATE, QRCODECOUNT, FILESTATUS, REMARK) " +
                                                     $"VALUES ( '{destinationFilePath.Substring(0, destinationFilePath.Length - (destinationFilePath.Length - destinationFilePath.LastIndexOf('.')))}'" +
                                                     $", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
@@ -3548,6 +3550,8 @@ namespace Dispatch_System.Controllers
 
                             if (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0)
                             {
+                                errorFilePath = Path.GetFileName(errorFilePath);
+
                                 query_File = $"INSERT INTO SHIPPER_QR_CODE_FILE_UPLOAD_STATUS (FILEUPLOADNAME, STARTDATE, ENDDATE, QRCODECOUNT, FILESTATUS, REMARK) " +
                                                     $"VALUES ( '{errorFilePath.Substring(0, errorFilePath.Length - (errorFilePath.Length - errorFilePath.LastIndexOf('.')))}'" +
                                                     $", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
