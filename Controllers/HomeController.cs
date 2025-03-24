@@ -3517,7 +3517,7 @@ namespace Dispatch_System.Controllers
 
                             if (listShipperQRCode_Duplicate.Any(x => x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE"))
                             {
-                                error += $" | Shipper QR Code - issue : Count = {listShipperQRCode_Duplicate.Where(x => x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE").SelectMany(x => x.QRCodes.Split(',')).Count()} ";
+                                error += $" | Shipper QR Code - issue : Count = {listShipperQRCode_Duplicate.Where(x => x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE").SelectMany(x => x.QRCode.Split(',')).Count()} ";
                                 error += $" | Shipper QR Code - issue : {string.Join(",", listShipperQRCode_Duplicate.Where(x => x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE").Select(x => "<S>" + x.QRCode).ToArray())} ";
                             }
                         }
