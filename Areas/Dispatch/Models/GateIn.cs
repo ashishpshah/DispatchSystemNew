@@ -219,7 +219,9 @@ namespace Dispatch_System
 		public string mfg_dt { get; set; }
 		public string expiry_dt { get; set; }
 		public string total_shipper_qty { get; set; }
-	}
+        public string accepted_shipper_qty { get; set; }
+        public string rejected_shipper_qty { get; set; }
+    }
 
 	public class WeightIn
 	{

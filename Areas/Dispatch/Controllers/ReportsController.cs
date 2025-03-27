@@ -1024,7 +1024,9 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
                             Batch_no = dr["Batch_no"] != DBNull.Value ? Convert.ToString(dr["Batch_no"]) : "",
                             mfg_dt = dr["mfg_date"] != DBNull.Value ? Convert.ToString(dr["mfg_date"]) : "",
                             expiry_dt = dr["expiry_date"] != DBNull.Value ? Convert.ToString(dr["expiry_date"]) : "",
-                            total_shipper_qty = dr["total_shipper_qty"] != DBNull.Value ? Convert.ToString(dr["total_shipper_qty"]) : ""
+                            total_shipper_qty = dr["total_shipper_qty"] != DBNull.Value ? Convert.ToString(dr["total_shipper_qty"]) : "",
+                            accepted_shipper_qty = dr["accepted_shipper_qty"] != DBNull.Value ? Convert.ToString(dr["accepted_shipper_qty"]) : "",
+                            rejected_shipper_qty = dr["rejected_shipper_qty"] != DBNull.Value ? Convert.ToString(dr["rejected_shipper_qty"]) : ""
                         };
 
                         result.Add(obj);
@@ -1089,7 +1091,9 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
                             Batch_no = dr["Batch_no"] != DBNull.Value ? Convert.ToString(dr["Batch_no"]) : "",
                             mfg_dt = dr["mfg_date"] != DBNull.Value ? Convert.ToString(dr["mfg_date"]) : "",
                             expiry_dt = dr["expiry_date"] != DBNull.Value ? Convert.ToString(dr["expiry_date"]) : "",
-                            total_shipper_qty = dr["total_shipper_qty"] != DBNull.Value ? Convert.ToString(dr["total_shipper_qty"]) : ""
+                            total_shipper_qty = dr["total_shipper_qty"] != DBNull.Value ? Convert.ToString(dr["total_shipper_qty"]) : "",
+                            accepted_shipper_qty = dr["accepted_shipper_qty"] != DBNull.Value ? Convert.ToString(dr["accepted_shipper_qty"]) : "",
+                            rejected_shipper_qty = dr["rejected_shipper_qty"] != DBNull.Value ? Convert.ToString(dr["rejected_shipper_qty"]) : ""
                         };
 
                         result.Add(obj);

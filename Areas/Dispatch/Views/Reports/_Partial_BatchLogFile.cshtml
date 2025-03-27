@@ -58,11 +58,13 @@ else
                     <th class="text-center">#</th>
                     <th>Batch No.</th>
                     <th>Process Start Date</th>
-                    <th>Process End Date</th>
+                    <th hidden>Process End Date</th>
                     <th>Manufacture Date</th>
                     <th>Expiry Date</th>
-                    <th class="text-center">QR Code Count</th>
-                    <th class="text-center">Shipper Count</th>
+                    <th hidden class="text-center">QR Code Count</th>
+                    <th class="text-center">No of Shipper - Accepted</th>
+                    <th class="text-center">No of Shipper - Rejected</th>
+                    <th class="text-center">Total Shipper</th>
                     <th class="text-center">Status</th>
                     @* <th>Remark</th> *@
                 </tr>
@@ -72,10 +74,12 @@ else
                         <td>@item.SrNo</td>
                         <td>@item.FileName</td>
                         <td>@item.StartDate</td>
-                        <td>@item.EndDate</td>
+                        <td hidden>@item.EndDate</td>
                         <td>@item.mfg_dt</td>
                         <td>@item.expiry_dt</td>
-                        <td>@item.QRCode_Count</td>
+                        <td hidden>@item.QRCode_Count</td>
+                        <td>@item.accepted_shipper_qty</td>
+                        <td>@item.rejected_shipper_qty</td>
                         <td>@item.total_shipper_qty</td>
                         <td>@item.Status</td>
                         @* <td>@item.Remark</td> *@
@@ -83,57 +87,61 @@ else
 
                     if (!string.IsNullOrEmpty(item.Remark))
                     {
-                        <tr><td>&nbsp;</td><td colspan="8">
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td colspan="8">
                                 @{
                                     var strRemarks = item.Remark.Contains(" | SUMMARY : ") ? item.Remark.Split(" | SUMMARY : ")[1] : "";
 
                                     if (!string.IsNullOrEmpty(strRemarks))
                                     {
-                                        var listRemark = strRemarks.Split('|').Where(x=>!string.IsNullOrEmpty(x.Trim())).Select(x=>x.TrimStart().TrimEnd()).ToList();
-                                        
-                                        if(listRemark!=null&& listRemark.Count() > 0)
+                                        var listRemark = strRemarks.Split('|').Where(x => !string.IsNullOrEmpty(x.Trim())).Select(x => x.TrimStart().TrimEnd()).ToList();
+
+                                        if (listRemark != null && listRemark.Count() > 0)
                                         {
                                             <dl class="row">
-                                            @for (int i = 0; i < listRemark.Count(); i++)
-                                            {
-                                                  <dt class="col-sm-3">@listRemark[i].Split(':')[0]</dt>
-                                                    <dd class="col-sm-9 row">@{
+                                                @for (int i = 0; i < listRemark.Count(); i++)
+                                                {
+                                                    <dt class="col-sm-3">@listRemark[i].Split(':')[0]</dt>
+                                                    <dd class="col-sm-9 row">
+                                                        @{
 
                                                             if (Convert.ToString(listRemark[i].Split(':')[1]).Contains("<S>"))
                                                             {
                                                                 foreach (var shipperQR in Convert.ToString(listRemark[i].Split(':')[1]).Split("<S>").ToList())
-                                                                {                                                                    
+                                                                {
                                                                     if (!string.IsNullOrEmpty(shipperQR) && shipperQR.Contains("<B>"))
                                                                     {
-                                                                        <dt class="col-sm-12">@((shipperQR.Split("<B>")[0]).Replace("<S>", ""))</dt>
-                                                                        <dd class="col-sm-12 row pl-2">
-                                                                        @foreach (var bottleQR in (shipperQR.Replace((shipperQR.Split("<B>")[0]), "").Split("<B>").ToList()))
-                                                                        {   
-                                                                            if (!string.IsNullOrEmpty(bottleQR))
+                                                                    <dt class="col-sm-12">@((shipperQR.Split("<B>")[0]).Replace("<S>", ""))</dt>
+                                                                    <dd class="col-sm-12 row pl-2">
+                                                                            @foreach (var bottleQR in (shipperQR.Replace((shipperQR.Split("<B>")[0]), "").Split("<B>").ToList()))
                                                                             {
+                                                                                if (!string.IsNullOrEmpty(bottleQR))
+                                                                                {
                                                                                 <span>@bottleQR</span>
+                                                                                }
                                                                             }
-                                                                        }
-                                                                        </dd>
+                                                                    </dd>
                                                                     }
                                                                     else if (!string.IsNullOrEmpty(shipperQR))
                                                                     {
-                                                                        <span>@shipperQR.Replace("<S>", "")</span>
+                                                                    <span>@shipperQR.Replace("<S>", "")</span>
                                                                     }
                                                                 }
                                                             }
                                                             else
                                                             {
-                                                                <span>@Convert.ToString(listRemark[i].Split(':')[1]).TrimStart()</span>
+                                                            <span>@Convert.ToString(listRemark[i].Split(':')[1]).TrimStart()</span>
                                                             }
-                                                  }</dd>
-                                            }
+                                                        }</dd>
+                                                }
                                             </dl>
                                         }
                                     }
                                 }
-                            @* @item.Remark *@
-                            </td></tr>
+                                @* @item.Remark *@
+                            </td>
+                        </tr>
                         <tr><td colspan="9">&nbsp;</td></tr>
                     }
                 }
