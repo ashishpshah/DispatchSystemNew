@@ -1,0 +1,69 @@
+﻿@using System.Globalization;
+@model (int SearchTerm, string Product_Code, string PlantName, List<string> List, bool isPrint)
+
+@{
+	ViewData["Title"] = "Find Missing Batch";
+}
+
+@if (Model.isPrint == true)
+{
+	Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+@if (Model.isPrint == true)
+{
+	<div class="row col-12 mb-3">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold">@(!string.IsNullOrEmpty(Model.PlantName) ? Model.PlantName : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+				</div>
+				<br />
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold">Missing Batch</h2>
+				</div>
+				<br />
+				<div class="col-sm-12" style="text-align:right;">
+					<h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+else
+{
+	<div class="form-group row mb-3">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold" id="lableReportTitle">Missing Batch</h2>
+				</div>
+				<br />
+			</div>
+		</div>
+	</div>
+
+	<div class="form-group row">
+		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_FindMissingBatch","Reports")?searchTerm=@(Model.SearchTerm)&Product_Code=@Model.Product_Code&isPrint=true')">Print</button>
+	</div>
+}
+
+<div class="row col-12 my-5 d-flex justify-content-center align-items-center text-center">
+
+	@if (Model.List != null && Model.List.Count() > 0)
+	{
+		foreach (var item in Model.List.OrderByDescending(x => x))
+		{
+			<div class="col-sm-2">
+				<strong>@item</strong>
+			</div>
+		}
+	}
+	else
+	{
+		<div class="col-sm-6">
+			<strong>No any batch missing from given criteria.</strong>
+		</div>
+	}
+
+</div>
