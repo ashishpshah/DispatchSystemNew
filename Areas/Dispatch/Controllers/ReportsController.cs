@@ -1168,7 +1168,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 
 
 		[HttpGet]
-		public IActionResult GetData_FindMissingBatch(int searchTerm = 0, string Product_Code = null, bool isPrint = false)
+		public IActionResult GetData_FindMissingBatch(string searchTerm = "", string Product_Code = null, bool isPrint = false)
 		{
 			var result = new List<string>();
 
@@ -1178,7 +1178,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 			{
 				var oParams = new List<MySqlParameter>();
 
-				oParams.Add(new MySqlParameter("P_SEARCH_TERM", MySqlDbType.Int64) { Value = searchTerm });
+				oParams.Add(new MySqlParameter("P_SEARCH_TERM", MySqlDbType.String) { Value = searchTerm ?? "" });
 				oParams.Add(new MySqlParameter("P_PRODUCT_CODE", MySqlDbType.String) { Value = Product_Code ?? "" });
 
 				oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
