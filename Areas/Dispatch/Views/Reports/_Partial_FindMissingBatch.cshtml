@@ -1,5 +1,5 @@
 ﻿@using System.Globalization;
-@model (int SearchTerm, string Product_Code, string PlantName, List<string> List, bool isPrint)
+@model (int SearchTerm, string Product_Code, string PlantName, string Report_Title, List<string> List, bool isPrint)
 
 @{
 	ViewData["Title"] = "Find Missing Batch";
@@ -20,7 +20,7 @@
 				</div>
 				<br />
 				<div class="col-sm-12" style="text-align:center;">
-					<h2 class="font-weight-bold">Missing Batch</h2>
+					<h2 class="font-weight-bold">@(!string.IsNullOrEmpty(Model.Report_Title) ? Model.Report_Title : "Missing Batch") </h2>
 				</div>
 				<br />
 				<div class="col-sm-12" style="text-align:right;">
@@ -36,7 +36,7 @@ else
 		<div class="container-fluid">
 			<div class="row mb-2">
 				<div class="col-sm-12" style="text-align:center;">
-					<h2 class="font-weight-bold" id="lableReportTitle">Missing Batch</h2>
+					<h2 class="font-weight-bold" id="lableReportTitle">@(!string.IsNullOrEmpty(Model.Report_Title) ? Model.Report_Title : "Missing Batch")</h2>
 				</div>
 				<br />
 			</div>
