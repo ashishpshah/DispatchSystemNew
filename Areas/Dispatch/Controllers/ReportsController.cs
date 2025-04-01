@@ -1168,7 +1168,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 
 
 		[HttpGet]
-		public IActionResult GetData_FindMissingBatch(int searchTerm = 0, string Product_Code = null, bool isPrint = false)
+		public IActionResult GetData_FindMissingBatch(string searchTerm = "", string Product_Code = null, bool isPrint = false)
 		{
 			var result = new List<string>();
 
@@ -1178,20 +1178,20 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 			{
 				var oParams = new List<MySqlParameter>();
 
-				oParams.Add(new MySqlParameter("P_SEARCH_TERM", MySqlDbType.Int64) { Value = searchTerm });
+				oParams.Add(new MySqlParameter("P_SEARCH_TERM", MySqlDbType.String) { Value = searchTerm ?? "" });
 				oParams.Add(new MySqlParameter("P_PRODUCT_CODE", MySqlDbType.String) { Value = Product_Code ?? "" });
 				oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
 
 				ds = DataContext.ExecuteStoredProcedure_DataSet_SQL("PC_REPORT_MISSING_BATCH", oParams);
 
-				if (ds != null && ds.Tables.Count > 1 && ds.Tables[1].Rows.Count > 0)
+				if (ds != null && ds.Tables.Count > 2 && ds.Tables[2].Rows.Count > 0)
 				{
-					foreach (DataRow dr in ds.Tables[1].Rows) result.Add(dr["Missing_Batch_No"] != DBNull.Value ? Convert.ToString(dr["Missing_Batch_No"]) : "");
+					foreach (DataRow dr in ds.Tables[2].Rows) result.Add(dr["Missing_Batch_No"] != DBNull.Value ? Convert.ToString(dr["Missing_Batch_No"]) : "");
 				}
 			}
 			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
 
-			var PlantName = (ds != null && ds.Tables.Count > 0 && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0 && ds.Tables[0].Rows[0]["PLANT_NAME"] != DBNull.Value) ? Convert.ToString(ds.Tables[0].Rows[0]["PLANT_NAME"]) : "";
+			var PlantName = (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0 && ds.Tables[1].Rows[0]["PLANT_NAME"] != DBNull.Value) ? Convert.ToString(ds.Tables[1].Rows[0]["PLANT_NAME"]) : "";
 
 			if (isPrint == true)
 				return View("_Partial_FindMissingBatch", (searchTerm, Product_Code, PlantName, result, isPrint));
