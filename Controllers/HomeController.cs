@@ -3572,7 +3572,7 @@ namespace Dispatch_System.Controllers
 								   $", {(shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0)}, '{fileUploadStatus}'" +
 														$", '{error}' );";
 
-							var result = DataContext.ExecuteNonQuery(query_File);
+							var result = DataContext.ExecuteNonQuery_SQL(query_File);
 
 							if (string.IsNullOrEmpty(error))
 							{
