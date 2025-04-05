@@ -1140,8 +1140,35 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 			if (!string.IsNullOrEmpty(searchTerm))
 			{
 				try
-				{
-					var plant_id = Common.Get_Session_Int(SessionKey.PLANT_ID);
+                {
+                    var strQR = searchTerm.Replace(AppHttpContextAccessor.IFFCO_Domain.TrimEnd('/'), "");
+
+                    StringBuilder sb = new StringBuilder(strQR);
+
+                    if (strQR.IndexOf("/") > -1)
+                    {
+                        sb[strQR.IndexOf("/")] = '(';
+                        strQR = sb.ToString();
+                    }
+                    if (strQR.IndexOf("/") > -1)
+                    {
+                        sb[strQR.IndexOf("/")] = ')';
+                        strQR = sb.ToString();
+                    }
+                    if (strQR.IndexOf("/") > -1)
+                    {
+                        sb[strQR.IndexOf("/")] = '(';
+                        strQR = sb.ToString();
+                    }
+                    if (strQR.IndexOf("/") > -1)
+                    {
+                        sb[strQR.IndexOf("/")] = ')';
+                        strQR = sb.ToString();
+                    }
+
+                    searchTerm = sb.ToString();
+
+                    var plant_id = Common.Get_Session_Int(SessionKey.PLANT_ID);
 
 					plant_id = plant_id <= 0 ? AppHttpContextAccessor.PlantId : plant_id;
 
@@ -1150,7 +1177,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 					//oParams.Add(new OracleParameter("P_SEARCHTERM", OracleDbType.NVarchar2) { Value = searchTerm });
 					//oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
 
-					dt = DataContext.ExecuteQuery($"SELECT * FROM BOTTLE_QRCODE WHERE PLANT_ID = {plant_id} AND BOTTLE_QRCODE = '{searchTerm}'");
+					dt = DataContext.ExecuteQuery($"SELECT * FROM BOTTLE_QRCODE WHERE BOTTLE_QRCODE = '{searchTerm}'");
 
 					//CommonViewModel.Data1 = (dt != null && dt.Rows.Count > 0) && dt.Rows[0]["PLANT_NAME"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["PLANT_NAME"]) : null;
 				}
