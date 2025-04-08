@@ -217,7 +217,7 @@
     </div>
 
     <div class="d-md-flex flex-md-equal w-100 my-md-3">
-        @if (Model.Data1 == null || string.IsNullOrEmpty(Model.Data1.QrCode_Type) || Model.Data1.QrCode_Type == "B")
+        @if (Model.Data1 != null && (string.IsNullOrEmpty(Model.Data1.QrCode_Type) || Model.Data1.QrCode_Type == "B"))
         {
             <div class="col-sm-8 col-md-6 mx-auto py-3 text-center overflow-hidden">
                 <div class="mx-auto table-responsive">
