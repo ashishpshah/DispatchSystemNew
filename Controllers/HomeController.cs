@@ -3532,45 +3532,15 @@ namespace Dispatch_System.Controllers
 
 						try
 						{
-							//var query_File = "";
-
-							//if (shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0)
-							//{
-							//    destinationFilePath = Path.GetFileName(destinationFilePath);
-
-							//    query_File = $"INSERT INTO SHIPPER_QR_CODE_FILE_UPLOAD_STATUS (FILEUPLOADNAME, STARTDATE, ENDDATE, QRCODECOUNT, FILESTATUS, REMARK) " +
-							//                        $"VALUES ( '{destinationFilePath.Substring(0, destinationFilePath.Length - (destinationFilePath.Length - destinationFilePath.LastIndexOf('.')))}'" +
-							//                        $", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
-							//                        $", STR_TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
-							//                        $", {(shipperQRCodeData_Success.Count() * 24)}, 'Completed'" +
-							//                        $", '' );";
-
-							//    var result = DataContext.ExecuteNonQuery_SQL(query_File);
-							//}
-
-							//if (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0)
-							//{
-							//    errorFilePath = Path.GetFileName(errorFilePath);
-
-							//    query_File = $"INSERT INTO SHIPPER_QR_CODE_FILE_UPLOAD_STATUS (FILEUPLOADNAME, STARTDATE, ENDDATE, QRCODECOUNT, FILESTATUS, REMARK) " +
-							//                        $"VALUES ( '{errorFilePath.Substring(0, errorFilePath.Length - (errorFilePath.Length - errorFilePath.LastIndexOf('.')))}'" +
-							//                        $", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
-							//                        $", STR_TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
-							//                        $", {(shipperQRCodeData_Duplicate.Count() * 24)}, 'Error'" +
-							//                        $", '{error}' );";
-
-							//    var result = DataContext.ExecuteNonQuery_SQL(query_File);
-							//}
-
-
 							var query_File = $"INSERT INTO SHIPPER_QR_CODE_FILE_UPLOAD_STATUS (FILEUPLOADNAME, STARTDATE, ENDDATE, QRCODECOUNT, TOTAL_SHIPPER_QTY, ACCEPTED_SHIPPER_QTY, REJECTED_SHIPPER_QTY, FILESTATUS, REMARK) " +
 														$"VALUES ( '{fileName.Substring(0, fileName.Length - (fileName.Length - fileName.LastIndexOf('.')))}'" +
 														$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
 														$", STR_TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
-														$", {(shipperData.ShipperQRCode_Data.Count() * 24)}, {(shipperData.ShipperQRCode_Data.Count())}" +
-								   $", {(shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0 ? shipperQRCodeData_Success.Count() : 0)}" +
-								   $", {(shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0)}, '{fileUploadStatus}'" +
-														$", '{error}' );";
+														$", {(shipperData.ShipperQRCode_Data.Count() * 24)}" +
+														$", {(shipperData.ShipperQRCode_Data.Count())}" +
+													   $", {(shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0 ? shipperQRCodeData_Success.Count() : 0)}" +
+													   $", {(shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0)}" +
+													   $", '{fileUploadStatus}', '{error}' );";
 
 							var result = DataContext.ExecuteNonQuery_SQL(query_File);
 
@@ -3580,10 +3550,11 @@ namespace Dispatch_System.Controllers
 								   $"VALUES ( '{fileName.Substring(0, fileName.Length - (fileName.Length - fileName.LastIndexOf('.')))}'" +
 								   $", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI')" +
 								   $", TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI')" +
-								   $", {(shipperData.ShipperQRCode_Data.Count() * 24)}, {(shipperData.ShipperQRCode_Data.Count())}" +
+								   $", {(shipperData.ShipperQRCode_Data.Count() * 24)}" +
+								   $", {(shipperData.ShipperQRCode_Data.Count())}" +
 								   $", {(shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0 ? shipperQRCodeData_Success.Count() : 0)}" +
-								   $", {(shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0)}, '{fileUploadStatus}'" +
-								   $", '{plantCode}', '{error}' )";
+								   $", {(shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0)}" +
+								   $", '{fileUploadStatus}', '{plantCode}', '{error}' )";
 
 								result = DataContext.ExecuteNonQuery(query_File);
 							}
