@@ -2649,7 +2649,7 @@ namespace Dispatch_System.Controllers
 										{
 											dt = DataContext.ExecuteQuery_SQL($"SELECT SHIPPER_QR_CODE FROM mda_loading WHERE PLANT_ID = {plant_id} AND SHIPPER_QR_CODE IN ("
 												+ string.Join(", ", shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete")).ToList()
-												.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ") X ");
+												.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ") ");
 
 											if (dt != null && dt.Rows.Count > 0)
 											{
