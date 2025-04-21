@@ -140,16 +140,31 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 		{
 			var obj = new MDA_Dtls();
 
+			DataSet ds = new DataSet();
+
 			if (!string.IsNullOrEmpty(searchTerm))
 				try
 				{
-					var oParams = new List<MySqlParameter>();
+					if (AppHttpContextAccessor.IsCloudDBActive)
+					{
+						List<OracleParameter> oParams = new List<OracleParameter>();
 
-					oParams.Add(new MySqlParameter("P_SEARCHTERM", MySqlDbType.VarChar) { Value = searchTerm });
-					oParams.Add(new MySqlParameter("P_TYPE", MySqlDbType.VarChar) { Value = "" });
-					oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+						oParams.Add(new OracleParameter("P_SEARCHTERM", OracleDbType.Varchar2) { Value = searchTerm });
+						oParams.Add(new OracleParameter("P_TYPE", OracleDbType.Varchar2) { Value = "" });
+						oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
 
-					DataSet ds = DataContext.ExecuteStoredProcedure_DataSet_SQL("PC_REPORT_GATE_IN_OUT", oParams, true);
+						ds = DataContext.ExecuteStoredProcedure_DataSet("PC_REPORT_GATE_IN_OUT", oParams);
+					}
+					else
+					{
+						var oParams = new List<MySqlParameter>();
+
+						oParams.Add(new MySqlParameter("P_SEARCHTERM", MySqlDbType.VarChar) { Value = searchTerm });
+						oParams.Add(new MySqlParameter("P_TYPE", MySqlDbType.VarChar) { Value = "" });
+						oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+
+						ds = DataContext.ExecuteStoredProcedure_DataSet_SQL("PC_REPORT_GATE_IN_OUT", oParams, true);
+					}
 
 					if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
 						obj = new MDA_Dtls()
@@ -197,21 +212,32 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 		{
 			var obj = new MDA_Dtls();
 
+			DataSet ds = new DataSet();
+
 			if (!string.IsNullOrEmpty(searchTerm))
 				try
 				{
-					var oParams = new List<MySqlParameter>();
+					if (AppHttpContextAccessor.IsCloudDBActive)
+					{
+						List<OracleParameter> oParams = new List<OracleParameter>();
 
-					//oParams.Add(new MySqlParameter("P_SEARCHTERM", MySqlDbType.VarChar) { Value = searchTerm });
-					//oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+						oParams.Add(new OracleParameter("P_SEARCHTERM", OracleDbType.Varchar2) { Value = searchTerm });
+						oParams.Add(new OracleParameter("P_TYPE", OracleDbType.Varchar2) { Value = "R" });
+						oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
 
-					//DataSet ds = DataContext.ExecuteStoredProcedure_DataSet_SQL("PC_MDAWISEREJECTREPORT", oParams, true);
+						ds = DataContext.ExecuteStoredProcedure_DataSet("PC_REPORT_GATE_IN_OUT", oParams);
+					}
+					else
+					{
+						var oParams = new List<MySqlParameter>();
 
-					oParams.Add(new MySqlParameter("P_SEARCHTERM", MySqlDbType.VarChar) { Value = searchTerm });
-					oParams.Add(new MySqlParameter("P_TYPE", MySqlDbType.VarChar) { Value = "R" });
-					oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+						oParams.Add(new MySqlParameter("P_SEARCHTERM", MySqlDbType.VarChar) { Value = searchTerm });
+						oParams.Add(new MySqlParameter("P_TYPE", MySqlDbType.VarChar) { Value = "R" });
+						oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
 
-					DataSet ds = DataContext.ExecuteStoredProcedure_DataSet_SQL("PC_REPORT_GATE_IN_OUT", oParams, true);
+						ds = DataContext.ExecuteStoredProcedure_DataSet_SQL("PC_REPORT_GATE_IN_OUT", oParams, true);
+					}
+
 
 					if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
 						obj = new MDA_Dtls()
@@ -1140,35 +1166,35 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 			if (!string.IsNullOrEmpty(searchTerm))
 			{
 				try
-                {
-                    var strQR = searchTerm.Replace(AppHttpContextAccessor.IFFCO_Domain.TrimEnd('/'), "");
+				{
+					var strQR = searchTerm.Replace(AppHttpContextAccessor.IFFCO_Domain.TrimEnd('/'), "");
 
-                    StringBuilder sb = new StringBuilder(strQR);
+					StringBuilder sb = new StringBuilder(strQR);
 
-                    if (strQR.IndexOf("/") > -1)
-                    {
-                        sb[strQR.IndexOf("/")] = '(';
-                        strQR = sb.ToString();
-                    }
-                    if (strQR.IndexOf("/") > -1)
-                    {
-                        sb[strQR.IndexOf("/")] = ')';
-                        strQR = sb.ToString();
-                    }
-                    if (strQR.IndexOf("/") > -1)
-                    {
-                        sb[strQR.IndexOf("/")] = '(';
-                        strQR = sb.ToString();
-                    }
-                    if (strQR.IndexOf("/") > -1)
-                    {
-                        sb[strQR.IndexOf("/")] = ')';
-                        strQR = sb.ToString();
-                    }
+					if (strQR.IndexOf("/") > -1)
+					{
+						sb[strQR.IndexOf("/")] = '(';
+						strQR = sb.ToString();
+					}
+					if (strQR.IndexOf("/") > -1)
+					{
+						sb[strQR.IndexOf("/")] = ')';
+						strQR = sb.ToString();
+					}
+					if (strQR.IndexOf("/") > -1)
+					{
+						sb[strQR.IndexOf("/")] = '(';
+						strQR = sb.ToString();
+					}
+					if (strQR.IndexOf("/") > -1)
+					{
+						sb[strQR.IndexOf("/")] = ')';
+						strQR = sb.ToString();
+					}
 
-                    searchTerm = sb.ToString();
+					searchTerm = sb.ToString();
 
-                    var plant_id = Common.Get_Session_Int(SessionKey.PLANT_ID);
+					var plant_id = Common.Get_Session_Int(SessionKey.PLANT_ID);
 
 					plant_id = plant_id <= 0 ? AppHttpContextAccessor.PlantId : plant_id;
 
