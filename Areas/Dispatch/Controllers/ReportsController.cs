@@ -149,9 +149,11 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 					{
 						List<OracleParameter> oParams = new List<OracleParameter>();
 
-						oParams.Add(new OracleParameter("P_SEARCHTERM", OracleDbType.Varchar2) { Value = searchTerm });
-						oParams.Add(new OracleParameter("P_TYPE", OracleDbType.Varchar2) { Value = "" });
+						oParams.Add(new OracleParameter("P_SEARCHTERM", OracleDbType.NVarchar2) { Value = searchTerm });
+						oParams.Add(new OracleParameter("P_TYPE", OracleDbType.NVarchar2) { Value = "S" });
 						oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+						oParams.Add(new OracleParameter("P_RESULT", OracleDbType.RefCursor) { Direction = ParameterDirection.Output });
+						oParams.Add(new OracleParameter("P_RESULT_S", OracleDbType.RefCursor) { Direction = ParameterDirection.Output });
 
 						ds = DataContext.ExecuteStoredProcedure_DataSet("PC_REPORT_GATE_IN_OUT", oParams);
 					}
@@ -221,9 +223,11 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 					{
 						List<OracleParameter> oParams = new List<OracleParameter>();
 
-						oParams.Add(new OracleParameter("P_SEARCHTERM", OracleDbType.Varchar2) { Value = searchTerm });
-						oParams.Add(new OracleParameter("P_TYPE", OracleDbType.Varchar2) { Value = "R" });
+						oParams.Add(new OracleParameter("P_SEARCHTERM", OracleDbType.NVarchar2) { Value = searchTerm });
+						oParams.Add(new OracleParameter("P_TYPE", OracleDbType.NVarchar2) { Value = "R" });
 						oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+						oParams.Add(new OracleParameter("P_RESULT", OracleDbType.RefCursor) { Direction = ParameterDirection.Output });
+						oParams.Add(new OracleParameter("P_RESULT_S", OracleDbType.RefCursor) { Direction = ParameterDirection.Output });
 
 						ds = DataContext.ExecuteStoredProcedure_DataSet("PC_REPORT_GATE_IN_OUT", oParams);
 					}
