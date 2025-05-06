@@ -1,16 +1,12 @@
 ﻿using Dispatch_System.Controllers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
-using Newtonsoft.Json.Linq;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
-using System.Data.SqlClient;
-using System.Security.Policy;
 
 namespace Dispatch_System.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+	[Area("Admin")]
     public class CountryController : BaseController<ResponseModel<Country>>
     {
         #region Loading

@@ -1,20 +1,12 @@
 ﻿using Dispatch_System.Controllers;
-using DocumentFormat.OpenXml.EMMA;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
-using Newtonsoft.Json.Linq;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
-using System.Data.SqlClient;
-using System.Net;
-using System.Security.Policy;
 
 namespace Dispatch_System.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+	[Area("Admin")]
     public class WorkShiftController : BaseController<ResponseModel<WorkShift>>
     {
         #region Loading

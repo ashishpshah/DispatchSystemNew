@@ -1,15 +1,9 @@
-﻿using com.itextpdf.text.pdf;
-using Dispatch_System.Controllers;
+﻿using Dispatch_System.Controllers;
 using Dispatch_System.Infra;
-using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using MySql.Data.MySqlClient;
-using MySqlX.XDevAPI;
 using Newtonsoft.Json;
-using Oracle.ManagedDataAccess.Client;
-using Org.BouncyCastle.Asn1.Ocsp;
-using System;
 using System.Data;
 using System.Globalization;
 using System.Net;
@@ -20,7 +14,7 @@ using VendorQRGeneration.Infra.Services;
 
 namespace Dispatch_System.Areas.Export.Controllers
 {
-    [Area("Export")]
+	[Area("Export")]
     public class PallateController : BaseController<ResponseModel<Pallate>>
     {
         private readonly ConveyorBackgroundTask _socketBackgroundTask;

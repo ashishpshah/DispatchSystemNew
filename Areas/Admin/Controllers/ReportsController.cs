@@ -1,17 +1,11 @@
 ﻿using Dispatch_System.Controllers;
-using Humanizer;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 using Oracle.ManagedDataAccess.Client;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System.Data;
-using System.Data.SqlClient;
-using System.Security.Policy;
 
 namespace Dispatch_System.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+	[Area("Admin")]
     public class ReportsController : BaseController<ResponseModel<QRCodeGeneration>>
     {
         public IActionResult Index(string type = "")
