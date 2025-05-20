@@ -180,8 +180,8 @@
 															<th>Manufacture Date</th>
 															<th>Plant Code</th>
 															<th>Product Code</th>
-															<th>Current Year</th>
-															<th>Julian Day</th>
+															@* <th>Current Year</th>
+															<th>Julian Day</th> *@
 															<th width="5%">Action</th>
 														</tr>
 													</thead>
@@ -197,8 +197,8 @@
 																	<td>@item.MFG_Date</td>
 																	<td>@item.Plant_Code</td>
 																	<td>@item.Prod_Code</td>
-																	<td>@item.Current_Year</td>
-																	<td>@item.Julian_Day</td>
+																	@* <td>@item.Current_Year</td>
+																	<td>@item.Julian_Day</td> *@
 																	<td width="5%">
 																		<button type="button" class="btn btn-info btn-sm btn-flat" data-toggle="tooltip" data-placement="top" title="Edit"
 																				onclick="fnChange_GenerateBatchQR(this, @item.Serial_No, '@(item.Plant_Code)');" data-eventrigger="true">
