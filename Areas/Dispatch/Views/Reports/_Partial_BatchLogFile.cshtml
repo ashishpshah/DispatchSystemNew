@@ -102,45 +102,49 @@ else
 											<dl class="row">
 												@for (int i = 0; i < listRemark.Count(); i++)
 												{
-													<dt class="col-sm-3">@listRemark[i].Split(':')[0]</dt>
-													<dd class="col-sm-9 row">
-														@{
+													if (Convert.ToString(listRemark[i]).Contains(':')) 
+													{
+														<dt class="col-sm-3">@listRemark[i].Split(':')[0]</dt>
+														<dd class="col-sm-9 row">
+															@{
 
-															if (Convert.ToString(listRemark[i].Split(':')[1]).Contains("<S>"))
-															{
-																foreach (var shipperQR in Convert.ToString(listRemark[i].Split(':')[1]).Split("<S>").ToList())
+																if (Convert.ToString(listRemark[i]).Contains(':') && Convert.ToString(listRemark[i].Split(':')[1]).Contains("<S>"))
 																{
-																	if (!string.IsNullOrEmpty(shipperQR) && shipperQR.Contains("<B>"))
+																	foreach (var shipperQR in Convert.ToString(listRemark[i].Split(':')[1]).Split("<S>").ToList())
 																	{
-																	<dt class="col-sm-12">@((shipperQR.Split("<B>")[0]).Replace("<S>", ""))</dt>
-																	<dd class="col-sm-12 row pl-2">
-																			@foreach (var bottleQR in (shipperQR.Replace((shipperQR.Split("<B>")[0]), "").Split("<B>").ToList()))
-																			{
-																				if (!string.IsNullOrEmpty(bottleQR))
+																		if (!string.IsNullOrEmpty(shipperQR) && shipperQR.Contains("<B>"))
+																		{
+																		<dt class="col-sm-12">@((shipperQR.Split("<B>")[0]).Replace("<S>", ""))</dt>
+																		<dd class="col-sm-12 row pl-2">
+																				@foreach (var bottleQR in (shipperQR.Replace((shipperQR.Split("<B>")[0]), "").Split("<B>").ToList()))
 																				{
-																				<span>@bottleQR</span>
+																					if (!string.IsNullOrEmpty(bottleQR))
+																					{
+																					<span>@bottleQR</span>
+																					}
 																				}
-																			}
-																	</dd>
-																	}
-																	else if (!string.IsNullOrEmpty(shipperQR))
-																	{
-																	<span>@shipperQR.Replace("<S>", "")</span>
+																		</dd>
+																		}
+																		else if (!string.IsNullOrEmpty(shipperQR))
+																		{
+																		<span>@shipperQR.Replace("<S>", "")</span>
+																		}
 																	}
 																}
+																else 
+																{
+																<span>@Convert.ToString(listRemark[i].Split(':')[1]).TrimStart()</span>
+																}
 															}
-															else
-															{
-															<span>@Convert.ToString(listRemark[i].Split(':')[1]).TrimStart()</span>
-															}
-														}</dd>
+														</dd>
+													}
+													else
+													{														
+														<dt class="col-sm-12 my-2">@Convert.ToString(listRemark[i])</dt>														
+													}
 												}
 											</dl>
 										}
-									}
-									else if (!string.IsNullOrEmpty(item.Remark))
-									{
-										<span class="mt-2">Error : @item.Remark</span>
 									}
 								}
 								@* @item.Remark *@
