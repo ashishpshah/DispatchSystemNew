@@ -3484,6 +3484,11 @@ namespace Dispatch_System.Controllers
 								catch (Exception ex) { }
 							}
 
+							shipperQRCodeData_Success.RemoveAll(x => !((string)x["Action"]).ToLower().Contains("add"));
+							shipperQRCodeData_Duplicate.RemoveAll(x => !((string)x["Action"]).ToLower().Contains("add"));
+
+							listShipperQRCode_Duplicate.RemoveAll(x => !shipperQRCodeData_Duplicate.Any(z => (string)z["ShipperQRCode"] == x.QRCode));
+
 							if (listShipperQRCode_Duplicate != null && listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode)).Count() > 0)
 							{
 								error += " | SUMMARY : ";
@@ -3552,7 +3557,7 @@ namespace Dispatch_System.Controllers
 
 								var result = DataContext.ExecuteNonQuery_SQL(query_File);
 
-								if (string.IsNullOrEmpty(error) || (listShipperQRCode_Duplicate != null && listShipperQRCode_Duplicate.Count() == listShipperQRCode_Duplicate.Where(x => x.Type == "NOT_DELETE").Count()))
+								if (string.IsNullOrEmpty(error) || (listShipperQRCode_Duplicate != null && listShipperQRCode_Duplicate.Count() == 0))
 								{
 									query_File = $"INSERT INTO SHIPPER_QR_CODE_FILE_UPLOAD_STATUS (FILEUPLOADNAME, STARTDATE, ENDDATE, QRCODECOUNT, TOTAL_SHIPPER_QTY, ACCEPTED_SHIPPER_QTY, REJECTED_SHIPPER_QTY, FILESTATUS, PLANTCODE, REMARK) " +
 									   $"VALUES ( '{fileName.Substring(0, fileName.Length - (fileName.Length - fileName.LastIndexOf('.')))}'" +
