@@ -2,158 +2,183 @@
 @model (string SearchTerm, string PageTitle_Secondary,string PlantName,string FromDate,string ToDate, List<BatchLogFile> List, bool isPrint)
 
 @{
-	ViewData["Title"] = "Batch Log File";
+    ViewData["Title"] = "Batch Log File";
 }
 
 @if (Model.isPrint == true)
 {
-	Layout = "~/Views/Shared/_Layout_Print.cshtml";
+    Layout = "~/Views/Shared/_Layout_Print.cshtml";
 }
 
 @if (Model.isPrint == true)
 {
-	<div class="row col-12 mb-3">
-		<div class="container-fluid">
-			<div class="row mb-2">
-				<div class="col-sm-12" style="text-align:center;">
-					<h2 class="font-weight-bold">@(!string.IsNullOrEmpty(Model.PlantName) ? Model.PlantName : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
-				</div>
-				<br />
-				<div class="col-sm-12" style="text-align:center;">
-					@if (!string.IsNullOrEmpty(Model.PageTitle_Secondary))
-					{
-						<h5 class="font-weight-bold">
-							Batch File Detail : @Model.PageTitle_Secondary
-						</h5>
-					}
-					else
-					{
-						<h4 class="font-weight-bold">Batch File Detail </h4>
-					}
-				</div>
-				<br />
-				<div class="col-sm-12" style="text-align:right;">
-					<h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
-				</div>
-			</div>
-		</div>
-	</div>
+    <div class="row col-12 mb-3">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12" style="text-align:center;">
+                    <h2 class="font-weight-bold">@(!string.IsNullOrEmpty(Model.PlantName) ? Model.PlantName : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+                </div>
+                <br />
+                <div class="col-sm-12" style="text-align:center;">
+                    @if (!string.IsNullOrEmpty(Model.PageTitle_Secondary))
+                    {
+                        <h5 class="font-weight-bold">
+                            Batch File Detail : @Model.PageTitle_Secondary
+                        </h5>
+                    }
+                    else
+                    {
+                        <h4 class="font-weight-bold">Batch File Detail </h4>
+                    }
+                </div>
+                <br />
+                <div class="col-sm-12" style="text-align:right;">
+                    <h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+                </div>
+            </div>
+        </div>
+    </div>
 }
 else
 {
-	<div class="form-group row">
-		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_BatchLogFile","Reports")?searchTerm=@(Model.SearchTerm)&FromDate=@(Model.FromDate)&ToDate=@(Model.ToDate)&isPrint=true')">Print</button>
-		<button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('BatchLogFile')">Export</button>
-	</div>
+    <div class="form-group row">
+        <button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_BatchLogFile","Reports")?searchTerm=@(Model.SearchTerm)&FromDate=@(Model.FromDate)&ToDate=@(Model.ToDate)&isPrint=true')">Print</button>
+        <button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('BatchLogFile')">Export</button>
+    </div>
 }
 
 <div class="row col-12 mt-5">
 
-	@if (Model.List != null && Model.List.Count() > 0)
-	{
-		<table id="table_Common" class="table table-bordered w-100 divDetail">
+    @if (Model.List != null && Model.List.Count() > 0)
+    {
+        <table id="table_Common" class="table table-bordered w-100 divDetail">
 
-			<tbody>
-				<tr>
-					<th class="text-center">#</th>
-					<th>Batch No.</th>
-					<th>Process Start Date</th>
-					<th hidden>Process End Date</th>
-					<th>Manufacture Date</th>
-					<th>Expiry Date</th>
-					<th hidden class="text-center">QR Code Count</th>
-					<th class="text-center">No of Shipper - Accepted</th>
-					<th class="text-center">No of Shipper - Rejected</th>
-					<th class="text-center">Total Shipper</th>
-					<th class="text-center">Status</th>
-					@* <th>Remark</th> *@
-				</tr>
-				@foreach (var item in Model.List.OrderBy(x => x.SrNo).ThenBy(x => x.Status).ThenBy(x => x.FileName).ToList())
-				{
-					<tr>
-						<td>@item.SrNo</td>
-						<td>@item.FileName</td>
-						<td>@item.StartDate</td>
-						<td hidden>@item.EndDate</td>
-						<td>@item.mfg_dt</td>
-						<td>@item.expiry_dt</td>
-						<td hidden>@item.QRCode_Count</td>
-						<td>@item.accepted_shipper_qty</td>
-						<td>@item.rejected_shipper_qty</td>
-						<td>@item.total_shipper_qty</td>
-						<td>@item.Status</td>
-						@* <td>@item.Remark</td> *@
-					</tr>
+            <tbody>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th>Batch No.</th>
+                    <th>Process Start Date</th>
+                    <th hidden>Process End Date</th>
+                    <th>Manufacture Date</th>
+                    <th>Expiry Date</th>
+                    <th hidden class="text-center">QR Code Count</th>
+                    <th class="text-center">No of Shipper - Accepted</th>
+                    <th class="text-center">No of Shipper - Rejected</th>
+                    <th class="text-center">Total Shipper</th>
+                    <th class="text-center">Status</th>
+                    @* <th>Remark</th> *@
+                </tr>
+                @foreach (var item in Model.List.OrderBy(x => x.SrNo).ThenBy(x => x.Status).ThenBy(x => x.FileName).ToList())
+                {
+                    <tr>
+                        <td>@item.SrNo</td>
+                        <td>@item.FileName</td>
+                        <td>@item.StartDate</td>
+                        <td hidden>@item.EndDate</td>
+                        <td>@item.mfg_dt</td>
+                        <td>@item.expiry_dt</td>
+                        <td hidden>@item.QRCode_Count</td>
+                        <td>@item.accepted_shipper_qty</td>
+                        <td>@item.rejected_shipper_qty</td>
+                        <td>@item.total_shipper_qty</td>
+                        <td>@item.Status</td>
+                        @* <td>@item.Remark</td> *@
+                    </tr>
 
-					if (!string.IsNullOrEmpty(item.Remark))
-					{
-						<tr>
-							<td>&nbsp;</td>
-							<td colspan="8">
-								@{
-									var strRemarks = item.Remark.Contains(" | SUMMARY : ") ? item.Remark.Split(" | SUMMARY : ")[1] : "";
+                    if (!string.IsNullOrEmpty(item.Remark))
+                    {
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td colspan="8">
+                                @{
+                                    var strRemarks = item.Remark.Contains(" | SUMMARY : ") ? item.Remark.Split(" | SUMMARY : ")[1] : item.Remark;
 
-									if (!string.IsNullOrEmpty(strRemarks))
-									{
-										var listRemark = strRemarks.Split('|').Where(x => !string.IsNullOrEmpty(x.Trim())).Select(x => x.TrimStart().TrimEnd()).ToList();
+                                    if (!string.IsNullOrEmpty(strRemarks))
+                                    {
+                                        var listRemark = strRemarks.Split('|').Where(x => !string.IsNullOrEmpty(x.Trim())).Select(x => x.TrimEnd()).ToList();
 
-										if (listRemark != null && listRemark.Count() > 0)
-										{
-											<dl class="row">
-												@for (int i = 0; i < listRemark.Count(); i++)
-												{
-													if (Convert.ToString(listRemark[i]).Contains(':')) 
-													{
-														<dt class="col-sm-3">@listRemark[i].Split(':')[0]</dt>
-														<dd class="col-sm-9 row">
-															@if (Convert.ToString(listRemark[i]).Contains(':') && Convert.ToString(listRemark[i].Split(':')[1]).Contains("<S>"))
-															{
-																foreach (var shipperQR in Convert.ToString(listRemark[i].Split(':')[1]).Split("<S>").ToList())
-																{
-																	if (!string.IsNullOrEmpty(shipperQR) && shipperQR.Contains("<B>"))
-																	{
-																		<dt class="col-sm-3">@((shipperQR.Split("<B>")[0]).Replace("<S>", ""))</dt>
-																		<dd class="col-sm-9 row pl-2">
-																				@foreach (var bottleQR in (shipperQR.Replace((shipperQR.Split("<B>")[0]), "").Split("<B>").ToList()))
-																				{
-																					if (!string.IsNullOrEmpty(bottleQR))
-																					{
-																					<span>@bottleQR</span>
-																					}
-																				}
-																		</dd>
-																	}
-																	else if (!string.IsNullOrEmpty(shipperQR))
-																	{
-																		<span>@shipperQR.Replace("<S>", "")</span>
-																	}
-																}
-															}
-															else 
-															{
-																<span>@Convert.ToString(listRemark[i].Split(':')[1]).TrimStart()</span>
-															}
-														</dd>
-													}
-													else
-													{														
-														<dt class="col-sm-12 my-2">@Convert.ToString(listRemark[i])</dt>														
-													}
-												}
-											</dl>
-										}
-									}
-								}
-								@* @item.Remark *@
-							</td>
-						</tr>
-						<tr><td colspan="9">&nbsp;</td></tr>
-					}
-				}
-			</tbody>
+                                        if (listRemark != null && listRemark.Count() > 0)
+                                        {
+                                            <dl class="row">
+                                                @for (int i = 0; i < listRemark.Count(); i++)
+                                                {
+                                                    if (Convert.ToString(listRemark[i]).Contains(':'))
+                                                    {
+                                                        <dt class="col-sm-3 mb-2">@listRemark[i].Split(':')[0]</dt>
+                                                        <dd class="col-sm-9 row mb-2">
+                                                            @if (Convert.ToString(listRemark[i]).Contains(':') && Convert.ToString(listRemark[i].Split(':')[1]).Contains("<S>"))
+                                                            {
+                                                                <dl class="row">
+                                                                    @foreach (var shipperQR in Convert.ToString(listRemark[i].Split(':')[1]).Split("<S>").ToList())
+                                                                    {
+                                                                        if (!string.IsNullOrEmpty(shipperQR) && shipperQR.Contains("<B>"))
+                                                                        {
+                                                                            <dt class="col-sm-3">@((shipperQR.Split("<B>")[0]).Replace("<S>", ""))</dt>
+                                                                            <dd class="col-sm-9 row pl-2">
+                                                                                @foreach (var bottleQR in (shipperQR.Replace((shipperQR.Split("<B>")[0]), "").Split("<B>").ToList()))
+                                                                                {
+                                                                                    if (!string.IsNullOrEmpty(bottleQR))
+                                                                                    {
+                                                                                        <span>@bottleQR</span>
+                                                                                    }
+                                                                                }
+                                                                            </dd>
+                                                                        }
+                                                                        else if (!string.IsNullOrEmpty(shipperQR))
+                                                                        {
+                                                                            <span>@shipperQR.Replace("<S>", "")</span>
+                                                                        }
+                                                                    }
+                                                                </dl>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>@Convert.ToString(listRemark[i].Split(':')[1]).TrimStart()</span>
+                                                            }
+                                                        </dd>
+                                                    }
+                                                    else if (!Convert.ToString(listRemark[i]).Contains(':') && Convert.ToString(listRemark[i]).Contains("<S>"))
+                                                    {
+                                                        <dt class="col-sm-3 mb-2">&nbsp;</dt>
+                                                        <dd class="col-sm-9 row mb-2">
+                                                            @if (!Convert.ToString(listRemark[i]).Contains(':') && Convert.ToString(listRemark[i]).Contains("<S>"))
+                                                            {
+                                                                @foreach (var shipperQR in Convert.ToString(listRemark[i]).Split("<S>").ToList())
+                                                                {
+                                                                    if (!string.IsNullOrEmpty(shipperQR))
+                                                                    {
+                                                                        <span>@shipperQR</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>@Convert.ToString(listRemark[i].Split(':')[1]).TrimStart()</span>
+                                                            }
+                                                        </dd>
+                                                    }
+                                                    else
+                                                    {
+                                                        <dt class="col-sm-12 mb-2">@Convert.ToString(listRemark[i])</dt>
+                                                    }
+                                                }
+                                            </dl>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>@strRemarks</span>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                        <tr><td colspan="9">&nbsp;</td></tr>
+                    }
+                }
+            </tbody>
 
-		</table>
+        </table>
 
-	}
+    }
 
 </div>

@@ -3493,12 +3493,12 @@ namespace Dispatch_System.Controllers
 							{
 								error += " | SUMMARY : ";
 
-								//if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE"))
-								//{
-								//	error += $" | Delete operation not perform because Shipper QR Code(s) already loaded. ";
-								//	error += $" | Shipper QR Code - Not Delete : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE").SelectMany(x => x.QRCode.Split(',')).Count()} ";
-								//	error += $" | Shipper QR Code - Not Delete : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE").Select(x => "<S>" + x.QRCode).ToArray())} ";
-								//}
+								if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE"))
+								{
+									error += $" | Delete operation not perform because Shipper QR Code(s) already loaded. ";
+									error += $" | Shipper QR Code - Not Delete : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE").SelectMany(x => x.QRCode.Split(',')).Count()} ";
+									error += $" |                                {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE").Select(x => "<S>" + x.QRCode).ToArray())} ";
+								}
 
 								if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_SHIPPER"))
 								{
@@ -3541,6 +3541,8 @@ namespace Dispatch_System.Controllers
 								errors.Add(fileName + " => " + error);
 							}
 
+							listShipperQRCode_Duplicate.RemoveAll(x => x.Type == "NOT_DELETE");
+
 							if (string.IsNullOrEmpty(error) || (listShipperQRCode_Duplicate != null && listShipperQRCode_Duplicate.Count() == 0)) fileUploadStatus = "Completed";
 
 							try
@@ -3582,11 +3584,65 @@ namespace Dispatch_System.Controllers
 
 							#endregion
 						}
+						catch (JsonReaderException jex)
+						{
+							error = "Unable to parse JSON. Please check the format of the data.";
+						}
 						catch (Exception ex)
 						{
 							error = (string.IsNullOrEmpty(error) ? "Data not Convert Json to List." : error);
 						}
 
+						if (!string.IsNullOrEmpty(error))
+						{
+							string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFilePath);
+							string fileExtension = Path.GetExtension(sourceFilePath);
+
+							string errorFilePath = Path.Combine(errorFolderPath, fileNameWithoutExtension + "." + fileExtension);
+
+							try
+							{
+								int counter = 1;
+								while (System.IO.File.Exists(errorFilePath))
+								{
+									string newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
+
+									errorFilePath = Path.Combine(destinationFolderPath, newFileName);
+									counter++;
+								}
+
+								fileNameWithoutExtension = Path.GetFileNameWithoutExtension(errorFilePath);
+								fileExtension = Path.GetExtension(errorFilePath);
+
+								errorFilePath = Path.Combine(errorFolderPath, $"{fileNameWithoutExtension}_{DateTime.Now.ToString("yyyyMMdd_HHmmsss")}_Error{fileExtension}");
+
+								string updatedJson = System.IO.File.ReadAllText(sourceFilePath);
+
+								if (!System.IO.File.Exists(errorFilePath))
+									try { System.IO.File.Create(errorFilePath).Dispose(); }
+									catch { System.IO.File.Copy(sourceFilePath, errorFilePath); }
+
+								System.IO.File.WriteAllText(errorFilePath, updatedJson);
+								System.IO.File.Delete(sourceFilePath);
+							}
+							catch { }
+
+							try
+							{
+								Write_Log(sourceFilePath + " => " + errorFilePath, logFilePath);
+
+								(string fileName, string fileUploadStatus) = (Path.GetFileName(sourceFilePath), "Error");
+
+								var query_File = $"INSERT INTO SHIPPER_QR_CODE_FILE_UPLOAD_STATUS (FILEUPLOADNAME, STARTDATE, ENDDATE, QRCODECOUNT, TOTAL_SHIPPER_QTY, ACCEPTED_SHIPPER_QTY, REJECTED_SHIPPER_QTY, FILESTATUS, REMARK) " +
+															$"VALUES ( '{fileName.Substring(0, fileName.Length - (fileName.Length - fileName.LastIndexOf('.')))}'" +
+															$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
+															$", STR_TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i'), 0, 0, 0, 0, '{fileUploadStatus}', '{error}' );";
+
+								var result = DataContext.ExecuteNonQuery_SQL(query_File);
+
+							}
+							catch (Exception) { }
+						}
 
 						Write_Log((string.IsNullOrEmpty(error) ? "" : "Error : " + error + Environment.NewLine) + Environment.NewLine + $"File Processing With Out Validation {Path.GetFileName(sourceFilePath)} " +
 							$"Completed at {DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss tt").Replace("-", "/")}", logFilePath);
