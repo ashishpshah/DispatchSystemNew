@@ -16,7 +16,7 @@
 			{
 				var i = 1;
 
-				foreach (var item in Model)
+				foreach (var item in Model.OrderByDescending(x => x.SrNo))
 				{
 					<tr>
 						<td width="3%">@i</td>

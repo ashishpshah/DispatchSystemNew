@@ -210,6 +210,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 								&& (!string.IsNullOrEmpty(type) && type == "R" ? ((dr["LOG_Type"] != DBNull.Value ? Convert.ToString(dr["LOG_Type"]) : "") == "R" ? true : false) : true))
 								list.Add(new ShipperBatch()
 								{
+									SrNo = dr["SrNo"] != DBNull.Value ? Convert.ToInt32(dr["SrNo"]) : 0,
 									ShipperQRCode = dr["QRCODE"] != DBNull.Value ? Convert.ToString(dr["QRCODE"]) : "",
 									Status = dr["LOG_Type"] != DBNull.Value ? Convert.ToString(dr["LOG_Type"]) : "",
 									Reject_Reason = dr["REJECT_REASON"] != DBNull.Value ? Convert.ToString(dr["REJECT_REASON"]) : ""
@@ -835,7 +836,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 				var objMDA = new MDA_Header();
 				var listMDA_Dtls = new List<MDA_Dtls>();
 
-				if (viewModel != null && viewModel.GateInOut_Id > 0 && viewModel.Mda_Id > 0)
+				if (viewModel != null && viewModel.GateInOut_Id > 0 && viewModel.Mda_Id > 0 && Common.IsUserLogged())
 				{
 					List<MySqlParameter> oParams = new List<MySqlParameter>();
 
@@ -961,7 +962,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 			CommonViewModel.IsConfirm = false;
 			CommonViewModel.IsSuccess = false;
 			CommonViewModel.StatusCode = ResponseStatusCode.Error;
-			CommonViewModel.Message = "Connectivity issue with Conveyor.";
+			CommonViewModel.Message = Common.IsUserLogged() ? "Connectivity issue with Conveyor." : "Session has expired. Please log in first.";
 
 			LogService.LogInsert(GetCurrentAction(), AppHttpContextAccessor.Loading_Bay + " : Connectivity issue with Conveyor.", null);
 
@@ -1352,20 +1353,8 @@ namespace Dispatch_System.Areas.Admin.Controllers
 			{
 				_socketBackgroundTask.StopWork();
 
-				if (gatein_id > 0 && mda_id > 0 && !string.IsNullOrEmpty(qr_code))
+				if (gatein_id > 0 && mda_id > 0 && !string.IsNullOrEmpty(qr_code) && Common.IsUserLogged())
 				{
-					//List<MySqlParameter> oParams = new List<MySqlParameter>();
-
-					//oParams.Add(new MySqlParameter("P_QRCODE", MySqlDbType.VarString) { Value = qr_code });
-					//oParams.Add(new MySqlParameter("P_GATE_SYS_ID", MySqlDbType.Int64) { Value = gatein_id });
-					//oParams.Add(new MySqlParameter("P_MDA_SYS_ID", MySqlDbType.Int64) { Value = mda_id });
-					//oParams.Add(new MySqlParameter("P_MDA_DTL_SYS_ID", MySqlDbType.Int64) { Value = mda_dtls_id });
-					//oParams.Add(new MySqlParameter("P_PROD_SYS_ID", MySqlDbType.Int64) { Value = prod_id });
-					//oParams.Add(new MySqlParameter("P_IS_MANUAL_SCAN", MySqlDbType.Int64) { Value = 1 });
-					//oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
-
-					//var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_SHIPPER_QRCODE_GET_NEW", oParams, true);
-
 					var PLANT_ID = Common.Get_Session_Int(SessionKey.PLANT_ID);
 
 					if (PLANT_ID <= 0) PLANT_ID = AppHttpContextAccessor.PlantId;
@@ -1437,7 +1426,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 			CommonViewModel.IsSuccess = false;
 			CommonViewModel.StatusCode = ResponseStatusCode.Error;
-			CommonViewModel.Message = ResponseStatusMessage.Error;
+			CommonViewModel.Message = Common.IsUserLogged() ? ResponseStatusMessage.Error : "Session has expired. Please log in first.";
 
 			return Json(CommonViewModel);
 		}
@@ -1453,7 +1442,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 			long loaddedShipper = 0;
 			long rejectShipper = 0;
 
-			if (gatein_id > 0 && mda_id > 0)
+			if (gatein_id > 0 && mda_id > 0 && Common.IsUserLogged())
 			{
 				try
 				{
@@ -1503,7 +1492,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 			try
 			{
-				if (gatein_id > 0 && mda_id > 0 && !string.IsNullOrEmpty(qr_code))
+				if (gatein_id > 0 && mda_id > 0 && !string.IsNullOrEmpty(qr_code) && Common.IsUserLogged())
 				{
 					List<MySqlParameter> oParams = new List<MySqlParameter>();
 
@@ -1552,7 +1541,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 			CommonViewModel.IsSuccess = false;
 			CommonViewModel.StatusCode = ResponseStatusCode.Error;
-			CommonViewModel.Message = ResponseStatusMessage.Error;
+			CommonViewModel.Message = Common.IsUserLogged() ? ResponseStatusMessage.Error : "Session has expired. Please log in first.";
 
 			return Json(CommonViewModel);
 		}

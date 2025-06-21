@@ -343,7 +343,9 @@
 </section>
 
 @section Scripts {
+
 	<script type="text/javascript">
+
 		var table = {};
 		var tableDtls = {};
 
@@ -559,7 +561,7 @@
 						&& typeof MDA_Id != 'undefined' && MDA_Id != null && !isNaN(parseFloat(MDA_Id)) && parseFloat(MDA_Id) > 0) {
 
 						ShowLoader(true);
-						
+
 						$.ajax({
 							type: "GET",
 							url: '@Url_RootToController/Load_MDA_Dtls?MDA_Id=' + MDA_Id + '&Gate_In_Out_Id=' + Gate_In_Out_Id,
@@ -569,7 +571,7 @@
 							success: function (response) {
 
 								setTimeout(function () {
-									
+
 									if (typeof response != 'undefined' && response != null && response.length > 0) {
 
 										$('#btnRequisitionWMS').prop('disabled', false);
@@ -1099,15 +1101,9 @@
 							$('#input_Scan_QR_Code').val('');
 							$('#input_temp_Scan_QR_Code').val('');
 
-
 							if (ele['success'] === 'COMPLETED') {
-
-
-
 								setTimeout(function () {
-
 									stopProgress(true, false);
-
 								}, parseInt('@(Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "3"))') * 2 * 1000);
 
 								CommonConfirmed_Success("MDA Loading Completed.", fnLoad_MDA_Dtls, []);
@@ -1121,6 +1117,7 @@
 							}
 						}
 
+						debugger;
 						if (typeof ele['no'] != 'undefined' && parseInt(ele['no']) > 0) {
 							$('#span_Total_Scan_QR_Code').attr('data-last', ele['no']);
 						}
@@ -1175,14 +1172,13 @@
 		function startProgress() {
 
 			if (isUpdateProgress_Interval && updateProgress_Interval) {
-				updateProgress_Interval = setInterval(function () { updateProgress(); }, 800);
+				updateProgress_Interval = setInterval(function () { updateProgress(); }, 100);
 			}
 		}
 
 		function stopProgress($isStop, $isAlert) {
 
 			$.post('@Url.Action("StopProgress", "Load_MDA", new { area = "MDA_Automation" })?IsStop=' + $isStop, function ($response) {
-
 
 				if ($response.statusCode === 1) {
 
@@ -1482,7 +1478,7 @@
 				// $('#ul_Accepted_QR_Code').html('');
 				// $('#ul_Rejected_QR_Code').html('');
 
-				
+
 
 				$.ajax({
 					type: "GET",
@@ -1494,9 +1490,7 @@
 						setTimeout(function () {
 
 							if (typeof response != 'undefined' && response != null && typeof response['dataList'] != 'undefined' && response['dataList'] != null && response['dataList'].length > 0) {
-
-								
-
+								debugger;
 								$.each(response['dataList'].sort(function (x, y) { return x.srNo - y.srNo; }), function (i, obj) {
 
 									try {
@@ -1547,8 +1541,6 @@
 
 							fnCalculate_QR_Code();
 
-							
-
 							var RequiredShipper = $('#span_Total_Scan_QR_Code').attr('data-cntReq');
 							var LoaddedShipper = $('#span_Total_Accepted_QR_Code').attr('data-cnt');
 
@@ -1562,8 +1554,6 @@
 							if (typeof LoaddedShipper != 'undefined' && LoaddedShipper != null && LoaddedShipper.trim().length > 0 && parseInt(LoaddedShipper.trim()) > 0)
 								LoaddedShipper = parseInt(LoaddedShipper.trim());
 							else LoaddedShipper = 0;
-
-							
 
 							if (LoaddedShipper >= RequiredShipper) {
 								CommonAlert_Success("MDA Loading Completed.");
@@ -1707,8 +1697,6 @@
 
 											if ($response.data1['success'] === 'COMPLETED') {
 
-
-
 												stopProgress(true, false);
 
 												CommonConfirmed_Success("MDA Loading Completed.", fnLoad_MDA_Dtls, []);
@@ -1728,14 +1716,13 @@
 										$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
 										$('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
 
-										fnGet_Scan_Code_History();
+										//fnGet_Scan_Code_History();
 
 										//fnCalculate_QR_Code();
 
-
 										setTimeout(function () {
 											$('#input_Scan_QR_Code').focus();
-										}, 1000);
+										}, 500);
 
 									}
 
@@ -1809,7 +1796,7 @@
 			var LoaddedShipper = $('#span_Total_Accepted_QR_Code').attr('data-cnt');
 			var RejectShipper = $('#span_Total_Rejected_QR_Code').attr('data-cnt');
 
-			
+
 
 			if (typeof RequiredShipper != 'undefined' && RequiredShipper != null && RequiredShipper.trim().length > 0 && parseInt(RequiredShipper.trim()) > 0) { }
 			else { RequiredShipper = $('#table_MDA_Dtls tbody tr#tr_MDA_' + $('#input_MDA_Id').val() + ' td.Required_Shipper').text(); }
@@ -1955,7 +1942,6 @@
 				&& $($this).parent().find('span') != null && $($this).parent().find('span').length > 0)
 				|| (typeof $id != 'undefined' && $id != null && $id.length > 0)) {
 
-				//var qr_codes = [];
 				var message = "";
 
 				if (typeof $id != 'undefined' && $id != null && $id.length > 0 && $id == "ul_Scan_QR_Code") {
@@ -1981,29 +1967,11 @@
 
 					if (result != null && result.isConfirmed == true) {
 
-						// if ((typeof $id != 'undefined' && $id != null && $id.length > 0) && $('#' + $id + ' li span').length > 0) {
-
-						// 	//$('#' + $id + ' li span').each(function (i, ele) {
-
-						// 	//	var id = $(ele).attr('data-id');
-						// 	//	var type = $(ele).attr('data-type');
-
-						// 	//	if (qr_codes.indexOf(id + ',' + type) < 0)
-						// 	//		qr_codes.push(id + ',' + type);
-						// 	//});
-
-						// 	//qr_codes.push($type);
-
-						// 	ajaxDelete_QR_Codes(qr_codes, $type, $id, null, null);
-						// }
-						// else if ((typeof $this != 'undefined' && $this != null && typeof $($this).parent().find('span') != 'undefined'
-						// 	&& $($this).parent().find('span') != null && $($this).parent().find('span').length > 0)) {
 						var qr_code_id = $($this).parent().find('span').attr('data-id');
 						var type = $($this).parent().find('span').attr('data-type');
 						var qr_code = $($this).parent().find('span').text().trim();
 
 						ajaxDelete_QR_Codes(qr_code, type, $id, $this, qr_code_id);
-						// }
 
 					}
 				});
@@ -2060,7 +2028,7 @@
 									CommonAlert_Error(response.message);
 								}
 
-								
+
 
 								$('#span_Total_Scan_QR_Code').attr('data-cntReq', response.data1['requiredShipper']);
 								$('#span_Total_Scan_QR_Code').attr('data-cnt', response.data1['loaddedShipper']);
