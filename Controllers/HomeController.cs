@@ -3541,18 +3541,20 @@ namespace Dispatch_System.Controllers
 								errors.Add(fileName + " => " + error);
 							}
 
+							if (string.IsNullOrEmpty(error) || (listShipperQRCode_Duplicate != null && listShipperQRCode_Duplicate.Count() == 0)) fileUploadStatus = "Completed";
+
 							try
 							{
 								var query_File = $"INSERT INTO SHIPPER_QR_CODE_FILE_UPLOAD_STATUS (FILEUPLOADNAME, STARTDATE, ENDDATE, QRCODECOUNT, TOTAL_SHIPPER_QTY, ACCEPTED_SHIPPER_QTY, REJECTED_SHIPPER_QTY, FILESTATUS, REMARK) " +
 															$"VALUES ( '{fileName.Substring(0, fileName.Length - (fileName.Length - fileName.LastIndexOf('.')))}'" +
 															$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
 															$", STR_TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
-															//$", {(shipperData.ShipperQRCode_Data.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() * 24)}" +
-															//$", {(shipperData.ShipperQRCode_Data.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count())}" +
-															$", {(((shipperQRCodeData_Success != null && shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0) + (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0)) * 24)}" +
-															$", {((shipperQRCodeData_Success != null && shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0) + (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0))}" +
-														   $", {(shipperQRCodeData_Success != null && shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0)}" +
-														   $", {(shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0)}" +
+															//$", {(shipperData.ShipperQRCode_Data.Count() * 24)}" +
+															//$", {(shipperData.ShipperQRCode_Data.Count())}" +
+															$", {(((shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0 ? shipperQRCodeData_Success.Count() : 0) + (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0)) * 24)}" +
+															$", {((shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0 ? shipperQRCodeData_Success.Count() : 0) + (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0))}" +
+														   $", {(shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0 ? shipperQRCodeData_Success.Count() : 0)}" +
+														   $", {(shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0)}" +
 														   $", '{fileUploadStatus}', '{error}' );";
 
 								var result = DataContext.ExecuteNonQuery_SQL(query_File);
@@ -3563,12 +3565,12 @@ namespace Dispatch_System.Controllers
 									   $"VALUES ( '{fileName.Substring(0, fileName.Length - (fileName.Length - fileName.LastIndexOf('.')))}'" +
 									   $", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI')" +
 									   $", TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI')" +
-									   //$", {(shipperData.ShipperQRCode_Data.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() * 24)}" +
-									   //$", {(shipperData.ShipperQRCode_Data.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count())}" +
-									   $", {(((shipperQRCodeData_Success != null && shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0) + (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0)) * 24)}" +
-									   $", {((shipperQRCodeData_Success != null && shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0) + (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0))}" +
-									   $", {(shipperQRCodeData_Success != null && shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Success.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0)}" +
-									   $", {(shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() > 0 ? shipperQRCodeData_Duplicate.Where(x => ((string)x["Action"]).ToLower().Contains("add")).Count() : 0)}" +
+									   //$", {(shipperData.ShipperQRCode_Data.Count() * 24)}" +
+									   //$", {(shipperData.ShipperQRCode_Data.Count())}" +
+									   $", {(((shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0 ? shipperQRCodeData_Success.Count() : 0) + (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0)) * 24)}" +
+									   $", {((shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0 ? shipperQRCodeData_Success.Count() : 0) + (shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0))}" +
+									   $", {(shipperQRCodeData_Success != null && shipperQRCodeData_Success.Count() > 0 ? shipperQRCodeData_Success.Count() : 0)}" +
+									   $", {(shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0)}" +
 									   $", '{fileUploadStatus}', '{plantCode}', '{error}' )";
 
 									result = DataContext.ExecuteNonQuery(query_File);
