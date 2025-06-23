@@ -8,6 +8,15 @@
 		th, td {
 			white-space: break-spaces;
 		}
+
+		tr.expandable-body td{
+			white-space: normal !important;
+		}
+
+		tr.expandable-body table th, tr.expandable-body table td {
+			border-left-width: 0 !important;
+			border-right-width: 0 !important;
+		}
 	</style>
 }
 
@@ -440,7 +449,7 @@
 		}
 
 		function fnLoad_DataTable() {
-			debugger
+			
 			ShowLoader(true);
 
 			$('#div_DataTable').html('');
@@ -478,7 +487,7 @@
 						url = '@Url.Action("GetData_BatchLogFile", "Reports")?searchTerm=' + searchTerm + '&FromDate=' + FromDate + '&ToDate=' + ToDate;
 					}
 					else if (inputReportType == "BL_LIVE") {
-						debugger
+						
 						var FromDate = $('#FromDate').val();
 						var ToDate = $('#ToDate').val();
 
