@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Presentation;
+using iTextSharp.testutils;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
@@ -120,7 +121,7 @@ namespace VendorQRGeneration.Infra.Services
 					// Disconnect from the server
 					client.Close();
 
-					Console.WriteLine($"listen is listening on Address {listenIP.ToString()}:{listenPort}..." );
+					Console.WriteLine($"listen is listening on Address {listenIP.ToString()}:{listenPort}...");
 				}
 				catch (Exception ex)
 				{
@@ -269,7 +270,7 @@ namespace VendorQRGeneration.Infra.Services
 
 					var receivedData = Encoding.UTF8.GetString(_buffer, 0, received);
 
-					Write_Log($"Socket server received message Before Split : \"{receivedData}\"");
+					Write_Log($"<$>Socket server received message Before Split : \"{receivedData}\"");
 
 					receivedData = Regex.Replace(receivedData, @"[\s\0]+", "");
 
@@ -834,8 +835,12 @@ namespace VendorQRGeneration.Infra.Services
 
 		private void Write_Log(string text)
 		{
-			if (!string.IsNullOrEmpty(text) && MDA_QR_Scan_Log_IsActive)
+			if (!string.IsNullOrEmpty(text))
 			{
+				Console.WriteLine((text.StartsWith("<$>") ? System.Environment.NewLine : "") + DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text.Replace("<$>", "") + System.Environment.NewLine);
+
+				if (!MDA_QR_Scan_Log_IsActive) return;
+
 				try
 				{
 					var _filePath = filePath.Replace("<YYYYMMDD>", DateTime.Now.ToString("yyyyMMdd"));
@@ -848,13 +853,11 @@ namespace VendorQRGeneration.Infra.Services
 						System.IO.File.Create(_filePath).Dispose();
 
 					using (StreamWriter sw = System.IO.File.AppendText(_filePath))
-						sw.WriteLine(DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text + System.Environment.NewLine);
+						sw.WriteLine((text.StartsWith("<$>") ? System.Environment.NewLine : "") + DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text.Replace("<$>", "") + System.Environment.NewLine);
 				}
 				catch (Exception) { }
-
 			}
 
-			Console.WriteLine(DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text);
 		}
 	}
 
