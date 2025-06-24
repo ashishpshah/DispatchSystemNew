@@ -371,12 +371,13 @@ namespace VendorQRGeneration.Infra.Services
 						{
 							//clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
+							if (_receivedData_Prev.State == "NOK") clientSocket.Send(Encoding.ASCII.GetBytes(_receivedData_Prev.State));
+							//else clientSocket.Send(Encoding.ASCII.GetBytes("$"));
+
 							Write_Log($"ReceivedData : {receivedData} before 10 sec | Response : continue");
 
 							receivedData = "";
 
-							if (_receivedData_Prev.State == "NOK") clientSocket.Send(Encoding.ASCII.GetBytes(_receivedData_Prev.State));
-							//else clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 							//if (!_sharedDataService.GetScanData().Any(x => x.Value.qr_code == receivedData))
 							//	Write_Log($"ReceivedData : {receivedData} before 10 sec | Response : {receivedData} not in list.");
 
