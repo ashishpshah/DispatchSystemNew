@@ -3008,7 +3008,6 @@ namespace Dispatch_System.Controllers
 
 														bottle_QrCode_Id = bottle_QrCode_Id + 1;
 													}
-
 												}
 
 
@@ -3487,50 +3486,66 @@ namespace Dispatch_System.Controllers
 							shipperQRCodeData_Success.RemoveAll(x => !((string)x["Action"]).ToLower().Contains("add"));
 							shipperQRCodeData_Duplicate.RemoveAll(x => !((string)x["Action"]).ToLower().Contains("add"));
 
-							listShipperQRCode_Duplicate.RemoveAll(x => !shipperQRCodeData_Duplicate.Any(z => (string)z["ShipperQRCode"] == x.QRCode));
+							//listShipperQRCode_Duplicate.RemoveAll(x => !shipperQRCodeData_Duplicate.Any(z => (string)z["ShipperQRCode"] == x.QRCode));
 
 							if (listShipperQRCode_Duplicate != null && listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode)).Count() > 0)
 							{
 								error += " | SUMMARY : ";
 
-								if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE"))
+								if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type != "DUP_SHIPPER" && x.Type != "DUP_BOTTLE"))
 								{
-									error += $" | Delete operation not perform because Shipper QR Code(s) already loaded. ";
-									error += $" | Shipper QR Code - Not Delete : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE").SelectMany(x => x.QRCode.Split(',')).Count()} ";
-									error += $" | Shipper QR Code - Not Delete : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE").Select(x => "<S>" + x.QRCode).ToArray())} ";
+									error += $" | Rejected Shipper QR Code : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type != "DUP_SHIPPER" && x.Type != "DUP_BOTTLE").Select(x => "<S>" + x.QRCode).ToArray())} ";
 								}
 
 								if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_SHIPPER"))
 								{
-									error += $" | Shipper QR Code - Duplicate : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_SHIPPER").SelectMany(x => x.QRCode.Split(',')).Count()} ";
-									error += $" | Shipper QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_SHIPPER").Select(x => "<S>" + x.QRCode).ToArray())} ";
-								}
-
-								if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "BOTTLE_CNT_SHIPPER"))
-								{
-									error += $" | Shipper QR Code - not contain 24 bottles : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "BOTTLE_CNT_SHIPPER").SelectMany(x => x.QRCode.Split(',')).Count()} ";
-									error += $" | Shipper QR Code - not contain 24 bottles : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "BOTTLE_CNT_SHIPPER").Select(x => "<S>" + x.QRCode).ToArray())} ";
+									error += $" | Duplicate Shipper QR Code : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_SHIPPER").Select(x => "<S>" + x.QRCode).ToArray())} ";
 								}
 
 								if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_BOTTLE"))
 								{
-									error += $" | Bottle QR Code - Duplicate : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_BOTTLE").SelectMany(x => x.BottleQRCodes.Split(',')).Count()} ";
-									//error += $" | Bottle QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_BOTTLE").Select(x => "<S>" + x.QRCode + "<B>" + x.BottleQRCodes).ToArray())} ";
-									error += $" | Bottle QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_BOTTLE").Select(x => "<S>" + x.QRCode + " - " + x.BottleQRCodes.Split(',').Count()).ToArray())} ";
+									error += $" | Duplicate Bottle QR Code : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_BOTTLE").Select(x => "<S>" + x.QRCode + " - " + x.BottleQRCodes.Split(',').Count()).ToArray())} ";
 								}
 
-								if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "LEN_BOTTLE"))
-								{
-									error += $" | Bottle QR Code - length issue : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "LEN_BOTTLE").SelectMany(x => x.BottleQRCodes.Split(',')).Count()} ";
-									//error += $" | Bottle QR Code - length issue : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "LEN_BOTTLE").Select(x => "<S>" + x.QRCode + "<B>" + x.BottleQRCodes).ToArray())} ";
-									error += $" | Bottle QR Code - length issue : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "LEN_BOTTLE").Select(x => "<S>" + x.QRCode + " - " + x.BottleQRCodes.Split(',').Count()).ToArray())} ";
-								}
 
-								if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type != "NOT_DELETE" && x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE"))
-								{
-									error += $" | Shipper QR Code - issue : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type != "NOT_DELETE" && x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE").SelectMany(x => x.QRCode.Split(',')).Count()} ";
-									error += $" | Shipper QR Code - issue : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type != "NOT_DELETE" && x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE").Select(x => "<S>" + x.QRCode).ToArray())} ";
-								}
+								//if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE"))
+								//{
+								//	error += $" | Delete operation not perform because Shipper QR Code(s) already loaded. ";
+								//	error += $" | Shipper QR Code - Not Delete : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE").SelectMany(x => x.QRCode.Split(',')).Count()} ";
+								//	error += $" | Shipper QR Code - Not Delete : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "NOT_DELETE").Select(x => "<S>" + x.QRCode).ToArray())} ";
+								//}
+
+								//if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_SHIPPER"))
+								//{
+								//	error += $" | Shipper QR Code - Duplicate : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_SHIPPER").SelectMany(x => x.QRCode.Split(',')).Count()} ";
+								//	error += $" | Shipper QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_SHIPPER").Select(x => "<S>" + x.QRCode).ToArray())} ";
+								//}
+
+								//if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "BOTTLE_CNT_SHIPPER"))
+								//{
+								//	error += $" | Shipper QR Code - not contain 24 bottles : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "BOTTLE_CNT_SHIPPER").SelectMany(x => x.QRCode.Split(',')).Count()} ";
+								//	error += $" | Shipper QR Code - not contain 24 bottles : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "BOTTLE_CNT_SHIPPER").Select(x => "<S>" + x.QRCode).ToArray())} ";
+								//}
+
+								//if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_BOTTLE"))
+								//{
+								//	error += $" | Bottle QR Code - Duplicate : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_BOTTLE").SelectMany(x => x.BottleQRCodes.Split(',')).Count()} ";
+								//	//error += $" | Bottle QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_BOTTLE").Select(x => "<S>" + x.QRCode + "<B>" + x.BottleQRCodes).ToArray())} ";
+								//	error += $" | Bottle QR Code - Duplicate : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_BOTTLE").Select(x => "<S>" + x.QRCode + " - " + x.BottleQRCodes.Split(',').Count()).ToArray())} ";
+								//}
+
+								//if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "LEN_BOTTLE"))
+								//{
+								//	error += $" | Bottle QR Code - length issue : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "LEN_BOTTLE").SelectMany(x => x.BottleQRCodes.Split(',')).Count()} ";
+								//	//error += $" | Bottle QR Code - length issue : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "LEN_BOTTLE").Select(x => "<S>" + x.QRCode + "<B>" + x.BottleQRCodes).ToArray())} ";
+								//	error += $" | Bottle QR Code - length issue : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "LEN_BOTTLE").Select(x => "<S>" + x.QRCode + " - " + x.BottleQRCodes.Split(',').Count()).ToArray())} ";
+								//}
+
+								//if (listShipperQRCode_Duplicate.Any(x => !string.IsNullOrEmpty(x.QRCode) && x.Type != "NOT_DELETE" && x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE"))
+								//{
+								//	error += $" | Shipper QR Code - issue : Count = {listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type != "NOT_DELETE" && x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE").SelectMany(x => x.QRCode.Split(',')).Count()} ";
+								//	error += $" | Shipper QR Code - issue : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type != "NOT_DELETE" && x.Type != "DUP_SHIPPER" && x.Type != "BOTTLE_CNT_SHIPPER" && x.Type != "DUP_BOTTLE" && x.Type != "LEN_BOTTLE").Select(x => "<S>" + x.QRCode).ToArray())} ";
+								//}
 							}
 
 							if (!string.IsNullOrEmpty(error))
@@ -3544,6 +3559,8 @@ namespace Dispatch_System.Controllers
 							listShipperQRCode_Duplicate.RemoveAll(x => x.Type == "NOT_DELETE");
 
 							if (string.IsNullOrEmpty(error) || (listShipperQRCode_Duplicate != null && listShipperQRCode_Duplicate.Count() == 0)) fileUploadStatus = "Completed";
+
+							shipperQRCodeData_Duplicate.RemoveAll(x => !listShipperQRCode_Duplicate.Any(z => z.QRCode == (string)x["ShipperQRCode"]));
 
 							try
 							{

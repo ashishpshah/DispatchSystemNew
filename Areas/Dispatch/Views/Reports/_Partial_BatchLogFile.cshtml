@@ -121,22 +121,6 @@ else
 														return index == 0 ? x : x.Replace(mainPrefix, "").Trim();
 													}));
 
-													// if (combined.Contains("<S>"))
-													// {
-													// 	<li>
-													// 		<ul>
-													// 			@foreach (var shipperQR in combined.Split("<S>").Where(x => !string.IsNullOrWhiteSpace(x)).ToList())
-													// 			{
-													// 				//var _shipperQR = shipperQR.Substring()
-
-													// 				<li>@shipperQR</li>
-													// 			}
-													// 		</ul>
-													// 	</li>
-													// }
-													// else
-													// {
-
 													@if (combined.Contains("|"))
 													{
 														<li class="mb-2">
@@ -172,8 +156,6 @@ else
 														<li class="mb-2"> @combined.Replace("<S>", "").Replace("<B>", "") </li>
 													}
 
-
-													// }
 												}
 											}
 										}
