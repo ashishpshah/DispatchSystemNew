@@ -120,7 +120,7 @@ namespace VendorQRGeneration.Infra.Services
 					// Disconnect from the server
 					client.Close();
 
-					Console.WriteLine($"listen is listening on Address {listenIP.ToString()}:{listenPort}..." + System.Environment.NewLine);
+					Console.WriteLine($"listen is listening on Address {listenIP.ToString()}:{listenPort}..." );
 				}
 				catch (Exception ex)
 				{
@@ -179,7 +179,7 @@ namespace VendorQRGeneration.Infra.Services
 						listenerSocket.Bind(new IPEndPoint(listenIP, listenPort));
 						listenerSocket.Listen(10);
 
-						Write_Log($"Listen is listening on Address {listenIP.ToString()}:{listenPort}..." + System.Environment.NewLine);
+						Write_Log($"Listen is listening on Address {listenIP.ToString()}:{listenPort}...");
 					}
 					catch (Exception ex)
 					{
@@ -250,7 +250,7 @@ namespace VendorQRGeneration.Infra.Services
 					{
 						_isRunning = false;
 
-						Write_Log($"{Environment.NewLine}Session has expired. Please log in first.");
+						Write_Log($"Session has expired. Please log in first.");
 
 						_cancellationTokenSource?.Cancel();
 						return;
@@ -260,7 +260,7 @@ namespace VendorQRGeneration.Infra.Services
 					{
 						_isRunning = false;
 
-						Write_Log($"{Environment.NewLine}Socket server disconnected.");
+						Write_Log($"Socket server disconnected.");
 
 						return;
 					}
@@ -269,7 +269,7 @@ namespace VendorQRGeneration.Infra.Services
 
 					var receivedData = Encoding.UTF8.GetString(_buffer, 0, received);
 
-					Write_Log($"{Environment.NewLine}Socket server received message Before Split : \"{receivedData}\"");
+					Write_Log($"Socket server received message Before Split : \"{receivedData}\"");
 
 					receivedData = Regex.Replace(receivedData, @"[\s\0]+", "");
 
