@@ -246,15 +246,15 @@ namespace VendorQRGeneration.Infra.Services
 			{
 				try
 				{
-					if (!Common.IsUserLogged())
-					{
-						_isRunning = false;
+					//if (!Common.IsUserLogged())
+					//{
+					//	_isRunning = false;
 
-						Write_Log($"Session has expired. Please log in first.");
+					//	Write_Log($"Session has expired. Please log in first.");
 
-						_cancellationTokenSource?.Cancel();
-						return;
-					}
+					//	_cancellationTokenSource?.Cancel();
+					//	return;
+					//}
 
 					if (clientSocket == null || !IsConnected(clientSocket))
 					{
@@ -376,7 +376,7 @@ namespace VendorQRGeneration.Infra.Services
 							receivedData = "";
 
 							if (_receivedData_Prev.State == "NOK") clientSocket.Send(Encoding.ASCII.GetBytes(_receivedData_Prev.State));
-							else clientSocket.Send(Encoding.ASCII.GetBytes("$"));
+							//else clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 							//if (!_sharedDataService.GetScanData().Any(x => x.Value.qr_code == receivedData))
 							//	Write_Log($"ReceivedData : {receivedData} before 10 sec | Response : {receivedData} not in list.");
 
@@ -389,7 +389,7 @@ namespace VendorQRGeneration.Infra.Services
 						if (!string.IsNullOrEmpty(receivedData)
 							&& receivedData.Trim().ToUpper().Replace(" ", "").Contains("<#>"))
 						{
-							clientSocket.Send(Encoding.ASCII.GetBytes("$"));
+							//clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 							Write_Log($"ReceivedData : {receivedData} | <#> Response : continue");
 
