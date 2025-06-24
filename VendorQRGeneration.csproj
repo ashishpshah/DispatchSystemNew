@@ -86,6 +86,8 @@
 
 	<ItemGroup>
 	  <None Remove="Areas\MDA_Automation_Old.zip" />
+	  <None Remove="Areas\MDA_Automation.zip" />
+	  <None Remove="DispatchSystemNew.zip" />
 	</ItemGroup>
 
 

@@ -980,7 +980,14 @@ namespace Dispatch_System.Areas.Admin.Controllers
 				CommonViewModel.Data5 = _socketBackgroundTask.IsRunning();
 
 				if (_socketBackgroundTask.IsRunning())
-					CommonViewModel.Data1 = _sharedDataService.GetScanData().Where(x => x.Key > seqNo).Select(x => new
+				{
+					CommonViewModel.Data3 = _sharedDataService.GetScanData().OrderByDescending(x => x.Key).Select(x => new
+					{
+						No = x.Key,
+						RequiredShipper = x.Value.requiredShipper
+					}).FirstOrDefault();
+
+					CommonViewModel.Data1 = _sharedDataService.GetScanData().Where(x => x.Key > seqNo).OrderBy(x => x.Key).Select(x => new
 					{
 						No = x.Key,
 						Text = x.Value.qr_code,
@@ -990,6 +997,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 						LoaddedShipper = x.Value.loaddedShipper,
 						RejectShipper = x.Value.rejectShipper
 					}).ToList();
+				}
 				else
 					CommonViewModel.Message = _socketBackgroundTask.ErrorMessage();
 
@@ -1480,7 +1488,15 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
 			list = list == null ? new List<ShipperBatch>() : list;
 
-			return Json(new { No = list != null && list.Count() > 0 ? list.Max(x => x.SrNo) : 0, RequiredShipper = requiredShipper, LoaddedShipper = loaddedShipper, RejectShipper = rejectShipper, DataList = list });
+			return Json(new
+			{
+				No = list != null && list.Count() > 0 ? list.Max(x => x.SrNo) : 0,
+				RequiredShipper = requiredShipper,
+				LoaddedShipper = loaddedShipper,
+				RejectShipper = rejectShipper,
+				DataList = list,
+				DataLast = new { No = list != null && list.Count() > 0 ? list.Max(x => x.SrNo) : 0, RequiredShipper = requiredShipper }
+			});
 		}
 
 		[HttpGet]

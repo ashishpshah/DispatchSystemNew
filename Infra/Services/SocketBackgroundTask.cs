@@ -1,5 +1,7 @@
 ﻿using Dispatch_System;
+using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Presentation;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
@@ -42,6 +44,8 @@ namespace VendorQRGeneration.Infra.Services
 
 
 		private MDA_Dtls mda { get; set; }
+		private string filePath { get; set; }
+		private bool MDA_QR_Scan_Log_IsActive { get; set; }
 
 
 		private bool MDA_QR_Scan_Response_Demo { get; set; }
@@ -56,12 +60,23 @@ namespace VendorQRGeneration.Infra.Services
 			listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 			printerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
+			try { MDA_QR_Scan_Log_IsActive = Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Log_IsActive").Value); }
+			catch { MDA_QR_Scan_Log_IsActive = false; }
+
 			try { MDA_QR_Scan_Response_Demo = Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Response_Demo").Value); }
 			catch { MDA_QR_Scan_Response_Demo = false; }
+
+			try { MDA_QR_Scan_Delay_Sec = Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "1"); }
+			catch { MDA_QR_Scan_Delay_Sec = 2; }
+
+			try { filePath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Log_File_Path").Value ?? "MDA_QR_Scan_#.txt"); }
+			catch { filePath = "C:\\Z_Project_Dispatch_System\\Logs\\<YYYYMMDD>\\MDA_QR_Scan_<HH>.txt"; }
+
 
 			iffco_url = AppHttpContextAccessor.IFFCO_Domain.TrimEnd('/');
 
 		}
+
 		public bool IsRunning() => _isRunning && (clientSocket != null && IsConnected(clientSocket) && (_backgroundTask != null && !_backgroundTask.IsCompleted));
 		public string ErrorMessage() => _errorMessage;
 		public void SetMDA(MDA_Dtls _mda) => mda = _mda;
@@ -122,6 +137,18 @@ namespace VendorQRGeneration.Infra.Services
 
 		public async Task StartWork()
 		{
+			try { MDA_QR_Scan_Log_IsActive = Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Log_IsActive").Value); }
+			catch { MDA_QR_Scan_Log_IsActive = false; }
+
+			try { MDA_QR_Scan_Response_Demo = Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Response_Demo").Value); }
+			catch { MDA_QR_Scan_Response_Demo = false; }
+
+			try { MDA_QR_Scan_Delay_Sec = Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "1"); }
+			catch { MDA_QR_Scan_Delay_Sec = 2; }
+
+			try { filePath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Log_File_Path").Value ?? "MDA_QR_Scan_<HH>.txt"); }
+			catch { filePath = "C:\\Z_Project_Dispatch_System\\Logs\\<YYYYMMDD>\\MDA_QR_Scan_<HH>.txt"; }
+
 			cnt_error = 0;
 
 			if (mda.Required_Shipper <= mda.Loaded_Shipper)
@@ -134,8 +161,6 @@ namespace VendorQRGeneration.Infra.Services
 			_receivedData_Prev = new("123", "", DateTime.Now);
 
 			Write_Log($"MC Start Request");
-
-			MDA_QR_Scan_Delay_Sec = Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "1");
 
 			_isStopSignal = false;
 
@@ -173,12 +198,12 @@ namespace VendorQRGeneration.Infra.Services
 				}
 				catch (Exception e) { return; }
 
-				//if (clientSocket != null && IsConnected(clientSocket))
-				//{
-				//	clientSocket.Send(Encoding.ASCII.GetBytes("STOP"));
+				if (clientSocket != null && IsConnected(clientSocket))
+				{
+					clientSocket.Send(Encoding.ASCII.GetBytes("STOP"));
 
-				//	clientSocket.Send(Encoding.ASCII.GetBytes("START"));
-				//}
+					clientSocket.Send(Encoding.ASCII.GetBytes("START"));
+				}
 
 				_sequenceNumber = (_sharedDataService.GetScanData() != null && _sharedDataService.GetScanData().Count() > 0 ? _sharedDataService.GetScanData().Max(x => x.Key) : 0);
 
@@ -191,14 +216,7 @@ namespace VendorQRGeneration.Infra.Services
 				if (clientSocket != null && (_backgroundTask == null || _backgroundTask.IsCompleted))
 					_backgroundTask = Task.Run(BackgroundTaskAsync, _cancellationTokenSource.Token);
 
-				Thread.Sleep(Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "1") * 1000);
-
-				if (clientSocket != null && IsConnected(clientSocket))
-				{
-					clientSocket.Send(Encoding.ASCII.GetBytes("STOP"));
-
-					clientSocket.Send(Encoding.ASCII.GetBytes("START"));
-				}
+				Thread.Sleep(Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "1") * 2 * 1000);
 
 			}
 			else
@@ -228,6 +246,16 @@ namespace VendorQRGeneration.Infra.Services
 			{
 				try
 				{
+					if (!Common.IsUserLogged())
+					{
+						_isRunning = false;
+
+						Write_Log($"{Environment.NewLine}Session has expired. Please log in first.");
+
+						_cancellationTokenSource?.Cancel();
+						return;
+					}
+
 					if (clientSocket == null || !IsConnected(clientSocket))
 					{
 						_isRunning = false;
@@ -243,14 +271,28 @@ namespace VendorQRGeneration.Infra.Services
 
 					Write_Log($"{Environment.NewLine}Socket server received message Before Split : \"{receivedData}\"");
 
-					receivedData = receivedData.Trim().Replace(" ", "").Substring(receivedData.IndexOf(iffco_url.Substring(0, 10)));
+					receivedData = Regex.Replace(receivedData, @"[\s\0]+", "");
 
-					//// By VK
-					//if (receivedData.ToUpper().StartsWith(iffco_url.ToUpper().Substring(0, 10)) && !receivedData.ToUpper().Contains(iffco_url.ToUpper()))
-					//{
-					//	Thread.Sleep(500);
-					//	continue;
-					//}
+					if (!string.IsNullOrEmpty(receivedData) && receivedData.Length > 58 && receivedData.Contains(iffco_url))
+					{
+						string pattern = receivedData.Substring(0, 5);
+
+						int firstIndex = receivedData.IndexOf(pattern);
+						int secondIndex = receivedData.IndexOf(pattern, firstIndex + 1);
+
+						if (secondIndex != -1) receivedData = receivedData.Substring(0, secondIndex);
+					}
+
+					if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains(iffco_url.Substring(0, 5)))
+						receivedData = receivedData.Trim().Replace(" ", "").Substring(receivedData.IndexOf(iffco_url.Substring(0, 5)));
+
+					// By VK
+					if (receivedData.ToUpper().StartsWith(iffco_url.ToUpper().Substring(0, 10)) && !receivedData.ToUpper().Contains(iffco_url.ToUpper()))
+					{
+						Write_Log($"ReceivedData : {receivedData} | Response : continue");
+						Thread.Sleep(500);
+						continue;
+					}
 
 					if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains(iffco_url))
 					{
@@ -269,35 +311,12 @@ namespace VendorQRGeneration.Infra.Services
 							toggle = !toggle;
 						}
 
-						//if (strQR.IndexOf("/") > -1)
-						//{
-						//	sb[strQR.IndexOf("/")] = '(';
-						//	strQR = sb.ToString();
-						//}
-						//if (strQR.IndexOf("/") > -1)
-						//{
-						//	sb[strQR.IndexOf("/")] = ')';
-						//	strQR = sb.ToString();
-						//}
-						//if (strQR.IndexOf("/") > -1)
-						//{
-						//	sb[strQR.IndexOf("/")] = '(';
-						//	strQR = sb.ToString();
-						//}
-						//if (strQR.IndexOf("/") > -1)
-						//{
-						//	sb[strQR.IndexOf("/")] = ')';
-						//	strQR = sb.ToString();
-						//}
-
 						receivedData = sb.ToString();
 						receivedData = Regex.Replace(receivedData, @"[^\w:/\(/\)\.\-]", "");
 
 						receivedData = receivedData.Replace("MCIDEL", "");
 						receivedData = receivedData.Replace("MCSTART", "");
 						receivedData = receivedData.Replace("MCSTOP", "");
-						//receivedData = receivedData.Replace("<#>", "");
-						//receivedData = receivedData.Replace("<@>", "");
 
 					}
 
@@ -356,12 +375,12 @@ namespace VendorQRGeneration.Infra.Services
 
 							receivedData = "";
 
-							//clientSocket.Send(Encoding.ASCII.GetBytes(_receivedData_Prev.State));
-
+							if (_receivedData_Prev.State == "NOK") clientSocket.Send(Encoding.ASCII.GetBytes(_receivedData_Prev.State));
+							else clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 							//if (!_sharedDataService.GetScanData().Any(x => x.Value.qr_code == receivedData))
 							//	Write_Log($"ReceivedData : {receivedData} before 10 sec | Response : {receivedData} not in list.");
 
-							Thread.Sleep(1000);
+							Thread.Sleep(500);
 							continue;
 						}
 
@@ -370,13 +389,13 @@ namespace VendorQRGeneration.Infra.Services
 						if (!string.IsNullOrEmpty(receivedData)
 							&& receivedData.Trim().ToUpper().Replace(" ", "").Contains("<#>"))
 						{
-							//clientSocket.Send(Encoding.ASCII.GetBytes("$"));
+							clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 							Write_Log($"ReceivedData : {receivedData} | <#> Response : continue");
 
 							receivedData = "";
 
-							Thread.Sleep(1000);
+							Thread.Sleep(500);
 							continue;
 						}
 						else if (!string.IsNullOrEmpty(receivedData)
@@ -392,7 +411,7 @@ namespace VendorQRGeneration.Infra.Services
 
 							receivedData = "";
 
-							Thread.Sleep(1000);
+							Thread.Sleep(500);
 							continue;
 						}
 						else if (MDA_QR_Scan_Response_Demo)
@@ -482,6 +501,7 @@ namespace VendorQRGeneration.Infra.Services
 										_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
 
 										clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
+										Thread.Sleep(1000);
 
 										Write_Log($"Response : {response}");
 
@@ -499,6 +519,7 @@ namespace VendorQRGeneration.Infra.Services
 									_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
 
 									clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
+									Thread.Sleep(1000);
 
 									Write_Log($"Response : {response}");
 
@@ -516,6 +537,7 @@ namespace VendorQRGeneration.Infra.Services
 								_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
 
 								clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
+								Thread.Sleep(1000);
 
 								Write_Log($"Response : {response}");
 
@@ -811,23 +833,23 @@ namespace VendorQRGeneration.Infra.Services
 
 		private void Write_Log(string text)
 		{
-			if (!string.IsNullOrEmpty(text) && false)
+			if (!string.IsNullOrEmpty(text) && MDA_QR_Scan_Log_IsActive)
 			{
-				string filePath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Log_File_Path").Value ?? "MDA_QR_Scan_#.txt");
+				try
+				{
+					var _filePath = filePath.Replace("<YYYYMMDD>", DateTime.Now.ToString("yyyyMMdd"));
+					_filePath = _filePath.Replace("<HH>", DateTime.Now.ToString("HH"));
 
-				//filePath = filePath.Replace("#", DateTime.Now.ToString("yyyyMMdd_HH"));
+					if (!System.IO.Directory.Exists(Path.GetDirectoryName(_filePath)))
+						System.IO.Directory.CreateDirectory(Path.GetDirectoryName(_filePath));
 
-				filePath = filePath.Replace("<YYYYMMDD>", DateTime.Now.ToString("yyyyMMdd"));
-				filePath = filePath.Replace("<HH>", DateTime.Now.ToString("HH"));
+					if (!System.IO.File.Exists(_filePath))
+						System.IO.File.Create(_filePath).Dispose();
 
-				if (!System.IO.Directory.Exists(Path.GetDirectoryName(filePath)))
-					System.IO.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
-				if (!System.IO.File.Exists(filePath))
-					System.IO.File.Create(filePath).Dispose();
-
-				using (StreamWriter sw = System.IO.File.AppendText(filePath))
-					sw.WriteLine(DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text + System.Environment.NewLine);
+					using (StreamWriter sw = System.IO.File.AppendText(_filePath))
+						sw.WriteLine(DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text + System.Environment.NewLine);
+				}
+				catch (Exception) { }
 
 			}
 
