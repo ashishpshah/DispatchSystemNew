@@ -55,17 +55,17 @@ else
 
 			<tbody>
 				<tr>
-					<th class="text-center">#</th>
+					<th width="3%" class="text-center">#</th>
 					<th>Batch No.</th>
-					<th>Process Start Date</th>
+					<th width="20%" class="text-center">Process Start Date</th>
 					<th hidden>Process End Date</th>
-					<th>Manufacture Date</th>
-					<th>Expiry Date</th>
+					<th width="10%" class="text-center">Manufacture Date</th>
+					<th width="10%" class="text-center">Expiry Date</th>
 					<th hidden class="text-center">QR Code Count</th>
-					<th class="text-center">No of Shipper - Accepted</th>
-					<th class="text-center">No of Shipper - Rejected</th>
-					<th class="text-center">Total Shipper</th>
-					<th class="text-center">Status</th>
+					<th width="10%" class="text-center">No of Shipper - Accepted</th>
+					<th width="10%" class="text-center">No of Shipper - Rejected</th>
+					<th width="10%" class="text-center">Total Shipper</th>
+					<th width="10%" class="text-center">Status</th>
 					@* <th>Remark</th> *@
 				</tr>
 				@foreach (var item in Model.List.OrderBy(x => x.SrNo).ThenBy(x => x.Status).ThenBy(x => x.FileName).ToList())
@@ -73,15 +73,15 @@ else
 					<tr>
 						<td>@item.SrNo</td>
 						<td>@item.FileName</td>
-						<td>@item.StartDate</td>
+						<td class="text-center">@item.StartDate</td>
 						<td hidden>@item.EndDate</td>
-						<td>@item.mfg_dt</td>
-						<td>@item.expiry_dt</td>
+						<td class="text-center">@item.mfg_dt</td>
+						<td class="text-center">@item.expiry_dt</td>
 						<td hidden>@item.QRCode_Count</td>
-						<td>@item.accepted_shipper_qty</td>
-						<td>@item.rejected_shipper_qty</td>
-						<td>@item.total_shipper_qty</td>
-						<td>@item.Status</td>
+						<td class="text-center">@item.accepted_shipper_qty</td>
+						<td class="text-center">@item.rejected_shipper_qty</td>
+						<td class="text-center">@item.total_shipper_qty</td>
+						<td class="text-center">@item.Status</td>
 						@* <td>@item.Remark</td> *@
 					</tr>
 
@@ -121,12 +121,41 @@ else
 														return index == 0 ? x : x.Replace(mainPrefix, "").Trim();
 													}));
 
-													@if (combined.Contains("|"))
+													@if (combined.Contains("<S>"))
 													{
 														<li class="mb-2">
+															@Convert.ToString(combined.Split("<S>")[0])
+															<ul class="ul_columns_4">
+																@foreach (var str in Convert.ToString(combined.Split("<S>")[1]).Split(",").Where(x => !string.IsNullOrWhiteSpace(x)))
+																{
+																	@if (str.Contains("<B>"))
+																	{
+																		<li> @Convert.ToString(str.Split("<B>")[0]) - @(Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Count()) </li>
+																	}
+																	else
+																	{
+																		if (str.Contains(','))
+																		{
+																			foreach (var _str in str.Split(',').Where(x => !string.IsNullOrWhiteSpace(x)))
+																			{
+																				<li>@Common.ExtractAfterSecondClosingParenthesis(_str)</li>
+																			}
+																		}
+																		else
+																		{
+																			<li>@Common.ExtractAfterSecondClosingParenthesis(str)</li>
+																		}
+																	}
+																}
+															</ul>
+														</li>
+													}
+													else if (combined.Contains("|"))
+													{
+														<li class="mb-3">
 															@Convert.ToString(combined.Split(" | ")[0])
 
-															<ul class="my-1" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;">
+															<ul class="ul_columns_4">
 																@foreach (var str in Convert.ToString(combined.Split(" | ")[1]).Split("<S>").Where(x => !string.IsNullOrWhiteSpace(x)))
 																{
 																	@if (str.Contains("<B>"))
@@ -139,12 +168,12 @@ else
 																		{
 																			foreach (var _str in str.Split(',').Where(x => !string.IsNullOrWhiteSpace(x)))
 																			{
-																				<li> @_str </li>
+																				<li>@Common.ExtractAfterSecondClosingParenthesis(_str)</li>
 																			}
 																		}
 																		else
 																		{
-																			<li> @str </li>
+																			<li>@Common.ExtractAfterSecondClosingParenthesis(str)</li>
 																		}
 																	}
 																}
@@ -153,7 +182,7 @@ else
 													}
 													else
 													{
-														<li class="mb-2"> @combined.Replace("<S>", "").Replace("<B>", "") </li>
+														<li class="mb-2">@combined.Replace("<S>", "").Replace("<B>", "")</li>
 													}
 
 												}

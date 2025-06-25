@@ -62,7 +62,23 @@ namespace Dispatch_System
 			return PLANT_ID;
 		}
 
+		public static string ExtractAfterSecondClosingParenthesis(string input)
+		{
+			if (string.IsNullOrWhiteSpace(input))
+				return input;
 
+			int closeParenCount = input.Count(c => c == ')');
+			if (closeParenCount != 2)
+				return input;
+
+			int firstClose = input.IndexOf(')');
+			int secondClose = input.IndexOf(')', firstClose + 1);
+
+			if (secondClose == -1 || secondClose + 1 >= input.Length)
+				return input;
+
+			return "**" + input.Substring(secondClose + 1).Trim();
+		}
 
 		public static void Configure_UserMenuAccess(List<Menu> userMenuAccess) => UserMenuAccess = userMenuAccess;
 		public static void Configure_UserPlantAccess(List<Plant> userPlantAccess) => UserPlantAccess = userPlantAccess;

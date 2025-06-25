@@ -1,64 +1,78 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewBag.Title | Dispatch System</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewBag.Title | Dispatch System</title>
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
 
-    <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css">
-    <link rel="stylesheet" href="~/dist\css\adminlte.min.css">
+	<link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css">
+	<link rel="stylesheet" href="~/dist\css\adminlte.min.css">
 
-    <style type="text/css">
-        .panel-divider {
-            text-align: left;
-            border: 1px solid #979faf;
-            line-height: 0.1em;
-            margin-bottom: 1.5rem !important;
-            border-radius: 0.25rem
-        }
+	<style type="text/css">
+		.panel-divider {
+			text-align: left;
+			border: 1px solid #979faf;
+			line-height: 0.1em;
+			margin-bottom: 1.5rem !important;
+			border-radius: 0.25rem
+		}
 
-            .panel-divider > span {
-                background: #fff;
-                padding: 0 1rem;
-                margin-left: 1rem !important;
-                font-size: 1.25rem;
-                font-weight: bold;
-            }
+			.panel-divider > span {
+				background: #fff;
+				padding: 0 1rem;
+				margin-left: 1rem !important;
+				font-size: 1.25rem;
+				font-weight: bold;
+			}
 
-            .panel-divider > div.row {
-                margin: 1rem 2rem 0rem 2rem !important;
-            }
+			.panel-divider > div.row {
+				margin: 1rem 2rem 0rem 2rem !important;
+			}
 
-        .form-group {
-            margin-bottom: 0rem !important;
-        }
+		.form-group {
+			margin-bottom: 0rem !important;
+		}
 
-        .table td, .table th {
-            padding: 0.35rem !important;
-        }
+		.table td, .table th {
+			padding: 0.35rem !important;
+		}
 
-        @@media print {
+		.expandable-body .list-unstyled > li:not(:first-child) {
+			border-top: 1px solid #dee2e6;
+		}
 
-            .printButton, .closeButton {
-                display: none !important;
-            }
+		.expandable-body .list-unstyled ul.ul_columns_4 {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 5px;
+		}
 
-            .border-0 {
-                border: 0 !important;
-            }
-        }
+		@@media print {
 
-    </style>
+			.printButton, .closeButton {
+				display: none !important;
+			}
+
+			.border-0 {
+				border: 0 !important;
+			}
+
+			.expandable-body .list-unstyled ul.ul_columns_4 {
+				grid-template-columns: repeat(5, 1fr);
+			}
+		}
+
+	</style>
 
 </head>
 <body class="wrapper">
-    <section class="invoice border-0">
-        @RenderBody()
-    </section>
-    <script>
-        window.addEventListener("load", window.print());
-    </script>
+	<section class="invoice border-0">
+		@RenderBody()
+	</section>
+	<script>
+		window.addEventListener("load", window.print());
+	</script>
 </body>
 </html>

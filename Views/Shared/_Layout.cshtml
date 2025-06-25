@@ -230,6 +230,15 @@
 			padding-left: 1rem !important;
 		}
 
+		.expandable-body .list-unstyled > li:not(:first-child) {
+			border-top: 1px solid #dee2e6;
+		}
+
+		.expandable-body .list-unstyled ul.ul_columns_4 {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 5px;
+		}
 
 		@@media print {
 			body * {
@@ -249,6 +258,10 @@
 			.no-print {
 				display: none !important;
 			}
+/* 
+			.expandable-body .list-unstyled ul.ul_columns_4 {
+				grid-template-columns: repeat(3, 1fr);
+			} */
 		}
 	</style>
 
