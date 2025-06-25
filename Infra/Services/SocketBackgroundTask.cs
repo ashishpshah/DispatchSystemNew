@@ -265,7 +265,7 @@ namespace VendorQRGeneration.Infra.Services
 
 						if (secondIndex != -1) receivedData = receivedData.Substring(0, secondIndex);
 					}
-					
+
 					if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains(iffco_url.ToUpper().Substring(0, 5)))
 						receivedData = receivedData.Substring(receivedData.IndexOf(iffco_url.ToUpper().Substring(0, 5)));
 
@@ -330,10 +330,11 @@ namespace VendorQRGeneration.Infra.Services
 							listenerSocket.Close();
 							listenerSocket?.Dispose();
 							clientSocket?.Dispose();
+
+							clientSocket = null;
+
 						}
 						catch { }
-
-						clientSocket = null;
 
 						_isRunning = false;
 						_isStopSignal = false;
