@@ -265,7 +265,7 @@ namespace VendorQRGeneration.Infra.Services
 
 						if (secondIndex != -1) receivedData = receivedData.Substring(0, secondIndex);
 					}
-
+					
 					if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains(iffco_url.ToUpper().Substring(0, 5)))
 						receivedData = receivedData.Substring(receivedData.IndexOf(iffco_url.ToUpper().Substring(0, 5)));
 
@@ -275,6 +275,16 @@ namespace VendorQRGeneration.Infra.Services
 						Write_Log($"Socket server processed data : \"{receivedData}\" | Response : continue");
 						await Task.Delay(300, _cancellationTokenSource.Token);
 						continue;
+					}
+
+					if (!string.IsNullOrEmpty(receivedData) && receivedData.ToUpper().Contains(iffco_url.ToUpper()))
+					{
+						int startIndex = receivedData.ToUpper().IndexOf(iffco_url.ToUpper());
+
+						// Ensure we don't exceed the string length
+						int lengthToTake = Math.Min(58, receivedData.Length - startIndex);
+
+						receivedData = receivedData.Substring(startIndex, lengthToTake);
 					}
 
 					if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains(iffco_url.ToUpper()))
@@ -347,7 +357,7 @@ namespace VendorQRGeneration.Infra.Services
 							&& (DateTime.Now - _receivedData_Prev.DT).TotalSeconds < 10)
 						{
 							if (_receivedData_Prev.State == "NOK") clientSocket.Send(Encoding.ASCII.GetBytes(_receivedData_Prev.State));
-							else clientSocket.Send(Encoding.ASCII.GetBytes("$"));
+							//else clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 							Write_Log($"Received Data before 10 sec | Response : continue");
 
@@ -429,7 +439,7 @@ namespace VendorQRGeneration.Infra.Services
 								receivedData = "";
 
 								await Task.Delay(100, _cancellationTokenSource.Token);
-								clientSocket.Send(Encoding.ASCII.GetBytes("$"));
+								//clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 							}
 							else
