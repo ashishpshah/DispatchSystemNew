@@ -137,7 +137,7 @@ namespace VendorQRGeneration.Infra.Services
 
 			try { filePath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Log_File_Path").Value ?? "MDA_QR_Scan_<HH>.txt"); }
 			catch { filePath = "C:\\Z_Project_Dispatch_System\\Logs\\<YYYYMMDD>\\MDA_QR_Scan_<HH>.txt"; }
-			
+
 			try { iffco_url = AppHttpContextAccessor.IFFCO_Domain.TrimEnd('/'); }
 			catch { filePath = "https://nfp.iffco.coop/"; }
 
@@ -272,7 +272,7 @@ namespace VendorQRGeneration.Infra.Services
 					// By VK
 					if (receivedData.StartsWith(iffco_url.ToUpper().Substring(0, 10)) && !receivedData.Contains(iffco_url.ToUpper()))
 					{
-						Write_Log($"ReceivedData : {receivedData} | Response : continue");
+						Write_Log($"Socket server processed data : \"{receivedData}\" | Response : continue");
 						await Task.Delay(300, _cancellationTokenSource.Token);
 						continue;
 					}
@@ -349,7 +349,7 @@ namespace VendorQRGeneration.Infra.Services
 							if (_receivedData_Prev.State == "NOK") clientSocket.Send(Encoding.ASCII.GetBytes(_receivedData_Prev.State));
 							else clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
-							Write_Log($"ReceivedData : {receivedData} before 10 sec | Response : continue");
+							Write_Log($"Received Data before 10 sec | Response : continue");
 
 							receivedData = "";
 
@@ -363,11 +363,11 @@ namespace VendorQRGeneration.Infra.Services
 						{
 							clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
-							Write_Log($"ReceivedData : {receivedData} | <#> Response : continue");
+							Write_Log($"Received Data : <#> | Response : continue");
 
 							receivedData = "";
 
-							await Task.Delay(300, _cancellationTokenSource.Token);
+							await Task.Delay(100, _cancellationTokenSource.Token);
 							continue;
 						}
 						else if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains("<@>"))
@@ -378,11 +378,11 @@ namespace VendorQRGeneration.Infra.Services
 
 							clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
-							Write_Log($"ReceivedData : {receivedData} | <@> Response : continue");
+							Write_Log($"Received Data : <@> | Response : continue");
 
 							receivedData = "";
 
-							await Task.Delay(300, _cancellationTokenSource.Token);
+							await Task.Delay(100, _cancellationTokenSource.Token);
 							continue;
 						}
 						else
@@ -405,8 +405,6 @@ namespace VendorQRGeneration.Infra.Services
 
 						try
 						{
-							receivedData = receivedData;
-
 							if (response.Contains("#"))
 							{
 								clientSocket.Send(Encoding.ASCII.GetBytes(response.Split("#")[0].ToString()));
@@ -430,7 +428,7 @@ namespace VendorQRGeneration.Infra.Services
 
 								receivedData = "";
 
-								await Task.Delay(300, _cancellationTokenSource.Token);
+								await Task.Delay(100, _cancellationTokenSource.Token);
 								clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 							}
