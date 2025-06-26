@@ -20,7 +20,7 @@ namespace VendorQRGeneration.Infra.Services
 		private (string QRCode, string State, DateTime DT) _receivedData_Prev;
 
 		private readonly SharedDataService _sharedDataService;
-		private readonly Socket listenerSocket;
+		private Socket listenerSocket;
 		private readonly Socket printerSocket;
 		private readonly byte[] _buffer = new byte[1024];
 
@@ -168,6 +168,9 @@ namespace VendorQRGeneration.Infra.Services
 				if (!_isRunning)
 					try
 					{
+						listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+						listenerSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+
 						listenerSocket.Bind(new IPEndPoint(listenIP, listenPort));
 						listenerSocket.Listen(10);
 
@@ -177,7 +180,7 @@ namespace VendorQRGeneration.Infra.Services
 					{
 						Write_Log($"Error: {JsonConvert.SerializeObject(ex)}");
 
-						await Task.Delay(1000, _cancellationTokenSource.Token);
+						Thread.Sleep(1000);
 					}
 
 				try
@@ -207,7 +210,7 @@ namespace VendorQRGeneration.Infra.Services
 				if (clientSocket != null && (_backgroundTask == null || _backgroundTask.IsCompleted))
 					_backgroundTask = Task.Run(BackgroundTaskAsync, _cancellationTokenSource.Token);
 
-				await Task.Delay(Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "1") * 2 * 1000, _cancellationTokenSource.Token);
+				Thread.Sleep(Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "1") * 2 * 1000);
 
 			}
 			else
@@ -273,7 +276,7 @@ namespace VendorQRGeneration.Infra.Services
 					if (receivedData.StartsWith(iffco_url.ToUpper().Substring(0, 10)) && !receivedData.Contains(iffco_url.ToUpper()))
 					{
 						Write_Log($"Socket server processed data : \"{receivedData}\" | Response : continue");
-						await Task.Delay(300, _cancellationTokenSource.Token);
+						Thread.Sleep(300);
 						continue;
 					}
 
@@ -321,20 +324,28 @@ namespace VendorQRGeneration.Infra.Services
 
 					if (_isRunning && _isStopSignal && !string.IsNullOrEmpty(receivedData) && receivedData.Contains("MCSTOP"))
 					{
-						try
-						{
-							Write_Log($"MC Stop Request");
+						try { listenerSocket.Shutdown(SocketShutdown.Both); }
+						catch { /* Already closed or not connected; can safely ignore. */ }
+						finally { listenerSocket?.Close(); /*listenerSocket?.Dispose();*/ }
 
-							// Close the socket when the background task is stopped
-							listenerSocket.Shutdown(SocketShutdown.Both);
-							listenerSocket.Close();
-							listenerSocket?.Dispose();
-							clientSocket?.Dispose();
+						try { clientSocket?.Shutdown(SocketShutdown.Both); }
+						catch { /* Already closed or not connected; can safely ignore. */ }
+						finally { clientSocket?.Close(); clientSocket?.Dispose(); clientSocket = null; }
 
-							clientSocket = null;
+						//try
+						//{
+						//	Write_Log($"MC Stop Request");
 
-						}
-						catch { }
+						//	// Close the socket when the background task is stopped
+						//	listenerSocket.Shutdown(SocketShutdown.Both);
+						//	listenerSocket.Close();
+						//	listenerSocket?.Dispose();
+						//	clientSocket?.Dispose();
+
+						//	clientSocket = null;
+
+						//}
+						//catch { }
 
 						_isRunning = false;
 						_isStopSignal = false;
@@ -342,6 +353,7 @@ namespace VendorQRGeneration.Infra.Services
 
 						LogService.LogInsert("Load MDA " + AppHttpContextAccessor.Loading_Bay, "Stop Loading | " + (mda != null ? " MDA Id : " + mda.Mda_Id + " Gate In/Out Id : " + mda.GateInOut_Id : ""));
 
+						Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
 						_cancellationTokenSource?.Cancel();
 					}
 					else if (_isRunning && _isStopSignal && !string.IsNullOrEmpty(receivedData) && !receivedData.Contains("MCSTOP"))
@@ -349,51 +361,56 @@ namespace VendorQRGeneration.Infra.Services
 						Write_Log($"Stop Signal");
 						continue;
 					}
+					else if (_isRunning && !_isStopSignal && !string.IsNullOrEmpty(receivedData) && receivedData.Contains("MCSTOP"))
+					{
+						Write_Log($"Stop Signal from Zenon Operator");
+
+						_isRunning = false;
+						_isStopSignal = false;
+						_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "STOP", 0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+
+						LogService.LogInsert("Load MDA " + AppHttpContextAccessor.Loading_Bay, "Stop Loading | " + (mda != null ? " MDA Id : " + mda.Mda_Id + " Gate In/Out Id : " + mda.GateInOut_Id : ""));
+
+						Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
+						_cancellationTokenSource?.Cancel();
+					}
 
 					if (_isRunning && !_isStopSignal && !string.IsNullOrEmpty(receivedData)
 						&& receivedData.Length > 0 && !receivedData.Contains("MCIDEL") && !receivedData.Contains("MCSTOP") && !receivedData.Contains("MCSTART")
 					)
 					{
-						if (!string.IsNullOrEmpty(_receivedData_Prev.QRCode) && receivedData == _receivedData_Prev.QRCode
+						if (!receivedData.Contains("<@>") && !string.IsNullOrEmpty(_receivedData_Prev.QRCode)
+							&& receivedData.Replace("<#>", "") == _receivedData_Prev.QRCode.Replace("<#>", "")
 							&& (DateTime.Now - _receivedData_Prev.DT).TotalSeconds < 10)
 						{
-							if (_receivedData_Prev.State == "NOK") clientSocket.Send(Encoding.ASCII.GetBytes(_receivedData_Prev.State));
-							//else clientSocket.Send(Encoding.ASCII.GetBytes("$"));
+							//if (_receivedData_Prev.State == "NOK" || (_receivedData_Prev.State == "OK" && receivedData.Contains("(")))
+							//	clientSocket.Send(Encoding.ASCII.GetBytes(_receivedData_Prev.State));
+							//else
+							clientSocket.Send(Encoding.ASCII.GetBytes("$"));
 
 							Write_Log($"Received Data before 10 sec | Response : continue");
 
 							receivedData = "";
 
-							await Task.Delay(300, _cancellationTokenSource.Token);
+							Thread.Sleep(300);
 							continue;
 						}
 
 						var (IsSuccess, response, Id) = (false, "NOK", 0M);
 
-						if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains("<#>"))
+						if (receivedData.Contains("<#>") || receivedData.Contains("<@>"))
 						{
-							clientSocket.Send(Encoding.ASCII.GetBytes("$"));
-
-							Write_Log($"Received Data : <#> | Response : continue");
-
-							receivedData = "";
-
-							await Task.Delay(100, _cancellationTokenSource.Token);
-							continue;
-						}
-						else if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains("<@>"))
-						{
-							mda.Carton_Qty = (long)mda.Carton_Qty + 1;
-
-							_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), "##########", "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+							if (receivedData.Contains("<@>"))
+							{
+								mda.Carton_Qty++;
+								_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), "##########", "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+							}
 
 							clientSocket.Send(Encoding.ASCII.GetBytes("$"));
-
-							Write_Log($"Received Data : <@> | Response : continue");
+							Write_Log($"Response : continue");
 
 							receivedData = "";
-
-							await Task.Delay(100, _cancellationTokenSource.Token);
+							Thread.Sleep(300);
 							continue;
 						}
 						else
@@ -416,7 +433,7 @@ namespace VendorQRGeneration.Infra.Services
 
 						try
 						{
-							if (response.Contains("#"))
+							if (!string.IsNullOrEmpty(response) && response.Contains("#"))
 							{
 								clientSocket.Send(Encoding.ASCII.GetBytes(response.Split("#")[0].ToString()));
 
@@ -439,26 +456,21 @@ namespace VendorQRGeneration.Infra.Services
 
 								receivedData = "";
 
-								await Task.Delay(100, _cancellationTokenSource.Token);
-								//clientSocket.Send(Encoding.ASCII.GetBytes("$"));
-
+								Thread.Sleep(300);
 							}
 							else
 							{
 								_receivedData_Prev = new(receivedData, "NOK", DateTime.Now);
 
-								if (clientSocket != null && IsConnected(clientSocket))
-								{
-									mda.Carton_Qty = (long)mda.Carton_Qty + 1;
+								mda.Carton_Qty = (long)mda.Carton_Qty + 1;
 
-									response = "NOK" + "#" + mda.Required_Shipper + "#" + mda.Loaded_Shipper + "#" + mda.Carton_Qty;
+								response = "NOK" + "#" + mda.Required_Shipper + "#" + mda.Loaded_Shipper + "#" + mda.Carton_Qty;
 
-									_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+								_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
 
-									clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
-									await Task.Delay(300, _cancellationTokenSource.Token);
+								clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
+								Thread.Sleep(300);
 
-								}
 							}
 
 							Write_Log($"Response : {response}");
@@ -475,7 +487,7 @@ namespace VendorQRGeneration.Infra.Services
 								_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
 
 								clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
-								await Task.Delay(300, _cancellationTokenSource.Token);
+								Thread.Sleep(300);
 
 							}
 
@@ -485,10 +497,11 @@ namespace VendorQRGeneration.Infra.Services
 
 					receivedData = "";
 
-					await Task.Delay(MDA_QR_Scan_Delay_Sec * 1000, _cancellationTokenSource.Token);
+					Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
 
 					_cancellationTokenSource.Token.ThrowIfCancellationRequested();
 				}
+				catch (OperationCanceledException) { }
 				catch (Exception ex)
 				{
 					cnt_error += 1;
