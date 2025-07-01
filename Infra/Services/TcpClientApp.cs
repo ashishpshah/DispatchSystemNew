@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace VendorQRGeneration.Infra.Services
 {
@@ -20,6 +21,7 @@ namespace VendorQRGeneration.Infra.Services
 			}
 			catch (Exception ex) { }
 		}
+
 		public static async Task<string> GetData(string server, int port, CancellationToken cancellationToken)
 		{
 			try
@@ -33,11 +35,19 @@ namespace VendorQRGeneration.Infra.Services
 
 					byte[] buffer = new byte[256];
 					int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+
 					if (bytesRead > 0)
 					{
-						string currentWeight = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+						string data = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-						return currentWeight;
+						List<int> extractedNumbers = Regex.Matches(data, @"\d+")
+							.Cast<Match>()
+							.Select(m => int.Parse(m.Value))
+							.Where(num => num > 0)
+							.Distinct()
+							.ToList();
+
+						return (extractedNumbers.Count > 0 ? extractedNumbers.FirstOrDefault().ToString() : "0");
 					}
 				}
 			}
