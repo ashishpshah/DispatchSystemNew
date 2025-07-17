@@ -81,6 +81,7 @@ else
 		{
 			<thead>
 				<tr>
+					<th hidden>#</th>
 					<th>MDA No.</th>
 					<th>Destination</th>
 					@*<th>Transaction Type</th>*@
@@ -99,9 +100,10 @@ else
 			<tbody>
 				@if (Model.List != null && Model.List.Count() > 0)
 				{
-					@foreach (var item in Model.List.OrderBy(x => x.MDANo).ToList())
+					@foreach (var item in Model.List.OrderBy(x => x.SrNo).ToList())
 					{
 						<tr>
+							<td hidden>@item.SrNo</td>
 							<td>@item.MDANo</td>
 							<td>@item.Destination</td>
 							@*<td>@item.TransactionType</td>*@
@@ -124,6 +126,7 @@ else
 		{
 			<thead>
 				<tr>
+					<th hidden>#</th>
 					<th>MDA No.</th>
 					<th>MDA Date</th>
 					<th>BatchNo(Shipper Qty)</th>
@@ -141,9 +144,10 @@ else
 			<tbody>
 				@if (Model.List != null && Model.List.Count() > 0)
 				{
-					@foreach (var item in Model.List.OrderBy(x => x.MDANo).ToList())
+					@foreach (var item in Model.List.OrderBy(x => x.SrNo).ToList())
 					{
 						<tr>
+							<td hidden>@item.SrNo</td>
 							<td>@item.MDANo</td>
 							<td>@item.MDAReceiveDate</td>
 							<td>@item.BatchNo</td>
@@ -165,6 +169,7 @@ else
 		{
 			<thead>
 				<tr>
+					<th hidden>#</th>
 					<th>MDA No.</th>
 					<th>MDA Date</th>
 					<th>Truck No</th>
@@ -181,6 +186,7 @@ else
 					@foreach (var item in Model.List.OrderBy(x => x.MDANo).ToList())
 					{
 						<tr>
+							<td hidden>@item.SrNo</td>
 							<td>@item.MDANo</td>
 							<td>@item.MDAReceiveDate</td>
 							<td>@item.TruckNo</td>

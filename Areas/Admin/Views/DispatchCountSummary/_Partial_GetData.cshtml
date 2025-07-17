@@ -43,12 +43,13 @@
         <thead>
             <tr>
                 <th width="0%">#</th>
-                <th width="20%">Dispatch Date</th>
+                <th width="10%">Dispatch Date</th>
                 <th width="10%">No of Truck</th>
                 <th width="10%">No of MDA</th>
                 <th width="10%">No of Shipper</th>
                 <th width="10%">No of Bottles</th>
-                <th width="40%">Product</th>
+                <th>Product</th>
+                <th hidden>&nbsp;</th>
             </tr>
         </thead>
         <tbody>
@@ -64,6 +65,7 @@
                         <td>@item.TotalShipperQTY</td>
                         <td>@item.DispatchedQtyKL</td>
                         <td>@item.SkuDesc</td>
+                        <td hidden>&nbsp;</td>
                     </tr>
                 }
             }

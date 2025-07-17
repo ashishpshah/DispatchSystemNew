@@ -42,6 +42,7 @@
     <table class="table table-bordered w-100 table_Common divDetail"id="tblmain">
         <thead>
             <tr>
+                <th hidden>#</th>
                 <th>MDA No.</th>
                 @*<th>MDA Status.</th>*@
                 <th>MDA Date</th>
@@ -68,6 +69,7 @@
                 @foreach (var item in Model.List.OrderBy(x => x.SrNo).ToList())
                 {
                     <tr>
+                        <td hidden>@item.SrNo</td>
                         <td>@item.MDANo</td>
                         @*<td>@item.MDAStatus</td>*@
                         <td>@item.MDAReceiveDate</td>
@@ -91,7 +93,7 @@
             }
             else
             {
-                <tr><td colspan="18"><span class="w-100">No any records found.</span></td></tr>
+                <tr><td colspan="13"><span class="w-100">No any records found.</span></td></tr>
             }
         </tbody>
 
