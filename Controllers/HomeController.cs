@@ -6173,7 +6173,7 @@ namespace Dispatch_System.Controllers
 
 														DataRow newRow = dtBottleQrCode.NewRow();
 
-														dt = DataContext.ExecuteQuery_SQL("SELECT bottle_qrcode_sysId FROM BOTTLE_QRCODE WHERE PLANT_ID = " + plant_id + " AND PRODUCT_ID = " + productId + " AND BOTTLE_QRCODE = '" + shipperData.ShipperQRCode_Data[x].BottleQRCode[i] + "' LIMIT 1");
+														dt = DataContext.ExecuteQuery_SQL("SELECT bottle_qrcode_sysId FROM BOTTLE_QRCODE WHERE PLANT_ID = " + plant_id + " AND BOTTLE_QRCODE = '" + shipperData.ShipperQRCode_Data[x].BottleQRCode[i] + "' LIMIT 1");
 
 														if (dt != null && dt.Rows.Count > 0) newRow[0] = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
 														else
@@ -6354,7 +6354,7 @@ namespace Dispatch_System.Controllers
 												}
 											}
 
-											if (IsSuccess == true)
+											if (/*IsSuccess ==*/ true)
 											{
 												try { user_id = Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch_CreatedBy_Demo").Value) ? 0 : user_id; }
 												catch { }
@@ -6890,7 +6890,7 @@ namespace Dispatch_System.Controllers
 			return Json(CommonViewModel);
 		}
 
-		public IActionResult SyncBatch_Update_New(string batch_no = "")
+		public IActionResult SyncBatch_SQL_Oracle(string batch_no = "")
 		{
 			try
 			{
@@ -6952,21 +6952,29 @@ namespace Dispatch_System.Controllers
 						//if (IsSuccess == true)
 						if (true)
 						{
+							var dtAvailable = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
+											$"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_QrCode_Api_Id}");
+
 							dtShipperQrCode = DataContext.ExecuteQuery_SQL($"SELECT PLANT_ID, SHIPPER_QRCODE_API_SYSID, SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION" +
 								$", OLD_SHIPPER_QRCODE_SYSID, PALLET_QRCODE_API_SYSID" +
 								$", CREATED_BY, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME" +
 								$", CURRENT_HOLDER_TYPE, CURRENT_HOLDER_SYS_ID, DATE_FORMAT(EVENTTIME, '%d/%m/%Y %H:%i:%s') AS EVENTTIME " +
 								$"FROM SHIPPER_QRCODE WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_QrCode_Api_Id} ");
 
+							var rowsNotInOracle = from shipper in dtShipperQrCode.AsEnumerable()
+												  join available in dtAvailable.AsEnumerable()
+												  on shipper.Field<string>("SHIPPER_QRCODE") equals available.Field<string>("SHIPPER_QRCODE")
+												  into gj
+												  from result in gj.DefaultIfEmpty()
+												  where result == null
+												  select shipper;
+
 							var startIndex = 0;
 
-							while (startIndex < dtShipperQrCode.Rows.Count)
+							while (startIndex < rowsNotInOracle.Count())
 							{
 								// Select the next 1000 rows using LINQ
-								DataTable nextBatch = dtShipperQrCode.AsEnumerable()
-									.Skip(startIndex)
-									.Take(1000)
-									.CopyToDataTable();
+								DataTable nextBatch = rowsNotInOracle.AsEnumerable().Skip(startIndex).Take(1000).CopyToDataTable();
 
 								sqlQuery = "INSERT INTO SHIPPER_QRCODE (SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION, SHIPPER_QRCODE_API_SYSID, PLANT_ID, CREATED_BY, CREATED_DATETIME, EVENTTIME) ";
 
@@ -7007,7 +7015,7 @@ namespace Dispatch_System.Controllers
 						//if (IsSuccess == true)
 						if (true)
 						{
-							var dtBottleQrCode_Oracle = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE_SYSID, BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE " +
+							var dtAvailable = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE_SYSID, BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE " +
 								$"FROM BOTTLE_QRCODE WHERE PLANT_ID = {plant_id} " +
 								$"AND SHIPPER_QRCODE_SYSID IN (SELECT SHIPPER_QRCODE_SYSID " +
 											$"FROM SHIPPER_QRCODE WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_QrCode_Api_Id} ) ");
@@ -7019,25 +7027,17 @@ namespace Dispatch_System.Controllers
 								$"AND SHIPPER_QRCODE_SYSID IN (SELECT SHIPPER_QRCODE_SYSID " +
 											$"FROM SHIPPER_QRCODE WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_QrCode_Api_Id} ) ");
 
-							var table_RowsInSqlNotInOracle = dtBottleQrCode.Clone();
-
-							var rowsInSqlNotInOracle = from row2 in dtBottleQrCode.AsEnumerable()
-													   join row1 in dtBottleQrCode_Oracle.AsEnumerable()
-													   on new { BOTTLE_QRCODE = row2.Field<string>("BOTTLE_QRCODE"), BOTTLE_QRCODE_SYSID = Convert.ToInt64(row2.Field<Int32>("BOTTLE_QRCODE_SYSID")) }
-													   equals new { BOTTLE_QRCODE = row1.Field<string>("BOTTLE_QRCODE"), BOTTLE_QRCODE_SYSID = row1.Field<Int64>("BOTTLE_QRCODE_SYSID") }
-													   into gj
-													   from subRow in gj.DefaultIfEmpty()
-													   where subRow == null
-													   select row2;
-
-							foreach (var row in rowsInSqlNotInOracle)
-								table_RowsInSqlNotInOracle.ImportRow(row);
-
-							dtBottleQrCode = table_RowsInSqlNotInOracle;
+							var rowsNotInOracle = from shipper in dtShipperQrCode.AsEnumerable()
+												  join available in dtAvailable.AsEnumerable()
+												  on shipper.Field<string>("BOTTLE_QRCODE") equals available.Field<string>("BOTTLE_QRCODE")
+												  into gj
+												  from result in gj.DefaultIfEmpty()
+												  where result == null
+												  select shipper;
 
 							var chunkSize = 5000;
 
-							var numberOfTasks = (int)Math.Ceiling((double)dtBottleQrCode.Rows.Count / chunkSize);
+							var numberOfTasks = (int)Math.Ceiling((double)rowsNotInOracle.Count() / chunkSize);
 
 							var tasks = new Task[numberOfTasks];
 
@@ -7046,7 +7046,7 @@ namespace Dispatch_System.Controllers
 								int start_Index = i * chunkSize;
 								tasks[i] = Task.Run(() =>
 								{
-									DataTable nextBatch = dtBottleQrCode.AsEnumerable()
+									DataTable nextBatch = rowsNotInOracle.AsEnumerable()
 										.Skip(start_Index)
 										.Take(chunkSize)
 										.CopyToDataTable();
@@ -7121,7 +7121,7 @@ namespace Dispatch_System.Controllers
 				}
 
 			}
-			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "Sync Batch Update - " + batch_no.Trim(), ex); }
+			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "Sync Batch SQL to Oracle - " + batch_no.Trim(), ex); }
 
 			CommonViewModel.IsSuccess = false;
 			CommonViewModel.StatusCode = ResponseStatusCode.Error;
