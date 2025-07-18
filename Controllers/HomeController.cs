@@ -7147,11 +7147,11 @@ namespace Dispatch_System.Controllers
 				Int64 shipper_QrCode_Id_Old = 0;
 				var IsSuccess = false;
 
-				dtShipperQrCodeApi = DataContext.ExecuteQuery_SQL($"SELECT PLANT_ID, SHIPPER_QRCODE_API_SYSID, BATCH_NO" +
-					$", DATE_FORMAT(MFG_DATE, '%d/%m/%Y %H:%i:%s') AS MFG_DATE" +
-					$", DATE_FORMAT(EXPIRY_DATE, '%d/%m/%Y %H:%i:%s') AS EXPIRY_DATE" +
-					$", DATE_FORMAT(EVENTTIME, '%d/%m/%Y %H:%i:%s') AS EVENTTIME" +
-					$", CREATED_BY, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME" +
+				dtShipperQrCodeApi = DataContext.ExecuteQuery($"SELECT PLANT_ID, SHIPPER_QRCODE_API_SYSID, BATCH_NO" +
+					$", TO_CHAR(MFG_DATE, 'DD/MM/YYYY HH24:MI:SS') AS MFG_DATE" +
+					$", TO_CHAR(EXPIRY_DATE, 'DD/MM/YYYY HH24:MI:SS') AS EXPIRY_DATE" +
+					$", TO_CHAR(EVENTTIME, 'DD/MM/YYYY HH24:MI:SS') AS EVENTTIME" +
+					$", CREATED_BY, TO_CHAR(CREATED_DATETIME, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_DATETIME" +
 					$", RESPONSE_STATUS, TOTAL_SHIPPER_QTY, CURRENT_HOLDER_TYPE, CURRENT_HOLDER_SYS_ID, MARKETEDBY, MANUFACTUREDBY " +
 					$"FROM SHIPPER_QRCODE_API WHERE PLANT_ID = {plant_id} AND BATCH_NO = '{batch_no.Trim()}'");
 
@@ -7164,7 +7164,7 @@ namespace Dispatch_System.Controllers
 					{
 						IsSuccess = true;
 
-						var dt = DataContext.ExecuteQuery($"SELECT COUNT(*) FROM SHIPPER_QRCODE_API WHERE PLANT_ID = {plant_id} AND BATCH_NO = '{batch_no.Trim()}'");
+						var dt = DataContext.ExecuteQuery_SQL($"SELECT COUNT(*) FROM SHIPPER_QRCODE_API WHERE PLANT_ID = {plant_id} AND BATCH_NO = '{batch_no.Trim()}'");
 
 						if (dt != null && dt.Rows.Count > 0 && (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt32(dt.Rows[0][0]) : 0) == 0)
 						{
@@ -7173,11 +7173,11 @@ namespace Dispatch_System.Controllers
 								", MARKETEDBY, MANUFACTUREDBY) " +
 								"VALUES ( " + (dtShipperQrCodeApi.Rows[0]["SHIPPER_QRCODE_API_SYSID"] != DBNull.Value ? Convert.ToInt64(dtShipperQrCodeApi.Rows[0]["SHIPPER_QRCODE_API_SYSID"]) : 0) + "" +
 								", '" + (dtShipperQrCodeApi.Rows[0]["BATCH_NO"] != DBNull.Value ? Convert.ToString(dtShipperQrCodeApi.Rows[0]["BATCH_NO"]) : "") + "'" +
-								", TO_DATE(REPLACE('" + (dtShipperQrCodeApi.Rows[0]["MFG_DATE"] != DBNull.Value ? Convert.ToString(dtShipperQrCodeApi.Rows[0]["MFG_DATE"]) : 0) + "', '-', '/'), 'DD/MM/YYYY HH24:MI:SS')" +
-								", TO_DATE(REPLACE('" + (dtShipperQrCodeApi.Rows[0]["EXPIRY_DATE"] != DBNull.Value ? Convert.ToString(dtShipperQrCodeApi.Rows[0]["EXPIRY_DATE"]) : "") + "', '-', '/'), 'DD/MM/YYYY HH24:MI:SS')" +
-								", TO_DATE(REPLACE('" + (dtShipperQrCodeApi.Rows[0]["EVENTTIME"] != DBNull.Value ? Convert.ToString(dtShipperQrCodeApi.Rows[0]["EVENTTIME"]) : "") + "', '-', '/'), 'DD/MM/YYYY HH24:MI:SS')" +
+								", STR_TO_DATE(REPLACE('" + (dtShipperQrCodeApi.Rows[0]["MFG_DATE"] != DBNull.Value ? Convert.ToString(dtShipperQrCodeApi.Rows[0]["MFG_DATE"]) : 0) + "', '-', '/'), '%d/%m/%Y %H:%i:%s')" +
+								", STR_TO_DATE(REPLACE('" + (dtShipperQrCodeApi.Rows[0]["EXPIRY_DATE"] != DBNull.Value ? Convert.ToString(dtShipperQrCodeApi.Rows[0]["EXPIRY_DATE"]) : "") + "', '-', '/'), '%d/%m/%Y %H:%i:%s')" +
+								", STR_TO_DATE(REPLACE('" + (dtShipperQrCodeApi.Rows[0]["EVENTTIME"] != DBNull.Value ? Convert.ToString(dtShipperQrCodeApi.Rows[0]["EVENTTIME"]) : "") + "', '-', '/'), '%d/%m/%Y %H:%i:%s')" +
 								", " + plant_id + ", " + (dtShipperQrCodeApi.Rows[0]["CREATED_BY"] != DBNull.Value ? Convert.ToInt64(dtShipperQrCodeApi.Rows[0]["CREATED_BY"]) : 0) + "" +
-								", TO_DATE(REPLACE('" + (dtShipperQrCodeApi.Rows[0]["CREATED_DATETIME"] != DBNull.Value ? Convert.ToString(dtShipperQrCodeApi.Rows[0]["CREATED_DATETIME"]) : "") + "', '-', '/'), 'DD/MM/YYYY HH24:MI:SS')" +
+								", STR_TO_DATE(REPLACE('" + (dtShipperQrCodeApi.Rows[0]["CREATED_DATETIME"] != DBNull.Value ? Convert.ToString(dtShipperQrCodeApi.Rows[0]["CREATED_DATETIME"]) : "") + "', '-', '/'), '%d/%m/%Y %H:%i:%s')" +
 								", " + (dtShipperQrCodeApi.Rows[0]["TOTAL_SHIPPER_QTY"] != DBNull.Value ? Convert.ToInt64(dtShipperQrCodeApi.Rows[0]["TOTAL_SHIPPER_QTY"]) : 0) + "" +
 								",  '" + (dtShipperQrCodeApi.Rows[0]["MARKETEDBY"] != DBNull.Value ? Convert.ToString(dtShipperQrCodeApi.Rows[0]["MARKETEDBY"]) : "") + "'" +
 								", '" + (dtShipperQrCodeApi.Rows[0]["MANUFACTUREDBY"] != DBNull.Value ? Convert.ToString(dtShipperQrCodeApi.Rows[0]["MANUFACTUREDBY"]) : "") + "' )";
@@ -7188,13 +7188,13 @@ namespace Dispatch_System.Controllers
 						//if (IsSuccess == true)
 						if (true)
 						{
-							var dtAvailable = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
+							var dtAvailable = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
 											$"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_QrCode_Api_Id}");
 
-							dtShipperQrCode = DataContext.ExecuteQuery_SQL($"SELECT PLANT_ID, SHIPPER_QRCODE_API_SYSID, SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION" +
+							dtShipperQrCode = DataContext.ExecuteQuery($"SELECT PLANT_ID, SHIPPER_QRCODE_API_SYSID, SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION" +
 								$", OLD_SHIPPER_QRCODE_SYSID, PALLET_QRCODE_API_SYSID" +
-								$", CREATED_BY, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME" +
-								$", CURRENT_HOLDER_TYPE, CURRENT_HOLDER_SYS_ID, DATE_FORMAT(EVENTTIME, '%d/%m/%Y %H:%i:%s') AS EVENTTIME " +
+								$", CREATED_BY, TO_CHAR(CREATED_DATETIME, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_DATETIME" +
+								$", CURRENT_HOLDER_TYPE, CURRENT_HOLDER_SYS_ID, TO_CHAR(EVENTTIME, 'DD/MM/YYYY HH24:MI:SS') AS EVENTTIME " +
 								$"FROM SHIPPER_QRCODE WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_QrCode_Api_Id} ");
 
 							var rowsNotInOracle = from shipper in dtShipperQrCode.AsEnumerable()
@@ -7228,8 +7228,8 @@ namespace Dispatch_System.Controllers
 											$", {(dr["SHIPPER_QRCODE_API_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_API_SYSID"]) : 0)} SHIPPER_QRCODE_API_SYSID" +
 											$", {plant_id} PLANT_ID" +
 											$", {(dr["CREATED_BY"] != DBNull.Value ? Convert.ToInt64(dr["CREATED_BY"]) : 0)} CREATED_BY" +
-											$", TO_DATE('" + (dr["CREATED_DATETIME"] != DBNull.Value ? Convert.ToString(dr["CREATED_DATETIME"]) : "") + "', 'DD/MM/YYYY HH24:MI:SS') CREATED_DATETIME" +
-											$", TO_DATE('" + (dr["EVENTTIME"] != DBNull.Value ? Convert.ToString(dr["EVENTTIME"]) : "") + "', 'DD/MM/YYYY HH24:MI:SS') EVENTTIME " +
+											$", STR_TO_DATE('" + (dr["CREATED_DATETIME"] != DBNull.Value ? Convert.ToString(dr["CREATED_DATETIME"]) : "") + "', '%d/%m/%Y %H:%i:%s') CREATED_DATETIME" +
+											$", STR_TO_DATE('" + (dr["EVENTTIME"] != DBNull.Value ? Convert.ToString(dr["EVENTTIME"]) : "") + "', '%d/%m/%Y %H:%i:%s') EVENTTIME " +
 											$" FROM DUAL UNION ";
 									}
 								}
@@ -7251,13 +7251,13 @@ namespace Dispatch_System.Controllers
 						//if (IsSuccess == true)
 						if (true)
 						{
-							var dtAvailable = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE_SYSID, BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE " +
+							var dtAvailable = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, SHIPPER_QRCODE_SYSID, BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE " +
 								$"FROM BOTTLE_QRCODE WHERE PLANT_ID = {plant_id} " +
 								$"AND SHIPPER_QRCODE_SYSID IN (SELECT SHIPPER_QRCODE_SYSID " +
 											$"FROM SHIPPER_QRCODE WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_QrCode_Api_Id} ) ");
 
-							dtBottleQrCode = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, SHIPPER_QRCODE_SYSID, BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE, PRODUCT_ID, STATUS" +
-								", CREATED_BY, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME" +
+							dtBottleQrCode = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE_SYSID, BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE, PRODUCT_ID, STATUS" +
+								", CREATED_BY, TO_CHAR(CREATED_DATETIME, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_DATETIME" +
 								", QR_REQUEST_ID, QR_REQUEST_FILE_NO, CURRENT_HOLDER_TYPE, CURRENT_HOLDER_SYS_ID " +
 								$"FROM BOTTLE_QRCODE WHERE PLANT_ID = {plant_id} " +
 								$"AND SHIPPER_QRCODE_SYSID IN (SELECT SHIPPER_QRCODE_SYSID " +
@@ -7300,7 +7300,7 @@ namespace Dispatch_System.Controllers
 											$", {(dr["SHIPPER_QRCODE_SYSID"] != DBNull.Value ? Convert.ToInt64(dr["SHIPPER_QRCODE_SYSID"]) : 0)} SHIPPER_QRCODE_SYSID" +
 											$", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0)} PLANT_ID" +
 											$", {(dr["CREATED_BY"] != DBNull.Value ? Convert.ToInt64(dr["CREATED_BY"]) : 0)} CREATED_BY" +
-											$", TO_DATE('" + (dr["CREATED_DATETIME"] != DBNull.Value ? Convert.ToString(dr["CREATED_DATETIME"]) : "") + "', 'DD/MM/YYYY HH24:MI:SS') CREATED_DATETIME " +
+											$", STR_TO_DATE('" + (dr["CREATED_DATETIME"] != DBNull.Value ? Convert.ToString(dr["CREATED_DATETIME"]) : "") + "', '%d/%m/%Y %H:%i:%s') CREATED_DATETIME " +
 											$" FROM DUAL UNION ";
 									}
 
@@ -7317,9 +7317,9 @@ namespace Dispatch_System.Controllers
 							Task.WaitAll(tasks);
 
 
-							DataTable dtStatus = DataContext.ExecuteQuery_SQL($"SELECT FILEUPLOADNAME" +
-								$", DATE_FORMAT(STARTDATE, '%d/%m/%Y %H:%i:%s') AS STARTDATE" +
-								$", DATE_FORMAT(ENDDATE, '%d/%m/%Y %H:%i:%s') AS ENDDATE" +
+							DataTable dtStatus = DataContext.ExecuteQuery($"SELECT FILEUPLOADNAME" +
+								$", TO_CHAR(STARTDATE, 'DD/MM/YYYY HH24:MI:SS') AS STARTDATE" +
+								$", TO_CHAR(ENDDATE, 'DD/MM/YYYY HH24:MI:SS') AS ENDDATE" +
 								$", QRCODECOUNT, FILESTATUS, REMARK " +
 								$"FROM SHIPPER_QR_CODE_FILE_UPLOAD_STATUS WHERE UPPER(FILESTATUS) = UPPER('Completed') AND FILEUPLOADNAME LIKE '%{batch_no.Trim()}%' ");
 
@@ -7331,8 +7331,8 @@ namespace Dispatch_System.Controllers
 							{
 								sqlQuery_Select1 += $"SELECT '{plantCode}' PLANTCODE" +
 									$", '{(dr["FILEUPLOADNAME"] != DBNull.Value ? Convert.ToString(dr["FILEUPLOADNAME"]) : "")}' FILEUPLOADNAME" +
-									$", TO_DATE('" + (dr["STARTDATE"] != DBNull.Value ? Convert.ToString(dr["STARTDATE"]) : "") + "', 'DD/MM/YYYY HH24:MI:SS') STARTDATE" +
-									$", TO_DATE('" + (dr["ENDDATE"] != DBNull.Value ? Convert.ToString(dr["ENDDATE"]) : "") + "', 'DD/MM/YYYY HH24:MI:SS') ENDDATE " +
+									$", STR_TO_DATE('" + (dr["STARTDATE"] != DBNull.Value ? Convert.ToString(dr["STARTDATE"]) : "") + "', '%d/%m/%Y %H:%i:%s') STARTDATE" +
+									$", STR_TO_DATE('" + (dr["ENDDATE"] != DBNull.Value ? Convert.ToString(dr["ENDDATE"]) : "") + "', '%d/%m/%Y %H:%i:%s') ENDDATE " +
 									$", {(dr["QRCODECOUNT"] != DBNull.Value ? Convert.ToInt64(dr["QRCODECOUNT"]) : 0)} QRCODECOUNT" +
 									$", '{(dr["FILESTATUS"] != DBNull.Value ? Convert.ToString(dr["FILESTATUS"]) : "")}' FILESTATUS" +
 									$", SUBSTR('{(dr["REMARK"] != DBNull.Value ? Convert.ToString(dr["REMARK"]) : "")}', 0, 3999) REMARK " +
