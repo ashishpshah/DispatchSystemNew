@@ -6895,7 +6895,7 @@ namespace Dispatch_System.Controllers
 		{
 			try
 			{
-				string plantCode = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("PlantCode").Value ?? "");
+				string plantCode = AppHttpContextAccessor.PlantCode;
 
 				DataTable dtShipperQrCodeApi = null;
 				DataTable dtShipperQrCode = null;
@@ -6904,11 +6904,9 @@ namespace Dispatch_System.Controllers
 				string sqlQuery = null;
 
 				var plant_id = Common.Get_Session_Int(SessionKey.PLANT_ID);
-
 				plant_id = plant_id <= 0 ? AppHttpContextAccessor.PlantId : plant_id;
 
 				Int64 shipper_QrCode_Api_Id = 0;
-				Int64 shipper_QrCode_Id = 0;
 				Int64 shipper_QrCode_Id_Old = 0;
 				var IsSuccess = false;
 
@@ -6920,8 +6918,8 @@ namespace Dispatch_System.Controllers
 					$", RESPONSE_STATUS, TOTAL_SHIPPER_QTY, CURRENT_HOLDER_TYPE, CURRENT_HOLDER_SYS_ID, MARKETEDBY, MANUFACTUREDBY " +
 					$"FROM SHIPPER_QRCODE_API WHERE PLANT_ID = {plant_id} AND BATCH_NO = '{batch_no.Trim()}'");
 
-				if (dtShipperQrCodeApi != null && dtShipperQrCodeApi.Rows.Count > 0)
-					shipper_QrCode_Api_Id = (dtShipperQrCodeApi.Rows[0]["SHIPPER_QRCODE_API_SYSID"] != DBNull.Value ? Convert.ToInt64(dtShipperQrCodeApi.Rows[0]["SHIPPER_QRCODE_API_SYSID"]) : 0);
+				shipper_QrCode_Api_Id = (dtShipperQrCodeApi != null && dtShipperQrCodeApi.Rows.Count > 0 && dtShipperQrCodeApi.Rows[0]["SHIPPER_QRCODE_API_SYSID"] != DBNull.Value
+											? Convert.ToInt64(dtShipperQrCodeApi.Rows[0]["SHIPPER_QRCODE_API_SYSID"]) : 0);
 
 				if (shipper_QrCode_Api_Id > 0)
 				{
@@ -6952,7 +6950,7 @@ namespace Dispatch_System.Controllers
 
 						if (IsSuccess == true)
 						{
-							var dtAvailable = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
+							var dtAvailable_Oracle = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
 											$"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_QrCode_Api_Id}");
 
 							dtShipperQrCode = DataContext.ExecuteQuery_SQL($"SELECT PLANT_ID, SHIPPER_QRCODE_API_SYSID, SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION" +
@@ -6962,7 +6960,7 @@ namespace Dispatch_System.Controllers
 								$"FROM SHIPPER_QRCODE WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_QrCode_Api_Id} ");
 
 							var rowsNotInOracle = from shipper in dtShipperQrCode.AsEnumerable()
-												  join available in dtAvailable.AsEnumerable()
+												  join available in dtAvailable_Oracle.AsEnumerable()
 												  on shipper.Field<string>("SHIPPER_QRCODE") equals available.Field<string>("SHIPPER_QRCODE")
 												  into gj
 												  from result in gj.DefaultIfEmpty()
@@ -6977,6 +6975,28 @@ namespace Dispatch_System.Controllers
 								DataTable nextBatch = rowsNotInOracle.AsEnumerable().Skip(startIndex).Take(1000).CopyToDataTable();
 
 								sqlQuery = "INSERT INTO SHIPPER_QRCODE (SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE, TOTAL_BOTTLES_QTY, STATUS, ACTION, SHIPPER_QRCODE_API_SYSID, PLANT_ID, CREATED_BY, CREATED_DATETIME, EVENTTIME) ";
+
+								var dtShipperQrCodeMax = DataContext.ExecuteQuery($"SELECT MAX(SHIPPER_QRCODE_SYSID) + 1 MAX_SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE WHERE PLANT_ID = {plant_id} ");
+
+								Int64 shipper_QrCode_Id = (dtShipperQrCodeMax != null && dtShipperQrCodeMax.Rows.Count > 0 && dtShipperQrCodeMax.Rows[0]["MAX_SHIPPER_QRCODE_SYSID"] != DBNull.Value
+															? Convert.ToInt64(dtShipperQrCodeMax.Rows[0]["MAX_SHIPPER_QRCODE_SYSID"]) : 0);
+
+								var len = 0;
+
+								while (len <= nextBatch.Rows.Count)
+								{
+									DataTable dtDuplicateId = DataContext.ExecuteQuery("SELECT SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
+										$"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE IN (" + string.Join(", ", nextBatch.AsEnumerable().Skip(len).Take(500).Select(x => "'" + x.Field<string>("SHIPPER_QRCODE") + "'").ToArray()) + ")");
+
+									if (dtDuplicateId != null && dtDuplicateId.Rows.Count > 0)
+									{
+										foreach (DataRow row in nextBatch.Rows)
+											if (!dtDuplicateId.AsEnumerable().Any(x => x.Field<string>("SHIPPER_QRCODE") == row.Field<string>("SHIPPER_QRCODE")))
+												row["SHIPPER_QRCODE_SYSID"] = shipper_QrCode_Id++;
+									}
+
+									len += 500;
+								}
 
 								var sqlQuery_Select = "";
 
@@ -7049,6 +7069,28 @@ namespace Dispatch_System.Controllers
 									DataTable nextBatch = rowsNotInOracle.AsEnumerable().Skip(start_Index).Take(chunkSize).CopyToDataTable();
 
 									sqlQuery = "INSERT INTO BOTTLE_QRCODE (BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE, PRODUCT_ID, STATUS, SHIPPER_QRCODE_SYSID, PLANT_ID, CREATED_BY, CREATED_DATETIME) ";
+
+									var dtBottleQrCodeMax = DataContext.ExecuteQuery($"SELECT MAX(BOTTLE_QRCODE_SYSID) + 1 MAX_BOTTLE_QRCODE_SYSID FROM BOTTLE_QRCODE WHERE PLANT_ID = {plant_id} ");
+
+									Int64 bottle_QrCode_Id = (dtBottleQrCodeMax != null && dtBottleQrCodeMax.Rows.Count > 0 && dtBottleQrCodeMax.Rows[0]["MAX_BOTTLE_QRCODE_SYSID"] != DBNull.Value
+																? Convert.ToInt64(dtBottleQrCodeMax.Rows[0]["MAX_BOTTLE_QRCODE_SYSID"]) : 0);
+
+									var len = 0;
+
+									while (len <= nextBatch.Rows.Count)
+									{
+										DataTable dtDuplicateId = DataContext.ExecuteQuery("SELECT BOTTLE_QRCODE_SYSID, BOTTLE_QRCODE FROM BOTTLE_QRCODE " +
+											$"WHERE PLANT_ID = {plant_id} AND BOTTLE_QRCODE IN (" + string.Join(", ", nextBatch.AsEnumerable().Skip(len).Take(1000).Select(x => "'" + x.Field<string>("BOTTLE_QRCODE") + "'").ToArray()) + ")");
+
+										if (dtDuplicateId != null && dtDuplicateId.Rows.Count > 0)
+										{
+											foreach (DataRow row in nextBatch.Rows)
+												if (!dtDuplicateId.AsEnumerable().Any(x => x.Field<string>("BOTTLE_QRCODE") == row.Field<string>("BOTTLE_QRCODE")))
+													row["BOTTLE_QRCODE_SYSID"] = bottle_QrCode_Id++;
+										}
+
+										len += 1000;
+									}
 
 									var sqlQuery_Select = "";
 
