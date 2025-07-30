@@ -68,6 +68,8 @@ else
 					<th width="10%" class="text-center">Status</th>
 					@* <th>Remark</th> *@
 				</tr>
+
+
 				@foreach (var item in Model.List.OrderBy(x => x.SrNo).ThenBy(x => x.Status).ThenBy(x => x.FileName).ToList())
 				{
 					<tr>
@@ -121,46 +123,22 @@ else
 														return index == 0 ? x : x.Replace(mainPrefix, "").Trim();
 													}));
 
-													@if (combined.Contains("<S>"))
-													{
-														<li class="mb-2">
-															@Convert.ToString(combined.Split("<S>")[0])
-															<ul class="ul_columns_4">
-																@foreach (var str in Convert.ToString(combined.Split("<S>")[1]).Split(",").Where(x => !string.IsNullOrWhiteSpace(x)))
-																{
-																	@if (str.Contains("<B>"))
-																	{
-																		<li> @Convert.ToString(str.Split("<B>")[0]) - @(Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Count()) </li>
-																	}
-																	else
-																	{
-																		if (str.Contains(','))
-																		{
-																			foreach (var _str in str.Split(',').Where(x => !string.IsNullOrWhiteSpace(x)))
-																			{
-																				<li>@Common.ExtractAfterSecondClosingParenthesis(_str)</li>
-																			}
-																		}
-																		else
-																		{
-																			<li>@Common.ExtractAfterSecondClosingParenthesis(str)</li>
-																		}
-																	}
-																}
-															</ul>
-														</li>
-													}
-													else if (combined.Contains("|"))
+													@if (combined.Contains("|"))
 													{
 														<li class="mb-3">
 															@Convert.ToString(combined.Split(" | ")[0])
 
-															<ul class="ul_columns_4">
+															<ol class="ul_columns_4">
 																@foreach (var str in Convert.ToString(combined.Split(" | ")[1]).Split("<S>").Where(x => !string.IsNullOrWhiteSpace(x)))
 																{
 																	@if (str.Contains("<B>"))
 																	{
-																		<li> @Convert.ToString(str.Split("<B>")[0]) - @(Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Count()) </li>
+																		<li>
+																			@Common.ExtractAfterSecondClosingParenthesis(Convert.ToString(str.Split("<B>")[0])) - @(Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Count())
+																			<span class="full-width-span" style="font-size: 84%;">
+																				@(string.Join(", ", Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => Common.ExtractAfterSecondClosingParenthesis(x)).ToArray()))
+																			</span>
+																		</li>
 																	}
 																	else
 																	{
@@ -177,7 +155,41 @@ else
 																		}
 																	}
 																}
-															</ul>
+															</ol>
+														</li>
+													}
+													else if (combined.Contains("<S>"))
+													{
+														<li class="mb-2">
+															@Convert.ToString(combined.Split("<S>")[0])
+															<ol class="ul_columns_4">
+																@foreach (var str in Convert.ToString(combined.Split("<S>")[1]).Split(",").Where(x => !string.IsNullOrWhiteSpace(x)))
+																{
+																	@if (str.Contains("<B>"))
+																	{
+																		<li>
+																			@Common.ExtractAfterSecondClosingParenthesis(Convert.ToString(str.Split("<B>")[0])) - @(Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Count())
+																			<span class="full-width-span" style="font-size: 84%;">
+																				@(string.Join(", ", Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => Common.ExtractAfterSecondClosingParenthesis(x)).ToArray()))
+																			</span>
+																		</li>
+																	}
+																	else
+																	{
+																		if (str.Contains(','))
+																		{
+																			foreach (var _str in str.Split(',').Where(x => !string.IsNullOrWhiteSpace(x)))
+																			{
+																				<li>@Common.ExtractAfterSecondClosingParenthesis(_str)</li>
+																			}
+																		}
+																		else
+																		{
+																			<li>@Common.ExtractAfterSecondClosingParenthesis(str)</li>
+																		}
+																	}
+																}
+															</ol>
 														</li>
 													}
 													else

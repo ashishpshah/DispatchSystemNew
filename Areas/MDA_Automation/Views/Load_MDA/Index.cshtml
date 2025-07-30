@@ -1060,7 +1060,7 @@
 						//if ((ele['success'] === 'OK' || ele['success'] === 'NOK') && ele['text'].indexOf('(') > -1)
 						if (ele['success'] === 'OK' || ele['success'] === 'NOK') {
 							if (ele['success'] === 'OK') {
-								var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['id'] + '" data-type="S" class="float-left text-success text-bold">'
+								var html = '<li class="nav-item py-1 text-break text-wrap" style="line-height: 1em;"> <span data-id="' + ele['id'] + '" data-type="S" class="float-left text-success text-bold text-break text-wrap">'
 									+ ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'S\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
 								var exists = $('#ul_Scan_QR_Code li span[data-id="' + ele['id'] + '"]:contains("' + ele['text'] + '")').length > 0;
@@ -1077,15 +1077,15 @@
 								//fnCalculate_QR_Code();
 							}
 							else {
-								var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + ele['id'] + '" data-type="R" class="float-left text-danger text-bold">'
+								var html = '<li class="nav-item py-1 text-break text-wrap" style="line-height: 1em;"> <span data-id="' + ele['id'] + '" data-type="R" class="float-left text-danger text-bold text-break text-wrap">'
 									+ ele['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'R\', \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
 
 								var exists = $('#ul_Scan_QR_Code li span[data-id="' + ele['id'] + '"]:contains("' + ele['text'] + '")').length > 0;
-								if (!exists)
+								if (!exists || parseInt(ele['id']) <= 0)
 									$('#ul_Scan_QR_Code').prepend(html);
 
 								exists = $('#ul_Rejected_QR_Code li span[data-id="' + ele['id'] + '"]:contains("' + ele['text'] + '")').length > 0;
-								if (!exists)
+								if (!exists || parseInt(ele['id']) <= 0)
 									$('#ul_Rejected_QR_Code').prepend(html);
 
 								$('#input_Scan_QR_Code').val('');
@@ -1673,131 +1673,61 @@
 				&& typeof $('#input_GateInOut_Id').val() != 'undefined' && $('#input_GateInOut_Id').val() != null && parseInt($('#input_GateInOut_Id').val()) > 0
 				&& typeof $('#input_MDA_Id').val() != 'undefined' && $('#input_MDA_Id').val() != null && parseInt($('#input_MDA_Id').val()) > 0
 				&& typeof $(this).val() != 'undefined' && $(this).val() != null && $(this).val().length > 0) {
-
-				var arrayStr = $(this).val().indexOf('/') > -1 ? $(this).val().split('/') : [];
+					
+				let url = $(this).val();
 
 				var qr_code = "";
+				debugger;
+				// var arrayStr = $(this).val().indexOf('/') > -1 ? $(this).val().split('/') : [];
 
-				if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0)
-					qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
+				// if (typeof arrayStr != 'undefined' && arrayStr != null && arrayStr.length > 0)
+				// 	qr_code = '(' + arrayStr[arrayStr.length - 4] + ')' + arrayStr[arrayStr.length - 3] + '(' + arrayStr[arrayStr.length - 2] + ')' + arrayStr[arrayStr.length - 1];
 
-				var truck_no = $('#Truck_No').val();
-				var mda_id = $('#input_MDA_Id').val();
-				var mda_dtls_id = $('#input_MDA_DTLS_Id').val();
-				var mda_no = $('#MDA_No').val();
-				var prod_id = $('#input_Prod_Sys_Id').val();
-				var gatein_id = $('#input_GateInOut_Id').val();
+				let parts = [];
 
-				if (qr_code.length >= 30 && qr_code.length <= 50) {
-
-					$.ajax({
-						type: "GET",
-						url: '@Url.Action("Check_QR_Code", "Load_MDA")?qr_code=' + qr_code + '&mda_id=' + mda_id + '&mda_dtls_id=' + mda_dtls_id + '&prod_id=' + prod_id + '&gatein_id=' + gatein_id, //+ '&loaded_shipper=' + loaded_shipper,
-						data: null,
-						contentType: "application/json; charset=utf-8",
-						dataType: "json",
-						success: function ($response) {
-
-							setTimeout(function () {
-
-								try {
-
-									fnGet_Scan_Code_History();
-
-									// if (typeof $response.data1 != 'undefined' && $response.data1 != null) {
-
-									// 	//if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK') && $response.data1['text'].indexOf('(') > -1)
-									// 	if (($response.data1['success'] === 'OK' || $response.data1['success'] === 'NOK'))
-									// 		if ($response.data1['success'] === 'OK') {
-									// 			var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['no'] + '" data-type="S" class="float-left text-success text-bold">'
-									// 				+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
-
-									// 			$('#ul_Scan_QR_Code').prepend(html);
-									// 			$('#ul_Accepted_QR_Code').prepend(html);
-
-									// 			$('#input_Scan_QR_Code').val('');
-									// 			$('#input_temp_Scan_QR_Code').val('');
-
-									// 			//fnCalculate_QR_Code();
-									// 		}
-									// 		else {
-									// 			var html = '<li class="nav-item py-1" style="line-height: 1em;"> <span data-id="' + $response.data1['no'] + '" data-type="R" class="float-left text-danger text-bold">'
-									// 				+ $response.data1['text'] + '</span> <a role="button" onclick="fnClick_Delete_QR_Code(this, \'\')" class="float-right btn-tool m-0 p-0 mr-1"><i class="fas fa-times"></i></a> </li>';
-
-									// 			$('#ul_Scan_QR_Code').prepend(html);
-									// 			$('#ul_Rejected_QR_Code').prepend(html);
-
-									// 			$('#input_Scan_QR_Code').val('');
-									// 			$('#input_temp_Scan_QR_Code').val('');
-
-									// 			//fnCalculate_QR_Code();
-									// 		}
-									// 	else {
-
-									// 		$response.data5 == false;
-
-									// 		$('#btnRequisitionWMS').prop('disabled', true);
-									// 		$('#btnBypassWMS').prop('disabled', true);
-									// 		$('#btnStartLoading').prop('disabled', false);
-									// 		$('#btnPauseConveyor').prop('disabled', true);
-									// 		$('#btnStopConveyor').prop('disabled', true);
-									// 		$('#btnEmergencyStopConveyor').prop('disabled', true);
-									// 		$('#btnFinish').prop('disabled', false);
-
-									// 		$('#divManualEntry').css('display', 'none');
-									// 		$('#btnManualEntry').prop('disabled', true);
-
-									// 		$('#input_temp_Scan_QR_Code').css('display', 'none');
-									// 		$('#input_Scan_QR_Code').prop('disabled', true);
-									// 		$('#input_temp_Scan_QR_Code').prop('disabled', true);
-									// 		$('#input_Scan_QR_Code').val('');
-									// 		$('#input_temp_Scan_QR_Code').val('');
-
-
-									// 		if ($response.data1['success'] === 'COMPLETED') {
-
-									// 			stopProgress(true, false);
-
-									// 			CommonConfirmed_Success("MDA Loading Completed.", fnLoad_MDA_Dtls, []);
-
-									// 		}
-									// 		else {
-									// 			$('#divManualEntry').css('display', 'flex');
-									// 			$('#btnManualEntry').prop('disabled', false);
-									// 			$('#input_Scan_QR_Code').val('');
-									// 			$('#input_temp_Scan_QR_Code').val('');
-									// 		}
-									// 	}
-
-									// 	$('#span_Total_Scan_QR_Code').attr('data-last', $response.data1['no']);
-									// 	$('#span_Total_Scan_QR_Code').attr('data-cntReq', $response.data1['requiredShipper']);
-									// 	$('#span_Total_Scan_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
-									// 	$('#span_Total_Accepted_QR_Code').attr('data-cnt', $response.data1['loaddedShipper']);
-									// 	$('#span_Total_Rejected_QR_Code').attr('data-cnt', $response.data1['rejectShipper']);
-
-									// 	//fnGet_Scan_Code_History();
-
-									// 	//fnCalculate_QR_Code();
-
-									// 	setTimeout(function () {
-									// 		$('#input_Scan_QR_Code').focus();
-									// 	}, 500);
-
-									// }
-
-								} catch { }
-
-								ShowLoader(false);
-
-							}, 300);
-
-						},
-						failure: function (response) { ShowLoader(false); CommonAlert_Error(null); },
-						error: function (response) { ShowLoader(false); CommonAlert_Error(null); }
-					});
-
-					return false;
+				try	{
+					let parsedUrl = new URL(url);
+					parts = parsedUrl.pathname.split('/').filter(Boolean);
 				}
+				catch { parts = path.split("/"); }
+
+
+				if (parts.length >= 4) {
+
+					qr_code = `(${parts[0]})${parts[1]}(${parts[(parts.length - 2)]})${parts[(parts.length - 1)]}`;
+										
+					var truck_no = $('#Truck_No').val();
+					var mda_id = $('#input_MDA_Id').val();
+					var mda_dtls_id = $('#input_MDA_DTLS_Id').val();
+					var mda_no = $('#MDA_No').val();
+					var prod_id = $('#input_Prod_Sys_Id').val();
+					var gatein_id = $('#input_GateInOut_Id').val();
+
+					if (qr_code.length > 0) {
+
+						$.ajax({
+							type: "GET",
+							url: '@Url.Action("Check_QR_Code", "Load_MDA")?qr_code=' + qr_code + '&mda_id=' + mda_id + '&mda_dtls_id=' + mda_dtls_id + '&prod_id=' + prod_id + '&gatein_id=' + gatein_id, //+ '&loaded_shipper=' + loaded_shipper,
+							data: null,
+							contentType: "application/json; charset=utf-8",
+							dataType: "json",
+							success: function ($response) {
+								setTimeout(function () {
+									try { fnGet_Scan_Code_History(); } catch { }
+									ShowLoader(false);
+								}, 300);
+							},
+							failure: function (response) { ShowLoader(false); CommonAlert_Error(null); },
+							error: function (response) { ShowLoader(false); CommonAlert_Error(null); }
+						});
+
+						return false;
+					}
+
+				} else {
+				  CommonAlert_Error("URL does not start with the expected domain.");
+				}
+
 			}
 
 			ShowLoader(false);// CommonAlert_Error("Please select MDA Details data");

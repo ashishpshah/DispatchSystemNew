@@ -282,12 +282,25 @@ namespace VendorQRGeneration.Infra.Services
 
 					if (!string.IsNullOrEmpty(receivedData) && receivedData.ToUpper().Contains(iffco_url.ToUpper()))
 					{
-						int startIndex = receivedData.ToUpper().IndexOf(iffco_url.ToUpper());
+						//int startIndex = receivedData.ToUpper().IndexOf(iffco_url.ToUpper());
 
-						// Ensure we don't exceed the string length
-						int lengthToTake = Math.Min(58, receivedData.Length - startIndex);
+						//// Ensure we don't exceed the string length
+						//int lengthToTake = Math.Min(58, receivedData.Length - startIndex);
 
-						receivedData = receivedData.Substring(startIndex, lengthToTake);
+						//receivedData = receivedData.Substring(startIndex, lengthToTake);
+
+						Uri uri = new Uri(receivedData);
+						string[] segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+						if (segments.Length > 4)
+						{
+							var newSegments = new List<string> { segments[0], segments[1], segments[^2], segments[^1] };
+
+							string newPath = "/" + string.Join("/", newSegments);
+							string newUrl = $"{uri.Scheme}://{uri.Host}{newPath}";
+
+							receivedData = newUrl;
+						}
 					}
 
 					if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains(iffco_url.ToUpper()))
