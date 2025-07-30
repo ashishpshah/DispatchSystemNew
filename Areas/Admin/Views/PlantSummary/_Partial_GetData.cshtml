@@ -42,6 +42,7 @@
     <table class="table table-bordered w-100 table_Common divDetail" id="tblmain">
         <thead>
             <tr>
+                <th hidden>#</th>
                 <th>Truck No</th>
                 <th>MDA No</th>
                 <th>MDA Qty (Shippers)</th>
@@ -51,6 +52,7 @@
                 <th>RFID</th>
                 @* <th>Status</th> *@
                 <th>Gate In DateTime</th>
+                <th>Gate Out DateTime</th>
                 <th>Weigh In DateTime</th>
                 <th>Tare Weight</th>
                 @* <th>Loading In DateTime</th>
@@ -69,6 +71,7 @@
                 @foreach (var item in Model.List.OrderBy(x => x.SrNo).ToList())
                 {
                     <tr>
+                        <td hidden>@item.SrNo</td>
                         <td>@item.TruckNo</td>
                         <td>@item.MDANo</td>
                         <td>@item.MDAQty</td>
@@ -78,6 +81,7 @@
                         <td>@item.RFID</td>
                         @* <td>@item.MDAStatus</td> *@
                         <td>@item.GateInDateTime</td>
+                        <td>@item.GateOutDispatch</td>
                         <td>@item.WeighInDateTime</td>
                         <td>@item.TareWeight</td>
                         @* <td>@item.LoadingInDateTimePrintedFrom</td>
@@ -92,7 +96,7 @@
             }
             else
             {
-                <tr><td colspan="14"><span class="w-100">No any records found.</span></td></tr>
+                <tr><td colspan="16"><span class="w-100">No any records found.</span></td></tr>
             }
         </tbody>
 

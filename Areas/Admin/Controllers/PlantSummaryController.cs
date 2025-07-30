@@ -139,8 +139,9 @@ namespace Dispatch_System.Areas.Admin.Controllers
                 {
                     foreach (DataRow dr in ds.Tables[1].Rows)
                         result.Add(new MDA_Status
-                        {
-                            TruckNo = dr["TRUCK_NO"] != DBNull.Value ? Convert.ToString(dr["TRUCK_NO"]) : "",
+						{
+							SrNo = dr["RNUM"] != DBNull.Value ? Convert.ToString(dr["RNUM"]) : "",
+							TruckNo = dr["TRUCK_NO"] != DBNull.Value ? Convert.ToString(dr["TRUCK_NO"]) : "",
                             MDANo = dr["MDA_NO"] != DBNull.Value ? Convert.ToString(dr["MDA_NO"]) : "",
                             MDAQty = dr["MDA_QTY"] != DBNull.Value ? Convert.ToInt64(dr["MDA_QTY"]) : 0,
                             Transporter = dr["TRANSPORTER"] != DBNull.Value ? Convert.ToString(dr["TRANSPORTER"]) : "",
@@ -148,8 +149,8 @@ namespace Dispatch_System.Areas.Admin.Controllers
                             DriverContact = dr["DRIVER_CONTACT"] != DBNull.Value ? Convert.ToString(dr["DRIVER_CONTACT"]) : "",
                             RFID = dr["RFID"] != DBNull.Value ? Convert.ToString(dr["RFID"]) : "",
                             MDAStatus = dr["STATUS"] != DBNull.Value ? Convert.ToString(dr["STATUS"]) : "",
-                            GateInDateTime = dr["GATE_IN_DATE_TIME"] != DBNull.Value ? Convert.ToString(dr["GATE_IN_DATE_TIME"]) : "",
-                            WeighInDateTime = dr["WEIGH_IN_DATE_TIME"] != DBNull.Value ? Convert.ToString(dr["WEIGH_IN_DATE_TIME"]) : "",
+							GateInDateTime = dr["GATE_IN_DATE_TIME"] != DBNull.Value ? Convert.ToString(dr["GATE_IN_DATE_TIME"]) : "",
+							WeighInDateTime = dr["WEIGH_IN_DATE_TIME"] != DBNull.Value ? Convert.ToString(dr["WEIGH_IN_DATE_TIME"]) : "",
                             TareWeight = dr["TARE_WEIGHT"] != DBNull.Value ? Convert.ToInt64(dr["TARE_WEIGHT"]) : 0,
                             LoadingInDateTimePrintedFrom = dr["LOADING_IN_DATE_TIME"] != DBNull.Value ? Convert.ToString(dr["LOADING_IN_DATE_TIME"]) : "",
                             LoadingOutDateTimePrintedFrom = dr["LOADING_OUT_DATE_TIME"] != DBNull.Value ? Convert.ToString(dr["LOADING_OUT_DATE_TIME"]) : "",

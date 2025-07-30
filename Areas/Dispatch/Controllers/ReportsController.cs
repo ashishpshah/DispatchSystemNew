@@ -341,6 +341,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 					foreach (DataRow dr in ds.Tables[1].Rows)
 						result.Add(new MDA_Status
 						{
+							SrNo = dr["RNUM"] != DBNull.Value ? Convert.ToString(dr["RNUM"]) : "",
 							MDANo = dr["MDA_NO"] != DBNull.Value ? Convert.ToString(dr["MDA_NO"]) : "",
 							TransactionType = dr["TRANSACTIONTYPE"] != DBNull.Value ? Convert.ToString(dr["TRANSACTIONTYPE"]) : "",
 							ArticleCode = dr["ARTICLECODE"] != DBNull.Value ? Convert.ToString(dr["ARTICLECODE"]) : "",
