@@ -4343,14 +4343,14 @@ namespace Dispatch_System.Controllers
 
 							#region File Move
 
-							(string fileName, string fileUploadStatus) = (Path.GetFileName(sourceFilePath), "Error");
-
-							List<JToken> shipperQRCodeData_Success = new List<JToken>();
-
-							List<JToken> shipperQRCodeData_Duplicate = new List<JToken>();
-
 							if (string.IsNullOrEmpty(error))
 							{
+								(string fileName, string fileUploadStatus) = (Path.GetFileName(sourceFilePath), "Error");
+
+								List<JToken> shipperQRCodeData_Success = new List<JToken>();
+
+								List<JToken> shipperQRCodeData_Duplicate = new List<JToken>();
+
 								fileUploadStatus = "Completed";
 
 								string destinationFilePath = Path.Combine(destinationFolderPath, fileName);
