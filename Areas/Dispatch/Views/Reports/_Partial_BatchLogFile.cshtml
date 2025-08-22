@@ -1,4 +1,5 @@
 ﻿@using System.Globalization;
+@using System.Text.RegularExpressions
 @model (string SearchTerm, string PageTitle_Secondary,string PlantName,string FromDate,string ToDate, List<BatchLogFile> List, bool isPrint)
 
 @{
@@ -48,7 +49,148 @@ else
 }
 
 <div class="row col-12 mt-5">
+	@*
+	@{
 
+	var result = new List<Dictionary<string, List<string>>>();
+
+	foreach (var remark in Model.List.Where(x => !string.IsNullOrWhiteSpace(x.Remark))
+	.Select(x => x.Remark.Replace(" | SUMMARY : ", "")))
+	{
+	// Split into label/message pairs by '|'
+	var parts = remark.Split('|', StringSplitOptions.RemoveEmptyEntries)
+	.Where(x => !string.IsNullOrWhiteSpace(x))
+	.ToList();
+
+	foreach (string _part in parts.Select(x => x.Trim()))
+	{
+	try
+	{
+
+	var part = Regex.Replace(_part, @"Duplicates Shipper QR Code found in .*? => (.*)", "Duplicate Shipper QR Code : <S>$1").ToString();
+
+	var lines = part.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+	// Collect Shipper and Bottle codes
+	string shipperCode = null;
+	var _bottleCodes = new List<string>();
+
+	foreach (var line in lines.Select(x => x.Trim()))
+	{
+	// Shipper
+	var shipperMatch = Regex.Match(line, @"Duplicates Shipper QR Code found in .*? => (.*)");
+	if (shipperMatch.Success)
+	{
+	shipperCode = shipperMatch.Groups[1].Value.Trim();
+	continue;
+	}
+
+	// Bottle
+	var bottleMatch = Regex.Match(line, @"Duplicate Bottle QRCode in .*? : (.*)");
+	if (bottleMatch.Success)
+	{
+	_bottleCodes.Add(bottleMatch.Groups[1].Value.Trim());
+	}
+	}
+
+	if (!string.IsNullOrEmpty(shipperCode))
+	{
+	// Case 1: Shipper + Bottles
+	part = $"Duplicate Shipper QR Code : <S>{shipperCode}<B>{string.Join(", ", _bottleCodes)}";
+	}
+	else if (_bottleCodes.Any())
+	{
+	// Case 2: Only Bottles
+	part = $"Duplicate Bottle QR Code : <S>**<B>{string.Join(",", _bottleCodes)}";
+	}
+
+
+
+	// Label : Msg
+	var labelSplit = part.Split(':', 2, StringSplitOptions.TrimEntries);
+	if (labelSplit.Length < 2) continue;
+
+	var label = labelSplit[0].Trim();
+	var msg = labelSplit[1].Trim();
+
+	// Skip counts or empty msg
+	if (label.Contains("Delete operation not perform because Shipper QR Code(s) already loaded.", StringComparison.OrdinalIgnoreCase)) continue;
+	if (label.Contains("Count", StringComparison.OrdinalIgnoreCase) || msg.Contains("Count", StringComparison.OrdinalIgnoreCase)) continue;
+	if (string.IsNullOrWhiteSpace(msg) || msg.Length < 5) continue;
+
+	// Label mapping
+	label = label switch
+	{
+	"Shipper QR Code - Not Delete" => "Rejected Shipper QR Code",
+	"Shipper QR Code - issue" => "Rejected Shipper QR Code",
+	"Shipper QR Code - not contain 24 bottles" => "Rejected Shipper QR Code",
+	"Bottle QR Code - Duplicate" => "Duplicate Bottle QR Code",
+	"Bottle QR Code - length issue" => "Rejected Shipper QR Code",
+	"Shipper QR Code - Duplicate" => "Duplicate Shipper QR Code",
+	_ => label
+	};
+
+	// Parse Shipper and Bottle codes
+	var shipperBottleList = new List<string>();
+	var shipperMatches = Regex.Matches(msg, @"<S>([^<]+)");
+
+	if (shipperMatches.Count > 0)
+	{
+	foreach (Match sMatch in shipperMatches)
+	{
+	var shipperCodes = sMatch.Groups[1].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+	.Select(x => x.Trim());
+
+	foreach (var s in shipperCodes)
+	{
+	// If <B> after this <S>, capture bottles
+	var afterS = msg[(msg.IndexOf(s) + s.Length)..];
+	var bottleMatch = Regex.Match(afterS, @"<B>([^<]+)");
+	if (bottleMatch.Success)
+	{
+	var bottleCodes = bottleMatch.Groups[1].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+	.Select(x => x.Trim());
+	shipperBottleList.Add($"{s} => [ {string.Join(", ", bottleCodes)} ]");
+	}
+	else
+	{
+	shipperBottleList.Add(s);
+	}
+	}
+	}
+	}
+	else
+	{
+	// No <S> found → put entire msg under OTHER
+	label = "OTHER";
+	shipperBottleList.Add(msg);
+	}
+
+	// Group into dictionary
+	var existing = result.FirstOrDefault(d => d.ContainsKey(label));
+	if (existing != null)
+	{
+	existing[label].AddRange(shipperBottleList);
+	}
+	else
+	{
+	result.Add(new Dictionary<string, List<string>> { { label, new List<string>(shipperBottleList) } });
+	}
+	}
+	catch (Exception ex) { continue; }
+	}
+	}
+
+	// Remove duplicates inside each label
+	foreach (var dict in result)
+	{
+	var key = dict.Keys.First();
+	dict[key] = dict[key].Distinct().ToList();
+	}
+
+
+	}
+	*@
 	@if (Model.List != null && Model.List.Count() > 0)
 	{
 		<table id="table_Common" class="table table-bordered w-100 divDetail">
@@ -91,122 +233,283 @@ else
 					{
 						<tr class="expandable-body">
 							<td colspan="9">
-								@if (item.Remark.Contains("SUMMARY : "))
-								{
+								@{
 									item.Remark = item.Remark.Replace(" | SUMMARY : ", "");
 
-									<ul class="list-unstyled p-0 m-0 pl-5 mb-1">
-										@{
-											var segments = item.Remark
-											.Split('|')
-											.Select(x => x.Trim())
-											.Where(x => !string.IsNullOrWhiteSpace(x))
-											.ToList();
+									try
+									{
+										var result = new List<Dictionary<string, List<string>>>();
 
-											var grouped = segments
-											.GroupBy(x => x.Length > 15 ? x.Substring(0, 15) : x);
+										var parts = item.Remark.Split('|', StringSplitOptions.RemoveEmptyEntries)
+										.Where(x => !string.IsNullOrWhiteSpace(x))
+										.ToList();
 
-											foreach (var group in grouped)
+										foreach (string _part in parts.Select(x => x.Trim()))
+										{
+											var part = Regex.Replace(_part, @"Duplicates Shipper QR Code found in .*? => (.*)", "Duplicate Shipper QR Code : <S>$1").ToString();
+
+											if (part.Contains("Delete operation not perform because Shipper QR Code(s) already loaded.", StringComparison.OrdinalIgnoreCase))
+												part = part.Replace("Delete operation not perform because Shipper QR Code(s) already loaded.", "");
+
+											if (part.StartsWith(" |   | ")) part = part.Substring(" |   | ".Length);
+
+											if (part.StartsWith(" | ")) part = part.Substring(3);
+
+											if (!part.StartsWith(" | ") && part.Contains(" | ")) part = part.Replace(" | ", Environment.NewLine);
+
+											var lines = part.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+											// Collect Shipper and Bottle codes
+											string shipperCode = null;
+											var _bottleCodes = new List<string>();
+
+											foreach (var line in lines.Select(x => x.Trim()))
 											{
-												var subGroups = group
-												.GroupBy(_item =>
+												// Shipper
+												var shipperMatch = Regex.Match(line, @"Duplicates Shipper QR Code found in .*? => (.*)");
+												if (shipperMatch.Success)
 												{
-													var match = System.Text.RegularExpressions.Regex.Match(_item, @"^.*? :");
-													return match.Success ? match.Value : _item;
-												});
+													shipperCode = shipperMatch.Groups[1].Value.Trim();
+													continue;
+												}
 
-												foreach (var subGroup in subGroups)
+												// Bottle
+												var bottleMatch = Regex.Match(line, @"Duplicate Bottle QRCode in .*? : (.*)");
+												if (bottleMatch.Success)
 												{
-													string mainPrefix = subGroup.Key;
-													string combined = string.Join(" | ", subGroup.Select((x, index) =>
-													{
-														return index == 0 ? x : x.Replace(mainPrefix, "").Trim();
-													}));
-
-													@if (combined.Contains("|"))
-													{
-														<li class="mb-3">
-															@Convert.ToString(combined.Split(" | ")[0])
-
-															<ol class="ul_columns_4">
-																@foreach (var str in Convert.ToString(combined.Split(" | ")[1]).Split("<S>").Where(x => !string.IsNullOrWhiteSpace(x)))
-																{
-																	@if (str.Contains("<B>"))
-																	{
-																		<li>
-																			@Common.ExtractAfterSecondClosingParenthesis(Convert.ToString(str.Split("<B>")[0])) - @(Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Count())
-																			<span class="full-width-span" style="font-size: 84%;">
-																				@(string.Join(", ", Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => Common.ExtractAfterSecondClosingParenthesis(x)).ToArray()))
-																			</span>
-																		</li>
-																	}
-																	else
-																	{
-																		if (str.Contains(','))
-																		{
-																			foreach (var _str in str.Split(',').Where(x => !string.IsNullOrWhiteSpace(x)))
-																			{
-																				<li>@Common.ExtractAfterSecondClosingParenthesis(_str)</li>
-																			}
-																		}
-																		else
-																		{
-																			<li>@Common.ExtractAfterSecondClosingParenthesis(str)</li>
-																		}
-																	}
-																}
-															</ol>
-														</li>
-													}
-													else if (combined.Contains("<S>"))
-													{
-														<li class="mb-2">
-															@Convert.ToString(combined.Split("<S>")[0])
-															<ol class="ul_columns_4">
-																@foreach (var str in Convert.ToString(combined.Split("<S>")[1]).Split(",").Where(x => !string.IsNullOrWhiteSpace(x)))
-																{
-																	@if (str.Contains("<B>"))
-																	{
-																		<li>
-																			@Common.ExtractAfterSecondClosingParenthesis(Convert.ToString(str.Split("<B>")[0])) - @(Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Count())
-																			<span class="full-width-span" style="font-size: 84%;">
-																				@(string.Join(", ", Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => Common.ExtractAfterSecondClosingParenthesis(x)).ToArray()))
-																			</span>
-																		</li>
-																	}
-																	else
-																	{
-																		if (str.Contains(','))
-																		{
-																			foreach (var _str in str.Split(',').Where(x => !string.IsNullOrWhiteSpace(x)))
-																			{
-																				<li>@Common.ExtractAfterSecondClosingParenthesis(_str)</li>
-																			}
-																		}
-																		else
-																		{
-																			<li>@Common.ExtractAfterSecondClosingParenthesis(str)</li>
-																		}
-																	}
-																}
-															</ol>
-														</li>
-													}
-													else
-													{
-														<li class="mb-2">@combined.Replace("<S>", "").Replace("<B>", "")</li>
-													}
-
+													_bottleCodes.Add(bottleMatch.Groups[1].Value.Trim());
 												}
 											}
+
+											if (!string.IsNullOrEmpty(shipperCode))
+											{
+												// Case 1: Shipper + Bottles
+												part = $"Duplicate Shipper QR Code : <S>{shipperCode}<B>{string.Join(", ", _bottleCodes)}";
+											}
+											else if (_bottleCodes.Any())
+											{
+												// Case 2: Only Bottles
+												part = $"Duplicate Bottle QR Code : <S>**<B>{string.Join(",", _bottleCodes)}";
+											}
+
+
+
+											// Label : Msg
+											var labelSplit = part.Split(':', 2, StringSplitOptions.TrimEntries);
+											if (labelSplit.Length < 2) continue;
+
+											var label = labelSplit[0].Trim();
+											var msg = labelSplit[1].Trim();
+
+											// Skip counts or empty msg
+											if (label.Contains("Count", StringComparison.OrdinalIgnoreCase) || msg.Contains("Count", StringComparison.OrdinalIgnoreCase)) continue;
+											if (string.IsNullOrWhiteSpace(msg) || msg.Length < 5) continue;
+
+											// Label mapping
+											label = label switch
+											{
+												"Shipper QR Code - Not Delete" => "Rejected Shipper QR Code",
+												"Shipper QR Code - issue" => "Rejected Shipper QR Code",
+												"Shipper QR Code - not contain 24 bottles" => "Rejected Shipper QR Code",
+												"Bottle QR Code - Duplicate" => "Duplicate Bottle QR Code",
+												"Bottle QR Code - length issue" => "Rejected Shipper QR Code",
+												"Shipper QR Code - Duplicate" => "Duplicate Shipper QR Code",
+												_ => label
+											};
+
+											// Parse Shipper and Bottle codes
+											var shipperBottleList = new List<string>();
+											var shipperMatches = Regex.Matches(msg, @"<S>([^<]+)");
+
+											if (shipperMatches.Count > 0)
+											{
+												foreach (Match sMatch in shipperMatches)
+												{
+													var shipperCodes = sMatch.Groups[1].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+													.Select(x => x.Trim());
+
+													foreach (var s in shipperCodes)
+													{
+														// If <B> after this <S>, capture bottles
+														var afterS = msg[(msg.IndexOf(s) + s.Length)..];
+														var bottleMatch = Regex.Match(afterS, @"<B>([^<]+)");
+														if (bottleMatch.Success)
+														{
+															var bottleCodes = bottleMatch.Groups[1].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+															.Select(x => x.Trim());
+															shipperBottleList.Add($"{s} => [ {string.Join(", ", bottleCodes)} ]");
+														}
+														else
+														{
+															shipperBottleList.Add(s);
+														}
+													}
+												}
+											}
+											else
+											{
+												// No <S> found → put entire msg under OTHER
+												label = "OTHER";
+												shipperBottleList.Add(msg);
+											}
+
+											// Group into dictionary
+											var existing = result.FirstOrDefault(d => d.ContainsKey(label));
+											if (existing != null)
+											{
+												existing[label].AddRange(shipperBottleList);
+											}
+											else
+											{
+												result.Add(new Dictionary<string, List<string>> { { label, new List<string>(shipperBottleList) } });
+											}
+
 										}
 
-									</ul>
-								}
-								else
-								{
-									<p class="p-0 m-0 pl-5 mb-1">@item.Remark</p>
-								}
+
+										@foreach (var dict in result)
+										{
+											<ul class="list-unstyled p-0 m-0 pl-5 mb-1">
+												@foreach (var kvp in dict)
+												{
+													<li class="mb-2">
+														@kvp.Key
+														<ol class="ul_columns_4">
+															@foreach (var shipper in kvp.Value)
+															{
+																// Split by " => "
+																var leftPart = shipper.Split(" => ")[0]; // before =>
+																var rightPart = shipper.Split(" => ").Length > 1
+																? shipper.Split(" => ")[1].Trim('[', ']', ' ') // remove [ ] and spaces
+																: "";
+
+																// Split right side by comma
+																var rightArray = rightPart.Split(",", StringSplitOptions.RemoveEmptyEntries)
+																.Select(x => Common.ExtractAfterSecondClosingParenthesis(x.Trim())).ToList();
+
+																<li>
+																	@Common.ExtractAfterSecondClosingParenthesis(leftPart) @(@rightArray.Count() > 0 ? " - " + @rightArray.Count() : "")
+																	<span class="full-width-span" style="font-size: 84%;">
+																		@(string.Join(", ", rightArray))
+																	</span>
+																</li>
+															}
+														</ol>
+													</li>
+												}
+											</ul>
+										}
+									}
+									catch (Exception ex)
+									{
+
+										<ul class="list-unstyled p-0 m-0 pl-5 mb-1">
+											@{
+												var segments = item.Remark
+												.Split('|')
+												.Select(x => x.Trim())
+												.Where(x => !string.IsNullOrWhiteSpace(x))
+												.ToList();
+
+												var grouped = segments
+												.GroupBy(x => x.Length > 15 ? x.Substring(0, 15) : x);
+
+												foreach (var group in grouped)
+												{
+													var subGroups = group
+													.GroupBy(_item =>
+													{
+														var match = System.Text.RegularExpressions.Regex.Match(_item, @"^.*? :");
+														return match.Success ? match.Value : _item;
+													});
+
+													foreach (var subGroup in subGroups)
+													{
+														string mainPrefix = subGroup.Key;
+														string combined = string.Join(" | ", subGroup.Select((x, index) =>
+														{
+															return index == 0 ? x : x.Replace(mainPrefix, "").Trim();
+														}));
+
+														@if (combined.Contains("|"))
+														{
+															<li class="mb-3">
+																@Convert.ToString(combined.Split(" | ")[0])
+
+																<ol class="ul_columns_4">
+																	@foreach (var str in Convert.ToString(combined.Split(" | ")[1]).Split("<S>").Where(x => !string.IsNullOrWhiteSpace(x)))
+																	{
+																		@if (str.Contains("<B>"))
+																		{
+																			<li>
+																				@Common.ExtractAfterSecondClosingParenthesis(Convert.ToString(str.Split("<B>")[0])) - @(Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Count())
+																				<span class="full-width-span" style="font-size: 84%;">
+																					@(string.Join(", ", Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => Common.ExtractAfterSecondClosingParenthesis(x)).ToArray()))
+																				</span>
+																			</li>
+																		}
+																		else
+																		{
+																			if (str.Contains(','))
+																			{
+																				foreach (var _str in str.Split(',').Where(x => !string.IsNullOrWhiteSpace(x)))
+																				{
+																					<li>@Common.ExtractAfterSecondClosingParenthesis(_str)</li>
+																				}
+																			}
+																			else
+																			{
+																				<li>@Common.ExtractAfterSecondClosingParenthesis(str)</li>
+																			}
+																		}
+																	}
+																</ol>
+															</li>
+														}
+														else if (combined.Contains("<S>"))
+														{
+															<li class="mb-2">
+																@Convert.ToString(combined.Split("<S>")[0])
+																<ol class="ul_columns_4">
+																	@foreach (var str in Convert.ToString(combined.Split("<S>")[1]).Split(",").Where(x => !string.IsNullOrWhiteSpace(x)))
+																	{
+																		@if (str.Contains("<B>"))
+																		{
+																			<li>
+																				@Common.ExtractAfterSecondClosingParenthesis(Convert.ToString(str.Split("<B>")[0])) - @(Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Count())
+																				<span class="full-width-span" style="font-size: 84%;">
+																					@(string.Join(", ", Convert.ToString(str.Split("<B>")[1]).Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => Common.ExtractAfterSecondClosingParenthesis(x)).ToArray()))
+																				</span>
+																			</li>
+																		}
+																		else if (str.Contains(','))
+																		{
+																			foreach (var _str in str.Split(',').Where(x => !string.IsNullOrWhiteSpace(x)))
+																			{
+																				<li>@Common.ExtractAfterSecondClosingParenthesis(_str)</li>
+																			}
+																		}
+																		else
+																		{
+																			<li>@Common.ExtractAfterSecondClosingParenthesis(str)</li>
+																		}
+																	}
+																</ol>
+															</li>
+														}
+														else
+														{
+															<li class="mb-2">@combined.Replace("<S>", "").Replace("<B>", "")</li>
+														}
+
+													}
+												}
+											}
+
+										</ul>
+
+									}
+								}								
 							</td>
 						</tr>
 						@*
