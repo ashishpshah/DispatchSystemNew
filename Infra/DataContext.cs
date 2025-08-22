@@ -571,17 +571,16 @@ namespace Dispatch_System
 
 		public static DataTable ExecuteQuery_SQL(string query)
 		{
+			DataTable dt = new DataTable();
+
 			try
 			{
-				DataTable dt = new DataTable();
-
 				MySqlConnection connection = new MySqlConnection(_connectionString_SQL);
 
 				MySqlDataAdapter oraAdapter = new MySqlDataAdapter(query, connection);
 
 				oraAdapter.Fill(dt);
 
-				return dt;
 			}
 			catch (Exception ex)
 			{
@@ -591,6 +590,7 @@ namespace Dispatch_System
 				return null;
 			}
 
+			return dt;
 		}
 
 		public static DataSet ExecuteQuery_DataSet_SQL(string sqlquerys)
