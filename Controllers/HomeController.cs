@@ -1633,31 +1633,31 @@ namespace Dispatch_System.Controllers
 					}
 				}
 
-				if (!string.IsNullOrEmpty(strlistMDA_NO))
+				string[] arrayMDA = null;
+
+				try
 				{
-					var oParams = new List<MySqlParameter>();
-
-					oParams.Add(new MySqlParameter("P_JSON_LIST", MySqlDbType.LongText) { Value = strlistMDA_NO });
-
-					oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
-
-					var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_MDA_CHECK", oParams, true);
-
-					if (!string.IsNullOrEmpty(response))
+					if (!string.IsNullOrEmpty(strlistMDA_NO))
 					{
-						string[] arrayMDA = response.Split("<#>");
+						var oParams = new List<MySqlParameter>();
 
-						if (IsNewAPI && arrayMDA != null && arrayMDA.Where(x => !string.IsNullOrEmpty(x)).Count() > 0)
-							objArray = new JArray(objArray.Where(x => arrayMDA.Where(z => !string.IsNullOrEmpty(z)).Contains(Convert.ToString(((JValue)x["MDA_NO"]).Value).Trim())));
-						else if (!IsNewAPI && arrayMDA != null && arrayMDA.Where(x => !string.IsNullOrEmpty(x)).Count() > 0)
-							objArray = new JArray(objArray.Where(x => arrayMDA.Where(z => !string.IsNullOrEmpty(z)).Contains(Convert.ToString(((JValue)x["mda_no"]).Value).Trim())));
+						oParams.Add(new MySqlParameter("P_JSON_LIST", MySqlDbType.LongText) { Value = strlistMDA_NO });
+
+						oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+
+						var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_MDA_CHECK", oParams, true);
+
+						if (!string.IsNullOrEmpty(response)) arrayMDA = response.Split("<#>");
 
 					}
-					else objArray = null;
-
 				}
-				else objArray = null;
+				catch (Exception ex) { }
 
+				if (IsNewAPI && arrayMDA != null && arrayMDA.Where(x => !string.IsNullOrEmpty(x)).Count() > 0)
+					objArray = new JArray(objArray.Where(x => arrayMDA.Where(z => !string.IsNullOrEmpty(z)).Contains(Convert.ToString(((JValue)x["MDA_NO"]).Value).Trim())));
+				else if (!IsNewAPI && arrayMDA != null && arrayMDA.Where(x => !string.IsNullOrEmpty(x)).Count() > 0)
+					objArray = new JArray(objArray.Where(x => arrayMDA.Where(z => !string.IsNullOrEmpty(z)).Contains(Convert.ToString(((JValue)x["mda_no"]).Value).Trim())));
+				
 				// Save MDA information Header and detail in database
 				if (objArray != null && objArray.Count > 0)
 				{

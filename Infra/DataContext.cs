@@ -865,7 +865,7 @@ namespace Dispatch_System
 		}
 
 
-		public static async Task SyncData_LocalToCloud(string tableName, List<long> ids_GateInOut, List<long> ids_MDA)
+		public static async Task SyncData_LocalToCloud(string tableName, List<long> ids_GateInOut = null, List<long> ids_MDA = null)
 		{
 			DataTable dtSql = null;
 			DataTable dtOracle = null;
