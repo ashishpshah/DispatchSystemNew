@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VendorQRGeneration", "VendorQRGeneration.csproj", "{CE3FD121-D135-4962-8756-6B3299E181AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VendorQRGeneration", "DispatchSystemNew\VendorQRGeneration.csproj", "{CE3FD121-D135-4962-8756-6B3299E181AE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CL_SyncBatch", "..\CL_SyncBatch\CL_SyncBatch.csproj", "{C6BAD454-B439-494D-80A0-78F464D109BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CL_SyncBatch", "CL_SyncBatch\CL_SyncBatch.csproj", "{C6BAD454-B439-494D-80A0-78F464D109BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CL_SocketService", "..\CL_SocketService\CL_SocketService.csproj", "{E756FD5D-1379-4F2E-B354-54A4FAF3CA18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CL_SocketService", "CL_SocketService\CL_SocketService.csproj", "{E756FD5D-1379-4F2E-B354-54A4FAF3CA18}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,0 +1,598 @@
+﻿using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
+using System.Collections.Concurrent;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace CL_SocketService
+{
+	public class SocketServiceProcessor
+	{
+		private CancellationTokenSource _cancellationTokenSource;
+		private Task _backgroundTask;
+		private long _sequenceNumber;
+		private bool _isRunning;
+		private bool _isStopSignal;
+		private string _errorMessage;
+		private (string QRCode, string State, DateTime DT) _receivedData_Prev;
+
+		private readonly SharedDataService _sharedDataService;
+		private readonly DataContextService DataContext;
+		private Socket listenerSocket;
+		private readonly Socket printerSocket;
+		private readonly byte[] _buffer = new byte[1024];
+
+		private Socket clientSocket = null;
+
+
+		private int MDA_QR_Scan_Delay_Sec = 1;
+		private int cnt_error = 0;
+		private Int64 PLANT_ID { get; set; }
+
+
+		private dynamic mda { get; set; }
+		private string filePath { get; set; }
+		private bool MDA_QR_Scan_Log_IsActive { get; set; }
+		private bool MDA_QR_Scan_Response_Demo { get; set; }
+		private string iffco_url { get; set; }
+		private string Loading_Bay { get; set; }
+
+
+		private readonly string plantCode;
+		private readonly long plantId;
+
+		public SocketServiceProcessor(SharedDataService sharedDataService, long _plantId, string _plantCode, bool _MDA_QR_Scan_Log_IsActive, bool _MDA_QR_Scan_Response_Demo, int _MDA_QR_Scan_Delay_Sec, string _MDA_QR_Scan_Log_File_Path, string _iffco_url, string _connectionString_SQL)
+		{
+			DataContext = new DataContextService(_connectionString_SQL, _MDA_QR_Scan_Log_File_Path, _MDA_QR_Scan_Log_IsActive);
+
+			PLANT_ID = _plantId;
+
+			_sharedDataService = sharedDataService;
+			listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+			printerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+			MDA_QR_Scan_Log_IsActive = _MDA_QR_Scan_Log_IsActive;
+
+			MDA_QR_Scan_Response_Demo = _MDA_QR_Scan_Response_Demo;
+
+			MDA_QR_Scan_Delay_Sec = _MDA_QR_Scan_Delay_Sec;
+
+			filePath = _MDA_QR_Scan_Log_File_Path;
+
+			iffco_url = _iffco_url;
+
+		}
+
+
+		public bool IsRunning() => _isRunning && (clientSocket != null && IsConnected(clientSocket) && (_backgroundTask != null && !_backgroundTask.IsCompleted));
+		public string ErrorMessage() => _errorMessage;
+		public void SetMDA(dynamic _mda) => mda = _mda;
+		public dynamic GetMDA() => mda;
+
+		public async Task SendToPrinter(string V1, string V2, string V3, string Printer_IP, string Printer_Port, string Loading_Bay)
+		{
+			IPAddress listenIP;
+			int listenPort;
+
+			if (Regex.IsMatch((Printer_IP ?? ""), @"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
+				&& IPAddress.TryParse(Printer_Port, out listenIP) && int.TryParse(Printer_Port, out listenPort) && listenPort > 0 && listenPort <= 65535)
+			{
+				try
+				{
+					// Connect to the server
+					using var client = new TcpClient();
+					await client.ConnectAsync(listenIP, listenPort);
+
+					Console.WriteLine("Connected to the server.");
+
+					// Get the network stream for writing data to the server
+					using NetworkStream stream = client.GetStream();
+
+					// Format the data to be sent
+					string dataToSend = "\x02" + "041C1E1Q0R1" + "\x17" + "D" + $"{V1}" + "\x0A" + $"{V2}" + "\x0A" + $"{V3}??" + "\x0D";
+
+					Write_Log("Send To Printer | " + (mda != null ? " MDA Id : " + mda.Mda_Id + " Gate In/Out Id : " + mda.GateInOut_Id + " | " : "") + dataToSend + " | Load MDA " + Loading_Bay);
+
+					// Convert the string data to bytes
+					byte[] buffer = Encoding.UTF8.GetBytes(dataToSend);
+
+					// Send the data to the server
+					await stream.WriteAsync(buffer, 0, buffer.Length);
+
+					Console.WriteLine("Data sent to the server.");
+
+					// Disconnect from the server
+					client.Close();
+
+					Console.WriteLine($"listen is listening on Address {listenIP.ToString()}:{listenPort}...");
+				}
+				catch (Exception ex)
+				{
+					Write_Log("Send To Printer | " + (mda != null ? " MDA Id : " + mda.Mda_Id + " Gate In/Out Id : " + mda.GateInOut_Id + " | " : "") + " | Load MDA " + Loading_Bay + $" | Error: {JsonConvert.SerializeObject(ex)}");
+
+					throw ex;
+				}
+			}
+
+
+		}
+
+		public async Task StartWork(string Listen_IP, string Listen_Port, string Loading_Bay, bool _MDA_QR_Scan_Log_IsActive, bool _MDA_QR_Scan_Response_Demo, int _MDA_QR_Scan_Delay_Sec, string _MDA_QR_Scan_Log_File_Path, string _iffco_url)
+		{
+			MDA_QR_Scan_Log_IsActive = _MDA_QR_Scan_Log_IsActive;
+
+			MDA_QR_Scan_Response_Demo = _MDA_QR_Scan_Response_Demo;
+
+			MDA_QR_Scan_Delay_Sec = _MDA_QR_Scan_Delay_Sec;
+
+			filePath = _MDA_QR_Scan_Log_File_Path;
+
+			iffco_url = _iffco_url;
+			Loading_Bay = Loading_Bay;
+
+			cnt_error = 0;
+
+			if (mda.Required_Shipper <= mda.Loaded_Shipper)
+			{
+				_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), "", "COMPLETED", 0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+
+				return;
+			}
+
+			_receivedData_Prev = new("123", "", DateTime.Now);
+
+			Write_Log($"MC Start Request");
+
+			_isStopSignal = false;
+
+			IPAddress listenIP;
+			int listenPort;
+
+			if (Regex.IsMatch((Listen_IP ?? ""), @"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
+				&& IPAddress.TryParse(Listen_Port, out listenIP) && int.TryParse(Listen_Port, out listenPort) && listenPort > 0 && listenPort <= 65535)
+			{
+				if (!_isRunning)
+					try
+					{
+						listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+						listenerSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+
+						listenerSocket.Bind(new IPEndPoint(listenIP, listenPort));
+						listenerSocket.Listen(10);
+
+						Write_Log($"Listen is listening on Address {listenIP.ToString()}:{listenPort}...");
+					}
+					catch (Exception ex)
+					{
+						Write_Log($"Error: {JsonConvert.SerializeObject(ex)}");
+
+						Thread.Sleep(1000);
+					}
+
+				try
+				{
+					clientSocket = clientSocket != null && IsConnected(clientSocket) ? clientSocket : listenerSocket.Accept();
+
+					Write_Log("Connected to sender : " + clientSocket.RemoteEndPoint + " | Checking for data.....");
+
+				}
+				catch (Exception e) { return; }
+
+				if (clientSocket != null && IsConnected(clientSocket))
+				{
+					clientSocket.Send(Encoding.ASCII.GetBytes("STOP"));
+
+					clientSocket.Send(Encoding.ASCII.GetBytes("START"));
+				}
+
+				_sequenceNumber = (_sharedDataService.GetScanData() != null && _sharedDataService.GetScanData().Count() > 0 ? _sharedDataService.GetScanData().Max(x => x.Key) : 0);
+
+				Write_Log("Start Loading | " + (mda != null ? " MDA Id : " + mda.Mda_Id + " Gate In/Out Id : " + mda.GateInOut_Id : "") + " | Load MDA " + Loading_Bay);
+
+				// Create a cancellation token source
+				_cancellationTokenSource = new CancellationTokenSource();
+
+				// Start a background task
+				if (clientSocket != null && (_backgroundTask == null || _backgroundTask.IsCompleted))
+					_backgroundTask = Task.Run(BackgroundTaskAsync, _cancellationTokenSource.Token);
+
+				Thread.Sleep(MDA_QR_Scan_Delay_Sec * 2 * 1000);
+
+			}
+			else
+			{
+				Write_Log($"Invalid Data => Listen_IP : {Listen_IP} Listen_Port : {Listen_Port} | " + (mda != null ? " MDA Id : " + mda.Mda_Id + " Gate In/Out Id : " + mda.GateInOut_Id + " | " : "") + " | Load MDA " + Loading_Bay);
+			}
+
+		}
+
+		public void StopWork()
+		{
+			cnt_error = 0;
+
+			_isStopSignal = true;
+
+			if (clientSocket != null && IsConnected(clientSocket) && (_backgroundTask != null && !_backgroundTask.IsCompleted))
+				clientSocket.Send(Encoding.ASCII.GetBytes("STOP"));
+			else if (clientSocket == null || !IsConnected(clientSocket) || _backgroundTask == null || _backgroundTask.IsCompleted)
+				_isRunning = false;
+		}
+
+
+		private async Task BackgroundTaskAsync()
+		{
+			while (!_cancellationTokenSource.Token.IsCancellationRequested)
+			{
+				try
+				{
+					if (clientSocket == null || !IsConnected(clientSocket))
+					{
+						_isRunning = false;
+
+						Write_Log($"Socket server disconnected.");
+
+						return;
+					}
+
+					var received = await clientSocket.ReceiveAsync(_buffer, SocketFlags.None);
+
+					var receivedData = Encoding.UTF8.GetString(_buffer, 0, received);
+
+					Write_Log($"<$>Socket server received raw data: \"{receivedData}\"");
+
+					receivedData = Regex.Replace(receivedData, @"[\s\0]+", "");
+
+					receivedData = receivedData.Trim().Replace(" ", "").ToUpper();
+
+					if (!string.IsNullOrEmpty(receivedData) && receivedData.Length > 58 && receivedData.Contains(iffco_url.ToUpper()))
+					{
+						string pattern = receivedData.Substring(0, 5);
+
+						int firstIndex = receivedData.IndexOf(pattern);
+						int secondIndex = receivedData.IndexOf(pattern, firstIndex + 1);
+
+						if (secondIndex != -1) receivedData = receivedData.Substring(0, secondIndex);
+					}
+
+					if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains(iffco_url.ToUpper().Substring(0, 5)))
+						receivedData = receivedData.Substring(receivedData.IndexOf(iffco_url.ToUpper().Substring(0, 5)));
+
+					// By VK
+					if (receivedData.StartsWith(iffco_url.ToUpper().Substring(0, 10)) && !receivedData.Contains(iffco_url.ToUpper()))
+					{
+						Write_Log($"Socket server processed data : \"{receivedData}\" | Response : continue");
+						Thread.Sleep(300);
+						continue;
+					}
+
+					if (!string.IsNullOrEmpty(receivedData) && receivedData.ToUpper().Contains(iffco_url.ToUpper()))
+					{
+						//int startIndex = receivedData.ToUpper().IndexOf(iffco_url.ToUpper());
+
+						//// Ensure we don't exceed the string length
+						//int lengthToTake = Math.Min(58, receivedData.Length - startIndex);
+
+						//receivedData = receivedData.Substring(startIndex, lengthToTake);
+
+						Uri uri = new Uri(receivedData);
+						string[] segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+						if (segments.Length > 4)
+						{
+							var newSegments = new List<string> { segments[0], segments[1], segments[^2], segments[^1] };
+
+							string newPath = "/" + string.Join("/", newSegments);
+							string newUrl = $"{uri.Scheme}://{uri.Host}{newPath}";
+
+							receivedData = newUrl;
+						}
+					}
+
+					if (!string.IsNullOrEmpty(receivedData) && receivedData.Contains(iffco_url.ToUpper()))
+					{
+						receivedData = receivedData.Substring(receivedData.IndexOf(iffco_url.ToUpper()));
+
+						var strQR = receivedData.Replace(iffco_url.ToUpper(), "");
+
+						StringBuilder sb = new StringBuilder(strQR);
+
+						bool toggle = true;
+						int index;
+
+						while ((index = sb.ToString().IndexOf("/")) > -1)
+						{
+							sb[index] = toggle ? '(' : ')';
+							toggle = !toggle;
+						}
+
+						receivedData = sb.ToString();
+						receivedData = Regex.Replace(receivedData, @"[^\w:/\(/\)\.\-]", "");
+
+						receivedData = receivedData.Replace("MCIDEL", "");
+						receivedData = receivedData.Replace("MCSTART", "");
+						receivedData = receivedData.Replace("MCSTOP", "");
+
+					}
+
+					Write_Log($"Socket server processed data : \"{receivedData}\"");
+
+					if (!_isRunning && !_isStopSignal && !string.IsNullOrEmpty(receivedData)
+						&& (receivedData.Contains("MCSTART") || receivedData.Contains("MCIDEL") || receivedData.Contains("(") || receivedData.Trim().Length > 0))
+						_isRunning = true;
+
+					if (_isRunning && _isStopSignal && !string.IsNullOrEmpty(receivedData) && receivedData.Contains("MCSTOP"))
+					{
+						try { listenerSocket.Shutdown(SocketShutdown.Both); }
+						catch { /* Already closed or not connected; can safely ignore. */ }
+						finally { listenerSocket?.Close(); /*listenerSocket?.Dispose();*/ }
+
+						try { clientSocket?.Shutdown(SocketShutdown.Both); }
+						catch { /* Already closed or not connected; can safely ignore. */ }
+						finally { clientSocket?.Close(); clientSocket?.Dispose(); clientSocket = null; }
+
+						//try
+						//{
+						//	Write_Log($"MC Stop Request");
+
+						//	// Close the socket when the background task is stopped
+						//	listenerSocket.Shutdown(SocketShutdown.Both);
+						//	listenerSocket.Close();
+						//	listenerSocket?.Dispose();
+						//	clientSocket?.Dispose();
+
+						//	clientSocket = null;
+
+						//}
+						//catch { }
+
+						_isRunning = false;
+						_isStopSignal = false;
+						_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "STOP", 0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+
+						Write_Log("Load MDA " + Loading_Bay + " | Stop Loading | " + (mda != null ? " MDA Id : " + mda.Mda_Id + " Gate In/Out Id : " + mda.GateInOut_Id : ""));
+
+						Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
+						_cancellationTokenSource?.Cancel();
+					}
+					else if (_isRunning && _isStopSignal && !string.IsNullOrEmpty(receivedData) && !receivedData.Contains("MCSTOP"))
+					{
+						Write_Log($"Stop Signal");
+						continue;
+					}
+					else if (_isRunning && !_isStopSignal && !string.IsNullOrEmpty(receivedData) && receivedData.Contains("MCSTOP"))
+					{
+						Write_Log($"Stop Signal from Zenon Operator");
+
+						_isRunning = false;
+						_isStopSignal = false;
+						_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "STOP", 0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+
+						Write_Log("Load MDA " + Loading_Bay + " | Stop Loading | " + (mda != null ? " MDA Id : " + mda.Mda_Id + " Gate In/Out Id : " + mda.GateInOut_Id : ""));
+
+						Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
+						_cancellationTokenSource?.Cancel();
+					}
+
+					if (_isRunning && !_isStopSignal && !string.IsNullOrEmpty(receivedData)
+						&& receivedData.Length > 0 && !receivedData.Contains("MCIDEL") && !receivedData.Contains("MCSTOP") && !receivedData.Contains("MCSTART")
+					)
+					{
+						if (!receivedData.Contains("<@>") && !string.IsNullOrEmpty(_receivedData_Prev.QRCode)
+							&& receivedData.Replace("<#>", "") == _receivedData_Prev.QRCode.Replace("<#>", "")
+							&& (DateTime.Now - _receivedData_Prev.DT).TotalSeconds < 10)
+						{
+							//if (_receivedData_Prev.State == "NOK" || (_receivedData_Prev.State == "OK" && receivedData.Contains("(")))
+							//	clientSocket.Send(Encoding.ASCII.GetBytes(_receivedData_Prev.State));
+							//else
+							clientSocket.Send(Encoding.ASCII.GetBytes("$"));
+
+							Write_Log($"Received Data before 10 sec | Response : continue");
+
+							receivedData = "";
+
+							Thread.Sleep(300);
+							continue;
+						}
+
+						var (IsSuccess, response, Id) = (false, "NOK", 0M);
+
+						if (receivedData.Contains("<#>") || receivedData.Contains("<@>"))
+						{
+							if (receivedData.Contains("<@>"))
+							{
+								mda.Carton_Qty++;
+								_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), "##########", "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+							}
+
+							clientSocket.Send(Encoding.ASCII.GetBytes("$"));
+							Write_Log($"Response : continue");
+
+							receivedData = "";
+							Thread.Sleep(300);
+							continue;
+						}
+						else
+						{
+							List<MySqlParameter> oParams = new List<MySqlParameter>();
+
+							oParams.Add(new MySqlParameter("P_LOADING_BAY", MySqlDbType.VarString) { Value = Loading_Bay });
+							oParams.Add(new MySqlParameter("P_QR_CODE", MySqlDbType.VarString) { Value = receivedData });
+							oParams.Add(new MySqlParameter("P_GATE_SYS_ID", MySqlDbType.Int64) { Value = mda.GateInOut_Id });
+							oParams.Add(new MySqlParameter("P_MDA_SYS_ID", MySqlDbType.Int64) { Value = mda.Mda_Id });
+							oParams.Add(new MySqlParameter("P_MDA_DTL_SYS_ID", MySqlDbType.Int64) { Value = mda.Id });
+							oParams.Add(new MySqlParameter("P_PROD_SYS_ID", MySqlDbType.Int64) { Value = mda.Prod_Sys_Id });
+							oParams.Add(new MySqlParameter("P_IS_MANUAL_SCAN", MySqlDbType.Int64) { Value = 0 });
+							oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = PLANT_ID });
+
+							(IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_SHIPPER_QRCODE_CHECK", oParams, true);
+						}
+
+						try
+						{
+							if (!string.IsNullOrEmpty(response) && response.Contains("#"))
+							{
+								clientSocket.Send(Encoding.ASCII.GetBytes(response.Split("#")[0].ToString()));
+
+								_receivedData_Prev = new(receivedData, response.Split("#")[0].ToString(), DateTime.Now);
+
+								mda.Required_Shipper = Convert.ToInt64(response.Split("#")[1]);
+								mda.Loaded_Shipper = Convert.ToInt64(response.Split("#")[2]);
+								mda.Carton_Qty = Convert.ToInt64(response.Split("#")[3]);
+
+								_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, response.Split("#")[0].ToString(), (long)Id, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+
+								if (mda.Required_Shipper <= mda.Loaded_Shipper)
+								{
+									_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "COMPLETED", (long)Id, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+
+									Console.WriteLine($"Response = {response.Split("#")[0].ToString()}, RequiredShipper = {mda.Required_Shipper}, LoaddedShipper = {mda.Loaded_Shipper}, RejectShipper = {mda.Carton_Qty}");
+
+									Write_Log("Load MDA " + Loading_Bay + " | MDA Completed | " + (mda != null ? " MDA Id : " + mda.Mda_Id + " Gate In/Out Id : " + mda.GateInOut_Id : ""));
+								}
+
+								receivedData = "";
+
+								Thread.Sleep(300);
+							}
+							else
+							{
+								_receivedData_Prev = new(receivedData, "NOK", DateTime.Now);
+
+								mda.Carton_Qty = (long)mda.Carton_Qty + 1;
+
+								response = "NOK" + "#" + mda.Required_Shipper + "#" + mda.Loaded_Shipper + "#" + mda.Carton_Qty;
+
+								_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+
+								clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
+								Thread.Sleep(300);
+
+							}
+
+							Write_Log($"Response : {response}");
+
+						}
+						catch (Exception _ex)
+						{
+							if (clientSocket != null && IsConnected(clientSocket))
+							{
+								mda.Carton_Qty = (long)mda.Carton_Qty + 1;
+
+								response = "NOK" + "#" + mda.Required_Shipper + "#" + mda.Loaded_Shipper + "#" + mda.Carton_Qty;
+
+								_sharedDataService.AddOrUpdate(Interlocked.Increment(ref _sequenceNumber), receivedData, "NOK", (long)0, (long)mda.Required_Shipper, (long)mda.Loaded_Shipper, (long)mda.Carton_Qty);
+
+								clientSocket.Send(Encoding.ASCII.GetBytes("NOK"));
+								Thread.Sleep(300);
+
+							}
+
+							Write_Log($"Response : {response} {Environment.NewLine}Error: {JsonConvert.SerializeObject(_ex)}");
+						}
+					}
+
+					receivedData = "";
+
+					Thread.Sleep(MDA_QR_Scan_Delay_Sec * 1000);
+
+					_cancellationTokenSource.Token.ThrowIfCancellationRequested();
+				}
+				catch (OperationCanceledException) { }
+				catch (Exception ex)
+				{
+					cnt_error += 1;
+
+					if (cnt_error > 10)
+					{
+						cnt_error = 0;
+
+						_isStopSignal = true;
+
+						_errorMessage = $"{JsonConvert.SerializeObject(ex)}";
+					}
+
+					Write_Log("Load MDA " + Loading_Bay + " | " + (mda != null ? " MDA Id : " + mda.Mda_Id + " Gate In/Out Id : " + mda.GateInOut_Id + " | " : "") + $"Error: {JsonConvert.SerializeObject(ex)}");
+				}
+
+			}
+		}
+
+		private static bool IsConnected(Socket socket)
+		{
+			try
+			{
+				return !(socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
+			}
+			catch (SocketException) { return false; }
+		}
+
+		private void Write_Log(string text)
+		{
+			if (!string.IsNullOrEmpty(text) && MDA_QR_Scan_Log_IsActive)
+			{
+				try
+				{
+					var _filePath = filePath.Replace("<YYYYMMDD>", DateTime.Now.ToString("yyyyMMdd"));
+					_filePath = _filePath.Replace("<HH>", DateTime.Now.ToString("HH"));
+
+					if (!System.IO.Directory.Exists(Path.GetDirectoryName(_filePath)))
+						System.IO.Directory.CreateDirectory(Path.GetDirectoryName(_filePath));
+
+					if (!System.IO.File.Exists(_filePath))
+						System.IO.File.Create(_filePath).Dispose();
+
+					using (StreamWriter sw = System.IO.File.AppendText(_filePath))
+						sw.WriteLine((text.StartsWith("<$>") ? System.Environment.NewLine : "") + DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text.Replace("<$>", "") + System.Environment.NewLine);
+				}
+				catch (Exception) { }
+
+			}
+
+			Console.WriteLine(DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + " || " + text);
+		}
+	}
+
+
+	public class SharedDataService
+	{
+		private ConcurrentDictionary<long, (string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)> _sharedData = new ConcurrentDictionary<long, (string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)>();
+
+		public void AddOrUpdate(long key, string value, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)
+		{
+			if (_sharedData.ContainsKey(key))
+			{
+				_sharedData[key] = (value, flag, id, requiredShipper, loaddedShipper, rejectShipper);
+			}
+			else
+			{
+				_sharedData.TryAdd(key, (value, flag, id, requiredShipper, loaddedShipper, rejectShipper));
+			}
+		}
+
+		public void AddOrUpdate(List<(long key, string value, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)> values)
+		{
+			foreach (var item in values)
+				if (_sharedData.ContainsKey(item.key))
+				{
+					_sharedData[item.key] = (item.value, item.flag, item.id, item.requiredShipper, item.loaddedShipper, item.rejectShipper);
+				}
+				else
+				{
+					_sharedData.TryAdd(item.key, (item.value, item.flag, item.id, item.requiredShipper, item.loaddedShipper, item.rejectShipper));
+				}
+		}
+
+		public (string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper) GetValue(long key)
+		{
+			_sharedData.TryGetValue(key, out var value);
+			return value;
+		}
+
+		public ConcurrentDictionary<long, (string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)> GetScanData() => _sharedData;
+
+		public void ClearScanData() { _sharedData = new ConcurrentDictionary<long, (string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)>(); }
+	}
+
+}
