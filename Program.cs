@@ -1,3 +1,4 @@
+using CL_SocketService;
 using DinkToPdf;
 using DinkToPdf.Contracts;
 using Dispatch_System;
@@ -61,8 +62,10 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddSingleton<IConverter, SynchronizedConverter>(provider => new SynchronizedConverter(new PdfTools()));
 //builder.Services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
-builder.Services.AddSingleton<SharedDataService>();
+builder.Services.AddSingleton<VendorQRGeneration.Infra.Services.SharedDataService>();
+builder.Services.AddSingleton<CL_SocketService.SharedDataService>();
 builder.Services.AddSingleton<SocketBackgroundTask>();
+builder.Services.AddSingleton<SocketServiceProcessor>();
 builder.Services.AddSingleton<ConveyorBackgroundTask>();
 ////builder.Services.AddScoped<IBackgroundTaskService, BackgroundTaskService>();
 //builder.Services.AddHostedService<SocketBackgroundTask>();
@@ -118,10 +121,10 @@ app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(
 app.MapHub<ConveyorHub>("/conveyorhub");
 
 app.MapControllerRoute(
-    name: "qr",
-    pattern: "{qr_prefix}/{gtin?}/{prod_cd?}/{qr_postfix?}",
-    defaults: new { controller = "Home", action = "Get_QR_Code_Details" },
-    constraints: new { qr_prefix = new StartsNumericConstraint() });
+	name: "qr",
+	pattern: "{qr_prefix}/{gtin?}/{prod_cd?}/{qr_postfix?}",
+	defaults: new { controller = "Home", action = "Get_QR_Code_Details" },
+	constraints: new { qr_prefix = new StartsNumericConstraint() });
 
 app.MapControllerRoute(
 	  name: "areas",

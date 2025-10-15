@@ -157,6 +157,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\CL_SocketService\CL_SocketService.csproj" />
+	  <ProjectReference Include="..\CL_SyncBatch\CL_SyncBatch.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Compile Update="Properties\Resources.Designer.cs">
 	    <DesignTime>True</DesignTime>
 	    <AutoGen>True</AutoGen>

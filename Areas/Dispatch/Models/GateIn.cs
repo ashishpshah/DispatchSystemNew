@@ -161,8 +161,9 @@ namespace Dispatch_System
         public string OldShipperQRCode { get; set; }
         public string Action { get; set; }
         public string BottlesQuantity { get; set; }
+		[JsonIgnore] public string Status { get; set; }
 
-        public List<string> BottleQRCode { get; set; }
+		public List<string> BottleQRCode { get; set; }
     }
 
     public class ShipperBottle

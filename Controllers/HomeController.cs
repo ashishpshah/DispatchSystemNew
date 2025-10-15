@@ -1,4 +1,5 @@
-﻿using DinkToPdf;
+﻿using CL_SyncBatch;
+using DinkToPdf;
 using DinkToPdf.Contracts;
 using Dispatch_System.Models;
 using iTextSharp.text;
@@ -1657,7 +1658,7 @@ namespace Dispatch_System.Controllers
 					objArray = new JArray(objArray.Where(x => arrayMDA.Where(z => !string.IsNullOrEmpty(z)).Contains(Convert.ToString(((JValue)x["MDA_NO"]).Value).Trim())));
 				else if (!IsNewAPI && arrayMDA != null && arrayMDA.Where(x => !string.IsNullOrEmpty(x)).Count() > 0)
 					objArray = new JArray(objArray.Where(x => arrayMDA.Where(z => !string.IsNullOrEmpty(z)).Contains(Convert.ToString(((JValue)x["mda_no"]).Value).Trim())));
-				
+
 				// Save MDA information Header and detail in database
 				if (objArray != null && objArray.Count > 0)
 				{
@@ -2478,6 +2479,74 @@ namespace Dispatch_System.Controllers
 			}
 		}
 
+		public IActionResult SyncBatch_Service(string searchTerm = null)
+		{
+			try
+			{
+				if (!string.IsNullOrEmpty(searchTerm) && searchTerm.Trim().EndsWith("_Error"))
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = "File already proceed.";
+
+					return Json(CommonViewModel);
+				}
+
+				string logFilePath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch").GetSection("Log_File_Path").Value ?? "");
+
+				string sourceFolderPath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch").GetSection("Source_Folder_Path").Value ?? "");
+				string destinationFolderPath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch").GetSection("Destination_Folder_Path").Value ?? "");
+				string errorFolderPath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch").GetSection("Error_Folder_Path").Value ?? "");
+
+				int manufacture_Date_Before = -1;
+				int manufacture_Date_After = 1;
+
+				try { manufacture_Date_Before = Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch").GetSection("Manufacture_Date_Before").Value); } catch { }
+				try { manufacture_Date_After = Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("Sync_Batch").GetSection("Manufacture_Date_After").Value); } catch { }
+
+				string plantCode = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("PlantCode").Value ?? "");
+
+				long plant_id = Common.Get_Session_Int(SessionKey.PLANT_ID);
+
+				plant_id = plant_id <= 0 ? AppHttpContextAccessor.PlantId : plant_id;
+
+				var processor = new SyncBatchProcessor(plant_id, plantCode, logFilePath, sourceFolderPath, destinationFolderPath, errorFolderPath, manufacture_Date_Before, manufacture_Date_After, DataContext._connectionString_SQL, DataContext._connectionString_Oracle);
+				(bool IsSuccess, string Message, List<string> Errors) _result = processor.Process(searchTerm);
+
+				CommonViewModel.IsConfirm = true;
+				CommonViewModel.IsSuccess = _result.IsSuccess;
+				CommonViewModel.StatusCode = _result.IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
+				CommonViewModel.Message = _result.Message;
+
+				if (_result.Errors == null || _result.Errors.Count() == 0)
+				{
+					CommonViewModel.IsConfirm = true;
+					CommonViewModel.IsSuccess = true;
+					CommonViewModel.StatusCode = ResponseStatusCode.Success;
+					CommonViewModel.Message = "Record updated successfully !..."; ;
+
+					return Json(CommonViewModel);
+				}
+				else
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = "Some JSON file was not processed. Please check error log." +
+						"" + System.Environment.NewLine + (_result.Errors != null && _result.Errors.Count() > 0 ? String.Join(", ", _result.Errors.ToArray()) : "");
+
+					return Json(CommonViewModel);
+				}
+			}
+			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+			CommonViewModel.IsConfirm = true;
+			CommonViewModel.IsSuccess = true;
+			CommonViewModel.StatusCode = ResponseStatusCode.Success;
+			CommonViewModel.Message = "Batch file(s) update soon.";
+
+			return Json(CommonViewModel);
+		}
+
 		public IActionResult SyncBatch_New(string searchTerm = null)
 		{
 			try
@@ -2644,6 +2713,15 @@ namespace Dispatch_System.Controllers
 
 							if (string.IsNullOrEmpty(error) && shipperData != null && (shipperData.ShipperQRCode_Data != null || shipperData.ShipperQRCode_Data.Count() > 0))
 							{
+								if (shipperData.ShipperQRCode_Data.Any(x => x.Action.ToLower().Contains("delete")) &&
+									shipperData.ShipperQRCode_Data.Any(x => x.Action.ToLower().Contains("add")))
+								{
+									// Both add and delete found
+									for (int i = 0; i < shipperData.ShipperQRCode_Data.Count(); i++)
+										if (shipperData.ShipperQRCode_Data[i].Action.ToLower() == "add")
+											shipperData.ShipperQRCode_Data[i].Status = "r";
+								}
+
 								#region Delete Shipper
 
 								if (shipperData.ShipperQRCode_Data.Any(x => x.Action.ToLower().Contains("delete")))
@@ -2899,7 +2977,7 @@ namespace Dispatch_System.Controllers
 												newRow[0] = shipperData.ShipperQRCode_Data[i].Id;
 												newRow[1] = shipperData.ShipperQRCode_Data[i].ShipperQRCode;
 												newRow[2] = shipperData.ShipperQRCode_Data[i].BottleQRCode.Count();
-												newRow[3] = "a";
+												newRow[3] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].Status) ? "a" : shipperData.ShipperQRCode_Data[i].Status;
 												newRow[4] = shipperData.ShipperQRCode_Data[i].Action;
 												newRow[5] = shipper_QrCode_Id_Old;
 												newRow[6] = shipper_Api_Id;
@@ -2945,7 +3023,7 @@ namespace Dispatch_System.Controllers
 													newRow[0] = bottle_QrCode_Id;
 													newRow[1] = shipperData.ShipperQRCode_Data[x].BottleQRCode[i];
 													newRow[2] = productId;
-													newRow[3] = "a";
+													newRow[3] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[x].Status) ? "a" : shipperData.ShipperQRCode_Data[x].Status;
 													newRow[4] = shipperData.ShipperQRCode_Data[x].Id;
 													newRow[5] = plant_id;
 													newRow[6] = user_id;
@@ -3665,6 +3743,13 @@ namespace Dispatch_System.Controllers
 			return Json(CommonViewModel);
 		}
 
+
+
+		/// <summary>
+		/// ================================================================================================================================================
+		/// </summary>
+		/// <param name="gateIds"></param>
+		/// <returns></returns>
 
 		//public IActionResult SyncBatch()
 		//{
