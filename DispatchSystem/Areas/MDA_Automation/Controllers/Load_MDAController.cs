@@ -490,9 +490,9 @@ namespace Dispatch_System.Areas.Admin.Controllers
 				if (dt != null && dt.Rows.Count > 0)
 				{
 					var client = new HttpClient();
-					var request = new HttpRequestMessage(HttpMethod.Post, "http://10.23.91.31/IFFCOKLLDELIVERYAPI/api/IFFCO/DeliveryOrder");
+					var request = new HttpRequestMessage(HttpMethod.Post, $"{AppHttpContextAccessor.API_Url_WMS}/DeliveryOrder");
 
-					request.Headers.Add("Authorization", "Basic SUZGQ09LTEw6SUZGQzBLTExAMjAyMw==");
+					request.Headers.Add("Authorization", $"Basic {AppHttpContextAccessor.API_Authorization_WMS}");
 
 					if (viewModel.Is_BypassWMS == false)
 						try
@@ -618,9 +618,9 @@ namespace Dispatch_System.Areas.Admin.Controllers
 						//_socketBackgroundTask.SendToPrinter(dt.Rows[0]["MDA_ORDER"].ToString(), dt.Rows[0]["PARTY_NAME"].ToString(), dt.Rows[0]["DESP_PLACE"].ToString());
 
 						var client = new HttpClient();
-						var request = new HttpRequestMessage(HttpMethod.Post, "http://10.23.91.31/IFFCOKLLDELIVERYAPI/api/IFFCO/Product");
+						var request = new HttpRequestMessage(HttpMethod.Post, $"{AppHttpContextAccessor.API_Url_WMS}/Product");
 
-						request.Headers.Add("Authorization", "Basic SUZGQ09LTEw6SUZGQzBLTExAMjAyMw==");
+						request.Headers.Add("Authorization", $"Basic {AppHttpContextAccessor.API_Authorization_WMS}");
 
 						try
 						{
@@ -668,9 +668,9 @@ namespace Dispatch_System.Areas.Admin.Controllers
 						}
 						catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
 
-						request = new HttpRequestMessage(HttpMethod.Post, "http://10.23.91.31/IFFCOKLLDELIVERYAPI/api/IFFCO/DeliveryOrder");
+						request = new HttpRequestMessage(HttpMethod.Post, $"{AppHttpContextAccessor.API_Url_WMS}/DeliveryOrder");
 
-						request.Headers.Add("Authorization", "Basic SUZGQ09LTEw6SUZGQzBLTExAMjAyMw==");
+						request.Headers.Add("Authorization", $"Basic {AppHttpContextAccessor.API_Authorization_WMS}");
 
 						try
 						{
@@ -1081,9 +1081,9 @@ namespace Dispatch_System.Areas.Admin.Controllers
 				{
 
 					//var client = new HttpClient();
-					//var request = new HttpRequestMessage(HttpMethod.Post, "http://10.23.91.31/IFFCOKLLDELIVERYAPI/api/IFFCO/DeliveryOrder");
+					//var request = new HttpRequestMessage(HttpMethod.Post, $"{AppHttpContextAccessor.API_Url_WMS}/DeliveryOrder");
 
-					//request.Headers.Add("Authorization", "Basic SUZGQ09LTEw6SUZGQzBLTExAMjAyMw==");
+					//request.Headers.Add("Authorization", $"Basic {AppHttpContextAccessor.API_Authorization_WMS}");
 
 					//try
 					//{
@@ -1195,9 +1195,9 @@ namespace Dispatch_System.Areas.Admin.Controllers
 					if (dt != null && dt.Rows.Count > 0)
 					{
 						var client = new HttpClient();
-						var request = new HttpRequestMessage(HttpMethod.Post, "http://10.23.91.31/IFFCOKLLDELIVERYAPI/api/IFFCO/DeliveryOrder");
+						var request = new HttpRequestMessage(HttpMethod.Post, $"{AppHttpContextAccessor.API_Url_WMS}/DeliveryOrder");
 
-						request.Headers.Add("Authorization", "Basic SUZGQ09LTEw6SUZGQzBLTExAMjAyMw==");
+						request.Headers.Add("Authorization", $"Basic {AppHttpContextAccessor.API_Authorization_WMS}");
 
 						try
 						{
