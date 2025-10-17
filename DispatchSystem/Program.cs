@@ -1,4 +1,5 @@
 using CL_SocketService;
+using CL_SyncBatch;
 using DinkToPdf;
 using DinkToPdf.Contracts;
 using Dispatch_System;
@@ -62,10 +63,11 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddSingleton<IConverter, SynchronizedConverter>(provider => new SynchronizedConverter(new PdfTools()));
 //builder.Services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
-builder.Services.AddSingleton<VendorQRGeneration.Infra.Services.SharedDataService>();
-builder.Services.AddSingleton<CL_SocketService.SharedDataService>();
-builder.Services.AddSingleton<SocketBackgroundTask>();
+builder.Services.AddSingleton<SharedDataService_>();
 builder.Services.AddSingleton<SocketServiceProcessor>();
+
+builder.Services.AddSingleton<SharedDataService>();
+builder.Services.AddSingleton<SocketBackgroundTask>();
 builder.Services.AddSingleton<ConveyorBackgroundTask>();
 ////builder.Services.AddScoped<IBackgroundTaskService, BackgroundTaskService>();
 //builder.Services.AddHostedService<SocketBackgroundTask>();

@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using VendorQRGeneration.Infra.Services;
 using ZXing.QrCode.Internal;
-using SharedDataService = CL_SocketService.SharedDataService;
 
 namespace Dispatch_System.Areas.Admin.Controllers
 {
@@ -19,7 +18,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 	public class Load_MDANewController : BaseController<ResponseModel<MDA>>
 	{
 		private readonly SocketServiceProcessor _socketBackgroundTask;
-		private readonly SharedDataService _sharedDataService;
+		private readonly SharedDataService_ _sharedDataService;
 
 		private string filePath { get; set; }
 		private bool MDA_QR_Scan_Log_IsActive { get; set; }
@@ -27,10 +26,10 @@ namespace Dispatch_System.Areas.Admin.Controllers
 		private int MDA_QR_Scan_Delay_Sec { get; set; }
 		private string iffco_url { get; set; }
 
-		public Load_MDANewController(SocketServiceProcessor socketBackgroundTask, SharedDataService sharedDataService)
+		public Load_MDANewController(SocketServiceProcessor socketBackgroundTask, SharedDataService_ sharedDataService)
 		{
-			_sharedDataService = sharedDataService;
 			_socketBackgroundTask = socketBackgroundTask;
+			_sharedDataService = sharedDataService;
 		}
 
 		public IActionResult Index()
@@ -879,6 +878,24 @@ namespace Dispatch_System.Areas.Admin.Controllers
 							if (Regex.IsMatch((listenIPString ?? ""), @"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
 								&& IPAddress.TryParse(listenIPString, out listenIP) && int.TryParse(listenPortString, out listenPort) && listenPort > 0 && listenPort <= 65535)
 							{
+								string plantCode = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("PlantCode").Value ?? "");
+
+								long plant_id = Common.Get_Session_Int(SessionKey.PLANT_ID);
+								plant_id = plant_id <= 0 ? AppHttpContextAccessor.PlantId : plant_id;
+
+								try { MDA_QR_Scan_Log_IsActive = Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Log_IsActive").Value); }
+								catch { MDA_QR_Scan_Log_IsActive = false; }
+
+								try { MDA_QR_Scan_Response_Demo = Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Response_Demo").Value); }
+								catch { MDA_QR_Scan_Response_Demo = false; }
+
+								try { MDA_QR_Scan_Delay_Sec = Convert.ToInt32(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Delay_Sec").Value ?? "1"); }
+								catch { MDA_QR_Scan_Delay_Sec = 2; }
+
+								try { filePath = Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("MDA_QR_Scan_Log_File_Path").Value ?? "MDA_QR_Scan_#.txt"); }
+								catch { filePath = "C:\\Z_Project_Dispatch_System\\Logs\\<YYYYMMDD>\\MDA_QR_Scan_<HH>.txt"; }
+
+								_socketBackgroundTask.Configure(plant_id, MDA_QR_Scan_Log_IsActive, MDA_QR_Scan_Response_Demo, MDA_QR_Scan_Delay_Sec, filePath, iffco_url, DataContext._connectionString_SQL);
 								_socketBackgroundTask.SetMDA(viewModel);
 
 								var list = new List<ShipperBatch>();

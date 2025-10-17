@@ -18,8 +18,6 @@ namespace CL_SyncBatch
 		private readonly int _manufacture_Date_Before;
 		private readonly int _manufacture_Date_After;
 
-		private readonly DataContextService DataContext;
-
 		public SyncBatchProcessor(long plantId, string plantCode, string logFilePath, string sourceFolderPath, string destinationFolderPath, string errorFolderPath
 			, int manufacture_Date_Before, int manufacture_Date_After, string connectionString_SQL, string connectionString_Oracle)
 		{
@@ -32,8 +30,7 @@ namespace CL_SyncBatch
 			_manufacture_Date_Before = manufacture_Date_Before;
 			_manufacture_Date_After = manufacture_Date_After;
 
-			DataContext = new DataContextService(connectionString_SQL, connectionString_Oracle, logFilePath);
-
+			DataContextService.Configure(connectionString_SQL, connectionString_Oracle, logFilePath);
 		}
 
 		public (bool IsSuccess, string Message, List<string> Errors) Process(string searchTerm = null)
@@ -78,7 +75,7 @@ namespace CL_SyncBatch
 			{
 				List<(long Id, string GTIN, int ExpireInMonth)> listProduct = new List<(long Id, string GTIN, int ExpireInMonth)>();
 
-				dt = DataContext.ExecuteQuery_SQL("SELECT DISTINCT PROD_SYS_ID, GTIN, VALIDITY_MONTH FROM PRODUCT_MASTER WHERE IFNULL(GTIN, '') != '' ");
+				dt = DataContextService.ExecuteQuery_SQL("SELECT DISTINCT PROD_SYS_ID, GTIN, VALIDITY_MONTH FROM PRODUCT_MASTER WHERE IFNULL(GTIN, '') != '' ");
 
 				if (dt != null && dt.Rows.Count > 0)
 					listProduct = (from DataRow dr in dt.Rows
@@ -183,27 +180,28 @@ namespace CL_SyncBatch
 
 							if (shipperData.ShipperQRCode_Data.Any(x => x.Action.ToLower().Contains("delete")))
 							{
-								var delete_ShipperQRCode = new List<string>();
+								var loaded_ShipperQRCode = new List<string>();
 
 								var len = 0;
 
 								while (len <= shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete")).ToList().Count())
 								{
-									dt = DataContext.ExecuteQuery_SQL($"SELECT SHIPPER_QR_CODE FROM mda_loading WHERE PLANT_ID = {_plantId} AND SHIPPER_QR_CODE IN ("
+									dt = DataContextService.ExecuteQuery_SQL($"SELECT SHIPPER_QR_CODE FROM mda_loading WHERE PLANT_ID = {_plantId} AND SHIPPER_QR_CODE IN ("
 										+ string.Join(", ", shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete") && !string.IsNullOrEmpty(x.ShipperQRCode)).ToList()
 										.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ") ");
 
-									if (dt != null && dt.Rows.Count > 0) delete_ShipperQRCode.AddRange(dt.AsEnumerable().Select(row => row["SHIPPER_QR_CODE"].ToString()).ToList());
-									//else if (dt == null) delete_ShipperQRCode.AddRange(shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete") && !string.IsNullOrEmpty(x.ShipperQRCode)).ToList()
+									if (dt != null && dt.Rows.Count > 0)
+										loaded_ShipperQRCode.AddRange(dt.AsEnumerable().Select(row => row["SHIPPER_QR_CODE"].ToString()).ToList());
+									//else if (dt == null) loaded_ShipperQRCode.AddRange(shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete") && !string.IsNullOrEmpty(x.ShipperQRCode)).ToList()
 									//																					.Skip(len).Take(500).Select(x => x.ShipperQRCode).ToList());
 
 									len += 500;
 								}
 
-								if (delete_ShipperQRCode != null && delete_ShipperQRCode.Where(x => !string.IsNullOrEmpty(x)).Count() > 0)
-									listShipperQRCode_Duplicate.Add((string.Join(", ", delete_ShipperQRCode), "", "NOT_DELETE"));
+								if (loaded_ShipperQRCode != null && loaded_ShipperQRCode.Where(x => !string.IsNullOrEmpty(x)).Count() > 0)
+									listShipperQRCode_Duplicate.Add((string.Join(", ", loaded_ShipperQRCode), "", "NOT_DELETE"));
 
-								shipperData.ShipperQRCode_Data.RemoveAll(x => x.Action.ToLower().Contains("delete") && delete_ShipperQRCode.Any(z => z == x.ShipperQRCode));
+								shipperData.ShipperQRCode_Data.RemoveAll(x => x.Action.ToLower().Contains("delete") && loaded_ShipperQRCode.Any(z => z == x.ShipperQRCode));
 							}
 
 							if (shipperData.ShipperQRCode_Data.Any(x => x.Action.ToLower().Contains("delete")))
@@ -212,23 +210,23 @@ namespace CL_SyncBatch
 
 								while (len <= shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete")).ToList().Count())
 								{
-									bool IsDelete = DataContext.ExecuteNonQuery_SQL("DELETE FROM bottle_qrcode WHERE _plantId = " + _plantId + " " +
-										"AND (_plantId, shipper_qrcode_sysId) IN " +
-										"(SELECT _plantId, shipper_qrcode_sysId FROM shipper_qrcode WHERE _plantId = " + _plantId + " AND LOWER(action) = 'add' " +
+									bool IsDelete = DataContextService.ExecuteNonQuery_SQL("DELETE FROM bottle_qrcode WHERE plant_id = " + _plantId + " " +
+										"AND (plant_id, shipper_qrcode_sysId) IN " +
+										"(SELECT plant_id, shipper_qrcode_sysId FROM shipper_qrcode WHERE plant_id = " + _plantId + " AND LOWER(action) = 'add' " +
 										" AND shipper_qrcode IN (" + string.Join(", ", shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete")).ToList()
 																						.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ")) ");
 
-									IsDelete = DataContext.ExecuteNonQuery_SQL("DELETE FROM shipper_qrcode WHERE _plantId = " + _plantId + " " +
+									IsDelete = DataContextService.ExecuteNonQuery_SQL("DELETE FROM shipper_qrcode WHERE plant_id = " + _plantId + " " +
 										"AND shipper_qrcode IN (" + string.Join(", ", shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete")).ToList()
 																						.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ")");
 
-									IsDelete = DataContext.ExecuteNonQuery("DELETE FROM bottle_qrcode WHERE _plantId = " + _plantId + " " +
-										"AND (_plantId, shipper_qrcode_sysId) IN " +
-										"(SELECT _plantId, shipper_qrcode_sysId FROM shipper_qrcode WHERE _plantId = " + _plantId + " AND LOWER(action) = 'add' " +
+									IsDelete = DataContextService.ExecuteNonQuery("DELETE FROM bottle_qrcode WHERE plant_id = " + _plantId + " " +
+										"AND (plant_id, shipper_qrcode_sysId) IN " +
+										"(SELECT plant_id, shipper_qrcode_sysId FROM shipper_qrcode WHERE plant_id = " + _plantId + " AND LOWER(action) = 'add' " +
 										" AND shipper_qrcode IN (" + string.Join(", ", shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete")).ToList()
 																						.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ")) ");
 
-									IsDelete = DataContext.ExecuteNonQuery("DELETE FROM shipper_qrcode WHERE _plantId = " + _plantId + " " +
+									IsDelete = DataContextService.ExecuteNonQuery("DELETE FROM shipper_qrcode WHERE plant_id = " + _plantId + " " +
 										"AND shipper_qrcode IN (" + string.Join(", ", shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete")).ToList()
 																						.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ")");
 
@@ -264,7 +262,7 @@ namespace CL_SyncBatch
 
 									while (len <= listShipperQRCode.Count())
 									{
-										dt = DataContext.ExecuteQuery_SQL("SELECT shipper_qrcode FROM SHIPPER_QRCODE " +
+										dt = DataContextService.ExecuteQuery_SQL("SELECT shipper_qrcode FROM SHIPPER_QRCODE " +
 											"WHERE LOWER(action) = 'add' AND shipper_qrcode IN (" + string.Join(", ", listShipperQRCode.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ")");
 
 										if (dt != null && dt.Rows.Count > 0) listShipperQRCode_Duplicate.Add((string.Join(",", dt.AsEnumerable().Select(row => row[0].ToString()).ToArray()), "", "DUP_SHIPPER"));
@@ -323,7 +321,7 @@ namespace CL_SyncBatch
 										.Select(x => new { ShipperQRCode = x.ShipperQRCode, BottleQRCode = x.BottleQRCode }).ToList();
 
 										var query = string.Join(", ", groupedResult.Select(x => "'" + x.BottleQRCode + "'").ToArray());
-										var dtBottleQRCode_ = DataContext.ExecuteQuery_SQL("SELECT bottle_qrcode FROM bottle_qrcode WHERE bottle_qrcode IN (" + query + ")");
+										var dtBottleQRCode_ = DataContextService.ExecuteQuery_SQL("SELECT bottle_qrcode FROM bottle_qrcode WHERE bottle_qrcode IN (" + query + ")");
 
 										if (dtBottleQRCode_ != null && dtBottleQRCode_.Rows.Count > 0)
 										{
@@ -362,11 +360,11 @@ namespace CL_SyncBatch
 									bool IsSuccess = false;
 									Int64 shipper_Api_Id = 0;
 
-									dt = DataContext.ExecuteQuery_SQL($"SELECT COUNT(*) FROM SHIPPER_QRCODE_API WHERE BATCH_NO = '{shipperData.Batch_no}'");
+									dt = DataContextService.ExecuteQuery_SQL($"SELECT COUNT(*) FROM SHIPPER_QRCODE_API WHERE BATCH_NO = '{shipperData.Batch_no}'");
 
 									if (dt != null && dt.Rows.Count > 0 && (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt32(dt.Rows[0][0]) : 0) > 0)
 									{
-										dt = DataContext.ExecuteQuery_SQL($"SELECT SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API WHERE BATCH_NO = '{shipperData.Batch_no}'");
+										dt = DataContextService.ExecuteQuery_SQL($"SELECT SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API WHERE BATCH_NO = '{shipperData.Batch_no}'");
 
 										if (dt != null && dt.Rows.Count > 0)
 										{
@@ -377,8 +375,8 @@ namespace CL_SyncBatch
 									}
 									else
 									{
-										dt = DataContext.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
-											$"WHERE LOWER(TABLE_SCHEMA) = '{DataContext.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'shipper_qrcode_api') " +
+										dt = DataContextService.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
+											$"WHERE LOWER(TABLE_SCHEMA) = '{DataContextService.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'shipper_qrcode_api') " +
 											", TBL_T AS (SELECT IFNULL(MAX(SHIPPER_QRCODE_API_SYSID), 0) + 1 ID FROM shipper_qrcode_api) " +
 											"SELECT IF(X.ID > Z.ID, X.ID, Z.ID) ID " +
 											"FROM TBL_AI X, TBL_T Z");
@@ -395,7 +393,7 @@ namespace CL_SyncBatch
 														", NOW(), " + _plantId + ", 1, NOW(), " + shipperData.ShipperQRCode_Data.Count() + "" +
 														",  '" + shipperData.MarketedBy + "', '" + shipperData.ManufacturedBy + "', 1, NOW());";
 
-										IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery);
+										IsSuccess = DataContextService.ExecuteNonQuery_SQL(sqlQuery);
 									}
 
 									if (IsSuccess == true)
@@ -403,8 +401,8 @@ namespace CL_SyncBatch
 										Int64 shipper_QrCode_Id = 0;
 										Int64 shipper_QrCode_Id_Old = 0;
 
-										dt = DataContext.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
-											$"WHERE LOWER(TABLE_SCHEMA) = '{DataContext.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'shipper_qrcode') " +
+										dt = DataContextService.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
+											$"WHERE LOWER(TABLE_SCHEMA) = '{DataContextService.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'shipper_qrcode') " +
 											", TBL_T AS (SELECT IFNULL(MAX(SHIPPER_QRCODE_SYSID), 0) + 1 ID FROM SHIPPER_QRCODE) " +
 											"SELECT IF(X.ID > Z.ID, X.ID, Z.ID) ID " +
 											"FROM TBL_AI X, TBL_T Z");
@@ -412,7 +410,7 @@ namespace CL_SyncBatch
 										if (dt != null && dt.Rows.Count > 0)
 											shipper_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
 
-										dtShipperQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM SHIPPER_QRCODE LIMIT 0");
+										dtShipperQrCode = DataContextService.ExecuteQuery_SQL("SELECT * FROM SHIPPER_QRCODE LIMIT 0");
 
 										for (int i = 0; i < shipperData.ShipperQRCode_Data.Count(); i++)
 										{
@@ -420,7 +418,7 @@ namespace CL_SyncBatch
 
 											if (!string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].OldShipperQRCode))
 											{
-												var dt_0 = DataContext.ExecuteQuery_SQL("SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE WHERE SHIPPER_QRCODE = '" + shipperData.ShipperQRCode_Data[i].OldShipperQRCode + "' AND PLANT_ID = " + _plantId + " LIMIT 1");
+												var dt_0 = DataContextService.ExecuteQuery_SQL("SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE WHERE SHIPPER_QRCODE = '" + shipperData.ShipperQRCode_Data[i].OldShipperQRCode + "' AND PLANT_ID = " + _plantId + " LIMIT 1");
 
 												if (dt_0 != null && dt_0.Rows.Count > 0)
 													shipper_QrCode_Id_Old = (dt_0.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt_0.Rows[0][0]) : 0);
@@ -454,8 +452,8 @@ namespace CL_SyncBatch
 
 										Int64 bottle_QrCode_Id = 0;
 
-										dt = DataContext.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
-											$"WHERE LOWER(TABLE_SCHEMA) = '{DataContext.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'bottle_qrcode') " +
+										dt = DataContextService.ExecuteQuery_SQL("WITH TBL_AI AS (SELECT `AUTO_INCREMENT` ID FROM  INFORMATION_SCHEMA.TABLES " +
+											$"WHERE LOWER(TABLE_SCHEMA) = '{DataContextService.Get_DbSchemaName_SQL().ToLower()}' AND LOWER(TABLE_NAME) = 'bottle_qrcode') " +
 											", TBL_T AS (SELECT IFNULL(MAX(bottle_qrcode_sysId), 0) + 1 ID FROM bottle_qrcode) " +
 											"SELECT IF(X.ID > Z.ID, X.ID, Z.ID) ID " +
 											"FROM TBL_AI X, TBL_T Z");
@@ -464,7 +462,7 @@ namespace CL_SyncBatch
 											bottle_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
 
 
-										dtBottleQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM BOTTLE_QRCODE LIMIT 0");
+										dtBottleQrCode = DataContextService.ExecuteQuery_SQL("SELECT * FROM BOTTLE_QRCODE LIMIT 0");
 
 										for (int x = 0; x < shipperData.ShipperQRCode_Data.Count(); x++)
 										{
@@ -501,7 +499,7 @@ namespace CL_SyncBatch
 
 										if (dtShipperQrCode != null && dtShipperQrCode.Rows.Count > 0)
 										{
-											dtAvailable = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
+											dtAvailable = DataContextService.ExecuteQuery_SQL("SELECT PLANT_ID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
 															$"WHERE PLANT_ID = {_plantId} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id}");
 
 											int startIndex = 0;
@@ -554,7 +552,7 @@ namespace CL_SyncBatch
 
 													sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
 
-													IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
+													IsSuccess = DataContextService.ExecuteNonQuery_SQL(sqlQuery + sqlQuery_Select);
 												}
 
 												startIndex += 1000;
@@ -567,7 +565,7 @@ namespace CL_SyncBatch
 
 										if (dtBottleQrCode != null && dtBottleQrCode.Rows.Count > 0)
 										{
-											dtAvailable = DataContext.ExecuteQuery_SQL("SELECT PLANT_ID, BOTTLE_QRCODE FROM BOTTLE_QRCODE " +
+											dtAvailable = DataContextService.ExecuteQuery_SQL("SELECT PLANT_ID, BOTTLE_QRCODE FROM BOTTLE_QRCODE " +
 														$"WHERE PLANT_ID = {_plantId} AND SHIPPER_QRCODE_SYSID " +
 														$"IN (SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE " +
 														$"WHERE PLANT_ID = {_plantId} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id})");
@@ -637,7 +635,7 @@ namespace CL_SyncBatch
 
 															sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
 
-															IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery_Insert + sqlQuery_Select);
+															IsSuccess = DataContextService.ExecuteNonQuery_SQL(sqlQuery_Insert + sqlQuery_Select);
 														}
 													});
 
@@ -655,7 +653,7 @@ namespace CL_SyncBatch
 
 									if (IsSuccess == true)
 									{
-										dt = DataContext.ExecuteQuery($"SELECT SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API WHERE PLANT_ID = {_plantId} AND BATCH_NO = '{shipperData.Batch_no}'");
+										dt = DataContextService.ExecuteQuery($"SELECT SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API WHERE PLANT_ID = {_plantId} AND BATCH_NO = '{shipperData.Batch_no}'");
 
 										if (dt == null || dt.Rows.Count == 0 || (dt != null && dt.Rows.Count > 0 && (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt32(dt.Rows[0][0]) : 0) != shipper_Api_Id))
 										{
@@ -668,11 +666,11 @@ namespace CL_SyncBatch
 													", SYSDATE, " + _plantId + ", 1, SYSDATE, " + shipperData.ShipperQRCode_Data.Count() + "" +
 													",  '" + shipperData.MarketedBy + "', '" + shipperData.ManufacturedBy + "' )";
 
-											IsSuccess = DataContext.ExecuteNonQuery(sqlQuery);
+											IsSuccess = DataContextService.ExecuteNonQuery(sqlQuery);
 										}
 
 
-										dtAvailable = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
+										dtAvailable = DataContextService.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
 														$"WHERE PLANT_ID = {_plantId} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id}");
 
 										int startIndex = 0;
@@ -724,14 +722,14 @@ namespace CL_SyncBatch
 
 												sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
 
-												IsSuccess = DataContext.ExecuteNonQuery(sqlQuery + sqlQuery_Select);
+												IsSuccess = DataContextService.ExecuteNonQuery(sqlQuery + sqlQuery_Select);
 											}
 
 											startIndex += 1000;
 
 										}
 
-										dtAvailable = DataContext.ExecuteQuery("SELECT PLANT_ID, BOTTLE_QRCODE FROM BOTTLE_QRCODE " +
+										dtAvailable = DataContextService.ExecuteQuery("SELECT PLANT_ID, BOTTLE_QRCODE FROM BOTTLE_QRCODE " +
 													$"WHERE PLANT_ID = {_plantId} AND SHIPPER_QRCODE_SYSID " +
 													$"IN (SELECT SHIPPER_QRCODE_SYSID FROM SHIPPER_QRCODE " +
 													$"WHERE PLANT_ID = {_plantId} AND SHIPPER_QRCODE_API_SYSID = {shipper_Api_Id})");
@@ -801,7 +799,7 @@ namespace CL_SyncBatch
 
 														sqlQuery_Select = "SELECT * FROM (" + sqlQuery_Select + ") X ";
 
-														IsSuccess = DataContext.ExecuteNonQuery(sqlQuery_Insert + sqlQuery_Select);
+														IsSuccess = DataContextService.ExecuteNonQuery(sqlQuery_Insert + sqlQuery_Select);
 													}
 												});
 
@@ -836,7 +834,7 @@ namespace CL_SyncBatch
 								"SET API.total_shipper_qty = IFNULL(QC.CNT, 0) " +
 								$"WHERE API.PLANT_ID = {_plantId} AND API.BATCH_NO = '{shipperData.Batch_no}' ";
 
-							var IsSuccess = DataContext.ExecuteNonQuery_SQL(sqlQuery);
+							var IsSuccess = DataContextService.ExecuteNonQuery_SQL(sqlQuery);
 
 							sqlQuery = "UPDATE SHIPPER_QRCODE_API API SET API.TOTAL_SHIPPER_QTY = ( SELECT NVL(COUNT(*), 0) " +
 								"FROM SHIPPER_QRCODE QC WHERE (QC.PLANT_ID, QC.SHIPPER_QRCODE_API_SYSID) " +
@@ -845,7 +843,7 @@ namespace CL_SyncBatch
 								"AND QC.SHIPPER_QRCODE_API_SYSID = API.SHIPPER_QRCODE_API_SYSID) " +
 								$"WHERE API.PLANT_ID = {_plantId} AND API.BATCH_NO = '{shipperData.Batch_no}' ";
 
-							IsSuccess = DataContext.ExecuteNonQuery(sqlQuery);
+							IsSuccess = DataContextService.ExecuteNonQuery(sqlQuery);
 						}
 
 						#endregion
@@ -1025,7 +1023,7 @@ namespace CL_SyncBatch
 														   $", {(shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0)}" +
 														   $", '{fileUploadStatus}', '{error}' );";
 
-								var result = DataContext.ExecuteNonQuery_SQL(query_File);
+								var result = DataContextService.ExecuteNonQuery_SQL(query_File);
 
 								if (string.IsNullOrEmpty(error) || (listShipperQRCode_Duplicate != null && listShipperQRCode_Duplicate.Count() == 0))
 								{
@@ -1041,7 +1039,7 @@ namespace CL_SyncBatch
 									   $", {(shipperQRCodeData_Duplicate != null && shipperQRCodeData_Duplicate.Count() > 0 ? shipperQRCodeData_Duplicate.Count() : 0)}" +
 									   $", '{fileUploadStatus}', '{_plantCode}', '{error}' )";
 
-									result = DataContext.ExecuteNonQuery(query_File);
+									result = DataContextService.ExecuteNonQuery(query_File);
 								}
 							}
 							catch { }
@@ -1107,7 +1105,7 @@ namespace CL_SyncBatch
 														$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
 														$", STR_TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i'), 0, 0, 0, 0, '{fileUploadStatus}', '{error}' );";
 
-							var result = DataContext.ExecuteNonQuery_SQL(query_File);
+							var result = DataContextService.ExecuteNonQuery_SQL(query_File);
 
 						}
 						catch (Exception) { }

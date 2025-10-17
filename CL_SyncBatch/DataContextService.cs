@@ -5,20 +5,22 @@ using System.Data;
 
 namespace CL_SyncBatch
 {
-	public class DataContextService
+	public static class DataContextService
 	{
-		private readonly string _connectionString_SQL;
-		private readonly string _connectionString_Oracle;
-		private string filePath { get; set; }
+		private static string _connectionString_SQL;
+		private static string _connectionString_Oracle;
+		private static string filePath;
 
-		public DataContextService(string connectionString_SQL, string connectionString_Oracle, string filePath)
+		static DataContextService() { }
+
+		public static void Configure(string connectionString_SQL, string connectionString_Oracle, string filePath)
 		{
 			_connectionString_SQL = connectionString_SQL;
 			_connectionString_Oracle = connectionString_Oracle;
 			filePath = filePath;
 		}
 
-		public string Get_DbSchemaName_SQL()
+		public static string Get_DbSchemaName_SQL()
 		{
 			string keyValue = "database=";
 			int startIndex = _connectionString_SQL.IndexOf(keyValue) + keyValue.Length;
@@ -26,7 +28,7 @@ namespace CL_SyncBatch
 			return _connectionString_SQL.Substring(startIndex, endIndex - startIndex);
 		}
 
-		public DataTable ExecuteQuery(string sqlquery)
+		public static DataTable ExecuteQuery(string sqlquery)
 		{
 			DataTable dt = new DataTable();
 			try
@@ -47,7 +49,7 @@ namespace CL_SyncBatch
 			return dt;
 		}
 
-		public DataSet ExecuteQuery_DataSet(string sqlquerys)
+		public static DataSet ExecuteQuery_DataSet(string sqlquerys)
 		{
 			DataSet ds = new DataSet();
 
@@ -88,7 +90,7 @@ namespace CL_SyncBatch
 			return ds;
 		}
 
-		public bool ExecuteNonQuery(string query, List<OracleParameter> parameters = null)
+		public static bool ExecuteNonQuery(string query, List<OracleParameter> parameters = null)
 		{
 			var strParams = "";
 
@@ -134,7 +136,7 @@ namespace CL_SyncBatch
 		}
 
 
-		public bool ExecuteNonQuery_Delete(string query, OracleParameter[] parameters = null)
+		public static bool ExecuteNonQuery_Delete(string query, OracleParameter[] parameters = null)
 		{
 			try
 			{
@@ -158,7 +160,7 @@ namespace CL_SyncBatch
 			}
 		}
 
-		public string ExecuteInsertQuery(string query)
+		public static string ExecuteInsertQuery(string query)
 		{
 			using (OracleConnection con = new OracleConnection(_connectionString_Oracle))
 			{
@@ -187,7 +189,7 @@ namespace CL_SyncBatch
 			return "E|Opps!... Somthing went wrong to save data.";
 		}
 
-		public string ExecuteUpdateQuery(string query, List<OracleParameter> parameters = null)
+		public static string ExecuteUpdateQuery(string query, List<OracleParameter> parameters = null)
 		{
 			using (OracleConnection con = new OracleConnection(_connectionString_Oracle))
 			{
@@ -220,7 +222,7 @@ namespace CL_SyncBatch
 		}
 
 
-		public string ExecuteFunction(string strFunction, List<OracleParameter> parameters = null)
+		public static string ExecuteFunction(string strFunction, List<OracleParameter> parameters = null)
 		{
 			var strParams = "";
 
@@ -262,7 +264,7 @@ namespace CL_SyncBatch
 			return null;
 		}
 
-		public (bool, string, long) ExecuteStoredProcedure(string query, List<OracleParameter> parameters, bool returnParameter = false)
+		public static (bool, string, long) ExecuteStoredProcedure(string query, List<OracleParameter> parameters, bool returnParameter = false)
 		{
 			var response = string.Empty;
 
@@ -326,7 +328,7 @@ namespace CL_SyncBatch
 				return (false, "Opps!... Something went wrong.", 0);
 		}
 
-		//public string ExecuteStoredProcedure(string query, List<OracleParameter> parameters, bool returnParameter = false)
+		//public static string ExecuteStoredProcedure(string query, List<OracleParameter> parameters, bool returnParameter = false)
 		//{
 		//	var result = string.Empty;
 
@@ -379,7 +381,7 @@ namespace CL_SyncBatch
 		//	return result;
 		//}
 
-		public DataTable ExecuteStoredProcedure_DataTable(string query, List<OracleParameter> parameters, bool returnParameter = false)
+		public static DataTable ExecuteStoredProcedure_DataTable(string query, List<OracleParameter> parameters, bool returnParameter = false)
 		{
 			DataTable dt = new DataTable();
 
@@ -427,7 +429,7 @@ namespace CL_SyncBatch
 			return dt;
 		}
 
-		public DataSet ExecuteStoredProcedure_DataSet(string query, List<OracleParameter> parameters)
+		public static DataSet ExecuteStoredProcedure_DataSet(string query, List<OracleParameter> parameters)
 		{
 			//List<OracleParameter> oParams = new List<OracleParameter>();
 			//oParams.Add(new OracleParameter(reportParams.Split('=')[0], reportParams.Split('=')[1]));
@@ -478,7 +480,7 @@ namespace CL_SyncBatch
 			return ds;
 		}
 
-		public DataTable ExecuteQuery_SQL(string query)
+		public static DataTable ExecuteQuery_SQL(string query)
 		{
 			DataTable dt = new DataTable();
 
@@ -501,7 +503,7 @@ namespace CL_SyncBatch
 			return dt;
 		}
 
-		public DataSet ExecuteQuery_DataSet_SQL(string sqlquerys)
+		public static DataSet ExecuteQuery_DataSet_SQL(string sqlquerys)
 		{
 			DataSet ds = new DataSet();
 
@@ -536,7 +538,7 @@ namespace CL_SyncBatch
 			return ds;
 		}
 
-		public DataTable ExecuteStoredProcedure_DataTable_SQL(string query, List<MySqlParameter> parameters = null, bool returnParameter = false)
+		public static DataTable ExecuteStoredProcedure_DataTable_SQL(string query, List<MySqlParameter> parameters = null, bool returnParameter = false)
 		{
 			DataTable dt = new DataTable();
 
@@ -570,7 +572,7 @@ namespace CL_SyncBatch
 			return dt;
 		}
 
-		public DataSet ExecuteStoredProcedure_DataSet_SQL(string sp, List<MySqlParameter> spCol = null, bool returnParameter = false)
+		public static DataSet ExecuteStoredProcedure_DataSet_SQL(string sp, List<MySqlParameter> spCol = null, bool returnParameter = false)
 		{
 			try
 			{
@@ -594,13 +596,13 @@ namespace CL_SyncBatch
 			}
 			catch (Exception ex)
 			{
-				Write_Log($"Error | DataBase | ExecuteStoredProcedure_DataSet_SQL | { sp } | {Environment.NewLine}Error: {JsonConvert.SerializeObject(ex)}");
+				Write_Log($"Error | DataBase | ExecuteStoredProcedure_DataSet_SQL | {sp} | {Environment.NewLine}Error: {JsonConvert.SerializeObject(ex)}");
 
 				return null;
 			}
 		}
 
-		public bool ExecuteNonQuery_SQL(string query, List<MySqlParameter> parameters = null)
+		public static bool ExecuteNonQuery_SQL(string query, List<MySqlParameter> parameters = null)
 		{
 			try
 			{
@@ -630,7 +632,7 @@ namespace CL_SyncBatch
 			}
 		}
 
-		public (bool, string, long) ExecuteStoredProcedure_SQL(string query, List<MySqlParameter> parameters, bool returnParameter = false)
+		public static (bool, string, long) ExecuteStoredProcedure_SQL(string query, List<MySqlParameter> parameters, bool returnParameter = false)
 		{
 			var response = string.Empty;
 
@@ -697,7 +699,7 @@ namespace CL_SyncBatch
 				return (false, "Opps!... Something went wrong.", 0);
 		}
 
-		public bool ExecuteNonQuery_Delete_SQL(string query, List<MySqlParameter> parameters = null)
+		public static bool ExecuteNonQuery_Delete_SQL(string query, List<MySqlParameter> parameters = null)
 		{
 			try
 			{
@@ -727,14 +729,15 @@ namespace CL_SyncBatch
 		}
 
 
-		private void Write_Log(string text)
+		private static void Write_Log(string text)
 		{
 			if (!string.IsNullOrEmpty(text))
 			{
 				try
 				{
-					var _filePath = filePath.Replace("<YYYYMMDD>", DateTime.Now.ToString("yyyyMMdd"));
-					_filePath = _filePath.Replace("<HH>", DateTime.Now.ToString("HH"));
+					if (string.IsNullOrEmpty(filePath)) filePath = "\\\\IFFCOKRL-PROD\\KalolReports\\LogFile\\<YYYYMMDD>\\PreRequesite_<TT>.txt";
+
+					var _filePath = filePath.Replace("<YYYYMMDD>", DateTime.Now.ToString("yyyyMMdd")).Replace("<HH>", DateTime.Now.ToString("HH"));
 
 					if (!System.IO.Directory.Exists(Path.GetDirectoryName(_filePath)))
 						System.IO.Directory.CreateDirectory(Path.GetDirectoryName(_filePath));

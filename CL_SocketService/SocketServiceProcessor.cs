@@ -18,10 +18,9 @@ namespace CL_SocketService
 		private string _errorMessage;
 		private (string QRCode, string State, DateTime DT) _receivedData_Prev;
 
-		private readonly SharedDataService _sharedDataService;
-		private readonly DataContextService DataContext;
+		private readonly SharedDataService_ _sharedDataService;
+		private DataContextService DataContext;
 		private Socket listenerSocket;
-		private readonly Socket printerSocket;
 		private readonly byte[] _buffer = new byte[1024];
 
 		private Socket clientSocket = null;
@@ -43,15 +42,16 @@ namespace CL_SocketService
 		private readonly string plantCode;
 		private readonly long plantId;
 
-		public SocketServiceProcessor(SharedDataService sharedDataService, long _plantId, string _plantCode, bool _MDA_QR_Scan_Log_IsActive, bool _MDA_QR_Scan_Response_Demo, int _MDA_QR_Scan_Delay_Sec, string _MDA_QR_Scan_Log_File_Path, string _iffco_url, string _connectionString_SQL)
+		public SocketServiceProcessor(SharedDataService_ sharedDataService)
+		{
+			_sharedDataService = sharedDataService;
+		}
+
+		public void Configure(long _plantId, bool _MDA_QR_Scan_Log_IsActive, bool _MDA_QR_Scan_Response_Demo, int _MDA_QR_Scan_Delay_Sec, string _MDA_QR_Scan_Log_File_Path, string _iffco_url, string _connectionString_SQL)
 		{
 			DataContext = new DataContextService(_connectionString_SQL, _MDA_QR_Scan_Log_File_Path, _MDA_QR_Scan_Log_IsActive);
 
 			PLANT_ID = _plantId;
-
-			_sharedDataService = sharedDataService;
-			listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-			printerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
 			MDA_QR_Scan_Log_IsActive = _MDA_QR_Scan_Log_IsActive;
 
@@ -62,7 +62,6 @@ namespace CL_SocketService
 			filePath = _MDA_QR_Scan_Log_File_Path;
 
 			iffco_url = _iffco_url;
-
 		}
 
 
@@ -555,7 +554,7 @@ namespace CL_SocketService
 	}
 
 
-	public class SharedDataService
+	public class SharedDataService_
 	{
 		private ConcurrentDictionary<long, (string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)> _sharedData = new ConcurrentDictionary<long, (string qr_code, string flag, Int64 id, Int64 requiredShipper, Int64 loaddedShipper, Int64 rejectShipper)>();
 
