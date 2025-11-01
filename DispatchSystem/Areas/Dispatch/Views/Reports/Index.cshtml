@@ -9,7 +9,7 @@
 			white-space: break-spaces;
 		}
 
-		tr.expandable-body td{
+		tr.expandable-body td {
 			white-space: normal !important;
 		}
 
@@ -68,6 +68,10 @@
 				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "DS_MDA")
 				{
 					<h3 class="font-weight-bold">MDA Wise Dispatch Summary Report</h3>
+				}
+				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "DS_BAT")
+				{
+					<h3 class="font-weight-bold">Batch Wise Dispatch Summary Report</h3>
 				}
 				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "BL")
 				{
@@ -322,42 +326,59 @@
 										}
 										else if (!string.IsNullOrEmpty(Model.Status) && Convert.ToString(Model.Status).IndexOf("DS") == 0)
 										{
-											<div class="row no-gutters p-0 m-0">
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">MDA No</label>
-													<input type="text" class="form-control form-control-sm" id="MDA_No" autocomplete="off">
+											if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "DS_BAT")
+											{
+												<div class="row no-gutters p-0 m-0">
+													<div class="form-group col-md-3 mx-3">
+														<label class="col-form-label" style="align-content:start">From Date</label>
+														<input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-value="@DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+													</div>
+													<div class="form-group col-md-3 mx-3">
+														<label class="col-form-label" style="align-content:start">To Date</label>
+														<input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+													</div>
 												</div>
-												@if (!Convert.ToString(Model.Status).Contains("DS_COUNT"))
-												{
+											}
+											else
+											{
+												<div class="row no-gutters p-0 m-0">
 													<div class="form-group col-md-3 mx-3">
-														<label class="col-form-label" style="align-content:start">Truck No</label>
-														<input type="text" class="form-control form-control-sm" id="Truck_No" autocomplete="off">
+														<label class="col-form-label" style="align-content:start">MDA No</label>
+														<input type="text" class="form-control form-control-sm" id="MDA_No" autocomplete="off">
 													</div>
-													<div class="form-group col-md-3 mx-3">
-														<label class="col-form-label" style="align-content:start">Party Name</label>
-														<input type="text" class="form-control form-control-sm" id="PartyName" autocomplete="off">
-													</div>
-												}
+													@if (!Convert.ToString(Model.Status).Contains("DS_COUNT"))
+													{
+														<div class="form-group col-md-3 mx-3">
+															<label class="col-form-label" style="align-content:start">Truck No</label>
+															<input type="text" class="form-control form-control-sm" id="Truck_No" autocomplete="off">
+														</div>
+														<div class="form-group col-md-3 mx-3">
+															<label class="col-form-label" style="align-content:start">Party Name</label>
+															<input type="text" class="form-control form-control-sm" id="PartyName" autocomplete="off">
+														</div>
+													}
 
-											</div>
-											<div class="row no-gutters p-0 m-0">
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">MDA Date From</label>
-													<input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-value="@DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
 												</div>
-												<div class="form-group col-md-3 mx-3">
-													<label class="col-form-label" style="align-content:start">MDA Date To</label>
-													<input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
-												</div>
-												@if (!Convert.ToString(Model.Status).Contains("DS_COUNT"))
-												{
+												<div class="row no-gutters p-0 m-0">
 													<div class="form-group col-md-3 mx-3">
-														<label class="col-form-label" style="align-content:start">Destination On</label>
-														<input type="text" class="form-control form-control-sm" id="Destination" autocomplete="off">
+														<label class="col-form-label" style="align-content:start">MDA Date From</label>
+														<input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-value="@DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
 													</div>
-												}
+													<div class="form-group col-md-3 mx-3">
+														<label class="col-form-label" style="align-content:start">MDA Date To</label>
+														<input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+													</div>
+													@if (!Convert.ToString(Model.Status).Contains("DS_COUNT"))
+													{
+														<div class="form-group col-md-3 mx-3">
+															<label class="col-form-label" style="align-content:start">Destination On</label>
+															<input type="text" class="form-control form-control-sm" id="Destination" autocomplete="off">
+														</div>
+													}
 
-											</div>
+												</div>
+											}
+
 											<div class="form-group row col-sm-12 text-center ml-5 pl-5">
 												<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
 											</div>
@@ -449,7 +470,7 @@
 		}
 
 		function fnLoad_DataTable() {
-			
+
 			ShowLoader(true);
 
 			$('#div_DataTable').html('');
@@ -487,7 +508,7 @@
 						url = '@Url.Action("GetData_BatchLogFile", "Reports")?searchTerm=' + searchTerm + '&FromDate=' + FromDate + '&ToDate=' + ToDate;
 					}
 					else if (inputReportType == "BL_LIVE") {
-						
+
 						var FromDate = $('#FromDate').val();
 						var ToDate = $('#ToDate').val();
 
@@ -578,19 +599,27 @@
 
 				var FromDate = $('#FromDate').val();
 				var ToDate = $('#ToDate').val();
-				var MDA_No = $('#MDA_No').val();
 
 				var url = '';
 
-				if (inputReportType != "DS_COUNT") {
+				if (inputReportType == "DS_BAT") {
 
+					url = '@(Url.Action("GetData_DispatchSummary_BatchWise", "Reports"))?Report_Type=@(Convert.ToString(Model.Status))&FromDate=' + FromDate + '&ToDate=' + ToDate;
+				}
+				else if (inputReportType != "DS_COUNT") {
+
+					var MDA_No = $('#MDA_No').val();
 					var Truck_No = $('#Truck_No').val();
 					var PartyName = $('#PartyName').val();
 					var Destination = $('#Destination').val();
 
 					url = '@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=@(Convert.ToString(Model.Status))&MDA_No=' + MDA_No + '&Truck_No=' + Truck_No + '&PartyName=' + PartyName + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&Destination=' + Destination;
 				}
-				else { url = '@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=@(Convert.ToString(Model.Status))&MDA_No=' + MDA_No + '&FromDate=' + FromDate + '&ToDate=' + ToDate; }
+				else {
+
+					var MDA_No = $('#MDA_No').val();
+					url = '@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=@(Convert.ToString(Model.Status))&MDA_No=' + MDA_No + '&FromDate=' + FromDate + '&ToDate=' + ToDate;
+				}
 
 
 				$.ajax({
@@ -787,6 +816,12 @@
 			if (flag === 'DS_MDA' && flag != '') {
 				$("#table_Common").table2excel({
 					filename: "MDAWiseDispatchSummaryReport.xls"
+				});
+			}
+			
+			if (flag === 'DS_BAT' && flag != '') {
+				$("#table_Common").table2excel({
+					filename: "BatchWiseDispatchSummaryReport.xls"
 				});
 			}
 

@@ -1,7 +1,11 @@
 ﻿@using System.Globalization;
 @model (string Report_Type, string PageTitle, string PlantName, dynamic objFilter, List<MDA_Status> List, bool isPrint)
 
-@if (Model.Report_Type == "DS")
+@if (Model.Report_Type == "DS_BAT")
+{
+	ViewData["Title"] = "Batch Wise Dispatch Summary Report";
+}
+else if (Model.Report_Type == "DS")
 {
 	ViewData["Title"] = "MDA Dispatch Summary Report";
 }
@@ -25,7 +29,11 @@ else
 				</div>
 				<br />
 				<div class="col-sm-12" style="text-align:center;">
-					@if (Model.Report_Type == "DS")
+					@if (Model.Report_Type == "DS_BAT")
+					{
+						<h3 class="font-weight-bold">Batch Wise Dispatch Summary Report</h3>
+					}
+					else if (Model.Report_Type == "DS")
 					{
 						<h3 class="font-weight-bold">MDA Dispatch Summary Report</h3>
 					}
@@ -55,7 +63,11 @@ else
 		<div class="container-fluid">
 			<div class="row mb-2">
 				<div class="col-sm-12" style="text-align:center;">
-					@if (Model.Report_Type == "DS")
+					@if (Model.Report_Type == "DS_BAT")
+					{
+						<h2 class="font-weight-bold" id="lableReportTitle"><b>Batch Wise Dispatch Summary Report</b></h2>
+					}
+					else if (Model.Report_Type == "DS")
 					{
 						<h2 class="font-weight-bold" id="lableReportTitle"><b>MDA Dispatch Summary Report</b></h2>
 					}
@@ -70,7 +82,14 @@ else
 	</div>
 
 	<div class="form-group row mt-2">
-		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=@(Model.Report_Type)&MDA_No=@(Model.objFilter.MDA_No)&Truck_No=@(Model.objFilter.Truck_No)&PartyName=@(Model.objFilter.PartyName)&FromDate=@(Model.objFilter.FromDate)&ToDate=@(Model.objFilter.ToDate)&Destination=@(Model.objFilter.Destination)&isPrint=true')">Print</button>
+		@if (Model.Report_Type == "DS_BAT")
+		{
+			<button class="btn btn-info mr-2" onclick="fnPrint_Report('@(Url.Action("GetData_DispatchSummary_BatchWise", "Reports"))?Report_Type=@(Model.Report_Type)&FromDate=@(Model.objFilter.FromDate)&ToDate=@(Model.objFilter.ToDate)&isPrint=true')">Print</button>
+		}
+		else
+		{
+			<button class="btn btn-info mr-2" onclick="fnPrint_Report('@(Url.Action("GetData_DispatchSummary", "Reports"))?Report_Type=@(Model.Report_Type)&MDA_No=@(Model.objFilter.MDA_No)&Truck_No=@(Model.objFilter.Truck_No)&PartyName=@(Model.objFilter.PartyName)&FromDate=@(Model.objFilter.FromDate)&ToDate=@(Model.objFilter.ToDate)&Destination=@(Model.objFilter.Destination)&isPrint=true')">Print</button>
+		}
 		<button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('@Model.Report_Type')">Export</button>
 	</div>
 }
@@ -199,6 +218,51 @@ else
 					}
 				}
 			</tbody>
+		}
+		else if (Model.Report_Type == "DS_BAT")
+		{
+			var listBatch = Model.List.GroupBy(x => new { x.BatchNo, x.ManufacturingDate })
+			.Select(g => new { BatchNo = g.Key.BatchNo, ManufacturingDate = g.Key.ManufacturingDate, Items = g.ToList() }).ToList();
+
+			@foreach (var batch in listBatch)
+			{
+				<thead>
+					<tr style="border-bottom: 2px solid #dee2e6;">
+						<th hidden>#</th>
+						<th colspan="7">Batch No. : @batch.BatchNo &nbsp; &nbsp; Batch Date : @batch.ManufacturingDate</th>
+					</tr>
+					<tr>
+						<th hidden>#</th>
+						<th width="10%" class="text-center">MDA No.</th>
+						<th width="10%" class="text-center">MDA Date</th>
+						<th width="10%" class="text-center">Location</th>
+						<th width="10%" class="text-center">Society Name</th>
+						<th width="10%" class="text-center">No. of Shipper</th>
+						<th width="10%" class="text-center">No. of Bottle</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (batch.Items != null && batch.Items.Count() > 0)
+					{
+						@foreach (var item in batch.Items.OrderBy(x => x.MDANo).ToList())
+						{
+							<tr>
+								<td hidden>@item.SrNo</td>
+								<td class="text-center">@item.MDANo</td>
+								<td class="text-center">@item.MDAReceiveDate</td>
+								<td class="text-center">@item.Destination</td>
+								<td class="text-center">@item.CustomerName</td>
+								<td class="text-center">@item.MDAQty</td>
+								<td class="text-center">@item.LoadedQty</td>
+							</tr>
+						}
+						<tr>
+							<th colspan="8">&nbsp;</th>
+						</tr>
+					}
+				</tbody>
+			}
+
 		}
 	</table>
 </div>

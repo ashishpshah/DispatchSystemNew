@@ -404,6 +404,89 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 		}
 
 		[HttpGet]
+		public IActionResult GetData_DispatchSummary_BatchWise(string Report_Type = null, string FromDate = null, string ToDate = null, bool isPrint = false)
+		{
+			List<MDA_Status> result = new List<MDA_Status>();
+
+			var ds = new DataSet();
+
+			//if (!string.IsNullOrEmpty(FromDate) && !string.IsNullOrEmpty(ToDate))
+			try
+			{
+				if (AppHttpContextAccessor.IsCloudDBActive)
+				{
+					List<OracleParameter> oParams = new List<OracleParameter>();
+
+					oParams.Add(new OracleParameter("P_REPORT_TYPE", OracleDbType.Varchar2) { Value = Report_Type });
+					oParams.Add(new OracleParameter("P_FROM_DATE", OracleDbType.Varchar2) { Value = FromDate });
+					oParams.Add(new OracleParameter("P_TO_DATE", OracleDbType.Varchar2) { Value = ToDate });
+					oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+					oParams.Add(new OracleParameter("P_USER_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
+					oParams.Add(new OracleParameter("P_ROLE_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.ROLE_ID) });
+					oParams.Add(new OracleParameter("P_MENU_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.MENU_ID) });
+					oParams.Add(new OracleParameter("P_PAGE_TITLE", OracleDbType.RefCursor) { Direction = ParameterDirection.Output });
+					oParams.Add(new OracleParameter("P_RESULT", OracleDbType.RefCursor) { Direction = ParameterDirection.Output });
+
+
+					ds = DataContext.ExecuteStoredProcedure_DataSet("PC_REPORT_DISPATCH_SUMMARY_BATCHWISE", oParams);
+				}
+				else
+				{
+					List<MySqlParameter> oParams = new List<MySqlParameter>();
+
+					oParams.Add(new MySqlParameter("P_REPORT_TYPE", MySqlDbType.VarString) { Value = Report_Type });
+					oParams.Add(new MySqlParameter("P_FROM_DATE", MySqlDbType.VarString) { Value = FromDate });
+					oParams.Add(new MySqlParameter("P_TO_DATE", MySqlDbType.VarString) { Value = ToDate });
+					oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+					oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
+					oParams.Add(new MySqlParameter("P_ROLE_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.ROLE_ID) });
+					oParams.Add(new MySqlParameter("P_MENU_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.MENU_ID) });
+
+					ds = DataContext.ExecuteStoredProcedure_DataSet_SQL("PC_REPORT_DISPATCH_SUMMARY_BATCHWISE", oParams, true);
+				}
+
+
+				if (ds != null && ds.Tables.Count > 1 && ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+				{
+					foreach (DataRow dr in ds.Tables[1].Rows)
+						result.Add(new MDA_Status
+						{
+							SrNo = dr["RNUM"] != DBNull.Value ? Convert.ToString(dr["RNUM"]) : "",
+							BatchNo = dr["BATCH_NO"] != DBNull.Value ? Convert.ToString(dr["BATCH_NO"]) : "",
+							ManufacturingDate = dr["BATCH_DATE"] != DBNull.Value ? Convert.ToString(dr["BATCH_DATE"]) : "",
+							MDANo = dr["MDA_NO"] != DBNull.Value ? Convert.ToString(dr["MDA_NO"]) : "",
+							MDAReceiveDate = dr["MDA_DT"] != DBNull.Value ? Convert.ToString(dr["MDA_DT"]) : "",
+							Destination = dr["DESTINATION"] != DBNull.Value ? Convert.ToString(dr["DESTINATION"]) : "",
+							CustomerName = dr["PARTY_NAME"] != DBNull.Value ? Convert.ToString(dr["PARTY_NAME"]) : "",
+							MDAQty = dr["Shipper_Qty"] != DBNull.Value ? Convert.ToInt64(dr["Shipper_Qty"]) : 0,
+							LoadedQty = dr["Bottle_Qty"] != DBNull.Value ? Convert.ToInt64(dr["Bottle_Qty"]) : 0
+						});
+				}
+
+			}
+			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }
+
+			//var PageTitle = (ds != null && ds.Tables.Count > 0 && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0 && ds.Tables[0].Rows[0][0] != DBNull.Value) ? Convert.ToString(ds.Tables[0].Rows[0][0]) : "";
+
+			var PlantName = (ds != null && ds.Tables.Count > 0 && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0 && ds.Tables[0].Rows[0][1] != DBNull.Value) ? Convert.ToString(ds.Tables[0].Rows[0][1]) : "";
+
+			var PageTitle = "";
+
+			if (!string.IsNullOrEmpty(FromDate))
+				PageTitle += $"{(!string.IsNullOrEmpty(PageTitle) ? " and " : "")}From Date : {FromDate.ToUpper()}";
+
+			if (!string.IsNullOrEmpty(ToDate))
+				PageTitle += $"{(!string.IsNullOrEmpty(PageTitle) ? " and " : "")}To Date : {ToDate.ToUpper()}";
+
+			dynamic objFilter = new { FromDate = FromDate, ToDate = ToDate };
+
+			if (isPrint == true)
+				return View("_Partial_DispatchSummary", (Report_Type, PageTitle, PlantName, objFilter, result, isPrint));
+			else
+				return PartialView("_Partial_DispatchSummary", (Report_Type, PageTitle, PlantName, objFilter, result, isPrint));
+		}
+
+		[HttpGet]
 		public IActionResult GetData_KnowYourBatch(string searchTerm, bool withDetail = false, bool isPrint = false)
 		{
 			var result = new List<KnowYourBatch>();
