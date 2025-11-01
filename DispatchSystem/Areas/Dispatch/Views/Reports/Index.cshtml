@@ -338,6 +338,11 @@
 														<input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
 													</div>
 												</div>
+												<div class="form-group row col-sm-12 text-center ml-5 pl-5">
+													<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable_BatchWise('DI')">Dishpatched</button>
+
+													<button type="button" class="btn btn-success btn-flat ml-3" onclick="fnLoad_DataTable_BatchWise('IS')">In Stock</button>
+												</div>
 											}
 											else
 											{
@@ -377,11 +382,12 @@
 													}
 
 												</div>
+
+												<div class="form-group row col-sm-12 text-center ml-5 pl-5">
+													<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
+												</div>
 											}
 
-											<div class="form-group row col-sm-12 text-center ml-5 pl-5">
-												<button type="button" class="btn btn-info btn-flat" onclick="fnLoad_DataTable()">Search</button>
-											</div>
 										}
 
 
@@ -466,6 +472,52 @@
 			newWin.document.appendChild(tagToAdd_html);
 
 			newWin.document.close();
+
+		}
+
+		function fnLoad_DataTable_BatchWise($type) {
+
+			ShowLoader(true);
+
+			$('#div_DataTable').html('');
+
+			var inputReportType = $('#inputReportType').val();
+
+			if (typeof inputReportType != 'undefined' && inputReportType != null && inputReportType.length > 0 && inputReportType == "DS_BAT") {
+
+				var FromDate = $('#FromDate').val();
+				var ToDate = $('#ToDate').val();
+
+				var url = '@(Url.Action("GetData_DispatchSummary_BatchWise", "Reports"))?Report_Type=@(Convert.ToString(Model.Status))&FromDate=' + FromDate + '&ToDate=' + ToDate + '&DataType=' + $type;
+
+				$.ajax({
+					type: "GET",
+					url: url,
+					data: null,
+					contentType: "application/json; charset=utf-8",
+					dataType: "html",
+					success: function (response) {
+
+						setTimeout(function () {
+
+							$('#div_DataTable').html(response);
+
+							try { fnLoadCommonTable('#div_DataTable #table_Common'); } catch { }
+
+							ShowLoader(false);
+
+						}, 1000);
+
+					},
+					failure: function (response) {
+						CommonAlert_Error(null)
+					},
+					error: function (response) {
+						CommonAlert_Error(null)
+					}
+				});
+
+			}
 
 		}
 
@@ -818,7 +870,7 @@
 					filename: "MDAWiseDispatchSummaryReport.xls"
 				});
 			}
-			
+
 			if (flag === 'DS_BAT' && flag != '') {
 				$("#table_Common").table2excel({
 					filename: "BatchWiseDispatchSummaryReport.xls"

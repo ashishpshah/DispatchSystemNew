@@ -221,48 +221,81 @@ else
 		}
 		else if (Model.Report_Type == "DS_BAT")
 		{
-			var listBatch = Model.List.GroupBy(x => new { x.BatchNo, x.ManufacturingDate })
-			.Select(g => new { BatchNo = g.Key.BatchNo, ManufacturingDate = g.Key.ManufacturingDate, Items = g.ToList() }).ToList();
+			if (Model.objFilter.DataType == "DI")
+			{
+				var listBatch = Model.List.GroupBy(x => new { x.BatchNo, x.ManufacturingDate })
+				.Select(g => new { BatchNo = g.Key.BatchNo, ManufacturingDate = g.Key.ManufacturingDate, Items = g.ToList() }).ToList();
 
-			@foreach (var batch in listBatch)
+				@foreach (var batch in listBatch.OrderBy(x => x.ManufacturingDate))
+				{
+					<thead>
+						<tr style="border-bottom: 2px solid #dee2e6;">
+							<th hidden>#</th>
+							<th colspan="7">Batch No. : @batch.BatchNo &nbsp; &nbsp; Batch Date : @batch.ManufacturingDate</th>
+						</tr>
+						<tr>
+							<th hidden>#</th>
+							<th width="10%" class="text-center">MDA No.</th>
+							<th width="10%" class="text-center">MDA Date</th>
+							<th width="10%" class="text-center">Location</th>
+							<th width="10%" class="text-center">Society Name</th>
+							<th width="10%" class="text-center">No. of Shipper</th>
+							<th width="10%" class="text-center">No. of Bottle</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (batch.Items != null && batch.Items.Count() > 0)
+						{
+							@foreach (var item in batch.Items.OrderBy(x => x.MDANo).ToList())
+							{
+								<tr>
+									<td hidden>@item.SrNo</td>
+									<td class="text-center">@item.MDANo</td>
+									<td class="text-center">@item.MDAReceiveDate</td>
+									<td class="text-center">@item.Destination</td>
+									<td class="text-center">@item.CustomerName</td>
+									<td class="text-center">@item.MDAQty</td>
+									<td class="text-center">@item.LoadedQty</td>
+								</tr>
+							}
+							<tr>
+								<th colspan="8">&nbsp;</th>
+							</tr>
+						}
+					</tbody>
+				}
+
+			}
+			else
 			{
 				<thead>
-					<tr style="border-bottom: 2px solid #dee2e6;">
-						<th hidden>#</th>
-						<th colspan="7">Batch No. : @batch.BatchNo &nbsp; &nbsp; Batch Date : @batch.ManufacturingDate</th>
-					</tr>
 					<tr>
 						<th hidden>#</th>
-						<th width="10%" class="text-center">MDA No.</th>
-						<th width="10%" class="text-center">MDA Date</th>
-						<th width="10%" class="text-center">Location</th>
-						<th width="10%" class="text-center">Society Name</th>
+						<th width="10%" class="text-center">Batch No.</th>
+						<th width="10%" class="text-center">Batch Date</th>
+						<th width="10%" class="text-center">Expiry Date</th>
 						<th width="10%" class="text-center">No. of Shipper</th>
 						<th width="10%" class="text-center">No. of Bottle</th>
 					</tr>
 				</thead>
 				<tbody>
-					@if (batch.Items != null && batch.Items.Count() > 0)
+					@if (Model.List != null && Model.List.Count() > 0)
 					{
-						@foreach (var item in batch.Items.OrderBy(x => x.MDANo).ToList())
+						@foreach (var item in Model.List.OrderBy(x => x.SrNo))
 						{
 							<tr>
 								<td hidden>@item.SrNo</td>
-								<td class="text-center">@item.MDANo</td>
-								<td class="text-center">@item.MDAReceiveDate</td>
-								<td class="text-center">@item.Destination</td>
-								<td class="text-center">@item.CustomerName</td>
+								<td class="text-center">@item.BatchNo</td>
+								<td class="text-center">@item.ManufacturingDate</td>
+								<td class="text-center">@item.ExpiryDate</td>
 								<td class="text-center">@item.MDAQty</td>
 								<td class="text-center">@item.LoadedQty</td>
 							</tr>
 						}
-						<tr>
-							<th colspan="8">&nbsp;</th>
-						</tr>
 					}
 				</tbody>
-			}
 
+			}
 		}
 	</table>
 </div>

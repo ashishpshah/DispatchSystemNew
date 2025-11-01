@@ -404,7 +404,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 		}
 
 		[HttpGet]
-		public IActionResult GetData_DispatchSummary_BatchWise(string Report_Type = null, string FromDate = null, string ToDate = null, bool isPrint = false)
+		public IActionResult GetData_DispatchSummary_BatchWise(string Report_Type = null, string FromDate = null, string ToDate = null, string DataType = null, bool isPrint = false)
 		{
 			List<MDA_Status> result = new List<MDA_Status>();
 
@@ -418,6 +418,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 					List<OracleParameter> oParams = new List<OracleParameter>();
 
 					oParams.Add(new OracleParameter("P_REPORT_TYPE", OracleDbType.Varchar2) { Value = Report_Type });
+					oParams.Add(new OracleParameter("P_DATA_TYPE", OracleDbType.Varchar2) { Value = DataType });
 					oParams.Add(new OracleParameter("P_FROM_DATE", OracleDbType.Varchar2) { Value = FromDate });
 					oParams.Add(new OracleParameter("P_TO_DATE", OracleDbType.Varchar2) { Value = ToDate });
 					oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
@@ -454,6 +455,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 							SrNo = dr["RNUM"] != DBNull.Value ? Convert.ToString(dr["RNUM"]) : "",
 							BatchNo = dr["BATCH_NO"] != DBNull.Value ? Convert.ToString(dr["BATCH_NO"]) : "",
 							ManufacturingDate = dr["BATCH_DATE"] != DBNull.Value ? Convert.ToString(dr["BATCH_DATE"]) : "",
+							ExpiryDate = dr["EXPIRY_DATE"] != DBNull.Value ? Convert.ToString(dr["EXPIRY_DATE"]) : "",
 							MDANo = dr["MDA_NO"] != DBNull.Value ? Convert.ToString(dr["MDA_NO"]) : "",
 							MDAReceiveDate = dr["MDA_DT"] != DBNull.Value ? Convert.ToString(dr["MDA_DT"]) : "",
 							Destination = dr["DESTINATION"] != DBNull.Value ? Convert.ToString(dr["DESTINATION"]) : "",
@@ -478,7 +480,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 			if (!string.IsNullOrEmpty(ToDate))
 				PageTitle += $"{(!string.IsNullOrEmpty(PageTitle) ? " and " : "")}To Date : {ToDate.ToUpper()}";
 
-			dynamic objFilter = new { FromDate = FromDate, ToDate = ToDate };
+			dynamic objFilter = new { FromDate = FromDate, ToDate = ToDate, DataType = DataType };
 
 			if (isPrint == true)
 				return View("_Partial_DispatchSummary", (Report_Type, PageTitle, PlantName, objFilter, result, isPrint));
