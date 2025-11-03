@@ -95,7 +95,7 @@ $(document).ready(function () {
 
 
         $('.datepicker').on('cancel.daterangepicker', function (ev, picker) {
-            
+
             $(this).val('');
             $(this).trigger('change');
         });
@@ -354,7 +354,7 @@ function ajaxGet($url, $isReturnToForm, $redirectUrl) {
                         if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                             CommonConfirmed_Success(response.message, response.redirectURL, null);
                         else
-                            if (typeof $isReturnToForm != 'undefined'  && $isReturnToForm != null && $isReturnToForm != '' && $isReturnToForm == true)
+                            if (typeof $isReturnToForm != 'undefined' && $isReturnToForm != null && $isReturnToForm != '' && $isReturnToForm == true)
                                 CommonConfirmed_Success(response.message, fnSubmitForm_Success, [response, 'AJAX']);
                             else
                                 if (typeof $redirectUrl != 'undefined' && $redirectUrl != null && $redirectUrl != '' && $redirectUrl.length > 0)
@@ -365,7 +365,7 @@ function ajaxGet($url, $isReturnToForm, $redirectUrl) {
                         if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                             window.location = response.redirectURL;
                         else
-                            if (typeof $isReturnToForm != 'undefined'  && $isReturnToForm != null && $isReturnToForm != '' && $isReturnToForm == true)
+                            if (typeof $isReturnToForm != 'undefined' && $isReturnToForm != null && $isReturnToForm != '' && $isReturnToForm == true)
                                 fnSubmitForm_Success(response, 'AJAX');
                             else
                                 if (typeof $redirectUrl != 'undefined' && $redirectUrl != null && $redirectUrl != '' && $redirectUrl.length > 0)
@@ -1050,7 +1050,7 @@ function CommonConfirmed_Success_Print(msg, $url_print, functionName, functionPa
         denyButtonText: `Print Slip`
     }).then((result) => {
 
-        
+
 
         if (result.isConfirmed && typeof functionName != 'undefined' && functionName != null && functionName != '')
             if (typeof functionParams != 'undefined' && functionParams != null)
@@ -1116,7 +1116,7 @@ function fnLoadCommonTable($selector) {
         $($selector).DataTable().destroy();
     }
 
-    $($selector).DataTable({
+    var $table = $($selector).DataTable({
         paging: true,
         lengthChange: true,
         searching: true,
@@ -1296,41 +1296,51 @@ function fnLoadCommonTable_Buttons($selector) {
         //buttons: [{ extend: "csv", title: $title, className: "mr-2" },
         //{ extend: "excel", title: $title, className: "mr-2" },
         //{ extend: "pdfHtml5", title: $title, className: "mr-2" }]
-        buttons: [{
-            extend: "csv",
-            className: "btn-flat btn-info mx-2 px-3",
-            titleAttr: 'Export in CSV',
-            text: 'CSV',
-            filename: $title,
-            init: function (api, node, config) { $(node).removeClass('btn-default') }
-        },
-        {
-            extend: "excel",
-            className: "btn-flat btn-success mx-2 px-3",
-            titleAttr: 'Export in Excel',
-            text: 'Excel',
-            filename: $title,
-            init: function (api, node, config) { $(node).removeClass('btn-default') }
-        },
-        {
-            extend: "pdfHtml5",
-            className: "btn-flat btn-danger mx-2 px-3",
-            titleAttr: 'Export in PDF',
-            text: 'PDF',
-            exportOptions: {
-                modifier: {
-                    page: 'all' // Export all pages
+        buttons: [
+            {
+                extend: "pdfHtml5",
+                download: 'open',
+                className: "btn-flat btn-danger mx-2 px-3",
+                titleAttr: 'Export in PDF',
+                text: 'PDF',
+                title: null, // removes title,
+                exportOptions: {
+                    columns: ':visible', // Export only visible columns
+                    stripHtml: true,
+                    modifier: {
+                        page: 'all' // Export all pages
+                    }
+                },
+                filename: $title,
+                init: function (api, node, config) { $(node).removeClass('btn-default') },
+                customize: function (doc) {
+
+                    doc.styles = {};
+                    doc.defaultStyle = { fontSize: 10 };
+                    delete doc.styles.tableHeader;
+
+                    //doc.defaultStyle.fontSize = 10;
+                    //doc.pageMargins = [20, 20, 20, 20]; // Adjust margins
+                    //doc.pageOrientation = 'landscape'; // Set orientation
+                    // Add more customization options as needed
                 }
             },
-            filename: $title,
-            init: function (api, node, config) { $(node).removeClass('btn-default') },
-            customize: function (doc) {
-                doc.defaultStyle.fontSize = 10;
-                doc.pageMargins = [20, 20, 20, 20]; // Adjust margins
-                doc.pageOrientation = 'landscape'; // Set orientation
-                // Add more customization options as needed
-            }
-        }]
+            {
+                extend: "excel",
+                className: "btn-flat btn-success mx-2 px-3",
+                titleAttr: 'Export in Excel',
+                text: 'Excel',
+                title: null, // removes title,
+                exportOptions: {
+                    columns: ':visible',
+                    stripHtml: true,
+                    modifier: {
+                        page: 'all' // Export all pages
+                    }
+                },
+                filename: $title,
+                init: function (api, node, config) { $(node).removeClass('btn-default') }
+            }]
     });
 
     $($selector + " thead th.no_sorting").removeClass('sorting');

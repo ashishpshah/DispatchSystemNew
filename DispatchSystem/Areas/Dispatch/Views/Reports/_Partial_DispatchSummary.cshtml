@@ -2,8 +2,15 @@
 @model (string Report_Type, string PageTitle, string PlantName, dynamic objFilter, List<MDA_Status> List, bool isPrint)
 
 @if (Model.Report_Type == "DS_BAT")
-{
-	ViewData["Title"] = "Batch Wise Dispatch Summary Report";
+{	
+	if (Model.objFilter.DataType == "IS")
+	{
+		ViewData["Title"] = "Batch Wise Is-Stock Summary Report";
+	}
+	else
+	{
+		ViewData["Title"] = "Batch Wise Dispatch Summary Report";
+	}
 }
 else if (Model.Report_Type == "DS")
 {
@@ -31,7 +38,14 @@ else
 				<div class="col-sm-12" style="text-align:center;">
 					@if (Model.Report_Type == "DS_BAT")
 					{
-						<h3 class="font-weight-bold">Batch Wise Dispatch Summary Report</h3>
+						if (Model.objFilter.DataType == "IS")
+						{
+							<h3 class="font-weight-bold">Batch Wise Is-Stock Summary Report</h3>
+						}
+						else
+						{
+							<h3 class="font-weight-bold">Batch Wise Dispatch Summary Report</h3>
+						}
 					}
 					else if (Model.Report_Type == "DS")
 					{
@@ -65,7 +79,14 @@ else
 				<div class="col-sm-12" style="text-align:center;">
 					@if (Model.Report_Type == "DS_BAT")
 					{
-						<h2 class="font-weight-bold" id="lableReportTitle"><b>Batch Wise Dispatch Summary Report</b></h2>
+						if (Model.objFilter.DataType == "IS")
+						{
+							<h2 class="font-weight-bold" id="lableReportTitle"><b>Batch Wise Is-Stock Summary Report</b></h2>
+						}
+						else
+						{
+							<h2 class="font-weight-bold" id="lableReportTitle"><b>Batch Wise Dispatch Summary Report</b></h2>
+						}
 					}
 					else if (Model.Report_Type == "DS")
 					{
@@ -84,7 +105,7 @@ else
 	<div class="form-group row mt-2">
 		@if (Model.Report_Type == "DS_BAT")
 		{
-			<button class="btn btn-info mr-2" onclick="fnPrint_Report('@(Url.Action("GetData_DispatchSummary_BatchWise", "Reports"))?Report_Type=@(Model.Report_Type)&FromDate=@(Model.objFilter.FromDate)&ToDate=@(Model.objFilter.ToDate)&isPrint=true')">Print</button>
+			<button class="btn btn-info mr-2" onclick="fnPrint_Report('@(Url.Action("GetData_DispatchSummary_BatchWise", "Reports"))?Report_Type=@(Model.Report_Type)&FromDate=@(Model.objFilter.FromDate)&ToDate=@(Model.objFilter.ToDate)&DataType=@(Model.objFilter.DataType)&isPrint=true')">Print</button>
 		}
 		else
 		{
@@ -299,3 +320,50 @@ else
 		}
 	</table>
 </div>
+
+
+@if (Model.isPrint == false)
+{
+	<div class="row col-12 mb-3 d-none file-export-header">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold">@(!string.IsNullOrEmpty(Model.PlantName) ? Model.PlantName : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+				</div>
+				<br />
+				<div class="col-sm-12" style="text-align:center;">
+					@if (Model.Report_Type == "DS_BAT")
+					{
+						if (Model.objFilter.DataType == "IS")
+						{
+							<h3 class="font-weight-bold">Batch Wise Is-Stock Summary Report</h3>
+						}
+						else
+						{
+							<h3 class="font-weight-bold">Batch Wise Dispatch Summary Report</h3>
+						}
+					}
+					else if (Model.Report_Type == "DS")
+					{
+						<h3 class="font-weight-bold">MDA Dispatch Summary Report</h3>
+					}
+					else
+					{
+						<h3 class="font-weight-bold">MDA Dispatch Count Summary Report</h3>
+					}
+				</div>
+				@if (!string.IsNullOrEmpty(Model.PageTitle))
+				{
+					<br />
+					<div class="col-sm-12" style="text-align:center;">
+						<h4>@Model.PageTitle</h4>
+					</div>
+				}
+				<br />
+				<div class="col-sm-12" style="text-align:right;">
+					<h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+				</div>
+			</div>
+		</div>
+	</div>
+}
