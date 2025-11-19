@@ -452,7 +452,8 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 					foreach (DataRow dr in ds.Tables[1].Rows)
 						result.Add(new MDA_Status
 						{
-							SrNo = dr["RNUM"] != DBNull.Value ? Convert.ToString(dr["RNUM"]) : "",
+							SrNo = dr["SrNo"] != DBNull.Value ? Convert.ToString(dr["SrNo"]) : "",
+							RFID = dr["SrNo_MDA"] != DBNull.Value ? Convert.ToString(dr["SrNo_MDA"]) : "",
 							BatchNo = dr["BATCH_NO"] != DBNull.Value ? Convert.ToString(dr["BATCH_NO"]) : "",
 							ManufacturingDate = dr["BATCH_DATE"] != DBNull.Value ? Convert.ToString(dr["BATCH_DATE"]) : "",
 							ExpiryDate = dr["EXPIRY_DATE"] != DBNull.Value ? Convert.ToString(dr["EXPIRY_DATE"]) : "",
@@ -686,11 +687,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 											+ string.Join(", ", shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete")).ToList()
 											.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ") X ");
 
-										if (dt != null && dt.Rows.Count > 0)
-										{
-											error_QR.AddRange(dt.AsEnumerable().Select(row => row["SHIPPER_QR_CODE"].ToString()).ToList());
-											break;
-										}
+										if (dt != null && dt.Rows.Count > 0) error_QR.AddRange(dt.AsEnumerable().Select(row => row["SHIPPER_QR_CODE"].ToString()).ToList());
 
 										len += 500;
 									}

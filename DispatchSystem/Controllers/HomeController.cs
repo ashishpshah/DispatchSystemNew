@@ -10287,7 +10287,7 @@ namespace Dispatch_System.Controllers
 							IsSuccess = DataContext.ExecuteNonQuery(sqlQuery);
 						}
 
-						if (IsSuccess == true)
+						if (true)
 						{
 							var dtAvailable_Oracle = DataContext.ExecuteQuery("SELECT PLANT_ID, SHIPPER_QRCODE_SYSID, SHIPPER_QRCODE FROM SHIPPER_QRCODE " +
 											$"WHERE PLANT_ID = {plant_id} AND SHIPPER_QRCODE_API_SYSID = {shipper_QrCode_Api_Id}");
@@ -10491,10 +10491,25 @@ namespace Dispatch_System.Controllers
 							IsSuccess = DataContext.ExecuteNonQuery(sqlQuery + sqlQuery_Select1);
 
 						}
+
+						sqlQuery = "UPDATE SHIPPER_QRCODE_API API SET API.TOTAL_SHIPPER_QTY = ( SELECT NVL(COUNT(*), 0) " +
+							"FROM SHIPPER_QRCODE QC WHERE (QC.PLANT_ID, QC.SHIPPER_QRCODE_API_SYSID) " +
+							"IN ( SELECT DISTINCT SQA.PLANT_ID, SQA.SHIPPER_QRCODE_API_SYSID FROM SHIPPER_QRCODE_API SQA " +
+							$"WHERE SQA.PLANT_ID = {plant_id} AND SQA.BATCH_NO = '{batch_no.Trim()}' ) " +
+							"AND QC.SHIPPER_QRCODE_API_SYSID = API.SHIPPER_QRCODE_API_SYSID) " +
+							$"WHERE API.PLANT_ID = {plant_id} AND API.BATCH_NO = '{batch_no.Trim()}' ";
+
+						IsSuccess = DataContext.ExecuteNonQuery(sqlQuery);
 					}
 					catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "Check Batch (" + batch_no.Trim() + ") data into Oracle.", ex); }
 
 					LogService.LogInsert(GetCurrentAction(), "Check Batch (" + batch_no.Trim() + ") data into Oracle.", null);
+
+					CommonViewModel.IsSuccess = true;
+					CommonViewModel.StatusCode = ResponseStatusCode.Success;
+					CommonViewModel.Message = ResponseStatusMessage.Success;
+
+					return Json(CommonViewModel);
 				}
 
 			}
@@ -10735,6 +10750,12 @@ namespace Dispatch_System.Controllers
 					catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "Check Batch (" + batch_no.Trim() + ") data into Oracle.", ex); }
 
 					LogService.LogInsert(GetCurrentAction(), "Check Batch (" + batch_no.Trim() + ") data into Oracle.", null);
+
+					CommonViewModel.IsSuccess = true;
+					CommonViewModel.StatusCode = ResponseStatusCode.Success;
+					CommonViewModel.Message = ResponseStatusMessage.Success;
+
+					return Json(CommonViewModel);
 				}
 
 			}

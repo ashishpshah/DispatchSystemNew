@@ -2,7 +2,7 @@
 @model (string Report_Type, string PageTitle, string PlantName, dynamic objFilter, List<MDA_Status> List, bool isPrint)
 
 @if (Model.Report_Type == "DS_BAT")
-{	
+{
 	if (Model.objFilter.DataType == "IS")
 	{
 		ViewData["Title"] = "Batch Wise Is-Stock Summary Report";
@@ -244,18 +244,18 @@ else
 		{
 			if (Model.objFilter.DataType == "DI")
 			{
-				var listBatch = Model.List.GroupBy(x => new { x.BatchNo, x.ManufacturingDate })
-				.Select(g => new { BatchNo = g.Key.BatchNo, ManufacturingDate = g.Key.ManufacturingDate, Items = g.ToList() }).ToList();
+				var listBatch = Model.List.Where(x => !string.IsNullOrEmpty(x.MDANo)).GroupBy(x => new { x.SrNo, x.BatchNo, x.ManufacturingDate })
+				.Select(g => new { SrNo = g.Key.SrNo, BatchNo = g.Key.BatchNo, ManufacturingDate = g.Key.ManufacturingDate, Items = g.ToList() }).ToList();
 
-				@foreach (var batch in listBatch.OrderBy(x => x.ManufacturingDate))
+				@foreach (var batch in listBatch.OrderBy(x => Convert.ToInt32(x.SrNo)))
 				{
 					<thead>
 						<tr style="border-bottom: 2px solid #dee2e6;">
-							<th hidden>#</th>
+							<th hidden>@batch.SrNo</th>
 							<th colspan="7">Batch No. : @batch.BatchNo &nbsp; &nbsp; Batch Date : @batch.ManufacturingDate</th>
 						</tr>
 						<tr>
-							<th hidden>#</th>
+							<th hidden>&nbsp;</th>
 							<th width="10%" class="text-center">MDA No.</th>
 							<th width="10%" class="text-center">MDA Date</th>
 							<th width="10%" class="text-center">Location</th>
@@ -267,10 +267,10 @@ else
 					<tbody>
 						@if (batch.Items != null && batch.Items.Count() > 0)
 						{
-							@foreach (var item in batch.Items.OrderBy(x => x.MDANo).ToList())
+							@foreach (var item in batch.Items.OrderBy(x => Convert.ToInt32(x.RFID)).ToList())
 							{
 								<tr>
-									<td hidden>@item.SrNo</td>
+									<td hidden>@((Convert.ToInt32(batch.SrNo) * 1000) + item.RFID)</td>
 									<td class="text-center">@item.MDANo</td>
 									<td class="text-center">@item.MDAReceiveDate</td>
 									<td class="text-center">@item.Destination</td>
@@ -302,7 +302,9 @@ else
 				<tbody>
 					@if (Model.List != null && Model.List.Count() > 0)
 					{
-						@foreach (var item in Model.List.OrderBy(x => x.SrNo))
+						var listBatch = Model.List.Where(x => string.IsNullOrEmpty(x.MDANo)).ToList();
+
+						@foreach (var item in listBatch.OrderBy(x => Convert.ToInt32(x.SrNo)))
 						{
 							<tr>
 								<td hidden>@item.SrNo</td>
