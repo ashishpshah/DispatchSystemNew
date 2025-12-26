@@ -39,21 +39,6 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 ConfigurationManager configuration = builder.Configuration; // allows both to access and to set up the config
 IWebHostEnvironment environment = builder.Environment;
 
-var culture = CultureInfo.CreateSpecificCulture("en-IN");
-
-var dateformat = new DateTimeFormatInfo { ShortDatePattern = "dd/MM/yyyy", LongDatePattern = "dd/MM/yyyy HH:mm:sss" };
-
-culture.DateTimeFormat = dateformat;
-
-var supportedCultures = new[] { culture };
-
-builder.Services.Configure<RequestLocalizationOptions>(options =>
-{
-	options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(culture);
-	options.SupportedCultures = supportedCultures;
-	options.SupportedUICultures = supportedCultures;
-});
-
 builder.Services.AddSession(options => { options.IdleTimeout = TimeSpan.FromMinutes(120); });
 
 builder.Services.AddCors();

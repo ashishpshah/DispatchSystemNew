@@ -29,7 +29,7 @@
 				{
 					<h3 class="font-weight-bold">Find Missing Batch No.</h3>
 				}
-				else @if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "S")
+				else if (!string.IsNullOrEmpty(Model.Status) && Model.Status == "S")
 				{
 					<h3 class="font-weight-bold">Shipper QR Code By MDA</h3>
 				}
@@ -430,14 +430,74 @@
 @section Scripts {
 
 	<script type="text/javascript">
-		//var table = {};
-		//var tableDtls = {};
 
 		var divToPrint_HTML = '';
 
 		$(document).ready(function () {
 
 		});
+
+
+		function fnParialView_Loaded_DataTable($selector, $IsAlert) {
+
+			if ($.fn.DataTable.isDataTable($selector)) {
+				$($selector).DataTable().destroy();
+			}
+
+			$($selector).DataTable({
+				paging: true,
+				lengthChange: true,
+				searching: true,
+				ordering: true,
+				info: true,
+				autoWidth: true,
+				responsive: true,
+				pageLength: 50,
+				lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, 'All'] ],
+				columnDefs: [
+					{ "targets": 0, "className": "text-center noVis", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false },
+					{ "targets": -1, "className": "text-center noVis", "width": "3%", "autoWidth": false, "searchable": false, "orderable": false }
+				],
+				fixedColumns: true,
+				dom: "<'row'<'col-sm-6 mb-3'B>>" +
+					"<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+					"<'row'<'col-sm-12'tr>>" +
+					"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+				fnRowCallback: function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+					$("td:first", nRow).html(iDisplayIndexFull + 1);
+					return nRow;
+				},
+				buttons:
+				[
+					{
+						extend: 'pdfHtml5',
+						download: 'open',
+						exportOptions: { columns: [0, ':visible'], modifier: { selected: null } },
+						messageTop: 'The information in this table is copyright to Sirius Cybernetics Corp.',
+						messageBottom: 'messageBottom'
+					},
+					{
+						extend: 'excelHtml5',
+						title: 'Data export',
+						exportOptions: { columns: [0, ':visible'], modifier: { selected: null } },
+						messageTop: 'The information in this table is copyright to Sirius Cybernetics Corp.',
+						messageBottom: null
+					},
+					{
+						extend: 'colvis',
+						text: 'Column Visibility',
+						className: 'my-custom-colvis-button',
+						columnText: function (dt, idx, title) { return idx + ': ' + title; },
+						columns: ':not(.noVis)',
+					}
+				],
+				stateSave: true				
+			});
+
+			$($selector + " thead th.no_sorting").removeClass('sorting');
+			$($selector + " thead th.no_sorting").removeClass('sorting_asc');
+			$($selector + " thead th.no_sorting").removeClass('sorting_desc');
+		}
 
 		function fnChange_Switch_Success($this, $labelId) {
 
@@ -502,7 +562,7 @@
 
 							$('#div_DataTable').html(response);
 
-							try { fnLoadCommonTable('#div_DataTable #table_Common'); } catch { }
+							try { fnParialView_Loaded_DataTable('#div_DataTable #tableReport', false) } catch { }
 
 							ShowLoader(false);
 
@@ -918,6 +978,7 @@
 
 			return false;
 		}
+
 
 	</script>
 }

@@ -43,154 +43,13 @@
 else
 {
 	<div class="form-group row">
-		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_BatchLogFile","Reports")?searchTerm=@(Model.SearchTerm)&FromDate=@(Model.FromDate)&ToDate=@(Model.ToDate)&isPrint=true')">Print</button>
+		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_BatchLogFile", "Reports")?searchTerm=@(Model.SearchTerm)&FromDate=@(Model.FromDate)&ToDate=@(Model.ToDate)&isPrint=true')">Print</button>
 		<button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('BatchLogFile')">Export</button>
 	</div>
 }
 
 <div class="row col-12 mt-5">
-	@*
-	@{
 
-	var result = new List<Dictionary<string, List<string>>>();
-
-	foreach (var remark in Model.List.Where(x => !string.IsNullOrWhiteSpace(x.Remark))
-	.Select(x => x.Remark.Replace(" | SUMMARY : ", "")))
-	{
-	// Split into label/message pairs by '|'
-	var parts = remark.Split('|', StringSplitOptions.RemoveEmptyEntries)
-	.Where(x => !string.IsNullOrWhiteSpace(x))
-	.ToList();
-
-	foreach (string _part in parts.Select(x => x.Trim()))
-	{
-	try
-	{
-
-	var part = Regex.Replace(_part, @"Duplicates Shipper QR Code found in .*? => (.*)", "Duplicate Shipper QR Code : <S>$1").ToString();
-
-	var lines = part.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-
-	// Collect Shipper and Bottle codes
-	string shipperCode = null;
-	var _bottleCodes = new List<string>();
-
-	foreach (var line in lines.Select(x => x.Trim()))
-	{
-	// Shipper
-	var shipperMatch = Regex.Match(line, @"Duplicates Shipper QR Code found in .*? => (.*)");
-	if (shipperMatch.Success)
-	{
-	shipperCode = shipperMatch.Groups[1].Value.Trim();
-	continue;
-	}
-
-	// Bottle
-	var bottleMatch = Regex.Match(line, @"Duplicate Bottle QRCode in .*? : (.*)");
-	if (bottleMatch.Success)
-	{
-	_bottleCodes.Add(bottleMatch.Groups[1].Value.Trim());
-	}
-	}
-
-	if (!string.IsNullOrEmpty(shipperCode))
-	{
-	// Case 1: Shipper + Bottles
-	part = $"Duplicate Shipper QR Code : <S>{shipperCode}<B>{string.Join(", ", _bottleCodes)}";
-	}
-	else if (_bottleCodes.Any())
-	{
-	// Case 2: Only Bottles
-	part = $"Duplicate Bottle QR Code : <S>**<B>{string.Join(",", _bottleCodes)}";
-	}
-
-
-
-	// Label : Msg
-	var labelSplit = part.Split(':', 2, StringSplitOptions.TrimEntries);
-	if (labelSplit.Length < 2) continue;
-
-	var label = labelSplit[0].Trim();
-	var msg = labelSplit[1].Trim();
-
-	// Skip counts or empty msg
-	if (label.Contains("Delete operation not perform because Shipper QR Code(s) already loaded.", StringComparison.OrdinalIgnoreCase)) continue;
-	if (label.Contains("Count", StringComparison.OrdinalIgnoreCase) || msg.Contains("Count", StringComparison.OrdinalIgnoreCase)) continue;
-	if (string.IsNullOrWhiteSpace(msg) || msg.Length < 5) continue;
-
-	// Label mapping
-	label = label switch
-	{
-	"Shipper QR Code - Not Delete" => "Rejected Shipper QR Code",
-	"Shipper QR Code - issue" => "Rejected Shipper QR Code",
-	"Shipper QR Code - not contain 24 bottles" => "Rejected Shipper QR Code",
-	"Bottle QR Code - Duplicate" => "Duplicate Bottle QR Code",
-	"Bottle QR Code - length issue" => "Rejected Shipper QR Code",
-	"Shipper QR Code - Duplicate" => "Duplicate Shipper QR Code",
-	_ => label
-	};
-
-	// Parse Shipper and Bottle codes
-	var shipperBottleList = new List<string>();
-	var shipperMatches = Regex.Matches(msg, @"<S>([^<]+)");
-
-	if (shipperMatches.Count > 0)
-	{
-	foreach (Match sMatch in shipperMatches)
-	{
-	var shipperCodes = sMatch.Groups[1].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
-	.Select(x => x.Trim());
-
-	foreach (var s in shipperCodes)
-	{
-	// If <B> after this <S>, capture bottles
-	var afterS = msg[(msg.IndexOf(s) + s.Length)..];
-	var bottleMatch = Regex.Match(afterS, @"<B>([^<]+)");
-	if (bottleMatch.Success)
-	{
-	var bottleCodes = bottleMatch.Groups[1].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
-	.Select(x => x.Trim());
-	shipperBottleList.Add($"{s} => [ {string.Join(", ", bottleCodes)} ]");
-	}
-	else
-	{
-	shipperBottleList.Add(s);
-	}
-	}
-	}
-	}
-	else
-	{
-	// No <S> found → put entire msg under OTHER
-	label = "OTHER";
-	shipperBottleList.Add(msg);
-	}
-
-	// Group into dictionary
-	var existing = result.FirstOrDefault(d => d.ContainsKey(label));
-	if (existing != null)
-	{
-	existing[label].AddRange(shipperBottleList);
-	}
-	else
-	{
-	result.Add(new Dictionary<string, List<string>> { { label, new List<string>(shipperBottleList) } });
-	}
-	}
-	catch (Exception ex) { continue; }
-	}
-	}
-
-	// Remove duplicates inside each label
-	foreach (var dict in result)
-	{
-	var key = dict.Keys.First();
-	dict[key] = dict[key].Distinct().ToList();
-	}
-
-
-	}
-	*@
 	@if (Model.List != null && Model.List.Count() > 0)
 	{
 		<table id="table_Common" class="table table-bordered w-100 divDetail">
@@ -293,77 +152,87 @@ else
 											}
 
 
-
-											// Label : Msg
-											var labelSplit = part.Split(':', 2, StringSplitOptions.TrimEntries);
-											if (labelSplit.Length < 2) continue;
-
-											var label = labelSplit[0].Trim();
-											var msg = labelSplit[1].Trim();
-
-											// Skip counts or empty msg
-											if (label.Contains("Count", StringComparison.OrdinalIgnoreCase) || msg.Contains("Count", StringComparison.OrdinalIgnoreCase)) continue;
-											if (string.IsNullOrWhiteSpace(msg) || msg.Length < 5) continue;
-
-											// Label mapping
-											label = label switch
+											if (!part.Contains(':'))
 											{
-												"Shipper QR Code - Not Delete" => "Rejected Shipper QR Code",
-												"Shipper QR Code - issue" => "Rejected Shipper QR Code",
-												"Shipper QR Code - not contain 24 bottles" => "Rejected Shipper QR Code",
-												"Bottle QR Code - Duplicate" => "Duplicate Bottle QR Code",
-												"Bottle QR Code - length issue" => "Rejected Shipper QR Code",
-												"Shipper QR Code - Duplicate" => "Duplicate Shipper QR Code",
-												_ => label
-											};
+												// Group into dictionary
+												var existing = result.FirstOrDefault(d => d.ContainsKey(part));
 
-											// Parse Shipper and Bottle codes
-											var shipperBottleList = new List<string>();
-											var shipperMatches = Regex.Matches(msg, @"<S>([^<]+)");
+												if (existing == null) result.Add(new Dictionary<string, List<string>> { { part, new List<string>() } });
 
-											if (shipperMatches.Count > 0)
+											}
+											else
 											{
-												foreach (Match sMatch in shipperMatches)
+
+												// Label : Msg
+												var labelSplit = part.Split(':', 2, StringSplitOptions.TrimEntries);
+												if (labelSplit.Length < 2) continue;
+
+												var label = labelSplit[0].Trim();
+												var msg = labelSplit[1].Trim();
+
+												// Skip counts or empty msg
+												if (label.Contains("Count", StringComparison.OrdinalIgnoreCase) || msg.Contains("Count", StringComparison.OrdinalIgnoreCase)) continue;
+												if (string.IsNullOrWhiteSpace(msg) || msg.Length < 5) continue;
+
+												// Label mapping
+												label = label switch
 												{
-													var shipperCodes = sMatch.Groups[1].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
-													.Select(x => x.Trim());
+													"Shipper QR Code - Not Delete" => "Rejected Shipper QR Code",
+													"Shipper QR Code - issue" => "Rejected Shipper QR Code",
+													"Shipper QR Code - not contain 24 bottles" => "Rejected Shipper QR Code",
+													"Bottle QR Code - Duplicate" => "Duplicate Bottle QR Code",
+													"Bottle QR Code - length issue" => "Rejected Shipper QR Code",
+													"Shipper QR Code - Duplicate" => "Duplicate Shipper QR Code",
+													_ => label
+												};
 
-													foreach (var s in shipperCodes)
+												// Parse Shipper and Bottle codes
+												var shipperBottleList = new List<string>();
+												var shipperMatches = Regex.Matches(msg, @"<S>([^<]+)");
+
+												if (shipperMatches.Count > 0)
+												{
+													foreach (Match sMatch in shipperMatches)
 													{
-														// If <B> after this <S>, capture bottles
-														var afterS = msg[(msg.IndexOf(s) + s.Length)..];
-														var bottleMatch = Regex.Match(afterS, @"<B>([^<]+)");
-														if (bottleMatch.Success)
+														var shipperCodes = sMatch.Groups[1].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+														.Select(x => x.Trim());
+
+														foreach (var s in shipperCodes)
 														{
-															var bottleCodes = bottleMatch.Groups[1].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
-															.Select(x => x.Trim());
-															shipperBottleList.Add($"{s} => [ {string.Join(", ", bottleCodes)} ]");
-														}
-														else
-														{
-															shipperBottleList.Add(s);
+															// If <B> after this <S>, capture bottles
+															var afterS = msg[(msg.IndexOf(s) + s.Length)..];
+															var bottleMatch = Regex.Match(afterS, @"<B>([^<]+)");
+															if (bottleMatch.Success)
+															{
+																var bottleCodes = bottleMatch.Groups[1].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+																.Select(x => x.Trim());
+																shipperBottleList.Add($"{s} => [ {string.Join(", ", bottleCodes)} ]");
+															}
+															else
+															{
+																shipperBottleList.Add(s);
+															}
 														}
 													}
 												}
-											}
-											else
-											{
-												// No <S> found → put entire msg under OTHER
-												label = "OTHER";
-												shipperBottleList.Add(msg);
-											}
+												else
+												{
+													// No <S> found → put entire msg under OTHER
+													label = "OTHER";
+													shipperBottleList.Add(msg);
+												}
 
-											// Group into dictionary
-											var existing = result.FirstOrDefault(d => d.ContainsKey(label));
-											if (existing != null)
-											{
-												existing[label].AddRange(shipperBottleList);
+												// Group into dictionary
+												var existing = result.FirstOrDefault(d => d.ContainsKey(label));
+												if (existing != null)
+												{
+													existing[label].AddRange(shipperBottleList);
+												}
+												else
+												{
+													result.Add(new Dictionary<string, List<string>> { { label, new List<string>(shipperBottleList) } });
+												}
 											}
-											else
-											{
-												result.Add(new Dictionary<string, List<string>> { { label, new List<string>(shipperBottleList) } });
-											}
-
 										}
 
 
@@ -375,7 +244,7 @@ else
 													<li class="mb-2">
 														@kvp.Key
 														<ol class="ul_columns_4">
-															@foreach (var shipper in kvp.Value)
+															@foreach (var shipper in kvp.Value.Where(x => !string.IsNullOrWhiteSpace(x) && !string.IsNullOrEmpty(x)))
 															{
 																// Split by " => "
 																var leftPart = shipper.Split(" => ")[0]; // before =>
@@ -509,7 +378,7 @@ else
 										</ul>
 
 									}
-								}								
+								}
 							</td>
 						</tr>
 						@*

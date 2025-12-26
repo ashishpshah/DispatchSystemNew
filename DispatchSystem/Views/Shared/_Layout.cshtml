@@ -28,8 +28,6 @@
 	<link rel="stylesheet" href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
 	<link rel="stylesheet" href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
 	<link rel="stylesheet" href="~/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-	<link href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
-	<link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css" rel="stylesheet" />
 
 	@*<link rel="stylesheet" href="~/dist/css/adminlte.min.css">*@
 
@@ -267,9 +265,9 @@
 				display: none !important;
 			}
 			/*
-							.expandable-body .list-unstyled ul.ul_columns_4 {
-								grid-template-columns: repeat(3, 1fr);
-							} */
+											.expandable-body .list-unstyled ul.ul_columns_4 {
+												grid-template-columns: repeat(3, 1fr);
+											} */
 		}
 	</style>
 
@@ -277,7 +275,7 @@
 
 	<link rel="stylesheet" href="~/Dispatch_System.styles.css" asp-append-version="true" />
 </head>
-<body class="@((listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1) ? "sidebar-mini":"control-sidebar-slide-open sidebar-collapse") layout-fixed layout-footer-fixed text-sm accent-teal layout-navbar-fixed">
+<body class="@((listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1) ? "sidebar-mini" : "control-sidebar-slide-open sidebar-collapse") layout-fixed layout-footer-fixed text-sm accent-teal layout-navbar-fixed">
 	<div class="wrapper">
 
 
@@ -366,7 +364,7 @@
 									{
 										foreach (var item in listPlant)
 										{
-											<a role="button" class="dropdown-item dropdown-item-plant bg-lightblue color-palette @(Common.Get_Session_Int(SessionKey.PLANT_ID) == item.PlantID ? "disabled text-bold":"")"
+											<a role="button" class="dropdown-item dropdown-item-plant bg-lightblue color-palette @(Common.Get_Session_Int(SessionKey.PLANT_ID) == item.PlantID ? "disabled text-bold" : "")"
 											   href="#" onclick="ajaxPost('@Url.Action("Change_Plant", "Home", new { area = "" })?id=@item.PlantID', window.location.href)">@item.Plant_Name</a>
 										}
 									}
@@ -378,7 +376,7 @@
 						<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
 							<li class="nav-item">
-								<a href="@Url.Action("Index", "Home", new { Area = ""})" class="nav-link">
+								<a href="@Url.Action("Index", "Home", new { Area = "" })" class="nav-link">
 									<i class="nav-icon fas fa-home"></i>
 									<p> Dashboard </p>
 								</a>
@@ -416,7 +414,7 @@
 																}
 																else
 																{
-																	<a href="@(Url.Content("~/")+menuChild.Url)" data-title="@menuChild.Display_Name" class="nav-link">
+																	<a href="@(Url.Content("~/") + menuChild.Url)" data-title="@menuChild.Display_Name" class="nav-link">
 																		<i class="nav-icon fas fa-th"></i>
 																		<p>@menuChild.Display_Name</p>
 																	</a>
@@ -431,14 +429,14 @@
 												<li class="nav-item">
 													@if (string.IsNullOrEmpty(menu.Key.Url))
 													{
-														<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" class="nav-link">
+														<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area })" class="nav-link">
 															<i class="nav-icon fas fa-th"></i>
 															<p> @menu.Key.Display_Name </p>
 														</a>
 													}
 													else
 													{
-														<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
+														<a href="@(Url.Content("~/") + menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
 															<i class="nav-icon fas fa-th"></i>
 															<p>@menu.Key.Display_Name</p>
 														</a>
@@ -459,14 +457,14 @@
 											<li class="nav-item">
 												@if (string.IsNullOrEmpty(menu.Key.Url))
 												{
-													<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area})" class="nav-link">
+													<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area })" class="nav-link">
 														<i class="nav-icon fas fa-th"></i>
 														<p> @menu.Key.Display_Name </p>
 													</a>
 												}
 												else
 												{
-													<a href="@(Url.Content("~/")+menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
+													<a href="@(Url.Content("~/") + menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
 														<i class="nav-icon fas fa-th"></i>
 														<p>@menu.Key.Display_Name</p>
 													</a>
