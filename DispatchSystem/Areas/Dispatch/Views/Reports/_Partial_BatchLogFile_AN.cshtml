@@ -1,0 +1,98 @@
+﻿@using System.Globalization;
+@using System.Text.RegularExpressions
+@model (string SearchTerm, string PageTitle_Secondary,string PlantName,string FromDate,string ToDate, List<BatchLogFile> List, bool isPrint)
+
+@{
+	ViewData["Title"] = "Batch Log File";
+}
+
+@if (Model.isPrint == true)
+{
+	Layout = "~/Views/Shared/_Layout_Print.cshtml";
+}
+
+@if (Model.isPrint == true)
+{
+	<div class="row col-12 mb-3">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-12" style="text-align:center;">
+					<h2 class="font-weight-bold">@(!string.IsNullOrEmpty(Model.PlantName) ? Model.PlantName : "IFFCO NANO FERTILIZER PLANT - KALOL") </h2>
+				</div>
+				<br />
+				<div class="col-sm-12" style="text-align:center;">
+					@if (!string.IsNullOrEmpty(Model.PageTitle_Secondary))
+					{
+						<h5 class="font-weight-bold">
+							Batch File Detail : @Model.PageTitle_Secondary
+						</h5>
+					}
+					else
+					{
+						<h4 class="font-weight-bold">Batch File Detail </h4>
+					}
+				</div>
+				<br />
+				<div class="col-sm-12" style="text-align:right;">
+					<h5 class="font-weight-bold"><b>Printed on : @DateTime.Now.ToString("dd/MM/yyyy hh:mm tt").Replace("-", "/")</b></h5>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+else
+{
+	<div class="form-group row">
+		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_BatchLogFile", "Reports")?searchTerm=@(Model.SearchTerm)&FromDate=@(Model.FromDate)&ToDate=@(Model.ToDate)&isPrint=true')">Print</button>
+		<button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('BatchLogFile')">Export</button>
+	</div>
+}
+
+<div class="row col-12 mt-5">
+
+	@if (Model.List != null && Model.List.Count() > 0)
+	{
+		<table id="table_Common" class="table table-bordered w-100 divDetail">
+
+			<tbody>
+				<tr>
+					<th class="text-center">#</th>
+					<th>File Name</th>
+					<th>Process Start Date</th>
+					<th>Process End Date</th>
+					<th>Manufacture Date</th>
+					<th>Expiry Date</th>
+					<th class="text-center">QR Code Count</th>
+					<th class="text-center">Shipper Count</th>
+					<th class="text-center">Status</th>
+					@* <th>Remark</th> *@
+				</tr>
+				@foreach (var item in Model.List.OrderBy(x => x.SrNo).ThenBy(x => x.Status).ThenBy(x => x.FileName).ToList())
+				{
+					<tr>
+						<td>@item.SrNo</td>
+						<td>@item.FileName</td>
+						<td>@item.StartDate</td>
+						<td>@item.EndDate</td>
+						<td>@item.mfg_dt</td>
+						<td>@item.expiry_dt</td>
+						<td>@item.QRCode_Count</td>
+						<td>@item.total_shipper_qty</td>
+						<td>@item.Status</td>
+						@* <td>@item.Remark</td> *@
+					</tr>
+
+					if (!string.IsNullOrEmpty(item.Remark))
+					{
+						<tr><td>&nbsp;</td><td colspan="8">@item.Remark</td></tr>
+						<tr><td colspan="9">&nbsp;</td></tr>
+					}
+
+				}
+			</tbody>
+
+		</table>
+
+	}
+
+</div>

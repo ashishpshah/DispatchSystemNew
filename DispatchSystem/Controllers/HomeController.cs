@@ -3854,7 +3854,7 @@ namespace Dispatch_System.Controllers
 
 							var Mfg_Date = DateTime.MinValue;
 							if (shipperData != null && (string.IsNullOrEmpty(shipperData.Mfg_Date) || !DateTime.TryParseExact(shipperData.Mfg_Date, "yyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out Mfg_Date)))
-								error += $"Invalid Manufacture Date.";
+								error += $"Invalid Manufacture Date." + System.Environment.NewLine;
 
 
 							int manufacture_Date_Before = -1;
@@ -3873,7 +3873,7 @@ namespace Dispatch_System.Controllers
 								listProduct.Where(y => shipperData.ShipperQRCode_Data[0].BottleQRCode[0].Contains(y.GTIN)).Select(y => y.ExpireInMonth).FirstOrDefault() : 0;
 
 							if (ExpireInMonth == 0)
-								error += $"Product's Expire In Month not available.";
+								error += $"Product's Expire In Month not available." + System.Environment.NewLine;
 							else
 							{
 								shipperData.Expiry_Date = Mfg_Date.AddMonths(ExpireInMonth).AddDays(-1).ToString("yyMMdd");
@@ -3907,7 +3907,7 @@ namespace Dispatch_System.Controllers
 										{
 											dt = DataContext.ExecuteQuery_SQL($"SELECT SHIPPER_QR_CODE FROM mda_loading WHERE PLANT_ID = {plant_id} AND SHIPPER_QR_CODE IN ("
 												+ string.Join(", ", shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete")).ToList()
-												.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ") X ");
+												.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ") ");
 
 											if (dt != null && dt.Rows.Count > 0)
 												error_QR.AddRange(dt.AsEnumerable().Select(row => row["SHIPPER_QR_CODE"].ToString()).ToList());
@@ -3916,8 +3916,7 @@ namespace Dispatch_System.Controllers
 										}
 
 										if (error_QR != null && error_QR.Count() > 0)
-											error += "Delete operation not perform because Shipper QR Code(s) already loaded. Loaded Shipper QR Code(s) : "
-												+ string.Join(", ", error_QR);
+											error += "Delete operation not perform because Shipper QR Code(s) already loaded. Loaded Shipper QR Code(s) : "+ string.Join(", ", error_QR) + System.Environment.NewLine;
 
 									}
 
@@ -3976,6 +3975,8 @@ namespace Dispatch_System.Controllers
 
 										if (listShipperQRCode != null && listShipperQRCode.Count() > 0)
 										{
+											var error_QR = new List<string>();
+
 											var len = 0;
 
 											while (len <= listShipperQRCode.Count())
@@ -3985,10 +3986,15 @@ namespace Dispatch_System.Controllers
 
 												if (dt != null && dt.Rows.Count > 0)
 													foreach (DataRow dr in dt.Rows)
-														error += $"Duplicates Shipper QR Code found in Database => " + (dr["shipper_qrcode"] != DBNull.Value ? Convert.ToString(dr["shipper_qrcode"]) : "") + System.Environment.NewLine;
+														error_QR.Add(dr["shipper_qrcode"] != DBNull.Value ? Convert.ToString(dr["shipper_qrcode"]) : "");
+												//error += $"Duplicates Shipper QR Code found in Database => " +  + System.Environment.NewLine;
 
 												len += 500;
 											}
+
+											if (error_QR != null && error_QR.Count() > 0)
+												error += "Duplicates Shipper QR Code found in Database : " + string.Join(", ", error_QR) + System.Environment.NewLine;
+
 										}
 
 										// Duplicate Bottle QR code Check Start
@@ -4016,6 +4022,8 @@ namespace Dispatch_System.Controllers
 
 										if (listBottleQRCode != null && listBottleQRCode.Count() > 0)
 										{
+											var error_QR = new List<string>();
+
 											var len = 0;
 
 											while (len <= listBottleQRCode.Count())
@@ -4025,10 +4033,15 @@ namespace Dispatch_System.Controllers
 
 												if (dt != null && dt.Rows.Count > 0)
 													foreach (DataRow dr in dt.Rows)
-														error += $"Duplicate Bottle QRCode in Database : " + (dr["bottle_qrcode"] != DBNull.Value ? Convert.ToString(dr["bottle_qrcode"]) : "") + System.Environment.NewLine;
+														error_QR.Add(dr["bottle_qrcode"] != DBNull.Value ? Convert.ToString(dr["bottle_qrcode"]) : "");
+												//error += $"Duplicate Bottle QRCode in Database : " + (dr["bottle_qrcode"] != DBNull.Value ? Convert.ToString(dr["bottle_qrcode"]) : "") + System.Environment.NewLine;
 
 												len += 300;
 											}
+
+											if (error_QR != null && error_QR.Count() > 0)
+												error += "Duplicates Bottle QR Code found in Database : " + string.Join(", ", error_QR) + System.Environment.NewLine;
+
 										}
 
 										// Duplicate Bottle QR code Check end
@@ -4666,7 +4679,7 @@ namespace Dispatch_System.Controllers
 												$"VALUES ( '{fileName.Substring(0, fileName.Length - (fileName.Length - fileName.LastIndexOf('.')))}'" +
 												$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
 												$", STR_TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("-", "/")}', '%d/%m/%Y %H:%i')" +
-												$", {(shipperData.ShipperQRCode_Data.Count() * 24)}, '{fileUploadStatus}'" +
+												$", {(shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("add")).Count() * 24)}, '{fileUploadStatus}'" +
 												$", '{error}' );";
 
 							var result = DataContext.ExecuteNonQuery_SQL(query_File);
@@ -4677,7 +4690,7 @@ namespace Dispatch_System.Controllers
 								   $"VALUES ( '{fileName.Substring(0, fileName.Length - (fileName.Length - fileName.LastIndexOf('.')))}'" +
 								   $", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI')" +
 								   $", TO_DATE('{DateTime.Now.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI')" +
-								   $", {(shipperData.ShipperQRCode_Data.Count() * 24)}, '{fileUploadStatus}'" +
+								   $", {(shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("add")).Count() * 24)}, '{fileUploadStatus}'" +
 								   $", '{plantCode}', '{error}' )";
 
 								result = DataContext.ExecuteNonQuery(query_File);

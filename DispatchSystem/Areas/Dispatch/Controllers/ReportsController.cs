@@ -685,7 +685,7 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 									{
 										dt = DataContext.ExecuteQuery_SQL($"SELECT SHIPPER_QR_CODE FROM mda_loading WHERE PLANT_ID = {plant_id} AND SHIPPER_QR_CODE IN ("
 											+ string.Join(", ", shipperData.ShipperQRCode_Data.Where(x => x.Action.ToLower().Contains("delete")).ToList()
-											.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ") X ");
+											.Skip(len).Take(500).Select(x => "'" + x.ShipperQRCode + "'").ToArray()) + ") ");
 
 										if (dt != null && dt.Rows.Count > 0) error_QR.AddRange(dt.AsEnumerable().Select(row => row["SHIPPER_QR_CODE"].ToString()).ToList());
 
@@ -1172,9 +1172,9 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 				PageTitle_Secondary += $"{(!string.IsNullOrEmpty(PageTitle_Secondary) ? " " : "")}To : {ToDate.ToUpper()}";
 
 			if (isPrint == true)
-				return View("_Partial_BatchLogFile", (searchTerm, PageTitle_Secondary, PlantName, FromDate, ToDate, result, isPrint));
+				return View("_Partial_BatchLogFile_AN", (searchTerm, PageTitle_Secondary, PlantName, FromDate, ToDate, result, isPrint));
 			else
-				return PartialView("_Partial_BatchLogFile", (searchTerm, PageTitle_Secondary, PlantName, FromDate, ToDate, result, isPrint));
+				return PartialView("_Partial_BatchLogFile_AN", (searchTerm, PageTitle_Secondary, PlantName, FromDate, ToDate, result, isPrint));
 		}
 
 		[HttpGet]
