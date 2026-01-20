@@ -2955,7 +2955,19 @@ namespace Dispatch_System.Controllers
 											if (dt != null && dt.Rows.Count > 0)
 												shipper_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
 
-											dtShipperQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM SHIPPER_QRCODE LIMIT 0");
+											//dtShipperQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM SHIPPER_QRCODE LIMIT 0");
+
+											dtShipperQrCode = new DataTable("SHIPPER_QRCODE");
+
+											dtShipperQrCode.Columns.Add("SHIPPER_QRCODE_SYSID", typeof(long));
+											dtShipperQrCode.Columns.Add("SHIPPER_QRCODE", typeof(string));
+											dtShipperQrCode.Columns.Add("TOTAL_BOTTLES_QTY", typeof(int));
+											dtShipperQrCode.Columns.Add("STATUS", typeof(string));
+											dtShipperQrCode.Columns.Add("ACTION", typeof(string));
+											dtShipperQrCode.Columns.Add("OLD_SHIPPER_QRCODE_SYSID", typeof(long));
+											dtShipperQrCode.Columns.Add("SHIPPER_QRCODE_API_SYSID", typeof(long));
+											dtShipperQrCode.Columns.Add("PALLET_QRCODE_API_SYSID", typeof(long));
+											dtShipperQrCode.Columns.Add("EVENTTIME", typeof(string));
 
 											for (int i = 0; i < shipperData.ShipperQRCode_Data.Count(); i++)
 											{
@@ -2974,22 +2986,32 @@ namespace Dispatch_System.Controllers
 
 												shipperData.ShipperQRCode_Data[i].Id = shipper_QrCode_Id + i;
 
-												newRow[0] = shipperData.ShipperQRCode_Data[i].Id;
-												newRow[1] = shipperData.ShipperQRCode_Data[i].ShipperQRCode;
-												newRow[2] = shipperData.ShipperQRCode_Data[i].BottleQRCode.Count();
-												newRow[3] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].Status) ? "a" : shipperData.ShipperQRCode_Data[i].Status;
-												newRow[4] = shipperData.ShipperQRCode_Data[i].Action;
-												newRow[5] = shipper_QrCode_Id_Old;
-												newRow[6] = shipper_Api_Id;
-												newRow[7] = 0;
-												newRow[8] = plant_id;
-												newRow[9] = user_id;
-												newRow[10] = currentDateTime.ToString();
-												newRow[11] = null;
-												newRow[12] = 0;
-												newRow[13] = 0;
-												newRow[14] = currentDateTime.ToString();
-												newRow[15] = currentDateTime.ToString();
+												//newRow[0] = shipperData.ShipperQRCode_Data[i].Id;
+												//newRow[1] = shipperData.ShipperQRCode_Data[i].ShipperQRCode;
+												//newRow[2] = shipperData.ShipperQRCode_Data[i].BottleQRCode.Count();
+												//newRow[3] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].Status) ? "a" : shipperData.ShipperQRCode_Data[i].Status;
+												//newRow[4] = shipperData.ShipperQRCode_Data[i].Action;
+												//newRow[5] = shipper_QrCode_Id_Old;
+												//newRow[6] = shipper_Api_Id;
+												//newRow[7] = 0;
+												//newRow[8] = plant_id;
+												//newRow[9] = user_id;
+												//newRow[10] = currentDateTime.ToString();
+												//newRow[11] = null;
+												//newRow[12] = 0;
+												//newRow[13] = 0;
+												//newRow[14] = currentDateTime.ToString();
+												//newRow[15] = currentDateTime.ToString();
+
+												newRow["SHIPPER_QRCODE_SYSID"] = shipperData.ShipperQRCode_Data[i].Id;
+												newRow["SHIPPER_QRCODE"] = shipperData.ShipperQRCode_Data[i].ShipperQRCode;
+												newRow["TOTAL_BOTTLES_QTY"] = shipperData.ShipperQRCode_Data[i].BottleQRCode.Count();
+												newRow["STATUS"] = shipperData.ShipperQRCode_Data[i].Status;
+												newRow["ACTION"] = shipperData.ShipperQRCode_Data[i].Action;
+												newRow["OLD_SHIPPER_QRCODE_SYSID"] = shipper_QrCode_Id_Old;
+												newRow["SHIPPER_QRCODE_API_SYSID"] = shipper_Api_Id;
+												newRow["PALLET_QRCODE_API_SYSID"] = 0;
+												newRow["EVENTTIME"] = DateTime.ParseExact(shipperData.ShipperQRCode_Data[i].EventTime.ToString(), "yyyy-MM-dd'T'HH:mm:ss.ffffff'Z'", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal).ToString();
 
 												dtShipperQrCode.Rows.Add(newRow);
 											}
@@ -3007,7 +3029,15 @@ namespace Dispatch_System.Controllers
 												bottle_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
 
 
-											dtBottleQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM BOTTLE_QRCODE LIMIT 0");
+											//dtBottleQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM BOTTLE_QRCODE LIMIT 0");
+
+											dtBottleQrCode = new DataTable("BOTTLE_QRCODE");
+
+											dtBottleQrCode.Columns.Add("BOTTLE_QRCODE_SYSID", typeof(long));
+											dtBottleQrCode.Columns.Add("BOTTLE_QRCODE", typeof(string));
+											dtBottleQrCode.Columns.Add("PRODUCT_ID", typeof(long));
+											dtBottleQrCode.Columns.Add("STATUS", typeof(string));
+											dtBottleQrCode.Columns.Add("SHIPPER_QRCODE_SYSID", typeof(long));
 
 											for (int x = 0; x < shipperData.ShipperQRCode_Data.Count(); x++)
 											{
@@ -3020,18 +3050,24 @@ namespace Dispatch_System.Controllers
 
 													DataRow newRow = dtBottleQrCode.NewRow();
 
-													newRow[0] = bottle_QrCode_Id;
-													newRow[1] = shipperData.ShipperQRCode_Data[x].BottleQRCode[i];
-													newRow[2] = productId;
-													newRow[3] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[x].Status) ? "a" : shipperData.ShipperQRCode_Data[x].Status;
-													newRow[4] = shipperData.ShipperQRCode_Data[x].Id;
-													newRow[5] = plant_id;
-													newRow[6] = user_id;
-													newRow[7] = currentDateTime.ToString();
-													newRow[8] = 0;
-													newRow[9] = "t";
-													newRow[10] = "t";
-													newRow[11] = 0;
+													//newRow[0] = bottle_QrCode_Id;
+													//newRow[1] = shipperData.ShipperQRCode_Data[x].BottleQRCode[i];
+													//newRow[2] = productId;
+													//newRow[3] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[x].Status) ? "a" : shipperData.ShipperQRCode_Data[x].Status;
+													//newRow[4] = shipperData.ShipperQRCode_Data[x].Id;
+													//newRow[5] = plant_id;
+													//newRow[6] = user_id;
+													//newRow[7] = currentDateTime.ToString();
+													//newRow[8] = 0;
+													//newRow[9] = "t";
+													//newRow[10] = "t";
+													//newRow[11] = 0;
+
+													newRow["BOTTLE_QRCODE_SYSID"] = bottle_QrCode_Id;
+													newRow["BOTTLE_QRCODE"] = shipperData.ShipperQRCode_Data[x].BottleQRCode[i];
+													newRow["PRODUCT_ID"] = productId;
+													newRow["STATUS"] = shipperData.ShipperQRCode_Data[x].Status;
+													newRow["SHIPPER_QRCODE_SYSID"] = shipperData.ShipperQRCode_Data[x].Id;
 
 													dtBottleQrCode.Rows.Add(newRow);
 
@@ -3086,7 +3122,7 @@ namespace Dispatch_System.Controllers
 																	$", {plant_id} PLANT_ID" +
 																	$", {user_id} CREATED_BY" +
 																	$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') CREATED_DATETIME" +
-																	$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') EVENTTIME" +
+																	$", STR_TO_DATE('{(dr["EVENTTIME"] != DBNull.Value ? Convert.ToDateTime(dr["EVENTTIME"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') EVENTTIME" +
 																	$", 1, NOW() " +
 																	$" FROM DUAL UNION ";
 															}
@@ -3260,7 +3296,7 @@ namespace Dispatch_System.Controllers
 																$", {plant_id} PLANT_ID" +
 																$", {user_id} CREATED_BY" +
 																$", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') CREATED_DATETIME" +
-																$", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') EVENTTIME " +
+																$", TO_DATE('{(dr["EVENTTIME"] != DBNull.Value ? Convert.ToDateTime(dr["EVENTTIME"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') EVENTTIME " +
 																$" FROM DUAL UNION ";
 														}
 													}
@@ -3916,7 +3952,7 @@ namespace Dispatch_System.Controllers
 										}
 
 										if (error_QR != null && error_QR.Count() > 0)
-											error += "Delete operation not perform because Shipper QR Code(s) already loaded. Loaded Shipper QR Code(s) : "+ string.Join(", ", error_QR) + System.Environment.NewLine;
+											error += "Delete operation not perform because Shipper QR Code(s) already loaded. Loaded Shipper QR Code(s) : " + string.Join(", ", error_QR) + System.Environment.NewLine;
 
 									}
 
@@ -4110,7 +4146,19 @@ namespace Dispatch_System.Controllers
 												if (dt != null && dt.Rows.Count > 0)
 													shipper_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
 
-												dtShipperQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM SHIPPER_QRCODE LIMIT 0");
+												//dtShipperQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM SHIPPER_QRCODE LIMIT 0");
+
+												dtShipperQrCode = new DataTable("SHIPPER_QRCODE");
+
+												dtShipperQrCode.Columns.Add("SHIPPER_QRCODE_SYSID", typeof(long));
+												dtShipperQrCode.Columns.Add("SHIPPER_QRCODE", typeof(string));
+												dtShipperQrCode.Columns.Add("TOTAL_BOTTLES_QTY", typeof(int));
+												dtShipperQrCode.Columns.Add("STATUS", typeof(string));
+												dtShipperQrCode.Columns.Add("ACTION", typeof(string));
+												dtShipperQrCode.Columns.Add("OLD_SHIPPER_QRCODE_SYSID", typeof(long));
+												dtShipperQrCode.Columns.Add("SHIPPER_QRCODE_API_SYSID", typeof(long));
+												dtShipperQrCode.Columns.Add("PALLET_QRCODE_API_SYSID", typeof(long));
+												dtShipperQrCode.Columns.Add("EVENTTIME", typeof(string));
 
 												for (int i = 0; i < shipperData.ShipperQRCode_Data.Count(); i++)
 												{
@@ -4129,22 +4177,15 @@ namespace Dispatch_System.Controllers
 
 													shipperData.ShipperQRCode_Data[i].Id = shipper_QrCode_Id + i;
 
-													newRow[0] = shipperData.ShipperQRCode_Data[i].Id;
-													newRow[1] = shipperData.ShipperQRCode_Data[i].ShipperQRCode;
-													newRow[2] = shipperData.ShipperQRCode_Data[i].BottleQRCode.Count();
-													newRow[3] = shipperData.ShipperQRCode_Data[i].Status;
-													newRow[4] = shipperData.ShipperQRCode_Data[i].Action;
-													newRow[5] = shipper_QrCode_Id_Old;
-													newRow[6] = shipper_Api_Id;
-													newRow[7] = 0;
-													newRow[8] = plant_id;
-													newRow[9] = user_id;
-													newRow[10] = currentDateTime.ToString();
-													newRow[11] = null;
-													newRow[12] = 0;
-													newRow[13] = 0;
-													newRow[14] = currentDateTime.ToString();
-													newRow[15] = currentDateTime.ToString();
+													newRow["SHIPPER_QRCODE_SYSID"] = shipperData.ShipperQRCode_Data[i].Id;
+													newRow["SHIPPER_QRCODE"] = shipperData.ShipperQRCode_Data[i].ShipperQRCode;
+													newRow["TOTAL_BOTTLES_QTY"] = shipperData.ShipperQRCode_Data[i].BottleQRCode.Count();
+													newRow["STATUS"] = shipperData.ShipperQRCode_Data[i].Status;
+													newRow["ACTION"] = shipperData.ShipperQRCode_Data[i].Action;
+													newRow["OLD_SHIPPER_QRCODE_SYSID"] = shipper_QrCode_Id_Old;
+													newRow["SHIPPER_QRCODE_API_SYSID"] = shipper_Api_Id;
+													newRow["PALLET_QRCODE_API_SYSID"] = 0;
+													newRow["EVENTTIME"] = DateTime.ParseExact(shipperData.ShipperQRCode_Data[i].EventTime.ToString(), "yyyy-MM-dd'T'HH:mm:ss.ffffff'Z'", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal).ToString();
 
 													dtShipperQrCode.Rows.Add(newRow);
 												}
@@ -4162,7 +4203,15 @@ namespace Dispatch_System.Controllers
 													bottle_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
 
 
-												dtBottleQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM BOTTLE_QRCODE LIMIT 0");
+												//dtBottleQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM BOTTLE_QRCODE LIMIT 0");
+
+												dtBottleQrCode = new DataTable("BOTTLE_QRCODE");
+
+												dtBottleQrCode.Columns.Add("BOTTLE_QRCODE_SYSID", typeof(long));
+												dtBottleQrCode.Columns.Add("BOTTLE_QRCODE", typeof(string));
+												dtBottleQrCode.Columns.Add("PRODUCT_ID", typeof(long));
+												dtBottleQrCode.Columns.Add("STATUS", typeof(string));
+												dtBottleQrCode.Columns.Add("SHIPPER_QRCODE_SYSID", typeof(long));
 
 												for (int x = 0; x < shipperData.ShipperQRCode_Data.Count(); x++)
 												{
@@ -4175,18 +4224,11 @@ namespace Dispatch_System.Controllers
 
 														DataRow newRow = dtBottleQrCode.NewRow();
 
-														newRow[0] = bottle_QrCode_Id;
-														newRow[1] = shipperData.ShipperQRCode_Data[x].BottleQRCode[i];
-														newRow[2] = productId;
-														newRow[3] = shipperData.ShipperQRCode_Data[x].Status;
-														newRow[4] = shipperData.ShipperQRCode_Data[x].Id;
-														newRow[5] = plant_id;
-														newRow[6] = user_id;
-														newRow[7] = currentDateTime.ToString();
-														newRow[8] = 0;
-														newRow[9] = "t";
-														newRow[10] = "t";
-														newRow[11] = 0;
+														newRow["BOTTLE_QRCODE_SYSID"] = bottle_QrCode_Id;
+														newRow["BOTTLE_QRCODE"] = shipperData.ShipperQRCode_Data[x].BottleQRCode[i];
+														newRow["PRODUCT_ID"] = productId;
+														newRow["STATUS"] = shipperData.ShipperQRCode_Data[x].Status;
+														newRow["SHIPPER_QRCODE_SYSID"] = shipperData.ShipperQRCode_Data[x].Id;
 
 														dtBottleQrCode.Rows.Add(newRow);
 
@@ -4246,7 +4288,7 @@ namespace Dispatch_System.Controllers
 																		$", {plant_id} PLANT_ID" +
 																		$", {user_id} CREATED_BY" +
 																		$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') CREATED_DATETIME" +
-																		$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') EVENTTIME" +
+																		$", STR_TO_DATE('{(dr["EVENTTIME"] != DBNull.Value ? Convert.ToDateTime(dr["EVENTTIME"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') EVENTTIME" +
 																		$", 1, NOW() " +
 																		$" FROM DUAL UNION ";
 																}
@@ -4437,7 +4479,7 @@ namespace Dispatch_System.Controllers
 																	$", {plant_id} PLANT_ID" +
 																	$", {user_id} CREATED_BY" +
 																	$", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') CREATED_DATETIME" +
-																	$", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') EVENTTIME " +
+																	$", TO_DATE('{(dr["EVENTTIME"] != DBNull.Value ? Convert.ToDateTime(dr["EVENTTIME"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') EVENTTIME " +
 																	$" FROM DUAL UNION ";
 															}
 														}
@@ -9467,7 +9509,19 @@ namespace Dispatch_System.Controllers
 												if (dt != null && dt.Rows.Count > 0)
 													shipper_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
 
-												dtShipperQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM SHIPPER_QRCODE LIMIT 0");
+												//dtShipperQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM SHIPPER_QRCODE LIMIT 0");
+
+												dtShipperQrCode = new DataTable("SHIPPER_QRCODE");
+
+												dtShipperQrCode.Columns.Add("SHIPPER_QRCODE_SYSID", typeof(long));
+												dtShipperQrCode.Columns.Add("SHIPPER_QRCODE", typeof(string));
+												dtShipperQrCode.Columns.Add("TOTAL_BOTTLES_QTY", typeof(int));
+												dtShipperQrCode.Columns.Add("STATUS", typeof(string));
+												dtShipperQrCode.Columns.Add("ACTION", typeof(string));
+												dtShipperQrCode.Columns.Add("OLD_SHIPPER_QRCODE_SYSID", typeof(long));
+												dtShipperQrCode.Columns.Add("SHIPPER_QRCODE_API_SYSID", typeof(long));
+												dtShipperQrCode.Columns.Add("PALLET_QRCODE_API_SYSID", typeof(long));
+												dtShipperQrCode.Columns.Add("EVENTTIME", typeof(string));
 
 												for (int i = 0; i < shipperData.ShipperQRCode_Data.Count(); i++)
 												{
@@ -9485,22 +9539,32 @@ namespace Dispatch_System.Controllers
 													}
 													else shipperData.ShipperQRCode_Data[i].Id = shipper_QrCode_Id + i;
 
-													newRow[0] = shipperData.ShipperQRCode_Data[i].Id;
-													newRow[1] = shipperData.ShipperQRCode_Data[i].ShipperQRCode;
-													newRow[2] = shipperData.ShipperQRCode_Data[i].BottleQRCode.Count();
-													newRow[3] = "a";
-													newRow[4] = shipperData.ShipperQRCode_Data[i].Action;
-													newRow[5] = shipper_QrCode_Id_Old;
-													newRow[6] = shipper_Api_Id;
-													newRow[7] = 0;
-													newRow[8] = plant_id;
-													newRow[9] = user_id;
-													newRow[10] = currentDateTime.ToString();
-													newRow[11] = null;
-													newRow[12] = 0;
-													newRow[13] = 0;
-													newRow[14] = currentDateTime.ToString();
-													newRow[15] = currentDateTime.ToString();
+													//newRow[0] = shipperData.ShipperQRCode_Data[i].Id;
+													//newRow[1] = shipperData.ShipperQRCode_Data[i].ShipperQRCode;
+													//newRow[2] = shipperData.ShipperQRCode_Data[i].BottleQRCode.Count();
+													//newRow[3] = "a";
+													//newRow[4] = shipperData.ShipperQRCode_Data[i].Action;
+													//newRow[5] = shipper_QrCode_Id_Old;
+													//newRow[6] = shipper_Api_Id;
+													//newRow[7] = 0;
+													//newRow[8] = plant_id;
+													//newRow[9] = user_id;
+													//newRow[10] = currentDateTime.ToString();
+													//newRow[11] = null;
+													//newRow[12] = 0;
+													//newRow[13] = 0;
+													//newRow[14] = currentDateTime.ToString();
+													//newRow[15] = currentDateTime.ToString();
+
+													newRow["SHIPPER_QRCODE_SYSID"] = shipperData.ShipperQRCode_Data[i].Id;
+													newRow["SHIPPER_QRCODE"] = shipperData.ShipperQRCode_Data[i].ShipperQRCode;
+													newRow["TOTAL_BOTTLES_QTY"] = shipperData.ShipperQRCode_Data[i].BottleQRCode.Count();
+													newRow["STATUS"] = shipperData.ShipperQRCode_Data[i].Status;
+													newRow["ACTION"] = shipperData.ShipperQRCode_Data[i].Action;
+													newRow["OLD_SHIPPER_QRCODE_SYSID"] = shipper_QrCode_Id_Old;
+													newRow["SHIPPER_QRCODE_API_SYSID"] = shipper_Api_Id;
+													newRow["PALLET_QRCODE_API_SYSID"] = 0;
+													newRow["EVENTTIME"] = DateTime.ParseExact(shipperData.ShipperQRCode_Data[i].EventTime.ToString(), "yyyy-MM-dd'T'HH:mm:ss.ffffff'Z'", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal).ToString();
 
 													dtShipperQrCode.Rows.Add(newRow);
 												}
@@ -9518,7 +9582,15 @@ namespace Dispatch_System.Controllers
 													bottle_QrCode_Id = (dt.Rows[0][0] != DBNull.Value ? Convert.ToInt64(dt.Rows[0][0]) : 0);
 
 
-												dtBottleQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM BOTTLE_QRCODE LIMIT 0");
+												//dtBottleQrCode = DataContext.ExecuteQuery_SQL("SELECT * FROM BOTTLE_QRCODE LIMIT 0");
+
+												dtBottleQrCode = new DataTable("BOTTLE_QRCODE");
+
+												dtBottleQrCode.Columns.Add("BOTTLE_QRCODE_SYSID", typeof(long));
+												dtBottleQrCode.Columns.Add("BOTTLE_QRCODE", typeof(string));
+												dtBottleQrCode.Columns.Add("PRODUCT_ID", typeof(long));
+												dtBottleQrCode.Columns.Add("STATUS", typeof(string));
+												dtBottleQrCode.Columns.Add("SHIPPER_QRCODE_SYSID", typeof(long));
 
 												for (int x = 0; x < shipperData.ShipperQRCode_Data.Count(); x++)
 												{
@@ -9535,27 +9607,32 @@ namespace Dispatch_System.Controllers
 															&& dtAvailable_Bottle.AsEnumerable()
 																.Any(row => row.Field<string>("BOTTLE_QRCODE") == shipperData.ShipperQRCode_Data[x].BottleQRCode[i]))
 														{
-															newRow[0] = (from row in dtAvailable_Bottle.AsEnumerable()
+															newRow["BOTTLE_QRCODE_SYSID"] = (from row in dtAvailable_Bottle.AsEnumerable()
 																		 where row.Field<string>("BOTTLE_QRCODE") == shipperData.ShipperQRCode_Data[x].BottleQRCode[i]
 																		 select row.Field<Int64>("BOTTLE_QRCODE_SYSID")).FirstOrDefault();
 														}
 														else
 														{
-															newRow[0] = bottle_QrCode_Id;
+															newRow["BOTTLE_QRCODE_SYSID"] = bottle_QrCode_Id;
 															bottle_QrCode_Id = bottle_QrCode_Id + 1;
 														}
 
-														newRow[1] = shipperData.ShipperQRCode_Data[x].BottleQRCode[i];
-														newRow[2] = productId;
-														newRow[3] = "a";
-														newRow[4] = shipperData.ShipperQRCode_Data[x].Id;
-														newRow[5] = plant_id;
-														newRow[6] = user_id;
-														newRow[7] = currentDateTime.ToString();
-														newRow[8] = 0;
-														newRow[9] = "t";
-														newRow[10] = "t";
-														newRow[11] = 0;
+														//newRow[1] = shipperData.ShipperQRCode_Data[x].BottleQRCode[i];
+														//newRow[2] = productId;
+														//newRow[3] = "a";
+														//newRow[4] = shipperData.ShipperQRCode_Data[x].Id;
+														//newRow[5] = plant_id;
+														//newRow[6] = user_id;
+														//newRow[7] = currentDateTime.ToString();
+														//newRow[8] = 0;
+														//newRow[9] = "t";
+														//newRow[10] = "t";
+														//newRow[11] = 0;
+
+														newRow["BOTTLE_QRCODE"] = shipperData.ShipperQRCode_Data[x].BottleQRCode[i];
+														newRow["PRODUCT_ID"] = productId;
+														newRow["STATUS"] = shipperData.ShipperQRCode_Data[x].Status;
+														newRow["SHIPPER_QRCODE_SYSID"] = shipperData.ShipperQRCode_Data[x].Id;
 
 														dtBottleQrCode.Rows.Add(newRow);
 													}
@@ -9605,7 +9682,7 @@ namespace Dispatch_System.Controllers
 																		$", {plant_id} PLANT_ID" +
 																		$", {user_id} CREATED_BY" +
 																		$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') CREATED_DATETIME" +
-																		$", STR_TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') EVENTTIME" +
+																		$", STR_TO_DATE('{(dr["EVENTTIME"] != DBNull.Value ? Convert.ToDateTime(dr["EVENTTIME"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', '%d-%m-%Y %H:%i') EVENTTIME" +
 																		$", 1, NOW() " +
 																		$" FROM DUAL UNION ";
 																}
@@ -9777,7 +9854,7 @@ namespace Dispatch_System.Controllers
 																	$", {plant_id} PLANT_ID" +
 																	$", {user_id} CREATED_BY" +
 																	$", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') CREATED_DATETIME" +
-																	$", TO_DATE('{currentDateTime.ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') EVENTTIME " +
+																	$", TO_DATE('{(dr["EVENTTIME"] != DBNull.Value ? Convert.ToDateTime(dr["EVENTTIME"]) : DateTime.MinValue).ToString("dd-MM-yyyy HH:mm").Replace("/", "-")}', 'DD-MM-YYYY HH24:MI') EVENTTIME " +
 																	$" FROM DUAL UNION ";
 															}
 														}
