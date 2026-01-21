@@ -1171,10 +1171,20 @@ namespace VendorQRGeneration.Areas.Dispatch.Controllers
 			if (!string.IsNullOrEmpty(ToDate))
 				PageTitle_Secondary += $"{(!string.IsNullOrEmpty(PageTitle_Secondary) ? " " : "")}To : {ToDate.ToUpper()}";
 
-			if (isPrint == true)
-				return View("_Partial_BatchLogFile_AN", (searchTerm, PageTitle_Secondary, PlantName, FromDate, ToDate, result, isPrint));
+			if (Convert.ToString(AppHttpContextAccessor.AppConfiguration.GetSection("PlantCode").Value ?? "").StartsWith("AN"))
+			{
+				if (isPrint == true)
+					return View("_Partial_BatchLogFile_AN", (searchTerm, PageTitle_Secondary, PlantName, FromDate, ToDate, result, isPrint));
+				else
+					return PartialView("_Partial_BatchLogFile_AN", (searchTerm, PageTitle_Secondary, PlantName, FromDate, ToDate, result, isPrint));
+			}
 			else
-				return PartialView("_Partial_BatchLogFile_AN", (searchTerm, PageTitle_Secondary, PlantName, FromDate, ToDate, result, isPrint));
+			{
+				if (isPrint == true)
+					return View("_Partial_BatchLogFile", (searchTerm, PageTitle_Secondary, PlantName, FromDate, ToDate, result, isPrint));
+				else
+					return PartialView("_Partial_BatchLogFile", (searchTerm, PageTitle_Secondary, PlantName, FromDate, ToDate, result, isPrint));
+			}
 		}
 
 		[HttpGet]

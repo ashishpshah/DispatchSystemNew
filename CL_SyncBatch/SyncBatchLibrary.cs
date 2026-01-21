@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Utilities.Encoders;
 using System.Data;
 using System.Globalization;
 using System.Text;
@@ -1060,10 +1061,60 @@ namespace CL_SyncBatch
 					catch (JsonReaderException jex)
 					{
 						error = "Unable to parse JSON. Please check the format of the data.";
+						
+						if (jex != null)
+						{
+							var _error = "Error : " + jex.Message.ToString() + Environment.NewLine;
+
+							if (jex.InnerException != null)
+							{
+								try { _error = _error + " | InnerException: " + jex.InnerException.ToString().Substring(0, (jex.InnerException.ToString().Length > 1000 ? 1000 : jex.InnerException.ToString().Length)); } catch { _error = _error + "InnerException: " + jex.InnerException?.ToString(); }
+							}
+							if (jex.StackTrace != null)
+							{
+								try { _error = _error + " | StackTrace: " + jex.StackTrace.ToString().Substring(0, (jex.StackTrace.ToString().Length > 1000 ? 1000 : jex.StackTrace.ToString().Length)); } catch { _error = _error + "InnerException: " + jex.StackTrace?.ToString(); }
+							}
+							if (jex.Source != null)
+							{
+								try { _error = _error + " | Source: " + jex.Source.ToString().Substring(0, (jex.Source.ToString().Length > 1000 ? 1000 : jex.Source.ToString().Length)); } catch { _error = _error + "InnerException: " + jex.Source?.ToString(); }
+							}
+							if (jex.StackTrace == null && jex.Source == null)
+							{
+								try { _error = _error + " | Exception: " + jex.ToString().Substring(0, (jex.Source.ToString().Length > 3000 ? 3000 : jex.Source.ToString().Length)); } catch { _error = _error + "Exception: " + jex?.ToString(); }
+							}
+
+							Write_Log($"File(s) Error at {DateTime.Now.ToString("dd-MM-yyyy hh:mm:ss tt").Replace("/", "-")} : {_error + Environment.NewLine}", _logFilePath);
+
+						}
 					}
 					catch (Exception ex)
-					{
+					{						
 						error = (string.IsNullOrEmpty(error) ? "Data not Convert Json to List." : error);
+
+						if (ex != null)
+						{
+							var _error = "Error : " + ex.Message.ToString() + Environment.NewLine;
+
+							if (ex.InnerException != null)
+							{
+								try { _error = _error + " | InnerException: " + ex.InnerException.ToString().Substring(0, (ex.InnerException.ToString().Length > 1000 ? 1000 : ex.InnerException.ToString().Length)); } catch { _error = _error + "InnerException: " + ex.InnerException?.ToString(); }
+							}
+							if (ex.StackTrace != null)
+							{
+								try { _error = _error + " | StackTrace: " + ex.StackTrace.ToString().Substring(0, (ex.StackTrace.ToString().Length > 1000 ? 1000 : ex.StackTrace.ToString().Length)); } catch { _error = _error + "InnerException: " + ex.StackTrace?.ToString(); }
+							}
+							if (ex.Source != null)
+							{
+								try { _error = _error + " | Source: " + ex.Source.ToString().Substring(0, (ex.Source.ToString().Length > 1000 ? 1000 : ex.Source.ToString().Length)); } catch { _error = _error + "InnerException: " + ex.Source?.ToString(); }
+							}
+							if (ex.StackTrace == null && ex.Source == null)
+							{
+								try { _error = _error + " | Exception: " + ex.ToString().Substring(0, (ex.Source.ToString().Length > 3000 ? 3000 : ex.Source.ToString().Length)); } catch { _error = _error + "Exception: " + ex?.ToString(); }
+							}
+
+							Write_Log($"File(s) Error at {DateTime.Now.ToString("dd-MM-yyyy hh:mm:ss tt").Replace("/", "-")} : {_error + Environment.NewLine}", _logFilePath);
+
+						}
 					}
 
 					if (!string.IsNullOrEmpty(error))
