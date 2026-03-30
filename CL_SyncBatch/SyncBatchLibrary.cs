@@ -450,7 +450,7 @@ namespace CL_SyncBatch
 											newRow["OLD_SHIPPER_QRCODE_SYSID"] = shipper_QrCode_Id_Old;
 											newRow["SHIPPER_QRCODE_API_SYSID"] = shipper_Api_Id;
 											newRow["PALLET_QRCODE_API_SYSID"] = 0;
-											newRow["EVENTTIME"] = DateTime.ParseExact(shipperData.ShipperQRCode_Data[i].EventTime.ToString(), "yyyy-MM-dd'T'HH:mm:ss.ffffff'Z'", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal).ToString();
+											newRow["EVENTTIME"] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].EventTime) ? "" : DateTime.ParseExact(Regex.Replace(shipperData.ShipperQRCode_Data[i].EventTime, @"\.\d+Z$", "").ToString(), "yyyy-MM-dd'T'HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture).ToString();
 
 											dtShipperQrCode.Rows.Add(newRow);
 										}
@@ -999,7 +999,6 @@ namespace CL_SyncBatch
 									//error += $" | Duplicate Bottle QR Code : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_BOTTLE").Select(x => "<S>" + x.QRCode + " - " + x.BottleQRCodes.Split(',').Count()).ToArray())} ";
 									error += $" | Duplicate Bottle QR Code : {string.Join(",", listShipperQRCode_Duplicate.Where(x => !string.IsNullOrEmpty(x.QRCode) && x.Type == "DUP_BOTTLE").Select(x => "<S>" + x.QRCode + "<B>" + x.BottleQRCodes).ToArray())} ";
 								}
-
 							}
 
 							if (!string.IsNullOrEmpty(error))
@@ -1052,7 +1051,6 @@ namespace CL_SyncBatch
 							catch { }
 
 							error = "";
-
 						}
 
 						#endregion

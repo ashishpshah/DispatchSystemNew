@@ -3011,7 +3011,7 @@ namespace Dispatch_System.Controllers
 												newRow["OLD_SHIPPER_QRCODE_SYSID"] = shipper_QrCode_Id_Old;
 												newRow["SHIPPER_QRCODE_API_SYSID"] = shipper_Api_Id;
 												newRow["PALLET_QRCODE_API_SYSID"] = 0;
-												newRow["EVENTTIME"] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].EventTime) ? "" : DateTime.ParseExact(Regex.Replace(shipperData.ShipperQRCode_Data[i].EventTime, @"\.\d+Z$", "").ToString(), "yyyy-MM-dd'T'HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal).ToString();
+												newRow["EVENTTIME"] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].EventTime) ? "" : DateTime.ParseExact(Regex.Replace(shipperData.ShipperQRCode_Data[i].EventTime, @"\.\d+Z$", "").ToString(), "yyyy-MM-dd'T'HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture).ToString();
 
 												dtShipperQrCode.Rows.Add(newRow);
 											}
@@ -4237,7 +4237,7 @@ namespace Dispatch_System.Controllers
 													newRow["OLD_SHIPPER_QRCODE_SYSID"] = shipper_QrCode_Id_Old;
 													newRow["SHIPPER_QRCODE_API_SYSID"] = shipper_Api_Id;
 													newRow["PALLET_QRCODE_API_SYSID"] = 0;
-													newRow["EVENTTIME"] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].EventTime) ? "" : DateTime.ParseExact(Regex.Replace(shipperData.ShipperQRCode_Data[i].EventTime, @"\.\d+Z$", "").ToString(), "yyyy-MM-dd'T'HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal).ToString();
+													newRow["EVENTTIME"] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].EventTime) ? "" : DateTime.ParseExact(Regex.Replace(shipperData.ShipperQRCode_Data[i].EventTime, @"\.\d+Z$", "").ToString(), "yyyy-MM-dd'T'HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture).ToString();
 
 													dtShipperQrCode.Rows.Add(newRow);
 												}
@@ -7088,7 +7088,7 @@ namespace Dispatch_System.Controllers
 													newRow["OLD_SHIPPER_QRCODE_SYSID"] = shipper_QrCode_Id_Old;
 													newRow["SHIPPER_QRCODE_API_SYSID"] = shipper_Api_Id;
 													newRow["PALLET_QRCODE_API_SYSID"] = 0;
-													newRow["EVENTTIME"] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].EventTime) ? "" : DateTime.ParseExact(Regex.Replace(shipperData.ShipperQRCode_Data[i].EventTime, @"\.\d+Z$", "").ToString(), "yyyy-MM-dd'T'HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal).ToString();
+													newRow["EVENTTIME"] = string.IsNullOrEmpty(shipperData.ShipperQRCode_Data[i].EventTime) ? "" : DateTime.ParseExact(Regex.Replace(shipperData.ShipperQRCode_Data[i].EventTime, @"\.\d+Z$", "").ToString(), "yyyy-MM-dd'T'HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture).ToString();
 
 													dtShipperQrCode.Rows.Add(newRow);
 												}

@@ -143,11 +143,10 @@
 										if (Model.SelectListItems.Where(x => x.Group == "M").Any(x => Convert.ToDecimal(x.Value2) == menu.Key.Id))
 										{
 											<dt>
-												@menu.Key.Display_Name &nbsp;
 												<div class="icheck-primary">
 													<input type="checkbox" id="checkboxPrimary_@menu.Key.Id"
 														   onchange="fnChange_SelectAll(this,'@menu.Key.Id')">
-													<label for="checkboxPrimary_@menu.Key.Id">&nbsp;</label>
+													<label for="checkboxPrimary_@menu.Key.Id">&nbsp; @menu.Key.Display_Name &nbsp;</label>
 												</div>
 											</dt>
 
@@ -166,7 +165,7 @@
 										}
 										else
 										{
-											<dd class="ml-3">
+											<dd class="ml-3 dd_@menu.Key.Id">
 												<div class="icheck-primary">
 													<input type="checkbox" id="checkboxPrimary_@menu.Key.Id" data-id="@menu.Key.Id"
 														   onchange="fnChange_Select('Menu')"
