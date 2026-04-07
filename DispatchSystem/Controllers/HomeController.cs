@@ -2,6 +2,7 @@
 using DinkToPdf;
 using DinkToPdf.Contracts;
 using Dispatch_System.Models;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser.clipper;
@@ -367,6 +368,15 @@ namespace Dispatch_System.Controllers
 			try
 			{
 				var (IsSuccess, response, Id) = (false, ResponseStatusMessage.Error, 0M);
+
+				if (!Common.IsUserLogged())
+				{
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+					CommonViewModel.Message = ResponseStatusMessage.UnAuthorize;
+
+					return Json(CommonViewModel);
+				}
 
 				string Oldpassword = Common.Get_Session("CheckPassword");
 
@@ -1116,38 +1126,43 @@ namespace Dispatch_System.Controllers
 		{
 			try
 			{
-
-
-				//var result = SendHtmlFormattedEmail(body);
-				if (viewModel.UserName != null)
+				if (!string.IsNullOrEmpty(viewModel.UserName))
 				{
-					string EmailAndPass = GetEmailId(viewModel.UserName);
-
-					string[] splitValues = EmailAndPass.Split('|');
-
-					string toEmail = splitValues[0];
-					string password = Common.Decrypt(splitValues[1]);
-					string firstName = splitValues[2];
-					string middleName = splitValues[3];
-					string lastName = splitValues[4];
-					string userName = splitValues[5];
+					string password = "";
+					string Email = "";
+					string Password = "";
+					string firstName = "";
+					string middleName = "";
+					string lastName = "";
+					string userName = "";
 
 
+					List<OracleParameter> oParams = new List<OracleParameter>();
 
-					//string body = this.createEmailBody(viewModel.UserName, password);
+					oParams.Add(new OracleParameter("P_USERNAME", OracleDbType.NVarchar2) { Value = viewModel.UserName });
 
+					var dt = DataContext.ExecuteStoredProcedure_DataTable("PC_FORGOTPASSWORD", oParams, true);
 
-					//var response = 
-					//Common.SendEmail("Forgot Password", body, toEmail.Replace(" ", "").Replace(";", ",").Split(",").ToArray(), null, false);
+					if (dt != null && dt.Rows.Count > 0)
+					{
+						Email = dt.Rows[0]["EMAIL_ID"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["EMAIL_ID"]) : "";
+						Password = dt.Rows[0]["USER_PASSWORD"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["USER_PASSWORD"]) : "";
+						firstName = dt.Rows[0]["FIRST_NAME"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["FIRST_NAME"]) : "";
+						middleName = dt.Rows[0]["MIDDLE_NAME"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["MIDDLE_NAME"]) : "";
+						lastName = dt.Rows[0]["LAST_NAME"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["LAST_NAME"]) : "";
+						userName = dt.Rows[0]["USER_NAME"] != DBNull.Value ? Convert.ToString(dt.Rows[0]["USER_NAME"]) : "";
 
-					//if (response.IsSuccess == false)
-					//	LogService.LogInsert(GetCurrentAction(), response.Message);
+						password = Common.Decrypt(Password);
+					}
 
-					//CommonViewModel.IsConfirm = true;
-					//CommonViewModel.IsSuccess = response.IsSuccess;
-					//CommonViewModel.StatusCode = response.IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
-					//CommonViewModel.Message = response.Message;
-					////CommonViewModel.RedirectURL = Url.Content("~/") + GetCurrentControllerUrl() + "/Index";
+					if (string.IsNullOrEmpty(Email?.Trim()))
+					{
+						CommonViewModel.IsSuccess = false;
+						CommonViewModel.StatusCode = ResponseStatusCode.Error;
+						CommonViewModel.Message = ResponseStatusMessage.NotFound;
+
+						return Json(CommonViewModel);
+					}
 
 					var textBody = $"Dear {firstName} {middleName} {lastName},";
 
@@ -1179,10 +1194,10 @@ namespace Dispatch_System.Controllers
 
 					textBody = textBody + "Indian Farmers Fertilizer Co-Operative Ltd.";
 
-					List<OracleParameter> oParams = new List<OracleParameter>();
+					oParams = new List<OracleParameter>();
 
 					oParams.Add(new OracleParameter("P_FROM_LIST", OracleDbType.Varchar2) { Value = AppHttpContextAccessor.AdminFromMail });
-					oParams.Add(new OracleParameter("P_TO_LIST", OracleDbType.Varchar2) { Value = toEmail });
+					oParams.Add(new OracleParameter("P_TO_LIST", OracleDbType.Varchar2) { Value = Email });
 					oParams.Add(new OracleParameter("P_CC_LIST", OracleDbType.Varchar2) { Value = "" });
 					oParams.Add(new OracleParameter("P_BCC_LIST", OracleDbType.Varchar2) { Value = "" });
 					oParams.Add(new OracleParameter("P_SUBJ", OracleDbType.Varchar2) { Value = "Forgot Password" });
@@ -1194,7 +1209,7 @@ namespace Dispatch_System.Controllers
 					CommonViewModel.IsConfirm = true;
 					CommonViewModel.IsSuccess = true;
 					CommonViewModel.StatusCode = ResponseStatusCode.Success;
-					CommonViewModel.Message = "E-Mail Sending.....";
+					CommonViewModel.Message = "Password send in your email.";
 
 					return Json(CommonViewModel);
 
@@ -1248,7 +1263,7 @@ namespace Dispatch_System.Controllers
 			{
 				CommonViewModel.IsSuccess = false;
 				CommonViewModel.StatusCode = ResponseStatusCode.Error;
-				CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
+				CommonViewModel.Message = ResponseStatusMessage.Error;
 			}
 
 
