@@ -245,14 +245,14 @@ else
 			if (Model.objFilter.DataType == "DI")
 			{
 				var listBatch = Model.List.Where(x => !string.IsNullOrEmpty(x.MDANo)).GroupBy(x => new { x.SrNo, x.BatchNo, x.ManufacturingDate })
-				.Select(g => new { SrNo = g.Key.SrNo, BatchNo = g.Key.BatchNo, ManufacturingDate = g.Key.ManufacturingDate, Items = g.ToList() }).ToList();
+				.Select(g => new { SrNo = g.Key.SrNo, BatchNo = g.Key.BatchNo, ShipperQty = g.Sum(x => x.MDAQty), ManufacturingDate = g.Key.ManufacturingDate, Items = g.ToList() }).ToList();
 
 				@foreach (var batch in listBatch.OrderBy(x => Convert.ToInt32(x.SrNo)))
 				{
 					<thead>
 						<tr style="border-bottom: 2px solid #dee2e6;">
 							<th width="5%" class="text-center">@batch.SrNo</th>
-							<th colspan="6">Batch No. : @batch.BatchNo &nbsp; &nbsp; Batch Date : @batch.ManufacturingDate</th>
+							<th colspan="6">Batch No. : @batch.BatchNo &nbsp; &nbsp; Batch Date : @batch.ManufacturingDate &nbsp; &nbsp; Shipper Qty : @batch.ShipperQty</th>
 							<th width="0%" hidden>&nbsp;</th>
 						</tr>
 						<tr>

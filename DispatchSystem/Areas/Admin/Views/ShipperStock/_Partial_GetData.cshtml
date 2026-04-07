@@ -42,10 +42,14 @@
     <table class="table table-bordered w-100 table_Common divDetail"id="tblmain">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Batch No</th>
                 <th>Manufacturing Date</th>
                 <th>Expiry Date</th>
                 <th>Total Shipper Qty</th>
+                <th>Shipper Qty (Loaded)</th>
+                <th>Shipper Qty (In Stock)</th>
+                <th hidden>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -54,16 +58,20 @@
                 @foreach (var item in Model.List.OrderBy(x => x.SrNo).ToList())
                 {
                     <tr>
+                        <td>@item.SrNo</td>
                         <td>@item.BatchNo</td>
                         <td>@item.ManufacturingDate</td>
                         <td>@item.ExpiryDate</td>
                         <td>@item.TotalShipperQTY</td>
+                        <td>@item.LoadedQty</td>
+                        <td>@item.DispatchedQtyKL</td>
+                        <td hidden>&nbsp;</td>
                     </tr>
                 }
             }
             else
             {
-                <tr><td colspan="4"><span class="w-100">No any records found.</span></td></tr>
+                <tr><td colspan="5"><span class="w-100">No any records found.</span></td></tr>
             }
         </tbody>
 
