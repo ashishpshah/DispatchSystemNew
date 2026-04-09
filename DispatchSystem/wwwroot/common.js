@@ -295,9 +295,8 @@ function ajaxPost($url, $data) {
         processData: false,
         dataType: "json",
         success: function (response) {
-
+            ShowLoader(false);
             try {
-                ShowLoader(false);
                 if (response.statusCode === 1) {
                     if (typeof response.isConfirm != 'undefined' && response.isConfirm != '' && response.isConfirm != null && response.isConfirm == true)
                         if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
@@ -311,7 +310,7 @@ function ajaxPost($url, $data) {
                             fnSubmitForm_Success(response, 'AJAX');
                 }
                 else CommonAlert_Error(response.message, null);
-            } catch { window.location.reload(); }
+            } catch { CommonAlert_Error(null) }
         },
         //xhr: function () {
         //    var fileXhr = $.ajaxSettings.xhr();
@@ -346,9 +345,8 @@ function ajaxGet($url, $isReturnToForm, $redirectUrl) {
         processData: false,
         dataType: "json",
         success: function (response) {
-
+            ShowLoader(false);
             try {
-                ShowLoader(false);
                 if (response.statusCode === 1) {
                     if (typeof response.isConfirm != 'undefined' && response.isConfirm != '' && response.isConfirm != null && response.isConfirm == true)
                         if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
@@ -373,10 +371,8 @@ function ajaxGet($url, $isReturnToForm, $redirectUrl) {
                                 else
                                     window.location = response.redirectURL;
                 }
-                else {
-                    ShowLoader(false); CommonAlert_Error(response.message, null);
-                }
-            } catch { ShowLoader(false); window.location.reload(); }
+                else { CommonAlert_Error(response.message, null); }
+            } catch { CommonAlert_Error(null) }
         },
         //xhr: function () {
         //    var fileXhr = $.ajaxSettings.xhr();
@@ -736,9 +732,8 @@ function fnSubmitForm($id) {
             processData: false,
             dataType: "json",
             success: function (response) {
-
+                ShowLoader(false);
                 try {
-                    ShowLoader(false);
                     if (response.statusCode === 1) {
                         if (typeof response.isConfirm != 'undefined' && response.isConfirm != null && response.isConfirm != '' && response.isConfirm == true)
                             if (typeof response.data5 != 'undefined' && response.data5 != null && response.data5 != '')
@@ -760,9 +755,7 @@ function fnSubmitForm($id) {
                     else {
                         CommonAlert_Error(response.message, null)
                     }
-                } catch {
-                    window.location.reload();
-                }
+                } catch { CommonAlert_Error(null) }
             },
             //xhr: function () {
             //    var fileXhr = $.ajaxSettings.xhr();
@@ -854,8 +847,8 @@ function fnSubmitForm_WithoutAlert($id) {
             processData: false,
             dataType: "json",
             success: function (response) {
+                ShowLoader(false);
                 try {
-                    ShowLoader(false);
                     if (response.statusCode === 1)
                         if (typeof response.redirectURL != 'undefined' && response.redirectURL != null && response.redirectURL != '')
                             window.location = response.redirectURL;
@@ -863,7 +856,7 @@ function fnSubmitForm_WithoutAlert($id) {
                             fnSubmitForm_Success(response, $id);
                     else
                         CommonAlert_Error(response.message, null);
-                } catch { window.location.reload(); }
+                } catch { CommonAlert_Error(null) }
             },
             failure: function (response) { ShowLoader(false); CommonAlert_Error(null) },
             error: function (response) { ShowLoader(false); CommonAlert_Error(null) }
@@ -918,7 +911,6 @@ function fnDelete_Confirm(url, msg = null) {
                     data: null,
                     success: function (response) {
                         ShowLoader(false);
-
                         try {
                             if (response.statusCode === 1) {
                                 if (typeof response.isConfirm != 'undefined' && response.isConfirm != null && response.isConfirm != '' && response.isConfirm == true)
@@ -932,7 +924,7 @@ function fnDelete_Confirm(url, msg = null) {
                                     else fnDelete_Success(response);
                             }
                             else CommonAlert_Error(response.message, null);
-                        } catch { window.location.reload(); }
+                        } catch { CommonAlert_Error(null) }
                     },
                     //xhr: function () {
                     //    var fileXhr = $.ajaxSettings.xhr();

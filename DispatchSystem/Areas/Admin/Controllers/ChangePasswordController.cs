@@ -23,7 +23,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 
                 List<OracleParameter> oParams = new List<OracleParameter>();
 
-                oParams.Add(new OracleParameter("P_USER_NAME", OracleDbType.Varchar2) { Value = Common.Get_Session(SessionKey.USER_NAME) });
+                //oParams.Add(new OracleParameter("P_USER_NAME", OracleDbType.Varchar2) { Value = Common.Get_Session(SessionKey.USER_NAME) });
                 oParams.Add(new OracleParameter("P_OLD_PASSWORD", OracleDbType.Varchar2) { Value = viewModel.CurrentPassword });
                 oParams.Add(new OracleParameter("P_CONFIRM_PASSWORD", OracleDbType.Varchar2) { Value = viewModel.ConfirmPassword });
                 oParams.Add(new OracleParameter("P_NEW_PASSWORD", OracleDbType.Varchar2) { Value = viewModel.NewPassword });

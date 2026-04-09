@@ -1122,7 +1122,7 @@ namespace Dispatch_System.Controllers
 		}
 
 		[HttpPost]
-		public ActionResult SendEmail(LoginViewModel viewModel)
+		public ActionResult ForgotPassword(LoginViewModel viewModel)
 		{
 			try
 			{
@@ -1196,15 +1196,20 @@ namespace Dispatch_System.Controllers
 
 					oParams = new List<OracleParameter>();
 
-					oParams.Add(new OracleParameter("P_FROM_LIST", OracleDbType.Varchar2) { Value = AppHttpContextAccessor.AdminFromMail });
-					oParams.Add(new OracleParameter("P_TO_LIST", OracleDbType.Varchar2) { Value = Email });
-					oParams.Add(new OracleParameter("P_CC_LIST", OracleDbType.Varchar2) { Value = "" });
-					oParams.Add(new OracleParameter("P_BCC_LIST", OracleDbType.Varchar2) { Value = "" });
-					oParams.Add(new OracleParameter("P_SUBJ", OracleDbType.Varchar2) { Value = "Forgot Password" });
-					oParams.Add(new OracleParameter("P_BODY", OracleDbType.Varchar2) { Value = textBody });
-					oParams.Add(new OracleParameter("P_REPLY_TO", OracleDbType.Varchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_from", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.AdminFromMail });
+					oParams.Add(new OracleParameter("p_to", OracleDbType.NVarchar2) { Value = Email });
+					oParams.Add(new OracleParameter("p_cc", OracleDbType.NVarchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_bcc", OracleDbType.NVarchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_subject", OracleDbType.NVarchar2) { Value = $"Forgot Password : {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}" });
+					oParams.Add(new OracleParameter("p_text_msg", OracleDbType.NVarchar2) { Value = textBody });
+					oParams.Add(new OracleParameter("p_html_msg", OracleDbType.NVarchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_attachment_names", OracleDbType.NVarchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_attachment_ids", OracleDbType.NVarchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_attachments_clob", OracleDbType.Clob) { Value = null });
+					oParams.Add(new OracleParameter("p_attachments_blob", OracleDbType.Blob) { Value = null });
+					oParams.Add(new OracleParameter("p_reply_to", OracleDbType.NVarchar2) { Value = null });
 
-					var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", oParams, false);
+					var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", oParams, true);
 
 					CommonViewModel.IsConfirm = true;
 					CommonViewModel.IsSuccess = true;
@@ -1399,15 +1404,20 @@ namespace Dispatch_System.Controllers
 
 					List<OracleParameter> oParams = new List<OracleParameter>();
 
-					oParams.Add(new OracleParameter("P_FROM_LIST", OracleDbType.Varchar2) { Value = AppHttpContextAccessor.AdminFromMail });
-					oParams.Add(new OracleParameter("P_TO_LIST", OracleDbType.Varchar2) { Value = Emails });
-					oParams.Add(new OracleParameter("P_CC_LIST", OracleDbType.Varchar2) { Value = "" });
-					oParams.Add(new OracleParameter("P_BCC_LIST", OracleDbType.Varchar2) { Value = "" });
-					oParams.Add(new OracleParameter("P_SUBJ", OracleDbType.Varchar2) { Value = "Forgot Password" });
-					oParams.Add(new OracleParameter("P_BODY", OracleDbType.Varchar2) { Value = textBody });
-					oParams.Add(new OracleParameter("P_REPLY_TO", OracleDbType.Varchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_from", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.AdminFromMail });
+					oParams.Add(new OracleParameter("p_to", OracleDbType.NVarchar2) { Value = Emails });
+					oParams.Add(new OracleParameter("p_cc", OracleDbType.NVarchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_bcc", OracleDbType.NVarchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_subject", OracleDbType.NVarchar2) { Value = $"Forgot Password : {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}" });
+					oParams.Add(new OracleParameter("p_text_msg", OracleDbType.NVarchar2) { Value = textBody });
+					oParams.Add(new OracleParameter("p_html_msg", OracleDbType.NVarchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_attachment_names", OracleDbType.NVarchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_attachment_ids", OracleDbType.NVarchar2) { Value = "" });
+					oParams.Add(new OracleParameter("p_attachments_clob", OracleDbType.Clob) { Value = null });
+					oParams.Add(new OracleParameter("p_attachments_blob", OracleDbType.Blob) { Value = null });
+					oParams.Add(new OracleParameter("p_reply_to", OracleDbType.NVarchar2) { Value = null });
 
-					var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", oParams, false);
+					var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", oParams, true);
 
 					CommonViewModel.IsConfirm = true;
 					CommonViewModel.IsSuccess = true;
@@ -1843,7 +1853,7 @@ namespace Dispatch_System.Controllers
 					CommonViewModel.IsConfirm = true;
 					CommonViewModel.IsSuccess = IsSuccess;
 					CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
-					CommonViewModel.Message = "Process of Sync MDA Done";
+					CommonViewModel.Message = IsSuccess ? "Process of Sync MDA Done" : ResponseStatusMessage.Error;
 					//CommonViewModel.RedirectURL = Url.Content("~/") + GetCurrentControllerUrl() + "/SyncData";
 
 					return Json(CommonViewModel);
@@ -5503,6 +5513,7 @@ namespace Dispatch_System.Controllers
 				}
 
 				listOracleParameter = new List<OracleParameter>();
+
 				listOracleParameter.Add(new OracleParameter("p_from", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.AdminFromMail });
 				listOracleParameter.Add(new OracleParameter("p_to", OracleDbType.NVarchar2) { Value = to });
 				listOracleParameter.Add(new OracleParameter("p_cc", OracleDbType.NVarchar2) { Value = cc });
@@ -5662,6 +5673,7 @@ namespace Dispatch_System.Controllers
 				}
 
 				listOracleParameter = new List<OracleParameter>();
+
 				listOracleParameter.Add(new OracleParameter("p_from", OracleDbType.NVarchar2) { Value = AppHttpContextAccessor.AdminFromMail });
 				listOracleParameter.Add(new OracleParameter("p_to", OracleDbType.NVarchar2) { Value = to });
 				listOracleParameter.Add(new OracleParameter("p_cc", OracleDbType.NVarchar2) { Value = cc });
@@ -5719,7 +5731,7 @@ namespace Dispatch_System.Controllers
 			listOracleParameter.Add(new OracleParameter("p_attachments_blob", OracleDbType.Blob) { Value = null });
 			listOracleParameter.Add(new OracleParameter("p_reply_to", OracleDbType.NVarchar2) { Value = null });
 
-			var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, false);
+			var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure("PC_SEND_EMAIL", listOracleParameter, true);
 
 			LogService.LogInsert("Home - SendEmailTest", $"Send Email Test => Completed at {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss").Replace("-", "/")}", null);
 
