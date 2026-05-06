@@ -748,7 +748,7 @@ namespace Dispatch_System
 						if (returnParameter)
 							cmd.Parameters.Add(new MySqlParameter("P_RESULT", MySqlDbType.VarString, 2000) { Direction = ParameterDirection.Output });
 
-						cmd.CommandTimeout = 86400;
+						cmd.CommandTimeout = 60;
 						cmd.ExecuteNonQuery();
 
 						//RETURN VALUE

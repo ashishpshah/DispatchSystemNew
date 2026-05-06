@@ -321,6 +321,8 @@ namespace Dispatch_System.Controllers
 									Plant_Name = dr["PLANT_NAME"] != DBNull.Value ? Convert.ToString(dr["PLANT_NAME"]) : ""
 								});
 
+						plants = plants.Where(x => x.PlantID > 0).OrderBy(x => x.PlantID).ToList();
+
 						Common.Configure_UserPlantAccess(plants);
 
 						CommonViewModel.IsSuccess = true;
@@ -545,6 +547,8 @@ namespace Dispatch_System.Controllers
 									Plant_Name = dr["PLANT_NAME"] != DBNull.Value ? Convert.ToString(dr["PLANT_NAME"]) : ""
 								});
 
+						plants = plants.Where(x => x.PlantID > 0).OrderBy(x => x.PlantID).ToList();
+
 						Common.Configure_UserPlantAccess(plants);
 
 						CommonViewModel.IsSuccess = true;
@@ -693,6 +697,8 @@ namespace Dispatch_System.Controllers
 								PlantID = dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt32(dr["PLANT_ID"]) : 0,
 								Plant_Name = dr["PLANT_NAME"] != DBNull.Value ? Convert.ToString(dr["PLANT_NAME"]) : ""
 							});
+
+					plants = plants.Where(x => x.PlantID > 0).OrderBy(x => x.PlantID).ToList();
 
 					Common.Configure_UserPlantAccess(plants);
 

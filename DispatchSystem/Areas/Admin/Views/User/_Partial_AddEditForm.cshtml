@@ -196,9 +196,9 @@
 					</div>
 					<div class="col-sm-4">
 						<div class="float-sm-right">
-							<button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2" onclick="fnAddNewRow('@string.Join("||", Model.SelectListItems.Where(x => x.Group == "P").Select(x=>x.Value + "|" + x.Text).ToList())', '@string.Join("||", Model.SelectListItems.Where(x => x.Group == "R").Select(x=>x.Value + "|" + x.Text).ToList())');">
+							@* <button type="button" id="btnBackToList" class="btn btn-warning btn-md pull-right mr-2" onclick="fnAddNewRow('@string.Join("||", Model.SelectListItems.Where(x => x.Group == "P").Select(x=>x.Value + "|" + x.Text).ToList())', '@string.Join("||", Model.SelectListItems.Where(x => x.Group == "R").Select(x=>x.Value + "|" + x.Text).ToList())');">
 								<i class="fas fa-plus"></i> &nbsp; Add new
-							</button>
+							</button> *@
 						</div>
 					</div>
 				</div>

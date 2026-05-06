@@ -100,6 +100,7 @@ namespace Dispatch_System
 		public long TareWeight { get; set; }
 		public long NetWeight { get; set; }
 		public long OutofToleranceWeight { get; set; }
+		public List<string> QRCode_UnLoaded { get; set; }
 	}
 
 

@@ -114,6 +114,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 				oParams.Add(new OracleParameter("P_PLANT_ID", OracleDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
 				oParams.Add(new OracleParameter("P_PAGE_TITLE", OracleDbType.RefCursor) { Direction = ParameterDirection.Output });
 				oParams.Add(new OracleParameter("P_RESULT", OracleDbType.RefCursor) { Direction = ParameterDirection.Output });
+				oParams.Add(new OracleParameter("P_RESULT_UNLOAD", OracleDbType.RefCursor) { Direction = ParameterDirection.Output });
 
 				ds = DataContext.ExecuteStoredProcedure_DataSet("PC_REPORT_AVAILABLE_SHIPPER_QR_CODE_NEW", oParams);
 
@@ -128,8 +129,20 @@ namespace Dispatch_System.Areas.Admin.Controllers
 							ExpiryDate = dr["EXPIRY_DATE"] != DBNull.Value ? Convert.ToString(dr["EXPIRY_DATE"]) : "",
 							TotalShipperQTY = dr["TOTAL_SHIPPER_QTY"] != DBNull.Value ? Convert.ToInt64(dr["TOTAL_SHIPPER_QTY"]) : 0,
 							LoadedQty = dr["LOADED_SHIPPER_QTY"] != DBNull.Value ? Convert.ToInt64(dr["LOADED_SHIPPER_QTY"]) : 0,
-							DispatchedQtyKL = dr["IN_STOCK_SHIPPER_QTY"] != DBNull.Value ? Convert.ToInt64(dr["IN_STOCK_SHIPPER_QTY"]) : 0
+							DispatchedQtyKL = dr["IN_STOCK_SHIPPER_QTY"] != DBNull.Value ? Convert.ToInt64(dr["IN_STOCK_SHIPPER_QTY"]) : 0,
+							QRCode_UnLoaded = new List<string>()
 						});
+				}
+
+				if (ds != null && ds.Tables.Count > 2 && ds.Tables[2].Rows.Count > 0)
+				{
+					foreach (DataRow dr in ds.Tables[2].Rows)
+					{
+						var index = result.FindIndex(x => x.BatchNo == (dr["BATCH_NO"] != DBNull.Value ? Convert.ToString(dr["BATCH_NO"]) : ""));
+
+						if (index >= 0) result[index].QRCode_UnLoaded.Add(dr["unaded_shipper_qrcode"] != DBNull.Value ? Convert.ToString(dr["unaded_shipper_qrcode"]) : "");
+					}
+
 				}
 			}
 			catch (Exception ex) { LogService.LogInsert(GetCurrentAction(), "", ex); }

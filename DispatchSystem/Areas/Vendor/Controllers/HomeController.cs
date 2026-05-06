@@ -201,7 +201,9 @@ namespace VendorQRGeneration.Areas.Vendor.Controllers
                                     Plant_Name = dr["PLANT_NAME"] != DBNull.Value ? Convert.ToString(dr["PLANT_NAME"]) : ""
                                 });
 
-                        Common.Configure_UserPlantAccess(plants);
+						plants = plants.Where(x => x.PlantID > 0).OrderBy(x => x.PlantID).ToList();
+
+						Common.Configure_UserPlantAccess(plants);
 
 
                         CommonViewModel.IsSuccess = true;

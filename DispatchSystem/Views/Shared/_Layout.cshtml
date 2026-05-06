@@ -265,9 +265,9 @@
 				display: none !important;
 			}
 			/*
-											.expandable-body .list-unstyled ul.ul_columns_4 {
-												grid-template-columns: repeat(3, 1fr);
-											} */
+															.expandable-body .list-unstyled ul.ul_columns_4 {
+																grid-template-columns: repeat(3, 1fr);
+															} */
 		}
 	</style>
 
@@ -344,115 +344,82 @@
 
 		</nav>
 
-		@if (listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1)
-		{
-			<aside class="main-sidebar elevation-4 sidebar-dark-teal">
-				<a href="@Url.Action("Index", "Home", new { area = "" })" class="brand-link bg-teal" style="background-color: #007D39 !important;">
-					<span class="brand-text font-weight-light text-white font-weight-bolder ml-2">Dispatch System</span>
-				</a>
+		<aside class="main-sidebar elevation-4 sidebar-dark-teal">
+			<a href="@Url.Action("Index", "Home", new { area = "" })" class="brand-link bg-teal" style="background-color: #007D39 !important;">
+				<span class="brand-text font-weight-light text-white font-weight-bolder ml-2">Dispatch System</span>
+			</a>
 
-				<div class="sidebar">
-					@*<div class="user-panel mt-3 pb-3 mb-3 navbar p-0 d-flex">*@
-					<div class="user-panel mt-3 pb-3 mb-3 navbar p-0 d-none">
-						<ul class="navbar-nav">
-							<li class="nav-item dropdown">
-								<a class="nav-link bg-lightblue color-palette rounded dropdown-toggle text-bold" href="#" id="navbarDropdown_Plant" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-									@Common.Get_Session(SessionKey.PLANT_NAME)
-								</a>
-								<div class="dropdown-menu py-0 m-0 w-100 bg-lightblue color-palette border-0" aria-labelledby="navbarDropdown_Plant" style="left: 0px; right: inherit;">
-									@if (listPlant != null)
-									{
-										foreach (var item in listPlant)
-										{
-											<a role="button" class="dropdown-item dropdown-item-plant bg-lightblue color-palette @(Common.Get_Session_Int(SessionKey.PLANT_ID) == item.PlantID ? "disabled text-bold" : "")"
-											   href="#" onclick="ajaxPost('@Url.Action("Change_Plant", "Home", new { area = "" })?id=@item.PlantID', window.location.href)">@item.Plant_Name</a>
-										}
-									}
-								</div>
-							</li>
-						</ul>
-					</div>
-					<nav class="mt-2">
-						<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-
-							<li class="nav-item">
-								<a href="@Url.Action("Index", "Home", new { Area = "" })" class="nav-link">
-									<i class="nav-icon fas fa-home"></i>
-									<p> Dashboard </p>
-								</a>
-							</li>
-
-							@{
-								if (listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1)
+			<div class="sidebar">
+				@*<div class="user-panel mt-3 pb-3 mb-3 navbar p-0 d-flex">*@
+				<div class="user-panel mt-3 pb-3 mb-3 navbar p-0 d-none">
+					<ul class="navbar-nav">
+						<li class="nav-item dropdown">
+							<a class="nav-link bg-lightblue color-palette rounded dropdown-toggle text-bold" href="#" id="navbarDropdown_Plant" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								@Common.Get_Session(SessionKey.PLANT_NAME)
+							</a>
+							<div class="dropdown-menu py-0 m-0 w-100 bg-lightblue color-palette border-0" aria-labelledby="navbarDropdown_Plant" style="left: 0px; right: inherit;">
+								@if (listPlant != null)
 								{
-									if (listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => x.Parent_Id).Select(x => x.Key).Count() == 1)
-										listMenu.RemoveAll(x => x.Id == listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => x.Parent_Id).Select(x => x.Key).FirstOrDefault());
-
-									if (listMenu.Any(x => x.Parent_Id == 0))
-										foreach (var menu in listMenu.Where(x => x.Parent_Id == 0).OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.Display_Name, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
-										{
-											if (listMenu.Any(x => x.Parent_Id == menu.Key.Id))
-											{
-												<li class="nav-item" style="padding-top:5px !important">
-													<a href="#" class="nav-link">
-														<i class="nav-icon fas fa-tachometer-alt"></i>
-														<p>
-															@menu.Key.Display_Name
-															<i class="right fas fa-angle-left"></i>
-														</p>
-													</a>
-													<ul class="nav nav-treeview">
-														@foreach (var menuChild in listMenu.Where(x => x.Parent_Id == menu.Key.Id).OrderBy(x => x.DisplayOrder))
-														{
-															<li class="nav-item ml-3">
-																@if (string.IsNullOrEmpty(menuChild.Url))
-																{
-																	<a href="@Url.Action("Index", menuChild.Controller, new { Area = menuChild.Area })" data-title="@menuChild.Display_Name" class="nav-link">
-																		<i class="nav-icon fas fa-th"></i>
-																		<p>@menuChild.Display_Name</p>
-																	</a>
-																}
-																else
-																{
-																	<a href="@(Url.Content("~/") + menuChild.Url)" data-title="@menuChild.Display_Name" class="nav-link">
-																		<i class="nav-icon fas fa-th"></i>
-																		<p>@menuChild.Display_Name</p>
-																	</a>
-																}
-															</li>
-														}
-													</ul>
-												</li>
-											}
-											else
-											{
-												<li class="nav-item">
-													@if (string.IsNullOrEmpty(menu.Key.Url))
-													{
-														<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area })" class="nav-link">
-															<i class="nav-icon fas fa-th"></i>
-															<p> @menu.Key.Display_Name </p>
-														</a>
-													}
-													else
-													{
-														<a href="@(Url.Content("~/") + menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
-															<i class="nav-icon fas fa-th"></i>
-															<p>@menu.Key.Display_Name</p>
-														</a>
-													}
-												</li>
-												// <li class="nav-item">
-												//     <a href="@Url.Action("Index", "MDABatchNoList", new { Area = "Admin"})" class="nav-link">
-												//         <i class="nav-icon fas fa-th"></i>
-												//         <p> MDA Batch No List </p>
-												//     </a>
-												// </li>
-											}
-										}
-									else
+									foreach (var item in listPlant)
 									{
-										foreach (var menu in listMenu.OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.Display_Name, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
+										<a role="button" class="dropdown-item dropdown-item-plant bg-lightblue color-palette @(Common.Get_Session_Int(SessionKey.PLANT_ID) == item.PlantID ? "disabled text-bold" : "")"
+										   href="#" onclick="ajaxPost('@Url.Action("Change_Plant", "Home", new { area = "" })?id=@item.PlantID', window.location.href)">@item.Plant_Name</a>
+									}
+								}
+							</div>
+						</li>
+					</ul>
+				</div>
+				<nav class="mt-2">
+					<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+						<li class="nav-item">
+							<a href="@Url.Action("Index", "Home", new { Area = "" })" class="nav-link">
+								<i class="nav-icon fas fa-home"></i>
+								<p> Dashboard </p>
+							</a>
+						</li>
+
+						@{
+							if (listMenu != null && listMenu.Count() > 0 && listMenu.Where(x => x.Parent_Id > 0).GroupBy(x => new { x.Parent_Id, x.Id }).Select(x => x.Key).Count() > 1)
+							{
+								if (listMenu.Any(x => x.Parent_Id == 0))
+									foreach (var menu in listMenu.Where(x => x.Parent_Id == 0).OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.Display_Name, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
+									{
+										if (listMenu.Any(x => x.Parent_Id == menu.Key.Id))
+										{
+											<li class="nav-item" style="padding-top:5px !important">
+												<a href="#" class="nav-link">
+													<i class="nav-icon fas fa-tachometer-alt"></i>
+													<p>
+														@menu.Key.Display_Name
+														<i class="right fas fa-angle-left"></i>
+													</p>
+												</a>
+												<ul class="nav nav-treeview">
+													@foreach (var menuChild in listMenu.Where(x => x.Parent_Id == menu.Key.Id).OrderBy(x => x.DisplayOrder))
+													{
+														<li class="nav-item ml-3">
+															@if (string.IsNullOrEmpty(menuChild.Url))
+															{
+																<a href="@Url.Action("Index", menuChild.Controller, new { Area = menuChild.Area })" data-title="@menuChild.Display_Name" class="nav-link">
+																	<i class="nav-icon fas fa-th"></i>
+																	<p>@menuChild.Display_Name</p>
+																</a>
+															}
+															else
+															{
+																<a href="@(Url.Content("~/") + menuChild.Url)" data-title="@menuChild.Display_Name" class="nav-link">
+																	<i class="nav-icon fas fa-th"></i>
+																	<p>@menuChild.Display_Name</p>
+																</a>
+															}
+														</li>
+													}
+												</ul>
+											</li>
+										}
+										else
 										{
 											<li class="nav-item">
 												@if (string.IsNullOrEmpty(menu.Key.Url))
@@ -470,16 +437,43 @@
 													</a>
 												}
 											</li>
+											// <li class="nav-item">
+											//     <a href="@Url.Action("Index", "MDABatchNoList", new { Area = "Admin"})" class="nav-link">
+											//         <i class="nav-icon fas fa-th"></i>
+											//         <p> MDA Batch No List </p>
+											//     </a>
+											// </li>
 										}
+									}
+								else
+								{
+									foreach (var menu in listMenu.OrderBy(x => x.DisplayOrder).GroupBy(x => new { x.Id, x.Display_Name, x.Controller, x.Url, x.DisplayOrder, x.Area }).ToList())
+									{
+										<li class="nav-item">
+											@if (string.IsNullOrEmpty(menu.Key.Url))
+											{
+												<a href="@Url.Action("Index", menu.Key.Controller, new { Area = menu.Key.Area })" class="nav-link">
+													<i class="nav-icon fas fa-th"></i>
+													<p> @menu.Key.Display_Name </p>
+												</a>
+											}
+											else
+											{
+												<a href="@(Url.Content("~/") + menu.Key.Url)" data-title="@menu.Key.Display_Name" class="nav-link">
+													<i class="nav-icon fas fa-th"></i>
+													<p>@menu.Key.Display_Name</p>
+												</a>
+											}
+										</li>
 									}
 								}
 							}
+						}
 
-						</ul>
-					</nav>
-				</div>
-			</aside>
-		}
+					</ul>
+				</nav>
+			</div>
+		</aside>
 
 		<div class="content-wrapper" style="min-height: 540.016px;">
 			@RenderBody()
