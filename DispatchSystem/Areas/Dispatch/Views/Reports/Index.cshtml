@@ -910,69 +910,71 @@
 
 		function fnExport_Excel(flag) {
 
-			if (flag === 'DispatchQRCodeByMDA' && flag != '') {
+			if (typeof flag == 'undefined' || flag == null && flag.length == 0) return;
+
+			if (flag === 'DispatchQRCodeByMDA') {
 				let combinedTable = combineTables();
 
 				combinedTable.table2excel({
-					filename: "DispatchQRCodeByMDA.xls"
+					filename: "DispatchQRCodeByMDA"
 				});
 			}
 
-			if (flag === 'DS' && flag != '') {
-				$("#table_Common").table2excel({
-					filename: "DispatchSummary.xls"
+			if (flag === 'DS') {
+				$("#div_DataTable table").table2excel({
+					filename: "DispatchSummary"
 				});
 			}
 
-			if (flag === 'DS_MDA' && flag != '') {
-				$("#table_Common").table2excel({
-					filename: "MDAWiseDispatchSummaryReport.xls"
+			if (flag === 'DS_MDA') {
+				$("#div_DataTable table").table2excel({
+					filename: "MDAWiseDispatchSummaryReport"
 				});
 			}
 
-			if (flag === 'DS_BAT' && flag != '') {
-				$("#table_Common").table2excel({
-					filename: "BatchWiseDispatchSummaryReport.xls"
+			if (flag === 'DS_BAT') {
+				$("#div_DataTable table").table2excel({
+					filename: "BatchWiseDispatchSummaryReport"
 				});
 			}
 
-			if (flag === 'DS_COUNT' && flag != '') {
-				$("#table_Common").table2excel({
-					filename: "DispatchCountSummaryReport.xls"
+			if (flag === 'DS_COUNT') {
+				$("#div_DataTable table").table2excel({
+					filename: "DispatchCountSummaryReport"
 				});
 			}
 
-			if (flag === 'BatchNo' && flag != '') {
+			if (flag === 'BatchNo') {
 				let combinedTable = combineBatchTables();
 
 				combinedTable.table2excel({
-					filename: "KnowYourBatchData.xls"
+					filename: "KnowYourBatchData"
 				});
 			}
 
-			if (flag === 'ShipperData' && flag != '') {
-				$("#table_Common_").table2excel({
-					filename: "ShipperData.xls"
+			if (flag === 'ShipperData') {
+				$("#div_DataTable table").table2excel({
+					filename: "ShipperData"
 				});
 			}
 
-			if (flag === 'InvoiceNo' && flag != '') {
+			if (flag === 'InvoiceNo') {
 				let combinedTable = combineInvoiceTables();
 
 				combinedTable.table2excel({
-					filename: "KnowYourInvoiceData.xls"
+					filename: "KnowYourInvoiceData"
 				});
 			}
 
-			if (flag === 'BottleQRCode' && flag != '') {
-				$("#table_Common_").table2excel({
-					filename: "KnowYourBottle.xls"
+			if (flag === 'BottleQRCode') {
+				$("#div_DataTable table").table2excel({
+					filename: "KnowYourBottle"
 				});
 			}
 
-			if (flag === 'BatchLogFile' && flag != '') {
-				$("#table_Common").table2excel({
-					filename: "BatchFileLog.xls"
+			if (flag === 'BatchLogFile') {
+				$("#div_DataTable table").table2excel({
+					filename: "BatchFileLog"
 				});
 			}
 
