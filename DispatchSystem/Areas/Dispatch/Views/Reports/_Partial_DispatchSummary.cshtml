@@ -116,7 +116,32 @@ else
 }
 
 <div class="row col-12 mt-3 table-responsive w-100">
-	<table id="tableReport" class="table table-bordered table-striped w-100 display">
+	@{
+		var fileName = "";
+		var fileSubTitle = Model.PageTitle;
+
+		if (Model.Report_Type == "DS_BAT")
+		{
+			if (Model.objFilter.DataType == "IS")
+			{
+				fileName = "Batch Wise Is - Stock Summary Report";
+			}
+			else
+			{
+				fileName = "Batch Wise Dispatch Summary Report";
+			}
+		}
+		else if (Model.Report_Type == "DS")
+		{
+			fileName = "MDA Dispatch Summary Report";
+		}
+		else
+		{
+			fileName = "MDA Dispatch Count Summary Report";
+		}
+	}
+
+	<table id="tableReport" class="table table-bordered table-striped w-100 display" data-export-file-name="@fileName" data-export-file-message="@fileSubTitle">
 		@if (Model.Report_Type == "DS")
 		{
 			<thead>
