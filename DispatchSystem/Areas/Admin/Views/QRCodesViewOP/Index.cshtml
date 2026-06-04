@@ -11,7 +11,7 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1 class="m-0">Qr Code Generation Report</h1>
+                <h1 class="m-0">QR Code Generation Report</h1>
             </div>
 
         </div>
@@ -127,6 +127,11 @@
                     "bProcessing": true,
                     "bSearchable": true,
                     "order": [[0, 'asc']],
+                    pageLength: 50,
+                    lengthMenu: [
+                        [10, 25, 50, -1],
+                        [10, 25, 50, 'All']
+                    ],
                     "language": { "emptyTable": "No record found.", "processing": '<i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:#2a2b2b;"></i><span class="sr-only">Loading...</span> ' },
                     "fnServerParams": function (aoData) {
                         //aoData.push({ "name": "RequestNo", "value": "" + $('#RequestNo').val() });
@@ -154,51 +159,130 @@
                         //	}
                         //}
                     ],
-                    "dom": "<'row'<'col-sm-6 mb-3'B>>" +
-                        "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                        "<'row'<'col-sm-12'tr>>" +
-                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-                    "buttons": [
-                        // 	{
-                        // 	extend: "csv",
-                        // 	className: "btn-flat btn-info mx-2 px-3",
-                        // 	titleAttr: 'Export in CSV',
-                        // 	text: 'CSV',
-                        // 	filename: 'QR Code Requests List - OP',
-                        // 	init: function (api, node, config) { $(node).removeClass('btn-default') }
-                        // },
-                        // {
-                        // 	extend: "excel",
-                        // 	className: "btn-flat btn-success mx-2 px-3",
-                        // 	titleAttr: 'Export in Excel',
-                        // 	text: 'Excel',
-                        // 	filename: 'QR Code Requests List - OP',
-                        // 	init: function (api, node, config) { $(node).removeClass('btn-default') }
-                        // },
+                dom: "<'row'<'col-sm-6 mb-3'B>>" +
+                    "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                buttons:
+                    [{
+                        text: 'Print',
+                        title: "QR Code Generation Report",
+                        className: 'btn btn-primary',
+                        exportOptions: { columns: ':visible', stripHtml: true, modifier: { page: 'all', search: 'applied', order: 'applied' } },
+                        action: function (e, dt, button, config) {
+
+                            // Get table HTML
+                            var tableHtml = dt.table().node().outerHTML;
+
+                            // Open new browser window
+                            var printWindow = window.open('', '_blank');
+
+                            // Write content
+                            printWindow.document.write(`
+                                <html>
+                                <head>
+                                    <title>"QR Code Generation Report"</title>
+
+                                    <style>
+
+                                        body{
+                                            font-family: Arial, sans-serif;
+                                            padding:10px;
+                                            background:white;
+                                            color:black;
+                                        }
+
+                                        table{
+                                            width:100% !important;
+                                            border-collapse:collapse;
+                                            table-layout:fixed;
+                                            font-size:10px;
+                                        }
+
+                                        th, td {
+                                            border:1px solid #ccc;
+                                            padding:4px;
+                                            word-wrap:break-word;
+                                            overflow-wrap:break-word;
+                                            white-space:normal;
+                                            align:left;
+                                        }
+                                    </style>
+                                </head>
+
+                                <body>
+                                    <h2>"QR Code Generation Report"</h2>
+
+                                    ${subHeading || ''}
+
+                                    ${tableHtml}
+
+                                </body>
+                                </html>
+                            `);
+
+                            printWindow.document.close();
+
+                            // Optional auto print
+                            printWindow.focus();
+                            printWindow.print();
+                        }
+                    },
                         {
-                            extend: "pdfHtml5",
-                            className: "btn-flat btn-danger mx-2 px-3",
-                            titleAttr: 'Export in PDF',
-                            text: 'PDF',
-                            pageSize: 'LEGAL',
-                            filename: 'QR Code Requests List - OP',
-                            init: function (api, node, config) { $(node).removeClass('btn-default') },
-                            customize: function (doc) {
-                                doc.defaultStyle.fontSize = 10;
-                                doc.pageMargins = [5, 10, 5, 10]; // Adjust margins
-                                doc.pageOrientation = 'landscape'; // Set orientation
-                                doc.content.splice(1, 0, {
-                                    text: subHeading,
-                                    style: 'subheader'
-                                });
-                                doc.styles.subheader = {
-                                    fontSize: 12,
-                                    italics: true,
-                                    margin: [10, 0, 0, 10]
-                                };
-                                // Add more customization options as needed
-                            }
-                        }]
+                            extend: 'excelHtml5',
+                            text: 'Export',
+                            title: "QR Code Generation Report",
+                            className: 'btn btn-info',
+                            exportOptions: { columns: ':visible', modifier: { page: 'all', search: 'applied', order: 'applied' } },
+                            messageTop: subHeading,
+                            messageBottom: null
+                        }
+                    ]
+                    // "dom": "<'row'<'col-sm-6 mb-3'B>>" +
+                    //     "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                    //     "<'row'<'col-sm-12'tr>>" +
+                    //     "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                    // "buttons": [
+                    //     // 	{
+                    //     // 	extend: "csv",
+                    //     // 	className: "btn-flat btn-info mx-2 px-3",
+                    //     // 	titleAttr: 'Export in CSV',
+                    //     // 	text: 'CSV',
+                    //     // 	filename: 'QR Code Requests List - OP',
+                    //     // 	init: function (api, node, config) { $(node).removeClass('btn-default') }
+                    //     // },
+                    //     // {
+                    //     // 	extend: "excel",
+                    //     // 	className: "btn-flat btn-success mx-2 px-3",
+                    //     // 	titleAttr: 'Export in Excel',
+                    //     // 	text: 'Excel',
+                    //     // 	filename: 'QR Code Requests List - OP',
+                    //     // 	init: function (api, node, config) { $(node).removeClass('btn-default') }
+                    //     // },
+                    //     {
+                    //         extend: "pdfHtml5",
+                    //         className: "btn-flat btn-danger mx-2 px-3",
+                    //         titleAttr: 'Export in PDF',
+                    //         text: 'PDF',
+                    //         pageSize: 'LEGAL',
+                    //         filename: 'QR Code Requests List - OP',
+                    //         init: function (api, node, config) { $(node).removeClass('btn-default') },
+                    //         customize: function (doc) {
+                    //             doc.defaultStyle.fontSize = 10;
+                    //             doc.pageMargins = [5, 10, 5, 10]; // Adjust margins
+                    //             doc.pageOrientation = 'landscape'; // Set orientation
+                    //             doc.content.splice(1, 0, {
+                    //                 text: subHeading,
+                    //                 style: 'subheader'
+                    //             });
+                    //             doc.styles.subheader = {
+                    //                 fontSize: 12,
+                    //                 italics: true,
+                    //                 margin: [10, 0, 0, 10]
+                    //             };
+                    //             // Add more customization options as needed
+                    //         }
+                    //     }]
                 });
 
         }

@@ -45,8 +45,8 @@
 
                                 <button type="button" class="btn btn-info btn-md pull-right mr-2" onclick="fnExecute_Report(false)"> Search </button>
                                 <button type="button" class="btn btn-danger btn-md pull-right mr-2" onclick="fnClear()"> Clear </button>
-                                <button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnExecute_Report(true)"> Print </button>
-                                <button type="button" class="btn btn-success btn-md pull-right mr-2" id="btnExport"> Export </button>
+                                @* <button type="button" class="btn btn-primary btn-md pull-right mr-2" onclick="fnExecute_Report(true)"> Print </button>
+                                <button type="button" class="btn btn-success btn-md pull-right mr-2" id="btnExport"> Export </button> *@
                             </div>
                         </div>
                     </div>
@@ -157,7 +157,7 @@
 
                             $('#div_DataTable').html(response);
 
-                            try { fnLoadCommonTable('#div_DataTable .table_Common'); } catch { }
+                            try { fnLoadCommonTable_Buttons('#div_DataTable .table_Common'); } catch { }
 
                             ShowLoader(false);
 

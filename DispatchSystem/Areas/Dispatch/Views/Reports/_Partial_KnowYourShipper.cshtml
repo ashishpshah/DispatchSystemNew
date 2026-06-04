@@ -43,15 +43,18 @@ else
 		</div>
 	</div>
 
-	<div class="form-group row">
+	<div class="form-group row d-none">
 		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_KnowYourShipper","Reports")?searchTerm=@(Model.SearchTerm)&isPrint=true')">Print</button>
 		<button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('ShipperData')">Export</button>
 	</div>
 }
 
 <div class="row col-12 mt-5">
-
-	<table id="table_Common_" class="table table-bordered w-100 border-0">
+	@{
+		var fileName = "Shipper QR Code Details";
+		var fileSubTitle = "";
+	}
+	<table id="tableReport" class="table table-bordered table-striped w-100 display" data-export-file-name="@fileName" data-export-file-message="@fileSubTitle">
 
 		<thead>
 			<tr class="border-0">

@@ -102,7 +102,7 @@ else
 		</div>
 	</div>
 
-	<div class="form-group row mt-2">
+	<div class="form-group row mt-2 d-none">
 		@if (Model.Report_Type == "DS_BAT")
 		{
 			<button class="btn btn-info mr-2" onclick="fnPrint_Report('@(Url.Action("GetData_DispatchSummary_BatchWise", "Reports"))?Report_Type=@(Model.Report_Type)&FromDate=@(Model.objFilter.FromDate)&ToDate=@(Model.objFilter.ToDate)&DataType=@(Model.objFilter.DataType)&isPrint=true')">Print</button>

@@ -1288,54 +1288,6 @@ function fnLoadCommonTable_Buttons($selector) {
             "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
             "<'row'<'col-sm-12'tr>>" +
             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-        //buttons: [{ extend: "csv", title: $title, className: "mr-2" },
-        //{ extend: "excel", title: $title, className: "mr-2" },
-        //{ extend: "pdfHtml5", title: $title, className: "mr-2" }]
-        //buttons: [
-        //    {
-        //        extend: "pdfHtml5",
-        //        download: 'open',
-        //        className: "btn-flat btn-danger mx-2 px-3",
-        //        titleAttr: 'Export in PDF',
-        //        text: 'PDF',
-        //        title: null, // removes title,
-        //        exportOptions: {
-        //            columns: ':visible', // Export only visible columns
-        //            stripHtml: true,
-        //            modifier: {
-        //                page: 'all' // Export all pages
-        //            }
-        //        },
-        //        filename: $title,
-        //        init: function (api, node, config) { $(node).removeClass('btn-default') },
-        //        customize: function (doc) {
-
-        //            doc.styles = {};
-        //            doc.defaultStyle = { fontSize: 10 };
-        //            delete doc.styles.tableHeader;
-
-        //            //doc.defaultStyle.fontSize = 10;
-        //            //doc.pageMargins = [20, 20, 20, 20]; // Adjust margins
-        //            //doc.pageOrientation = 'landscape'; // Set orientation
-        //            // Add more customization options as needed
-        //        }
-        //    },
-        //    {
-        //        extend: "excel",
-        //        className: "btn-flat btn-success mx-2 px-3",
-        //        titleAttr: 'Export in Excel',
-        //        text: 'Excel',
-        //        title: null, // removes title,
-        //        exportOptions: {
-        //            columns: ':visible',
-        //            stripHtml: true,
-        //            modifier: {
-        //                page: 'all' // Export all pages
-        //            }
-        //        },
-        //        filename: $title,
-        //        init: function (api, node, config) { $(node).removeClass('btn-default') }
-        //    }]
         buttons:
             [{
                 text: 'Print',
@@ -1352,51 +1304,51 @@ function fnLoadCommonTable_Buttons($selector) {
 
                     // Write content
                     printWindow.document.write(`
-            <html>
-            <head>
-                <title>${$title}</title>
+                        <html>
+                        <head>
+                            <title>${$title}</title>
 
-                <style>
-                    @page {
-                        size: auto;
-                        margin: 10mm;
-                    }
+                            <style>
+                                @page {
+                                    size: auto;
+                                    margin: 10mm;
+                                }
 
-                    body{
-                        font-family: Arial, sans-serif;
-                        padding:10px;
-                        background:white;
-                        color:black;
-                    }
+                                body{
+                                    font-family: Arial, sans-serif;
+                                    padding:10px;
+                                    background:white;
+                                    color:black;
+                                }
 
-                    table{
-                        width:100% !important;
-                        border-collapse:collapse;
-                        table-layout:fixed;
-                        font-size:10px;
-                    }
+                                table{
+                                    width:100% !important;
+                                    border-collapse:collapse;
+                                    table-layout:fixed;
+                                    font-size:10px;
+                                }
 
-                    th, td{
-                        border:1px solid #ccc;
-                        padding:4px;
-                        word-wrap:break-word;
-                        overflow-wrap:break-word;
-                        white-space:normal;
-                    }lign:left;
-                    }
-                </style>
-            </head>
+                                th, td {
+                                    border:1px solid #ccc;
+                                    padding:4px;
+                                    word-wrap:break-word;
+                                    overflow-wrap:break-word;
+                                    white-space:normal;
+                                    align:left;
+                                }
+                            </style>
+                        </head>
 
-            <body>
-                <h2>${$title}</h2>
+                        <body>
+                            <h2>${$title}</h2>
 
-                ${$messageTop || ''}
+                            ${$messageTop || ''}
 
-                ${tableHtml}
+                            ${tableHtml}
 
-            </body>
-            </html>
-        `);
+                        </body>
+                        </html>
+                    `);
 
                     printWindow.document.close();
 
@@ -1405,139 +1357,6 @@ function fnLoadCommonTable_Buttons($selector) {
                     printWindow.print();
                 }
             },
-                //{
-                //    extend: 'colvis',
-                //    text: 'Select Columns',
-                //    exportOptions: { columns: ':visible' }
-                //},
-                //{
-                //    extend: 'print',
-                //    text: 'Print',
-                //    download: 'open',
-                //    title: $title,
-                //    autoPrint: false,
-                //    exportOptions: { columns: ':visible', stripHtml: true, modifier: { page: 'all', search: 'applied', order: 'applied' } },
-                //    messageTop: $messageTop,
-                //    messageBottom: null,
-                //    customize: function (win) {
-                //        $(win.document.body).css('font-size', '10pt').css('color', '#333');
-
-                //        $(win.document.body).find('table').addClass('compact').css('font-size', 'inherit').css('border', '1px solid #000');
-
-                //        var style = document.createElement('style');
-                //        style.type = 'text/css';
-                //        style.innerHTML = '@media print { body { background-color: #fff; } tr { page-break-inside: avoid; } }';
-                //        win.document.head.appendChild(style);
-                //    }
-                //},
-                //{
-                //    extend: 'print',
-                //    text: 'Print',
-                //    title: $title,
-                //    exportOptions: { columns: ':visible', modifier: { page: 'all', search: 'applied', order: 'applied' } },
-                //    messageTop: $messageTop,
-                //    messageBottom: null,
-                //    customize: function (win) {
-                //        debugger
-                //        // White page background
-                //        $(win.document.body)
-                //            .css('font-size', '10pt')
-                //            .css('background-color', 'white')
-                //            .css('color', 'black');
-
-                //        // Table styling
-                //        $(win.document.body)
-                //            .find('table')
-                //            .addClass('compact')
-                //            .css('font-size', 'inherit')
-                //            .css('background-color', 'white')
-                //            .css('color', 'black');
-
-                //        // Optional: remove dark theme styles completely
-                //        $(win.document.head).append(`
-                //            <style>
-                //                body {
-                //                    background: white !important;
-                //                    color: black !important;
-                //                }
-
-                //                table {
-                //                    background: white !important;
-                //                    color: black !important;
-                //                }
-
-                //                th, td {
-                //                    background: white !important;
-                //                    color: black !important;
-                //                }
-                //            </style>
-                //        `);
-                //    }
-                //},
-                //{
-                //    extend: 'pdfHtml5',
-                //    text: 'Print',
-                //    title: $title,
-                //    exportOptions: { columns: ':visible', modifier: { page: 'all', search: 'applied', order: 'applied' } },
-                //    messageTop: $messageTop,
-                //    messageBottom: null,
-                //    customize: function (doc) {
-                //        // 1. Force the table to take up 100% width of the page
-                //        var tableNode;
-
-                //        for (var i = 0; i < doc.content.length; i++) {
-
-                //            if (doc.content[i].table) {
-                //                tableNode = doc.content[i];
-                //                break;
-                //            }
-                //        }
-
-                //        if (tableNode) {
-
-                //            tableNode.table.widths = Array(tableNode.table.body[0].length + 1).join('*').split('');
-
-                //            tableNode.layout = 'lightHorizontalLines';
-                //        }
-
-                //        //if (doc.content && doc.content.table) {
-                //        //    doc.content.table.widths = Array(doc.content.table.body[0].length).fill('*');
-
-                //        //    // Add light borders to match your 1px solid border rule
-                //        //    doc.content.layout = {
-                //        //        hLineWidth: function (i, node) { return 1; },
-                //        //        vLineWidth: function (i, node) { return 1; },
-                //        //        hLineColor: function (i, node) { return '#000000'; },
-                //        //        vLineColor: function (i, node) { return '#000000'; }
-                //        //    };
-                //        //}
-
-                //        // 2. Center-align the H1 Title
-                //        if (doc.content && doc.content[0] && doc.content[0].text) {
-                //            doc.content[0].alignment = 'center';
-                //        }
-
-                //        // 3. Apply your specific font size, padding, and row colors
-                //        doc.styles.tableHeader = {
-                //            fontSize: 5,
-                //            bold: true,
-                //            color: '#000000',
-                //            fillColor: '#f2f2f2', // Clean white background for header
-                //            alignment: 'left'
-                //        };
-
-                //        doc.styles.tableBodyOdd = {
-                //            fontSize: 5,
-                //            fillColor: '#f2f2f2' // Your requested alternating light grey
-                //        };
-
-                //        doc.styles.tableBodyEven = {
-                //            fontSize: 5,
-                //            fillColor: '#ffffff' // Pure white background
-                //        };
-                //    }
-
-                //},
                 {
                     extend: 'excelHtml5',
                     text: 'Export',

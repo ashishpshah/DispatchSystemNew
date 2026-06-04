@@ -41,7 +41,7 @@
 }
 else
 {
-	<div class="form-group row">
+	<div class="form-group row d-none">
 		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_BatchLogFileLive","Reports")?searchTerm=@(Model.SearchTerm)&FromDate=@(Model.FromDate)&ToDate=@(Model.ToDate)&isPrint=true')">Print</button>
 		<button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('BatchLogFile')">Export</button>
 	</div>
@@ -51,7 +51,10 @@ else
 
 	@if (Model.List != null && Model.List.Count() > 0)
 	{
-		<table id="table_Common" class="table table-bordered w-100 divDetail">
+		var fileName = "Batch Log File Live";
+		var fileSubTitle = "";
+
+		<table id="tableReport" class="table table-bordered table-striped w-100 display divDetail" data-export-file-name="@fileName" data-export-file-message="@fileSubTitle">
 
 			<tbody>
 				<tr>

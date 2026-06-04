@@ -164,27 +164,25 @@
 
         $(function () { });
 
-        function fnExport_Report($reportType) {
+        // function fnExport_Report($reportType) {
 
-            var fileName = "";
+        //     var fileName = "";
 
-            if ($reportType == 'QR_PR') fileName = "QRCodePrintReceipt";
-            else if ($reportType == 'QR_V') fileName = "QRCodesView";
-            else if ($reportType == 'QR_VOP') fileName = "QRCodesViewOP";
+        //     if ($reportType == 'QR_PR') fileName = "QRCodePrintReceipt";
+        //     else if ($reportType == 'QR_V') fileName = "QRCodesView";
+        //     else if ($reportType == 'QR_VOP') fileName = "QRCodesViewOP";
 
-            $("#div_DataTable table").table2excel({ filename: fileName + ".xls" });
+        //     $("#div_DataTable table").table2excel({ filename: fileName + ".xls" });
 
-            return false;
-        }
+        //     return false;
+        // }
 
         function fnExecute_Report($isPrint, $reportType) {
 
             $('#div_DataTable').html('');
 
             var $url = '';
-
             
-
             if ($reportType == 'QR_PR') {
 
                 var VendorCode = $('#VendorId').val();
@@ -206,16 +204,17 @@
                     '?ProductId=' + ProductId + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&isPrint=' + $isPrint + '&Type=' + $reportType;
             }
 
-            if ($isPrint == true && $url != null && $url != '') {
-                var printWindow = window.open($url, '_blank');
+            // if ($isPrint == true && $url != null && $url != '') {
+            //     var printWindow = window.open($url, '_blank');
 
-                if (printWindow) {
-                    printWindow.onload = function () {
-                        printWindow.print();
-                    };
-                }
-            }
-            else if ($url != null && $url != '') {
+            //     if (printWindow) {
+            //         printWindow.onload = function () {
+            //             printWindow.print();
+            //         };
+            //     }
+            // }
+            // else 
+            if ($url != null && $url != '') {
 
                 ShowLoader(true);
 
@@ -231,7 +230,8 @@
 
                             $('#div_DataTable').html(response);
 
-                            try { fnLoadCommonTable('#div_DataTable .table_Common'); } catch { }
+                            //try { fnLoadCommonTable('#div_DataTable .table_Common'); } catch { }
+                            try { fnLoadCommonTable_Buttons('#div_DataTable .table_Common'); } catch { }
 
                             ShowLoader(false);
 
