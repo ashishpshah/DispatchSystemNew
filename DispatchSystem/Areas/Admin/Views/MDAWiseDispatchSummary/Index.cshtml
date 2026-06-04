@@ -38,11 +38,11 @@
                             </div>
                             <div class="form-group col-md-2 mx-3">
                                 <label class="col-form-label" style="align-content:start">Date From</label>
-                                <input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                                <input type="text" class="form-control form-control-sm datepicker" id="FromDate" data-value="@DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
                             </div>
                             <div class="form-group col-md-2 mx-3">
                                 <label class="col-form-label" style="align-content:start">Date To</label>
-                                <input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
+                                <input type="text" class="form-control form-control-sm datepicker" id="ToDate" data-value="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" data-max="@DateTime.Now.ToString("dd/MM/yyyy").Replace("-", "/")" autocomplete="off">
                             </div>
                         </div>
 

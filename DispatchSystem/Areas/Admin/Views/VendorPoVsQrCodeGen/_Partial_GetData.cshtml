@@ -39,7 +39,9 @@
 <div class="row col-12 mt-5 text-center">
 
     @* <table id="table_Common" class="table table-bordered w-100 divDetail @((Model.withDetail == true) ? "" : "d-none")"> *@
-    <table class="table table-bordered w-100 table_Common divDetail" id="tblmain">
+    <table class="table table-bordered w-100 table_Common divDetail" id="tblmain"
+           data-export-file-name="Vendor PO vs QR Code Generation Report"
+           data-export-file-message="@(!string.IsNullOrEmpty(Model.PageTitle_Secondary) ? Model.PageTitle_Secondary : "")">
         <thead>
             <tr>
                 <th>PO No</th>

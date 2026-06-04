@@ -47,11 +47,12 @@
 
 
 <div class="form-group row">
-	<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_ShipperQRCodeList","Reports")?searchTerm=@(Model != null && !string.IsNullOrEmpty(Model.Mda_No) ? Model.Mda_No : "")&isPrint=true')">Print</button>
+	<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_ShipperQRCodeList", "Reports")?searchTerm=@(Model != null && !string.IsNullOrEmpty(Model.Mda_No) ? Model.Mda_No : "")&isPrint=true')">Print</button>
 	<button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('DispatchQRCodeByMDA')">Export</button>
 </div>
 <div class="row col-12 mt-5">
-	<table id="tblDispatchQRCode" class="table table-bordered table-striped">
+	<table id="tblDispatchQRCode" class="table table-bordered table-striped"
+		   data-print-url="fnPrint_Report('@Url.Action("GetData_ShipperQRCodeList", "Reports")?searchTerm=@(Model != null && !string.IsNullOrEmpty(Model.Mda_No) ? Model.Mda_No : "")&isPrint=true')">
 		<thead>
 			<tr>
 				<th width="5%">Sr. No.</th>

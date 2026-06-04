@@ -36,10 +36,12 @@
     </div>
 </div>
 
-<div class="row col-12 mt-5 text-center">
+<div class="row col-12 mt-5">
 
-    @* <table id="table_Common" class="table table-bordered w-100 divDetail @((Model.withDetail == true) ? "" : "d-none")"> *@
-    <table class="table table-bordered w-100 table_Common divDetail" id="tblmain">
+    <table id="table_Common" class="table table-bordered w-100 divDetail"
+           data-export-file-name="Gate In/Gate Out Summary Detail"
+           data-export-file-message="@(!string.IsNullOrEmpty(Model.PageTitle_Secondary) ? Model.PageTitle_Secondary : "")">
+    @* <table class="table table-bordered w-100 table_Common divDetail" id="tblmain"> *@
         <thead>
             <tr>
                 <th hidden>#</th>

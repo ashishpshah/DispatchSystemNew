@@ -38,8 +38,10 @@
 
 <div class="row col-12 mt-5 text-center">
 
-    @* <table id="table_Common" class="table table-bordered w-100 divDetail @((Model.withDetail == true) ? "" : "d-none")"> *@
-    <table class="table table-bordered w-100 table_Common divDetail" id="tblmain">
+    <table id="table_Common" class="table table-bordered w-100 divDetail"
+           data-export-file-name="Cancel Gate In Detail"
+           data-export-file-message="@(!string.IsNullOrEmpty(Model.PageTitle_Secondary) ? Model.PageTitle_Secondary : "")">
+    @* <table class="table table-bordered w-100 table_Common divDetail" id="tblmain"> *@
         <thead>
             <tr>
                 <th>Truck No.</th>

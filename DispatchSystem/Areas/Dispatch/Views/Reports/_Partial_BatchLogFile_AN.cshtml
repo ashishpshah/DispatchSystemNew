@@ -42,7 +42,7 @@
 }
 else
 {
-	<div class="form-group row d-none">
+	<div class="form-group row">
 		<button class="btn btn-info mr-2" onclick="fnPrint_Report('@Url.Action("GetData_BatchLogFile", "Reports")?searchTerm=@(Model.SearchTerm)&FromDate=@(Model.FromDate)&ToDate=@(Model.ToDate)&isPrint=true')">Print</button>
 		<button class="btn btn-success btn-md pull-right mr-2" onclick="fnExport_Excel('BatchLogFile')">Export</button>
 	</div>

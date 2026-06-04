@@ -1338,8 +1338,9 @@ function fnLoadCommonTable_Buttons($selector) {
                     printWindow.document.head.innerHTML = style;
 
                     printWindow.document.body.innerHTML = `
-                                <h2>${$title}</h2>
-                                ${$messageTop || ''}
+                                <h2 style="text-align:center;">${$title}</h2>
+                                <h5 style="text-align:center;">${$messageTop || ''}</h2>
+                                
                                 ${tableHtml}
                             `;
 
@@ -1350,15 +1351,15 @@ function fnLoadCommonTable_Buttons($selector) {
                     printWindow.print();
                 }
             },
-                {
-                    extend: 'excelHtml5',
-                    text: 'Export',
-                    title: $title,
-                    className: 'btn btn-info',
-                    exportOptions: { columns: ':visible', modifier: { page: 'all', search: 'applied', order: 'applied' } },
-                    messageTop: $messageTop,
-                    messageBottom: null
-                }
+            {
+                extend: 'excelHtml5',
+                text: 'Export',
+                title: $title,
+                className: 'btn btn-info',
+                exportOptions: { columns: ':visible', modifier: { page: 'all', search: 'applied', order: 'applied' } },
+                messageTop: $messageTop,
+                messageBottom: null
+            }
             ]
     });
 
