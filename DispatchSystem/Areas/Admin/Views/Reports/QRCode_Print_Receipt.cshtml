@@ -201,47 +201,41 @@
 							// Open new browser window
 							var printWindow = window.open('', '_blank');
 
-							// Write content
-							printWindow.document.write(`
-								<html>
-								<head>
-									<title>"QR Code Print Requests"</title>
+							printWindow.document.title = "QR Code Print Requests";
 
-									<style>
+							const style = `
+								<style>
 
-										body{
-											font-family: Arial, sans-serif;
-											padding:10px;
-											background:white;
-											color:black;
-										}
+									body {
+										font-family: Arial, sans-serif;
+										padding: 10px;
+										background: white;
+										color: black;
+									}
 
-										table{
-											width:100% !important;
-											border-collapse:collapse;
-											table-layout:fixed;
-											font-size:10px;
-										}
+									table {
+										width: 100%;
+										border-collapse: collapse;
+										table-layout: fixed;
+										font-size: 10px;
+									}
 
-										th, td {
-											border:1px solid #ccc;
-											padding:4px;
-											word-wrap:break-word;
-											overflow-wrap:break-word;
-											white-space:normal;
-											align:left;
-										}
-									</style>
-								</head>
+									th,
+									td {
+										border: 1px solid #ccc;
+										padding: 4px;
+										overflow-wrap: break-word;
+										text-align: left;
+									}
+								</style>
+							`;
 
-								<body>
-									<h2>"QR Code Print Requests"</h2>
+							printWindow.document.head.innerHTML = style;
 
-									${tableHtml}
-
-								</body>
-								</html>
-							`);
+							printWindow.document.body.innerHTML = `
+								<h2>QR Code Print Requests</h2>
+								${tableHtml}
+							`;
 
 							printWindow.document.close();
 

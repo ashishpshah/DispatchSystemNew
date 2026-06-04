@@ -158,7 +158,7 @@ namespace Dispatch_System.Areas.Admin.Controllers
 				param.sEcho,
 				iTotalRecords = result.Count(),
 				iTotalDisplayRecords = ds != null && ds.Tables.Count > 1 ? ds.Tables[1].Rows.Count : 0,
-				aData = result.Skip(param.iDisplayStart).Take(param.iDisplayLength).ToList()
+				aaData = result.Skip(param.iDisplayStart).Take(param.iDisplayLength).ToList()
 			});
 
 		}

@@ -1302,53 +1302,46 @@ function fnLoadCommonTable_Buttons($selector) {
                     // Open new browser window
                     var printWindow = window.open('', '_blank');
 
-                    // Write content
-                    printWindow.document.write(`
-                        <html>
-                        <head>
-                            <title>${$title}</title>
+                    printWindow.document.title = $title;
 
-                            <style>
-                                @page {
-                                    size: auto;
-                                    margin: 10mm;
-                                }
+                    const style = `
+                                <style>
+                                    @page {
+                                        size: auto;
+                                        margin: 10mm;
+                                    }
+                                    
+                                    body {
+                                        font-family: Arial, sans-serif;
+                                        padding: 10px;
+                                        background: white;
+                                        color: black;
+                                    }
 
-                                body{
-                                    font-family: Arial, sans-serif;
-                                    padding:10px;
-                                    background:white;
-                                    color:black;
-                                }
+                                    table {
+                                        width: 100%;
+                                        border-collapse: collapse;
+                                        table-layout: fixed;
+                                        font-size: 10px;
+                                    }
 
-                                table{
-                                    width:100% !important;
-                                    border-collapse:collapse;
-                                    table-layout:fixed;
-                                    font-size:10px;
-                                }
+                                    th,
+                                    td {
+                                        border: 1px solid #ccc;
+                                        padding: 4px;
+                                        overflow-wrap: break-word;
+                                        text-align: left;
+                                    }
+                                </style>
+                            `;
 
-                                th, td {
-                                    border:1px solid #ccc;
-                                    padding:4px;
-                                    word-wrap:break-word;
-                                    overflow-wrap:break-word;
-                                    white-space:normal;
-                                    align:left;
-                                }
-                            </style>
-                        </head>
+                    printWindow.document.head.innerHTML = style;
 
-                        <body>
-                            <h2>${$title}</h2>
-
-                            ${$messageTop || ''}
-
-                            ${tableHtml}
-
-                        </body>
-                        </html>
-                    `);
+                    printWindow.document.body.innerHTML = `
+                                <h2>${$title}</h2>
+                                ${$messageTop || ''}
+                                ${tableHtml}
+                            `;
 
                     printWindow.document.close();
 
