@@ -353,6 +353,7 @@ namespace Dispatch_System.Areas.Dispatch.Controllers
 			return Json(CommonViewModel);
 		}
 
+		///GenerateInvoice?mdaNo=
 		public IActionResult GenerateInvoice(string mdaNo = null)
 		{
 			try

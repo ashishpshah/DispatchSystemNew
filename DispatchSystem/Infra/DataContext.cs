@@ -3542,10 +3542,19 @@ namespace Dispatch_System
 					//		$"{(_checkValues.Count() > 0 ? $" AND (PLANT_ID, IFNULL(MDA_SYS_ID, 0), GATE_SYS_ID) NOT IN ({string.Join(", ", _checkValues)})" : "")} " +
 					//		$"ORDER BY MDA_LOD_SYS_ID DESC ");
 
+					DataTable dt = DataContext.ExecuteQuery($"SELECT MAX(MDA_LOD_SYS_ID) AS MaxId FROM MDA_LOADING WHERE PLANT_ID = {plant_id}");
+
+					object value = (dt != null && dt.Rows.Count > 0) ? dt.Rows[0]["MaxId"] : DBNull.Value;
+
+					Int64 maxId_MDA_LOD = value == DBNull.Value ? 0 : Convert.ToInt64(value);
+
 					dtOracle = DataContext.ExecuteQuery($"SELECT DISTINCT PLANT_ID, MDA_SYS_ID, GATE_SYS_ID, COUNT(*) CNT " +
 					$"FROM MDA_LOADING WHERE PLANT_ID = " + plant_id + " GROUP BY PLANT_ID, MDA_SYS_ID, GATE_SYS_ID");
 
-					List<(long PLANT_ID, long MDA_LOD_SYS_ID, long MDA_SYS_ID, long GATE_SYS_ID, long CNT)>
+					List<(long PLANT_ID, string SHIPPER_QR_CODE, long MDA_SYS_ID, long GATE_SYS_ID, long CNT)> _QRsToFilter_Oracle = new List<(long PLANT_ID, string SHIPPER_QR_CODE, long MDA_SYS_ID, long GATE_SYS_ID, long CNT)>();
+					List<(long PLANT_ID, string SHIPPER_QR_CODE, long MDA_SYS_ID, long GATE_SYS_ID, long CNT)> _QRsToFilter_Sql = new List<(long PLANT_ID, string SHIPPER_QR_CODE, long MDA_SYS_ID, long GATE_SYS_ID, long CNT)>();
+
+					List <(long PLANT_ID, long MDA_LOD_SYS_ID, long MDA_SYS_ID, long GATE_SYS_ID, long CNT)>
 						_idsToFilter_Oracle = dtOracle.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}")
 										, (long)0, (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
 										, Convert.ToInt64($"{row["GATE_SYS_ID"]}"), Convert.ToInt64($"{row["CNT"]}"))).ToList();
@@ -3559,7 +3568,6 @@ namespace Dispatch_System
 										, (long)0, (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
 										, Convert.ToInt64($"{row["GATE_SYS_ID"]}"), Convert.ToInt64($"{row["CNT"]}"))).ToList();
 
-
 					var notInOracle = _idsToFilter_Sql.Except(_idsToFilter_Oracle).ToList();
 
 					List<string> _checkValues = new List<string>();
@@ -3570,31 +3578,42 @@ namespace Dispatch_System
 						_checkValues.Add(checkValue);
 					}
 
-					dtOracle = DataContext.ExecuteQuery($"SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, MDA_SYS_ID, GATE_SYS_ID " +
+					dtOracle = DataContext.ExecuteQuery($"SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, SHIPPER_QR_CODE, MDA_SYS_ID, GATE_SYS_ID " +
 						$"FROM MDA_LOADING WHERE PLANT_ID = " + plant_id + " " +
 						"AND (PLANT_ID, NVL(MDA_SYS_ID, 0), GATE_SYS_ID) " +
 						$"IN ({string.Join(", ", _checkValues)})");
 
-					_idsToFilter_Oracle = dtOracle.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}")
-										, Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}"), (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
+					//_idsToFilter_Oracle = dtOracle.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}")
+					//					, Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}"), (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
+					//					, Convert.ToInt64($"{row["GATE_SYS_ID"]}"), (long)0)).ToList();
+
+					_QRsToFilter_Oracle = dtOracle.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}")
+										, Convert.ToString($"{row["SHIPPER_QR_CODE"]}"), (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
 										, Convert.ToInt64($"{row["GATE_SYS_ID"]}"), (long)0)).ToList();
 
-					dtSql_All = DataContext.ExecuteQuery_SQL("SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, MDA_SYS_ID, GATE_SYS_ID " +
+					dtSql_All = DataContext.ExecuteQuery_SQL("SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, SHIPPER_QR_CODE, MDA_SYS_ID, GATE_SYS_ID " +
 							"FROM MDA_LOADING WHERE PLANT_ID = " + plant_id + " " +
 							"AND (PLANT_ID, IFNULL(MDA_SYS_ID, 0), GATE_SYS_ID) " +
 							$"IN ({string.Join(", ", _checkValues)}) ");
 
-					_idsToFilter_Sql = dtSql_All.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}")
-										, Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}"), (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
+					//_idsToFilter_Sql = dtSql_All.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}")
+					//					, Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}"), (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
+					//					, Convert.ToInt64($"{row["GATE_SYS_ID"]}"), (long)0)).ToList();
+
+					_QRsToFilter_Sql = dtSql_All.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}")
+										, Convert.ToString($"{row["SHIPPER_QR_CODE"]}"), (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0)
 										, Convert.ToInt64($"{row["GATE_SYS_ID"]}"), (long)0)).ToList();
 
-					notInOracle = _idsToFilter_Sql.Except(_idsToFilter_Oracle).ToList();
+					//notInOracle = _idsToFilter_Sql.Except(_idsToFilter_Oracle).ToList();
+					var notInOracle_QR = _QRsToFilter_Sql.Except(_QRsToFilter_Oracle).ToList();
 
 					_checkValues = new List<string>();
 
-					foreach (var tuple in notInOracle)
+					//foreach (var tuple in notInOracle)
+					foreach (var tuple in notInOracle_QR)
 					{
-						string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_LOD_SYS_ID}, {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID})";
+						//string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_LOD_SYS_ID}, {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID})";
+						string checkValue = $"({tuple.PLANT_ID}, '{tuple.SHIPPER_QR_CODE}', {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID})";
 						_checkValues.Add(checkValue);
 					}
 
@@ -3604,7 +3623,8 @@ namespace Dispatch_System
 							"FROM MDA_LOADING WHERE IFNULL(SHIPPER_QR_CODE,'') != '' AND CREATED_DATETIME > STR_TO_DATE('15/06/2024', '%d/%m/%Y') " +
 							$"{(ids_GateInOut.Count() > 0 ? " AND GATE_SYS_ID IN (" + string.Join(", ", ids_GateInOut) + ")" : "")} " +
 							$"{(ids_MDA.Count() > 0 ? " AND MDA_SYS_ID IN (" + string.Join(", ", ids_MDA) + ")" : "")} " +
-							$"{(_checkValues.Count() > 0 ? $" AND (PLANT_ID, MDA_LOD_SYS_ID, IFNULL(MDA_SYS_ID, 0), GATE_SYS_ID) IN ({string.Join(", ", _checkValues)})" : "")} " +
+							//$"{(_checkValues.Count() > 0 ? $" AND (PLANT_ID, MDA_LOD_SYS_ID, IFNULL(MDA_SYS_ID, 0), GATE_SYS_ID) IN ({string.Join(", ", _checkValues)})" : "")} " +
+							$"{(_checkValues.Count() > 0 ? $" AND (PLANT_ID, IFNULL(SHIPPER_QR_CODE,''), IFNULL(MDA_SYS_ID, 0), GATE_SYS_ID) IN ({string.Join(", ", _checkValues)})" : "")} " +
 							$"ORDER BY MDA_LOD_SYS_ID DESC ");
 
 					if (dtSql_All != null && dtSql_All.Rows.Count > 0)
@@ -3629,39 +3649,53 @@ namespace Dispatch_System
 
 									List<string> checkValues = new List<string>();
 
-									List<(long PLANT_ID, long MDA_LOD_SYS_ID, long MDA_SYS_ID, long GATE_SYS_ID, long PROD_SYS_ID)>
-										idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}")
+									//List<(long PLANT_ID, long MDA_LOD_SYS_ID, long MDA_SYS_ID, long GATE_SYS_ID, long PROD_SYS_ID)>
+									//	idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}")
+									//					, (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0), Convert.ToInt64($"{row["GATE_SYS_ID"]}"), Convert.ToInt64($"{row["PROD_SYS_ID"]}"))).ToList();
+
+									List<(long PLANT_ID, string SHIPPER_QR_CODE, long MDA_SYS_ID, long GATE_SYS_ID, long PROD_SYS_ID)>
+										idsToFilter = dtSql.AsEnumerable().Select(row => (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToString($"{row["SHIPPER_QR_CODE"]}")
 														, (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0), Convert.ToInt64($"{row["GATE_SYS_ID"]}"), Convert.ToInt64($"{row["PROD_SYS_ID"]}"))).ToList();
 
 									foreach (var tuple in idsToFilter)
 									{
-										string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_LOD_SYS_ID}, {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID}, {tuple.PROD_SYS_ID})";
+										//string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_LOD_SYS_ID}, {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID}, {tuple.PROD_SYS_ID})";
+										string checkValue = $"({tuple.PLANT_ID}, '{tuple.SHIPPER_QR_CODE}', {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID}, {tuple.PROD_SYS_ID})";
 										checkValues.Add(checkValue);
 									}
 
-									dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, MDA_SYS_ID, GATE_SYS_ID, PROD_SYS_ID 
-        														FROM MDA_LOADING 
-        														WHERE (PLANT_ID, MDA_LOD_SYS_ID, NVL(MDA_SYS_ID, 0), GATE_SYS_ID, PROD_SYS_ID) 
-        														IN ({string.Join(", ", checkValues)})");
+									//dtOracle = DataContext.ExecuteQuery(@$"SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, MDA_SYS_ID, GATE_SYS_ID, PROD_SYS_ID 
+        	//													FROM MDA_LOADING 
+        	//													WHERE (PLANT_ID, MDA_LOD_SYS_ID, NVL(MDA_SYS_ID, 0), GATE_SYS_ID, PROD_SYS_ID) 
+        	//													IN ({string.Join(", ", checkValues)})");
+
+									dtOracle = DataContext.ExecuteQuery("SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, SHIPPER_QR_CODE, MDA_SYS_ID, GATE_SYS_ID, PROD_SYS_ID " +
+										"FROM MDA_LOADING " +
+										//"WHERE (PLANT_ID, MDA_LOD_SYS_ID, NVL(MDA_SYS_ID, 0), GATE_SYS_ID, PROD_SYS_ID) " +
+										"WHERE (PLANT_ID, IFNULL(SHIPPER_QR_CODE,''), NVL(MDA_SYS_ID, 0), GATE_SYS_ID, PROD_SYS_ID) " +
+										$"IN ({string.Join(", ", checkValues)})");
 
 									checkValues = new List<string>();
 
 									if (dtOracle != null && dtOracle.Rows.Count > 0)
-										idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable().Any(row => x == (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}")
+										//idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable().Any(row => x == (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToInt64($"{row["MDA_LOD_SYS_ID"]}")
+										idsToFilter = idsToFilter.Where(x => !dtOracle.AsEnumerable().Any(row => x == (Convert.ToInt64($"{row["PLANT_ID"]}"), Convert.ToString($"{row["SHIPPER_QR_CODE"]}")
 														, (row["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64($"{row["MDA_SYS_ID"]}") : 0), Convert.ToInt64($"{row["GATE_SYS_ID"]}"), Convert.ToInt64($"{row["PROD_SYS_ID"]}")))).ToList();
 
 									if (idsToFilter != null && idsToFilter.Count() > 0)
 									{
 										foreach (var tuple in idsToFilter)
 										{
-											string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_LOD_SYS_ID}, {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID}, {tuple.PROD_SYS_ID})";
+											//string checkValue = $"({tuple.PLANT_ID}, {tuple.MDA_LOD_SYS_ID}, {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID}, {tuple.PROD_SYS_ID})";
+											string checkValue = $"({tuple.PLANT_ID}, '{tuple.SHIPPER_QR_CODE}', {tuple.MDA_SYS_ID}, {tuple.GATE_SYS_ID}, {tuple.PROD_SYS_ID})";
 											checkValues.Add(checkValue);
 										}
 
 										dtSql = DataContext.ExecuteQuery_SQL("SELECT DISTINCT PLANT_ID, MDA_LOD_SYS_ID, MDA_SYS_ID, GATE_SYS_ID, PROD_SYS_ID, REQUIRED_SHIPPER, LOADED_SHIPPER" +
 												", SHIPPER_QR_CODE, IS_MANUAL_SCAN, CREATED_BY_ID, DATE_FORMAT(CREATED_DATETIME, '%d/%m/%Y %H:%i:%s') AS CREATED_DATETIME, IS_POSTED " +
 												", DATE_FORMAT(ENTRY_TIME, '%d/%m/%Y %H:%i:%s') AS ENTRY_TIME " +
-												$"FROM MDA_LOADING WHERE (PLANT_ID, MDA_LOD_SYS_ID, IFNULL(MDA_SYS_ID, 0), GATE_SYS_ID, PROD_SYS_ID) IN({string.Join(", ", checkValues)})");
+												//$"FROM MDA_LOADING WHERE (PLANT_ID, MDA_LOD_SYS_ID, IFNULL(MDA_SYS_ID, 0), GATE_SYS_ID, PROD_SYS_ID) IN({string.Join(", ", checkValues)})");
+												$"FROM MDA_LOADING WHERE (PLANT_ID, IFNULL(SHIPPER_QR_CODE,''), IFNULL(MDA_SYS_ID, 0), GATE_SYS_ID, PROD_SYS_ID) IN({string.Join(", ", checkValues)})");
 
 										if (dtSql != null && dtSql.Rows.Count > 0)
 										{
@@ -3678,6 +3712,7 @@ namespace Dispatch_System
 													", SHIPPER_QR_CODE, IS_MANUAL_SCAN, ENTRY_TIME, CREATED_BY_ID, CREATED_DATETIME, PLANT_ID, IS_POSTED) ";
 
 												var sqlQuery_Select = "";
+												int pkId = startIndex + 1;
 
 												foreach (DataRow dr in nextBatch.Rows)
 												{
@@ -3685,7 +3720,8 @@ namespace Dispatch_System
 													{
 														if ((dr["MDA_LOD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_LOD_SYS_ID"]) : 0) > 0)
 														{
-															sqlQuery_Select += $"SELECT {(dr["MDA_LOD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_LOD_SYS_ID"]) : 0)} MDA_LOD_SYS_ID" +
+															//sqlQuery_Select += $"SELECT {(dr["MDA_LOD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_LOD_SYS_ID"]) : 0)} MDA_LOD_SYS_ID" +
+															sqlQuery_Select += $"SELECT {maxId_MDA_LOD + pkId} MDA_LOD_SYS_ID" +
 																$", {(dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0)} GATE_SYS_ID" +
 																$", {(dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0)} MDA_SYS_ID" +
 																$", {(dr["PROD_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["PROD_SYS_ID"]) : 0)} PROD_SYS_ID" +
@@ -3699,6 +3735,8 @@ namespace Dispatch_System
 																$", {(dr["PLANT_ID"] != DBNull.Value ? Convert.ToInt64(dr["PLANT_ID"]) : 0)} PLANT_ID" +
 																$", {(dr["IS_POSTED"] != DBNull.Value ? Convert.ToInt64(dr["IS_POSTED"]) : 0)} IS_POSTED " +
 																$" FROM DUAL UNION ";
+
+															pkId++;
 														}
 
 													}
@@ -8474,7 +8512,8 @@ namespace Dispatch_System
 									adapter.Update(table);
 									tran.Commit();
 								}
-							};
+							}
+							;
 						}
 					}
 				}
@@ -8510,7 +8549,8 @@ namespace Dispatch_System
 									adapter.Update(table);
 									tran.Commit();
 								}
-							};
+							}
+							;
 						}
 					}
 				}
