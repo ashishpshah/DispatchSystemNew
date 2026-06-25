@@ -64,7 +64,7 @@ namespace Dispatch_System
 
 		public static string ExtractAfterSecondClosingParenthesis(string input)
 		{
-			if (string.IsNullOrWhiteSpace(input))
+			if (string.IsNullOrWhiteSpace(input) || Convert.ToBoolean(AppHttpContextAccessor.AppConfiguration.GetSection("BatchLogReport_GTIN").Value))
 				return input;
 
 			int closeParenCount = input.Count(c => c == ')');

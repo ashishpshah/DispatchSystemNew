@@ -853,74 +853,181 @@
 
 			if (typeof flag == 'undefined' || flag == null && flag.length == 0) return;
 
-			if (flag === 'DispatchQRCodeByMDA') {
-				let combinedTable = combineTables();
+			var filename = '';
 
-				combinedTable.table2excel({
-					filename: "DispatchQRCodeByMDA"
-				});
+			if (flag === 'DispatchQRCodeByMDA') {
+				filename = "DispatchQRCodeByMDA"
 			}
 
 			if (flag === 'DS') {
-				$("#div_DataTable table").table2excel({
-					filename: "DispatchSummary"
-				});
+
+					filename = "DispatchSummary"
+
 			}
 
 			if (flag === 'DS_MDA') {
-				$("#div_DataTable table").table2excel({
-					filename: "MDAWiseDispatchSummaryReport"
-				});
+
+					filename = "MDAWiseDispatchSummaryReport"
+
 			}
 
 			if (flag === 'DS_BAT') {
-				$("#div_DataTable table").table2excel({
-					filename: "BatchWiseDispatchSummaryReport"
-				});
+
+					filename = "BatchWiseDispatchSummaryReport"
+
 			}
 
 			if (flag === 'DS_COUNT') {
-				$("#div_DataTable table").table2excel({
-					filename: "DispatchCountSummaryReport"
-				});
+
+					filename = "DispatchCountSummaryReport"
+
 			}
 
 			if (flag === 'BatchNo') {
-				let combinedTable = combineBatchTables();
 
-				combinedTable.table2excel({
-					filename: "KnowYourBatchData"
-				});
+					filename = "KnowYourBatchData"
+
 			}
 
 			if (flag === 'ShipperData') {
-				$("#div_DataTable table").table2excel({
-					filename: "ShipperData"
-				});
+
+					filename = "ShipperData"
+
 			}
 
 			if (flag === 'InvoiceNo') {
-				let combinedTable = combineInvoiceTables();
 
-				combinedTable.table2excel({
-					filename: "KnowYourInvoiceData"
-				});
+					filename = "KnowYourInvoiceData"
+
 			}
 
 			if (flag === 'BottleQRCode') {
-				$("#div_DataTable table").table2excel({
-					filename: "KnowYourBottle"
-				});
+
+					filename = "KnowYourBottle"
+
 			}
 
 			if (flag === 'BatchLogFile') {
-				$("#div_DataTable table").table2excel({
-					filename: "BatchFileLog"
-				});
+
+					filename = "BatchFileLog"
+
 			}
+
+			// Temporary export container
+			var exportTable = $('<table border="1"></table>');
+
+			// Read all form-group rows
+			$("#div_DataTable .form-group").each(function () {
+
+					// Skip button row
+					if ($(this).find("button").length > 0)
+						return;
+
+					var tr = $("<tr></tr>");
+
+					$(this).find("label").each(function () {
+
+						var text = $(this).text()
+										  .replace(":", "")
+										  .trim();
+
+						tr.append("<td>" + text + "</td>");
+					});
+
+					exportTable.append(tr);
+				});
+
+			// Add existing tables
+			$("#div_DataTable table").each(function () {
+					exportTable.append(
+						$("<tr><td colspan='10'>&nbsp;</td></tr>")
+					);
+
+					$(this).find("tr").each(function () {
+						exportTable.append($(this).clone());
+					});
+				});
+
+			exportTable.table2excel({
+				exclude: ".noExl",
+				filename: filename,
+				fileext: ".xls"
+			});
 
 			return false;
 		}
+		// function fnExport_Excel(flag) {
+
+		// 	if (typeof flag == 'undefined' || flag == null && flag.length == 0) return;
+
+		// 	if (flag === 'DispatchQRCodeByMDA') {
+		// 		let combinedTable = combineTables();
+
+		// 		combinedTable.table2excel({
+		// 			filename: "DispatchQRCodeByMDA"
+		// 		});
+		// 	}
+
+		// 	if (flag === 'DS') {
+		// 		$("#div_DataTable table").table2excel({
+		// 			filename: "DispatchSummary"
+		// 		});
+		// 	}
+
+		// 	if (flag === 'DS_MDA') {
+		// 		$("#div_DataTable table").table2excel({
+		// 			filename: "MDAWiseDispatchSummaryReport"
+		// 		});
+		// 	}
+
+		// 	if (flag === 'DS_BAT') {
+		// 		$("#div_DataTable table").table2excel({
+		// 			filename: "BatchWiseDispatchSummaryReport"
+		// 		});
+		// 	}
+
+		// 	if (flag === 'DS_COUNT') {
+		// 		$("#div_DataTable table").table2excel({
+		// 			filename: "DispatchCountSummaryReport"
+		// 		});
+		// 	}
+
+		// 	if (flag === 'BatchNo') {
+		// 		let combinedTable = combineBatchTables();
+
+		// 		combinedTable.table2excel({
+		// 			filename: "KnowYourBatchData"
+		// 		});
+		// 	}
+
+		// 	if (flag === 'ShipperData') {
+		// 		$("#div_DataTable table").table2excel({
+		// 			filename: "ShipperData"
+		// 		});
+		// 	}
+
+		// 	if (flag === 'InvoiceNo') {
+		// 		let combinedTable = combineInvoiceTables();
+
+		// 		combinedTable.table2excel({
+		// 			filename: "KnowYourInvoiceData"
+		// 		});
+		// 	}
+
+		// 	if (flag === 'BottleQRCode') {
+		// 		$("#div_DataTable table").table2excel({
+		// 			filename: "KnowYourBottle"
+		// 		});
+		// 	}
+
+		// 	if (flag === 'BatchLogFile') {
+		// 		$("#div_DataTable table").table2excel({
+		// 			filename: "BatchFileLog"
+		// 		});
+		// 	}
+
+		// 	return false;
+		// }
 
 
 	</script>
