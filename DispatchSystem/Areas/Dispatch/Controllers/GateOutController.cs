@@ -1,11 +1,12 @@
 ﻿using Dispatch_System.Controllers;
+using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using PuppeteerSharp;
 using System.Data;
 using System.Globalization;
-using Humanizer;
 
 namespace Dispatch_System.Areas.Dispatch.Controllers
 {
@@ -196,17 +197,23 @@ namespace Dispatch_System.Areas.Dispatch.Controllers
 						}
 					}
 
-					var invoiceQrCode = listInvoice == null ? "" : string.Join(",", listInvoice.Select(x => x.MDA_Id + "|" + x.Invoice_QR_Code).ToArray());
-
-					var invoiceQrCode_Base64String = listInvoice == null ? "" : string.Join(",", listInvoice.Select(x => x.MDA_Id + "|" + x.Invoice_QR_Code_Base64).ToArray());
+					var (IsSuccess, response, Id) = (false, "", 0L);
 
 					List<MySqlParameter> oParams = new List<MySqlParameter>();
+
+					//var invoiceQrCode = listInvoice == null ? "" : string.Join(",", listInvoice.Select(x => x.MDA_Id + "|" + x.Invoice_QR_Code).ToArray());
+
+					//var invoiceQrCode_Base64String = listInvoice == null ? "" : string.Join(",", listInvoice.Select(x => x.MDA_Id + "|" + x.Invoice_QR_Code_Base64).ToArray());
+
+					oParams = new List<MySqlParameter>();
 
 					oParams.Add(new MySqlParameter("P_ID", MySqlDbType.Int64) { Value = viewModel.Id });
 					oParams.Add(new MySqlParameter("P_MDA_SYS_ID", MySqlDbType.Int64) { Value = viewModel.Common_Sys_Id });
 					oParams.Add(new MySqlParameter("P_GATE_OUT_NOTE", MySqlDbType.VarChar) { Value = viewModel.Gate_Out_Note });
-					oParams.Add(new MySqlParameter("P_INVOICE_QR_CODE", MySqlDbType.LongText) { Value = invoiceQrCode });
-					oParams.Add(new MySqlParameter("P_BASE64_INVOICE_QR_CODE", MySqlDbType.LongText) { Value = invoiceQrCode_Base64String });
+					//oParams.Add(new MySqlParameter("P_INVOICE_QR_CODE", MySqlDbType.LongText) { Value = invoiceQrCode });
+					//oParams.Add(new MySqlParameter("P_BASE64_INVOICE_QR_CODE", MySqlDbType.LongText) { Value = invoiceQrCode_Base64String });
+					oParams.Add(new MySqlParameter("P_INVOICE_QR_CODE", MySqlDbType.LongText) { Value = "" });
+					oParams.Add(new MySqlParameter("P_BASE64_INVOICE_QR_CODE", MySqlDbType.LongText) { Value = "" });
 
 					oParams.Add(new MySqlParameter("P_STATION_ID", MySqlDbType.Int64) { Value = 0 });
 					oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
@@ -214,73 +221,93 @@ namespace Dispatch_System.Areas.Dispatch.Controllers
 					oParams.Add(new MySqlParameter("P_ROLE_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.ROLE_ID) });
 					oParams.Add(new MySqlParameter("P_MENU_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.MENU_ID) });
 
-					var (IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_GATE_OUT_SAVE_NEW", oParams, true);
+					(IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_GATE_OUT_SAVE_NEW", oParams, true);
 
-					if (IsSuccess == true && AppHttpContextAccessor.IsSendInvoiceQRToCloud == true)
+					var mdaNos = listInvoice == null ? "" : string.Join(",", listInvoice.Select(x => x.MDA_No).ToArray());
+
+					LogService.LogInsert("Gate Out Save", $"Gate Out Save - MDA No. : {mdaNos?.ToUpper()} | Success");
+
+					if (listInvoice != null && listInvoice.Any() && IsSuccess == true)
 					{
-						var client = new HttpClient();
-
-						if (listInvoice != null && listInvoice.Count() > 0)
+						foreach (var invoice in listInvoice)
 						{
-							foreach (var item in listInvoice)
+							try
 							{
-								try
+								oParams = new List<MySqlParameter>();
+
+								oParams.Add(new MySqlParameter("P_GATE_IN_OUT_ID", MySqlDbType.Int64) { Value = viewModel.Id });
+								oParams.Add(new MySqlParameter("P_MDA_SYS_ID", MySqlDbType.Int64) { Value = invoice.MDA_Id });
+								oParams.Add(new MySqlParameter("P_INVOICE_QR_CODE", MySqlDbType.LongText) { Value = invoice.MDA_Id + "|" + invoice.Invoice_QR_Code });
+								oParams.Add(new MySqlParameter("P_BASE64_INVOICE_QR_CODE", MySqlDbType.LongText) { Value = invoice.MDA_Id + "|" + invoice.Invoice_QR_Code_Base64 });
+
+								oParams.Add(new MySqlParameter("P_PLANT_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.PLANT_ID) });
+								oParams.Add(new MySqlParameter("P_USER_ID", MySqlDbType.Int64) { Value = Common.Get_Session_Int(SessionKey.USER_ID) });
+
+								(IsSuccess, response, Id) = DataContext.ExecuteStoredProcedure_SQL("PC_INVOICE_QR_SAVE", oParams, true);
+
+								LogService.LogInsert("Gate Out Save", $"Invoice QR DB Call => MDA No. : {invoice.MDA_No.ToUpper()} | InvoiceQrCode : {invoice.Invoice_QR_Code.ToUpper()}");
+
+							}
+							catch (Exception ex)
+							{
+								LogService.LogInsert("Gate Out Save", $"Invoice QR DB Call => MDA No. : {invoice.MDA_No.ToUpper()} | InvoiceQrCode : {invoice.Invoice_QR_Code.ToUpper()}", ex);
+
+							}
+						}
+					}
+
+					try
+					{
+						if (IsSuccess == true && AppHttpContextAccessor.IsSendInvoiceQRToCloud == true)
+						{
+							var client = new HttpClient();
+
+							if (listInvoice != null && listInvoice.Count() > 0)
+							{
+								foreach (var item in listInvoice)
 								{
-									string strContent = "{ \"token\" : \"8548528525568856\",\"serviceID\" : \"31004\"" +
-										",\"inParameters\" : [{ \"label\" : \"mdaNo\", \"value\" : \"" + item.MDA_No.ToUpper() + "\" }" +
-															",{ \"label\" : \"invoiceQrCode\", \"value\" : \"" + item.Invoice_QR_Code.ToUpper() + "\" }" +
-															",{ \"label\" : \"base64InvQrCode\", \"value\" : \"" + item.Invoice_QR_Code_Base64 + "\" }" +
-															"]}\n\n";
-
-									LogService.LogInsert("Gate Out Save", $"Invoice QR API Call (Gate In Id : {viewModel.Id}) => Content : {strContent}");
-
-									var request = new HttpRequestMessage(HttpMethod.Post, AppHttpContextAccessor.API_Url_MDA);
-
-									StringContent? content = new StringContent(strContent, null, "application/json");
-
-									request.Content = content;
-
-									request.Headers.Add("Cookie", "X-Oracle-BMC-LBS-Route=b28d4f89e783eaee1f58fb4d2d5a28ae34cda340");
-
-									var responseBody = Task.Run(async () => await client.SendAsync(request)).Result;
-
-									LogService.LogInsert("Gate Out Save", $"Invoice QR API Call (Gate In Id : {viewModel.Id}) => Result : {responseBody.IsSuccessStatusCode}");
-
 									try
 									{
-										LogService.LogInsert("Gate Out Save", $"Invoice QR API Call (Gate In Id : {viewModel.Id}) => Response : {Task.Run(async () => await responseBody.Content.ReadAsStringAsync()).Result}");
+										LogService.LogInsert("Gate Out Save", $"Invoice QR API Call => MDA No. : {item.MDA_No.ToUpper()} | InvoiceQrCode : {item.Invoice_QR_Code.ToUpper()}");
+
+										string strContent = "{ \"token\" : \"8548528525568856\",\"serviceID\" : \"31004\"" +
+											",\"inParameters\" : [{ \"label\" : \"mdaNo\", \"value\" : \"" + item.MDA_No.ToUpper() + "\" }" +
+																",{ \"label\" : \"invoiceQrCode\", \"value\" : \"" + item.Invoice_QR_Code.ToUpper() + "\" }" +
+																",{ \"label\" : \"base64InvQrCode\", \"value\" : \"" + item.Invoice_QR_Code_Base64 + "\" }" +
+																"]}\n\n";
+
+										LogService.LogInsert("Gate Out Save", $"Invoice QR API Call => MDA No. : {item.MDA_No.ToUpper()} | Content : {strContent}");
+
+										var request = new HttpRequestMessage(HttpMethod.Post, AppHttpContextAccessor.API_Url_MDA);
+
+										StringContent? content = new StringContent(strContent, null, "application/json");
+
+										request.Content = content;
+
+										request.Headers.Add("Cookie", "X-Oracle-BMC-LBS-Route=b28d4f89e783eaee1f58fb4d2d5a28ae34cda340");
+
+										var responseBody = Task.Run(async () => await client.SendAsync(request)).Result;
+
+										LogService.LogInsert("Gate Out Save", $"Invoice QR API Call => MDA No. : {item.MDA_No.ToUpper()} | Result : {responseBody.IsSuccessStatusCode}");
+
+										try
+										{
+											LogService.LogInsert("Gate Out Save", $"Invoice QR API Call => MDA No. : {item.MDA_No.ToUpper()} | Response : {Task.Run(async () => await responseBody.Content.ReadAsStringAsync()).Result}");
+										}
+										catch { }
+
+										Thread.Sleep(1000);
 									}
-									catch { }
-
-									//var request = new HttpRequestMessage(HttpMethod.Post, AppHttpContextAccessor.API_Url);
-
-									//StringContent? content = content = new StringContent("{\"token\" : \"3369708919812376\",\"serviceID\" : \"31004\"" +
-									//	",\"mdaNo\" : \"" + item.MDA_No.ToUpper() + "\",\"invoiceQrCode\" : \"" + item.Invoice_QR_Code + "\"" +
-									//	",\"base64InvQrCode\" : \"" + item.Invoice_QR_Code_Base64 + "\"}", null, "application/json");
-
-									//request.Content = content;
-
-									//var responseBody = Task.Run(async () => await client.SendAsync(request)).Result;
-
-									//if (responseBody.IsSuccessStatusCode)
-									//{
-									//	var responseContent = Task.Run(async () => await responseBody.Content.ReadAsStringAsync()).Result;
-
-									//	if (!string.IsNullOrEmpty(responseContent) && responseContent.Contains("PostNanoMDAInvoiceQR"))
-									//	{
-
-									//	}
-									//}
-
-									Thread.Sleep(1000);
-								}
-								catch (Exception ex)
-								{
-									listInvoice.RemoveAll(x => x.MDA_No == item.MDA_No);
+									catch (Exception ex)
+									{
+										LogService.LogInsert("Gate Out Save", $"Invoice QR API Call => MDA No. : {item.MDA_No.ToUpper()}", ex);
+										//listInvoice.RemoveAll(x => x.MDA_No == item.MDA_No);
+									}
 								}
 							}
 						}
 					}
+					catch (Exception ex__) { }
 
 					CommonViewModel.IsConfirm = true;
 					CommonViewModel.IsSuccess = IsSuccess;
@@ -293,28 +320,28 @@ namespace Dispatch_System.Areas.Dispatch.Controllers
 
 					CommonViewModel.RedirectURL = Url.Content("~/") + GetCurrentControllerUrl() + "/Index";
 
-					if (IsSuccess)
+					//if (IsSuccess)
+					//{
+					List<(long Gate_In_Out_Id, long MDA_Id)> listId = new List<(long Gate_In_Out_Id, long MDA_Id)>();
+
+					if (dt != null && dt.Rows.Count > 0)
+						foreach (DataRow dr in dt.Rows)
+							listId.Add((dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0, dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0));
+
+					if (listId != null && listId.Count() > 0)
 					{
-						List<(long Gate_In_Out_Id, long MDA_Id)> listId = new List<(long Gate_In_Out_Id, long MDA_Id)>();
-
-						if (dt != null && dt.Rows.Count > 0)
-							foreach (DataRow dr in dt.Rows)
-								listId.Add((dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0, dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0));
-
-						if (listId != null && listId.Count() > 0)
-						{
-							Task.Run(async () => await DataContext.SyncData_LocalToCloud("FG_GATE_IN_OUT", listId.Select(x => x.Gate_In_Out_Id).ToList(), null));
-							Task.Run(async () => await DataContext.SyncData_LocalToCloud("FG_WEIGHMENT_DETAIL", listId.Select(x => x.Gate_In_Out_Id).ToList(), null));
-							Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_HEADER", null, listId.Select(x => x.MDA_Id).ToList()));
-							Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_DETAIL", null, listId.Select(x => x.MDA_Id).ToList()));
-							Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_LOADING", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-							Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_REQUISITION_DATA", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-							Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_SEQUENCE", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-							Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_INVOICE_QR", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-							Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_ADD_QTY_REQUEST", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-							Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_LOADING", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
-						}
+						Task.Run(async () => await DataContext.SyncData_LocalToCloud("FG_GATE_IN_OUT", listId.Select(x => x.Gate_In_Out_Id).ToList(), null));
+						Task.Run(async () => await DataContext.SyncData_LocalToCloud("FG_WEIGHMENT_DETAIL", listId.Select(x => x.Gate_In_Out_Id).ToList(), null));
+						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_HEADER", null, listId.Select(x => x.MDA_Id).ToList()));
+						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_DETAIL", null, listId.Select(x => x.MDA_Id).ToList()));
+						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_LOADING", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_REQUISITION_DATA", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_SEQUENCE", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_INVOICE_QR", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_ADD_QTY_REQUEST", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+						Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_LOADING", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
 					}
+					//}
 				}
 				else if (!string.IsNullOrEmpty(viewModel.Inward_Sys_Id) && viewModel.Inward_Sys_Id == "4")
 				{
@@ -343,7 +370,7 @@ namespace Dispatch_System.Areas.Dispatch.Controllers
 			}
 			catch (Exception ex)
 			{
-				LogService.LogInsert(GetCurrentAction(), "", ex);
+				LogService.LogInsert(GetCurrentAction(), "Gate Out Save", ex);
 
 				CommonViewModel.IsSuccess = false;
 				CommonViewModel.StatusCode = ResponseStatusCode.Error;

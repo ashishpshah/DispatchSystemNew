@@ -8415,6 +8415,69 @@ namespace Dispatch_System.Controllers
 			return Json(CommonViewModel);
 		}
 
+
+
+		///LocalToCloude?mdaNo=
+		public IActionResult LocalToCloude(string mdaNo = null)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(mdaNo))
+				{
+					CommonViewModel.Message = "Please enter valid MDA no.";
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+
+					return Json(CommonViewModel);
+				}
+
+				DataTable dt = DataContext.ExecuteQuery_SQL("With TBL_MAIN AS (select gio.PLANT_ID, gio.GATE_SYS_ID, gio.TRUCK_NO AS VEHICLE_NO " +
+								", mh.MDA_SYS_ID, mh.MDA_NO, mh.MDA_DT, gio.GATE_IN_DT, gio.GATE_OUT_DT " +
+								"from fg_gate_in_out gio " +
+								"join mda_header mh on gio.PLANT_ID = mh.PLANT_ID and find_in_set(mh.MDA_SYS_ID, gio.MDA_SYS_IDS) > 0 " +
+								"left join mda_detail md on md.PLANT_ID = mh.PLANT_ID and md.MDA_SYS_ID = mh.MDA_SYS_ID " +
+								"WHERE(MH.MDA_NO = '" + mdaNo + "' OR gio.TRUCK_NO = '" + mdaNo + "') AND IFNULL(CANCEL_GATE_IN, 0) = 0 " +
+								") SELECT X.PLANT_ID, X.GATE_SYS_ID, VEHICLE_NO, MDA_SYS_ID, MDA_NO, MDA_DT, GATE_IN_DT, DATE_FORMAT(X.GATE_OUT_DT, '%d/%m/%Y %H:%i') AS GATE_OUT_DT " +
+								"FROM TBL_MAIN X ");
+
+				List<(long Gate_In_Out_Id, long MDA_Id)> listId = new List<(long Gate_In_Out_Id, long MDA_Id)>();
+
+				if (dt != null && dt.Rows.Count > 0)
+					foreach (DataRow dr in dt.Rows)
+						listId.Add((dr["GATE_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["GATE_SYS_ID"]) : 0, dr["MDA_SYS_ID"] != DBNull.Value ? Convert.ToInt64(dr["MDA_SYS_ID"]) : 0));
+
+				if (listId != null && listId.Count() > 0)
+				{
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("FG_GATE_IN_OUT", listId.Select(x => x.Gate_In_Out_Id).ToList(), null));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("FG_WEIGHMENT_DETAIL", listId.Select(x => x.Gate_In_Out_Id).ToList(), null));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_HEADER", null, listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_DETAIL", null, listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_LOADING", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_REQUISITION_DATA", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_SEQUENCE", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_INVOICE_QR", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_ADD_QTY_REQUEST", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+					Task.Run(async () => await DataContext.SyncData_LocalToCloud("MDA_LOADING", listId.Select(x => x.Gate_In_Out_Id).ToList(), listId.Select(x => x.MDA_Id).ToList()));
+				}
+
+				CommonViewModel.IsConfirm = true;
+				CommonViewModel.IsSuccess = true;
+				CommonViewModel.StatusCode = ResponseStatusCode.Success;
+				CommonViewModel.Message = ResponseStatusMessage.Success;
+
+			}
+			catch (Exception ex)
+			{
+				LogService.LogInsert(GetCurrentAction(), "", ex);
+
+				CommonViewModel.IsSuccess = false;
+				CommonViewModel.StatusCode = ResponseStatusCode.Error;
+				CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
+			}
+
+			return Json(CommonViewModel);
+		}
+
 	}
 
 }
