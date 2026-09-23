@@ -8417,12 +8417,12 @@ namespace Dispatch_System.Controllers
 
 
 
-		///LocalToCloude?mdaNo=
-		public IActionResult LocalToCloude(string mdaNo = null)
+		[HttpGet("LocalToCloude/{searchTearm}")]
+		public IActionResult LocalToCloude(string searchTearm)
 		{
 			try
 			{
-				if (string.IsNullOrEmpty(mdaNo))
+				if (string.IsNullOrEmpty(searchTearm))
 				{
 					CommonViewModel.Message = "Please enter valid MDA no.";
 					CommonViewModel.IsSuccess = false;
@@ -8431,12 +8431,15 @@ namespace Dispatch_System.Controllers
 					return Json(CommonViewModel);
 				}
 
+				var PlantId = Common.Get_Session_Int(SessionKey.PLANT_ID);
+				PlantId = PlantId <= 0 ? AppHttpContextAccessor.PlantId : PlantId;
+
 				DataTable dt = DataContext.ExecuteQuery_SQL("With TBL_MAIN AS (select gio.PLANT_ID, gio.GATE_SYS_ID, gio.TRUCK_NO AS VEHICLE_NO " +
 								", mh.MDA_SYS_ID, mh.MDA_NO, mh.MDA_DT, gio.GATE_IN_DT, gio.GATE_OUT_DT " +
 								"from fg_gate_in_out gio " +
 								"join mda_header mh on gio.PLANT_ID = mh.PLANT_ID and find_in_set(mh.MDA_SYS_ID, gio.MDA_SYS_IDS) > 0 " +
 								"left join mda_detail md on md.PLANT_ID = mh.PLANT_ID and md.MDA_SYS_ID = mh.MDA_SYS_ID " +
-								"WHERE(MH.MDA_NO = '" + mdaNo + "' OR gio.TRUCK_NO = '" + mdaNo + "') AND IFNULL(CANCEL_GATE_IN, 0) = 0 " +
+								"WHERE gio.PLANT_ID = " + PlantId + " AND MH.PLANT_ID = " + PlantId + " AND (MH.MDA_NO = '" + searchTearm + "' OR gio.TRUCK_NO = '" + searchTearm + "') AND IFNULL(CANCEL_GATE_IN, 0) = 0 " +
 								") SELECT X.PLANT_ID, X.GATE_SYS_ID, VEHICLE_NO, MDA_SYS_ID, MDA_NO, MDA_DT, GATE_IN_DT, DATE_FORMAT(X.GATE_OUT_DT, '%d/%m/%Y %H:%i') AS GATE_OUT_DT " +
 								"FROM TBL_MAIN X ");
 
@@ -8465,6 +8468,296 @@ namespace Dispatch_System.Controllers
 				CommonViewModel.StatusCode = ResponseStatusCode.Success;
 				CommonViewModel.Message = ResponseStatusMessage.Success;
 
+			}
+			catch (Exception ex)
+			{
+				LogService.LogInsert(GetCurrentAction(), "", ex);
+
+				CommonViewModel.IsSuccess = false;
+				CommonViewModel.StatusCode = ResponseStatusCode.Error;
+				CommonViewModel.Message = ResponseStatusMessage.Error + " | " + ex.Message;
+			}
+
+			return Json(CommonViewModel);
+		}
+
+		[HttpGet("CheckData/{searchTearm}")]
+		public IActionResult CheckData(string searchTearm)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(searchTearm))
+				{
+					CommonViewModel.Message = "Please enter valid MDA no.";
+					CommonViewModel.IsSuccess = false;
+					CommonViewModel.StatusCode = ResponseStatusCode.Error;
+
+					return Json(CommonViewModel);
+				}
+
+				var PlantId = Common.Get_Session_Int(SessionKey.PLANT_ID);
+				PlantId = PlantId <= 0 ? AppHttpContextAccessor.PlantId : PlantId;
+
+				DataTable dt_plant = DataContext.ExecuteQuery_SQL("With TBL_LIST As (SELECT TRIM(search_term) AS Search_Term FROM JSON_TABLE(  "
+						+ "	CONCAT('[\"', REPLACE('" + searchTearm + "', ',', '\",\"'), '\"]'), "
+						+ "		'$[*]' COLUMNS ( search_term VARCHAR(100) PATH '$' ) "
+						+ "	) AS t) "
+						+ ", TBL_MAIN AS (SELECT gio.PLANT_ID, gio.GATE_SYS_ID, gio.TRUCK_NO AS VEHICLE_NO  "
+						+ "	, mh.MDA_SYS_ID, mh.MDA_NO, mh.MDA_DT, mh.OUT_TIME, gio.GATE_IN_DT, gio.GATE_OUT_DT, IFNULL(CANCEL_GATE_IN, 0) CANCEL_GATE_IN "
+						+ "    , CONVERT((IFNULL(md.BAG_NOS, 0) / 24), UNSIGNED) Shipper_Qty "
+						+ "	FROM fg_gate_in_out gio  "
+						+ "	JOIN mda_header mh ON gio.PLANT_ID = mh.PLANT_ID AND find_in_set(mh.MDA_SYS_ID, gio.MDA_SYS_IDS) > 0  "
+						+ "	LEFT JOIN mda_detail md ON md.PLANT_ID = mh.PLANT_ID AND md.MDA_SYS_ID = mh.MDA_SYS_ID "
+						+ "    WHERE gio.PLANT_ID = " + PlantId + " AND mh.PLANT_ID = " + PlantId + " AND EXISTS ( SELECT 1 FROM TBL_LIST L WHERE L.Search_Term = MH.MDA_NO OR L.Search_Term = gio.TRUCK_NO ) "
+						+ ") "
+						+ ", TBL_Shipper As (SELECT MD.GATE_SYS_ID, MD.MDA_SYS_ID, COUNT(*) Loaded_Shipper  "
+						+ "					FROM mda_loading MD "
+						+ "                    WHERE MD.PLANT_ID = " + PlantId + " AND EXISTS ( SELECT 1 FROM TBL_MAIN X WHERE X.GATE_SYS_ID = MD.GATE_SYS_ID AND X.MDA_SYS_ID = MD.MDA_SYS_ID ) "
+						+ "                    GROUP BY MD.PLANT_ID, MD.GATE_SYS_ID, MD.MDA_SYS_ID "
+						+ "				) "
+						+ "SELECT ROW_NUMBER() OVER ( ORDER BY GATE_IN_DT DESC, OUT_TIME DESC, GATE_OUT_DT DESC ) AS SR_NO "
+						+ ", X.PLANT_ID, X.GATE_SYS_ID, X.MDA_SYS_ID, VEHICLE_NO, MDA_NO, DATE_FORMAT(MDA_DT, '%d/%m/%Y %H:%i') AS MDA_DT, DATE_FORMAT(OUT_TIME, '%d/%m/%Y %H:%i') AS MDA_OUT_DT "
+						+ ", DATE_FORMAT(GATE_IN_DT, '%d/%m/%Y %H:%i') AS GATE_IN_DT, DATE_FORMAT(X.GATE_OUT_DT, '%d/%m/%Y %H:%i') AS GATE_OUT_DT, CANCEL_GATE_IN, Shipper_Qty, IFNULL(Loaded_Shipper, 0) AS Loaded_Shipper "
+						+ "FROM TBL_MAIN X  "
+						+ "LEFT JOIN TBL_Shipper S ON S.GATE_SYS_ID = X.GATE_SYS_ID AND S.MDA_SYS_ID = X.MDA_SYS_ID "
+						+ "ORDER BY 1");
+
+				DataTable dt_oracle = DataContext.ExecuteQuery("WITH TBL_LIST AS ( "
+						+ "    SELECT TRIM(REGEXP_SUBSTR('" + searchTearm + "', '[^,]+', 1, LEVEL)) AS SEARCH_TERM "
+						+ "    FROM DUAL "
+						+ "    CONNECT BY REGEXP_SUBSTR('" + searchTearm + "', '[^,]+', 1, LEVEL) IS NOT NULL "
+						+ "), "
+						+ "TBL_MAIN AS ( "
+						+ "    SELECT gio.PLANT_ID, gio.GATE_SYS_ID, gio.TRUCK_NO VEHICLE_NO, "
+						+ "           mh.MDA_SYS_ID, mh.MDA_NO, mh.MDA_DT, mh.OUT_TIME, "
+						+ "           gio.GATE_IN_DT, gio.GATE_OUT_DT, NVL(gio.CANCEL_GATE_IN,0) CANCEL_GATE_IN, "
+						+ "           TRUNC(NVL(md.BAG_NOS,0)/24) SHIPPER_QTY "
+						+ "    FROM FG_GATE_IN_OUT gio "
+						+ "    JOIN MDA_HEADER mh ON gio.PLANT_ID=mh.PLANT_ID "
+						+ "        AND INSTR(','||gio.MDA_SYS_IDS||',',','||mh.MDA_SYS_ID||',')>0 "
+						+ "    LEFT JOIN MDA_DETAIL md ON md.PLANT_ID=mh.PLANT_ID "
+						+ "        AND md.MDA_SYS_ID=mh.MDA_SYS_ID "
+						+ "    WHERE gio.PLANT_ID = " + PlantId + " AND mh.PLANT_ID = " + PlantId + " AND EXISTS ( "
+						+ "        SELECT 1 FROM TBL_LIST L "
+						+ "        WHERE L.SEARCH_TERM=mh.MDA_NO OR L.SEARCH_TERM=gio.TRUCK_NO "
+						+ "    ) "
+						+ "), "
+						+ "TBL_SHIPPER AS ( "
+						+ "    SELECT MD.GATE_SYS_ID, MD.MDA_SYS_ID, COUNT(*) LOADED_SHIPPER "
+						+ "    FROM MDA_LOADING MD "
+						+ "    WHERE MD.PLANT_ID = " + PlantId + " AND EXISTS ( "
+						+ "        SELECT 1 FROM TBL_MAIN X "
+						+ "        WHERE X.GATE_SYS_ID=MD.GATE_SYS_ID AND X.MDA_SYS_ID=MD.MDA_SYS_ID "
+						+ "    ) "
+						+ "    GROUP BY MD.PLANT_ID, MD.GATE_SYS_ID, MD.MDA_SYS_ID "
+						+ ") "
+						+ "SELECT ROW_NUMBER() OVER(ORDER BY X.GATE_IN_DT DESC,X.OUT_TIME DESC,X.GATE_OUT_DT DESC) SR_NO, "
+						+ "       X.PLANT_ID,X.GATE_SYS_ID,X.MDA_SYS_ID,X.VEHICLE_NO,X.MDA_NO, "
+						+ "       TO_CHAR(X.MDA_DT,'DD/MM/YYYY HH24:MI') MDA_DT, "
+						+ "       TO_CHAR(X.OUT_TIME,'DD/MM/YYYY HH24:MI') MDA_OUT_DT, "
+						+ "       TO_CHAR(X.GATE_IN_DT,'DD/MM/YYYY HH24:MI') GATE_IN_DT, "
+						+ "       TO_CHAR(X.GATE_OUT_DT,'DD/MM/YYYY HH24:MI') GATE_OUT_DT, "
+						+ "       X.CANCEL_GATE_IN,X.SHIPPER_QTY,NVL(S.LOADED_SHIPPER,0) LOADED_SHIPPER "
+						+ "FROM TBL_MAIN X "
+						+ "LEFT JOIN TBL_SHIPPER S ON S.GATE_SYS_ID=X.GATE_SYS_ID AND S.MDA_SYS_ID=X.MDA_SYS_ID "
+						+ "ORDER BY SR_NO");
+
+				DataTable combine = new DataTable("COMBINE");
+
+				string[] searchTerms = searchTearm.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToArray();
+
+				combine.Columns.Add("SEARCH_TERM", typeof(string));
+
+				// Plant columns
+				foreach (DataColumn col in dt_plant.Columns) combine.Columns.Add("PLANT_" + col.ColumnName, col.DataType);
+
+				// Cloud columns
+				foreach (DataColumn col in dt_oracle.Columns) combine.Columns.Add("CLOUD_" + col.ColumnName, col.DataType);
+
+				var plantLookup = dt_plant.AsEnumerable()
+	.SelectMany(row => new[]
+	{
+		new
+		{
+			SEARCH_TERM = row["MDA_NO"] == DBNull.Value
+				? ""
+				: row["MDA_NO"].ToString().Trim(),
+
+			GATE_SYS_ID = row["GATE_SYS_ID"] == DBNull.Value
+				? ""
+				: row["GATE_SYS_ID"].ToString().Trim(),
+
+			MDA_SYS_ID = row["MDA_SYS_ID"] == DBNull.Value
+				? ""
+				: row["MDA_SYS_ID"].ToString().Trim(),
+
+			Row = row
+		},
+
+		new
+		{
+			SEARCH_TERM = row["VEHICLE_NO"] == DBNull.Value
+				? ""
+				: row["VEHICLE_NO"].ToString().Trim(),
+
+			GATE_SYS_ID = row["GATE_SYS_ID"] == DBNull.Value
+				? ""
+				: row["GATE_SYS_ID"].ToString().Trim(),
+
+			MDA_SYS_ID = row["MDA_SYS_ID"] == DBNull.Value
+				? ""
+				: row["MDA_SYS_ID"].ToString().Trim(),
+
+			Row = row
+		}
+	})
+	.Where(x => !string.IsNullOrEmpty(x.SEARCH_TERM))
+	.GroupBy(x => new
+	{
+		x.SEARCH_TERM,
+		x.GATE_SYS_ID,
+		x.MDA_SYS_ID
+	})
+	.ToDictionary(
+		x => x.Key,
+		x => x.First().Row
+	);
+
+				var cloudLookup = dt_oracle.AsEnumerable()
+					.SelectMany(row => new[]
+					{
+		new
+		{
+			SEARCH_TERM = row["MDA_NO"] == DBNull.Value
+				? ""
+				: row["MDA_NO"].ToString().Trim(),
+
+			GATE_SYS_ID = row["GATE_SYS_ID"] == DBNull.Value
+				? ""
+				: row["GATE_SYS_ID"].ToString().Trim(),
+
+			MDA_SYS_ID = row["MDA_SYS_ID"] == DBNull.Value
+				? ""
+				: row["MDA_SYS_ID"].ToString().Trim(),
+
+			Row = row
+		},
+
+		new
+		{
+			SEARCH_TERM = row["VEHICLE_NO"] == DBNull.Value
+				? ""
+				: row["VEHICLE_NO"].ToString().Trim(),
+
+			GATE_SYS_ID = row["GATE_SYS_ID"] == DBNull.Value
+				? ""
+				: row["GATE_SYS_ID"].ToString().Trim(),
+
+			MDA_SYS_ID = row["MDA_SYS_ID"] == DBNull.Value
+				? ""
+				: row["MDA_SYS_ID"].ToString().Trim(),
+
+			Row = row
+		}
+					})
+					.Where(x => !string.IsNullOrEmpty(x.SEARCH_TERM))
+					.GroupBy(x => new
+					{
+						x.SEARCH_TERM,
+						x.GATE_SYS_ID,
+						x.MDA_SYS_ID
+					})
+					.ToDictionary(
+						x => x.Key,
+						x => x.First().Row
+					);
+
+				foreach (DataRow plantRow in dt_plant.Rows)
+				{
+					string plantMdaNo = plantRow["MDA_NO"] == DBNull.Value
+						? ""
+						: plantRow["MDA_NO"].ToString().Trim();
+
+					string plantVehicleNo = plantRow["VEHICLE_NO"] == DBNull.Value
+						? ""
+						: plantRow["VEHICLE_NO"].ToString().Trim();
+
+					string gateSysId = plantRow["GATE_SYS_ID"] == DBNull.Value
+						? ""
+						: plantRow["GATE_SYS_ID"].ToString().Trim();
+
+					string mdaSysId = plantRow["MDA_SYS_ID"] == DBNull.Value
+						? ""
+						: plantRow["MDA_SYS_ID"].ToString().Trim();
+
+					foreach (string searchTerm in searchTerms)
+					{
+						if (!searchTerm.Equals(
+								plantMdaNo,
+								StringComparison.OrdinalIgnoreCase)
+							&&
+							!searchTerm.Equals(
+								plantVehicleNo,
+								StringComparison.OrdinalIgnoreCase))
+						{
+							continue;
+						}
+
+						var key = new
+						{
+							SEARCH_TERM = searchTerm,
+							GATE_SYS_ID = gateSysId,
+							MDA_SYS_ID = mdaSysId
+						};
+
+						cloudLookup.TryGetValue(
+							key,
+							out DataRow cloudRow
+						);
+
+						DataRow combineRow = combine.NewRow();
+
+						combineRow["SEARCH_TERM"] = searchTerm;
+
+						foreach (DataColumn col in dt_plant.Columns)
+						{
+							string targetColumn = "PLANT_" + col.ColumnName;
+
+							combineRow[targetColumn] =
+								plantRow[col] == DBNull.Value
+									? DBNull.Value
+									: plantRow[col];
+						}
+
+						foreach (DataColumn col in dt_oracle.Columns)
+						{
+							string targetColumn = "CLOUD_" + col.ColumnName;
+
+							combineRow[targetColumn] =
+								cloudRow != null &&
+								cloudRow[col] != DBNull.Value
+									? cloudRow[col]
+									: DBNull.Value;
+						}
+
+
+						combine.Rows.Add(combineRow);
+					}
+				}
+
+
+
+				string combineJson = "[]";
+
+				if (combine != null && combine.Rows.Count > 0)
+				{
+					combineJson = JsonConvert.SerializeObject(
+						combine,
+						Formatting.Indented
+					);
+				}
+
+				return Content(combineJson, "text/plain");
 			}
 			catch (Exception ex)
 			{
