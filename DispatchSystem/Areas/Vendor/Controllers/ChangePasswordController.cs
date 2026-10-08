@@ -39,7 +39,7 @@ namespace Dispatch_System
 				CommonViewModel.StatusCode = IsSuccess ? ResponseStatusCode.Success : ResponseStatusCode.Error;
 				CommonViewModel.Message = response;
 
-				Common.Clear_Session();
+				if (IsSuccess) Common.Clear_Session();
 
 				CommonViewModel.RedirectURL = IsSuccess ? Url.Content("~/") + "Home/VendorLogin" : "";
 			}

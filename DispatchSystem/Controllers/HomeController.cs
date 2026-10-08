@@ -1429,6 +1429,7 @@ namespace Dispatch_System.Controllers
 					CommonViewModel.IsSuccess = true;
 					CommonViewModel.StatusCode = ResponseStatusCode.Success;
 					CommonViewModel.Message = "E-Mail Sending.....";
+					CommonViewModel.RedirectURL = IsSuccess ? Url.Content("~/") + "Home/VendorLogin" : "";
 
 					return Json(CommonViewModel);
 
@@ -1515,7 +1516,7 @@ namespace Dispatch_System.Controllers
 			string SiteName = "";
 			string OrgName = "";
 
-			string sqlQuery = "SELECT X.ORGANIZATION_NAME,X.VENDOR_CODE, Y.PASSWORD,Y.SITE_NAME, X.PRIMARY_EMAIL VENDOR_MASTER_EMAIL,Y.PRIMARY_EMAIL  SITE_MASTER_EMAIL  FROM VENDOR_MASTER X, SITE_MASTER Y WHERE X.VENDOR_CODE = '" + vendorCode + "' AND Y.SITE_ID = " + siteId;
+			string sqlQuery = "SELECT X.ORGANIZATION_NAME,X.VENDOR_CODE, X.PASSWORD, Y.SITE_NAME, X.PRIMARY_EMAIL VENDOR_MASTER_EMAIL, Y.PRIMARY_EMAIL  SITE_MASTER_EMAIL  FROM VENDOR_MASTER X, SITE_MASTER Y WHERE X.VENDOR_CODE = '" + vendorCode + "' AND Y.SITE_ID = " + siteId;
 			var dt = DataContext.ExecuteQuery(sqlQuery);
 
 			if (dt != null)
